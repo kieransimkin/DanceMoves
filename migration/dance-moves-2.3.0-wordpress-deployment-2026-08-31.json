@@ -69,7 +69,7 @@
       "cause": "WordPress admin toolbar",
       "signed_out_html_has_admin_bar": false
     },
-    "signed_out_page_252_evidence": "qa/published-2.2.0/viewport-evidence.json"
+    "signed_out_page_252_evidence": "qa/published-2.3.0/viewport-evidence.json"
   },
   "reduced_motion": {
     "page_id": 310,

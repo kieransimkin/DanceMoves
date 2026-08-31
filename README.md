@@ -260,3 +260,11 @@ No WordPress upload, timing-media upload, page-meta save or legacy-plugin deacti
 - **Corrective action:** locate each keyframe block with brace-balanced character ranges, classify declarations by absolute character offset, and cap evidence snippets around the matching declaration.
 - **Verification:** the Clay/Stars shared harness changed from false failure to `PASS`; the only remaining risky transition is the bounded page-owned `box-shadow` review warning.
 - **Limit:** brace balancing is a static CSS check; pre-live traces still decide whether bounded transitions and page-owned effects meet runtime budgets.
+
+### A refreshed live capture can outgrow its version-labelled evidence folder
+
+- **Symptom:** a later verification run overwrites an earlier version's screenshots after the live plugin has changed, and renaming the populated directory can be denied while an artefact is open.
+- **Cause when verified:** the capture command reused the earlier output directory; the exact reason for the subsequent Windows directory-move denial was not established.
+- **Corrective action:** write a fresh capture to a new directory named for the observed live version, add an explicit superseded marker to the old directory, and keep package/hash receipts as the authoritative historical record.
+- **Verification:** `qa/published-2.3.0/viewport-evidence.json` records public 2.3.0 assets at 1440, 900 and 390 pixels; `qa/published-2.2.0/SUPERSEDED.md` blocks accidental reuse of the overwritten files.
+- **Limit:** screenshots are point-in-time rendering evidence; they do not replace immutable package manifests or deployment receipts.
