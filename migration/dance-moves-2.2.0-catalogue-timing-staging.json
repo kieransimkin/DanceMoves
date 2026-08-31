@@ -1,7 +1,7 @@
 {
   "schema": "dance-moves-wordpress-staging/v1",
   "staged_at": "2026-08-31T15:42:21+01:00",
-  "status": "staged-not-published",
+  "status": "approved-awaiting-wordpress-reauthentication",
   "plugin_name": "DanceMoves",
   "version": "2.2.0",
   "wordpress_upgrade_slug": "kieran-epk-device-orientation",
@@ -46,6 +46,21 @@
     "reduced_motion": "PASS-page-310-generated-pseudo-animation-clamped-to-one-0.01ms-iteration",
     "evidence": "qa/catalogue-timing-live-injection-2026-08-31.json"
   },
+  "predeployment_live_observation": {
+    "observed_version": "2.2.0",
+    "matching_public_assets": 8,
+    "mismatched_public_asset": "assets/dance-moves-catalogue-timing.js",
+    "observed_asset_bytes": 11750,
+    "observed_asset_sha256": "E22B913559FE04972CB71EEFA041700646116AA1DA18740D6763DB29D04EBED0",
+    "approved_asset_bytes": 12799,
+    "approved_asset_sha256": "89A9A750AA0B0936516DE8D44C090C989530A0767C5EDDFB98038DDE84E20013",
+    "conclusion": "The live site has an earlier partial 2.2.0 build and is not byte-identical to the approved ZIP. Do not report final deployment until the exact package is uploaded once and reverified."
+  },
+  "approval": {
+    "status": "approved",
+    "scope": "Exact DanceMoves 2.2.0 ZIP and SHA-256 recorded above",
+    "remaining_blocker": "The controlled WordPress session requires reauthentication before the approved upload can be performed."
+  },
   "known_limits": [
     "The 44 pages without evidence-backed BPM retain blank page BPM metadata and use the labelled 120 BPM runtime fallback.",
     "CSS adoption does not rewrite raw frame-time canvas or WebGL oscillator code; those systems must consume DanceMoves.currentTick in their page adapters.",
@@ -58,5 +73,5 @@
     "previous_full_runtime_package": "dist/DanceMoves-2.0.0.zip",
     "previous_full_runtime_sha256": "8412FE69B1E9607E6A7E76CFDF790C99C55D8EDBEE5E2A32A478636BF2EE4550"
   },
-  "publication_requires_action_time_approval": true
+  "publication_requires_action_time_approval": false
 }
