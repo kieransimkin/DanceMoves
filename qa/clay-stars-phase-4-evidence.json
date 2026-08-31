@@ -1,0 +1,78 @@
+{
+  "schema": "dance-moves-clay-stars-phase-4-evidence/v1",
+  "recorded_at": "2026-08-31T16:44:44.4975525+01:00",
+  "plugin_version": "2.3.0",
+  "effect": "Made from the clay and the stars",
+  "page_id": 252,
+  "release_timing": {
+    "canonical_bpm": 116,
+    "master_duration_milliseconds": 359523.560091,
+    "master_sha256": "03F681507F47389AD6E7085C9C0167D74F6AC24A6F2ABC497CA356AEDBE1B838",
+    "canonical_cue_count": 19
+  },
+  "production_assets": {
+    "assets/dance-moves-core.css": "197E0D51F400A3D875ACB6E12238417FAA3D54853708F72EEB792342F533AD8D",
+    "assets/clay-stars-effects.css": "48DE19BAB0DE6B795BC9BF03D94CA6864713EADF87DBF63E47CBE38008BFD41D",
+    "assets/dance-moves-core.js": "7337D940C85DAFF366A3B41D7D91997772ACA1C22A53713B5C0529925AA9C59C",
+    "assets/clay-stars-effects.js": "43C5A3129420C4F9AD3AF51B03D2DA41FE358C3C72C97F54CB8F3F4348EDCAE9"
+  },
+  "package_observed_live": {
+    "path": "dist/DanceMoves-2.3.0.zip",
+    "bytes": 42610,
+    "sha256": "D690FD0A411BC704E464306B34E84DD40C241B9F96CF0B4E01EDB76D6CBA7CF4",
+    "wordpress_admin_active_version": "2.3.0",
+    "all_four_phase_4_assets_hash_match_public": true
+  },
+  "automated_validation": {
+    "dance_moves_unit_suite": "PASS",
+    "clay_contracts": "P-030 through P-040 and P-043 through P-046 PASS",
+    "synthetic_software_budgets": "P-041 and P-042 PASS",
+    "shared_harness_validator": "PASS",
+    "legacy_plugin_collision": "PASS",
+    "strict_utf8": "PASS",
+    "workflow_forward_test": "PASS",
+    "skill_metadata_validator": "PASS"
+  },
+  "live_lab_smoke": {
+    "candidate_connected": true,
+    "production_adapter_only": true,
+    "master_intensity_requested": 0.55,
+    "master_intensity_applied": 0.55,
+    "particle_release_ticks_requested": 48,
+    "particle_release_duration_applied": "1551.724138ms",
+    "cue_test": "SECTION INTRO",
+    "cue_handler_p95_milliseconds": 2.9,
+    "long_tasks": 0,
+    "dropped_frames_percent": 0,
+    "short_capture_fps": 29.14,
+    "short_capture_frame_p95_milliseconds": 33.4,
+    "note": "The in-app browser capture is a functional smoke trace, not physical 60 Hz or 120 Hz device evidence."
+  },
+  "css_performance_review": {
+    "continuous_layout_or_paint_property_failures_in_clay_assets": 0,
+    "remaining_warning": "A bounded page-owned WPForms box-shadow transition remains trace-required review evidence outside the Clay effect layer.",
+    "compositor_policy": "Production Clay keyframes use transform and opacity; background-position, filter and inset were removed from repeating keyframes."
+  },
+  "public_viewports": {
+    "evidence": "qa/published-2.3.0/viewport-evidence.json",
+    "sha256": "2E8AA4DDD466BAC622FC3888981E44123E4C1099AC741B96FE04B98EFB0A0787",
+    "widths": [1440, 900, 390],
+    "zero_positive_horizontal_overflow": true,
+    "signed_out": true,
+    "replacement_characters": 0,
+    "chapter_controls": 5,
+    "legacy_clay_assets": 0
+  },
+  "artifacts": {
+    "manifest": "tests/harness/clay-stars/clay-stars.json",
+    "candidate": "qa/clay-stars-harness-candidate.html",
+    "adapter": "tests/harness/clay-stars/effect-under-test-adapter.js",
+    "live_lab_screenshot": "qa/clay-stars-harness-live-lab.png",
+    "live_lab_screenshot_sha256": "EA3659D5B47D107BE89746A70613F712610B9ADFCA61CBD006C96DAA40AFFCFB"
+  },
+  "remaining_gate": {
+    "status": "BLOCKED",
+    "reason": "Physical-device 60 Hz and 120 Hz traces for P-041/P-042 have not been captured.",
+    "publication_interpretation": "Automated and desktop-browser Phase 4 implementation is complete; do not claim the physical-device performance gate has passed."
+  }
+}
