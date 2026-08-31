@@ -10,7 +10,7 @@ const clayCss = fs.readFileSync(path.join(root, "assets/clay-stars-effects.css")
 const clayJs = fs.readFileSync(path.join(root, "assets/clay-stars-effects.js"), "utf8");
 
 assert.match(php, /Plugin Name:\s*DanceMoves/);
-assert.match(php, /Version:\s*2\.3\.0/);
+assert.match(php, /Version:\s*2\.3\.1/);
 for (const key of [
   "_dance_moves_bpm",
   "_dance_moves_lyric_timing_id",

@@ -1,0 +1,71 @@
+{
+  "schema": "dance-moves-wordpress-staging/v1",
+  "staged_date": "2026-08-31",
+  "status": "STAGED_PENDING_ACTION_TIME_APPROVAL",
+  "plugin": "DanceMoves",
+  "version": "2.3.1",
+  "target": {
+    "wordpress_site": "https://kieransimkin.co.uk/",
+    "page_id": 252,
+    "page_url": "https://kieransimkin.co.uk/made-from-the-clay-and-the-stars-anunnaki/",
+    "live_version_before": "2.3.0"
+  },
+  "requested_change": {
+    "scope": "Made from the clay and the stars Clay/Stars adapter only",
+    "master_intensity_before": 1,
+    "master_intensity_after": 2,
+    "master_intensity_cap_before": 1.5,
+    "master_intensity_cap_after": 2,
+    "full_input_bounds_after": {
+      "cover_tilt_degrees": 2.3,
+      "cover_translation_pixels": 8,
+      "bloom_travel_pixels": 16,
+      "flare_travel_pixels": 36,
+      "specular_travel_pixels": 48
+    },
+    "unchanged": [
+      "EPK page body and metadata",
+      "BPM, lyric timing and cue timing",
+      "markup and CSS",
+      "all other release adapters",
+      "reduced-motion behavior",
+      "timing, cue and interval APIs"
+    ]
+  },
+  "package": {
+    "path": "dist/DanceMoves-2.3.1.zip",
+    "bytes": 46490,
+    "sha256": "B530E53C81CB7F9300B47DE55C1F79115F2A016AEDBEDEF5D778752903E76BDA",
+    "entry_count": 11,
+    "wordpress_upgrade_root": "kieran-epk-device-orientation",
+    "changed_package_files_vs_2_3_0": [
+      "assets/clay-stars-effects.js",
+      "kieran-epk-device-orientation.php",
+      "README.md"
+    ],
+    "unchanged_package_file_count_vs_2_3_0": 8,
+    "clay_javascript_sha256": "E585A5507183DD90CFFEDE2252091C85823931248A42323739E882E40C08BDB0"
+  },
+  "validation": {
+    "unit": "PASS",
+    "package": "PASS",
+    "strict_utf8": "PASS",
+    "clay_gain_contract": "PASS",
+    "synthetic_60_120_hz_budgets": "PASS",
+    "rendered_local_1280": {
+      "master_intensity": 2,
+      "document_positive_horizontal_overflow": 0,
+      "player_count": 1,
+      "chapter_count": 5,
+      "replacement_characters": 0
+    },
+    "responsive_layout_basis": "The page markup and both CSS files are byte-identical to the signed-out 2.3.0 evidence at 1440, 900 and 390 pixels. Fresh 2.3.1 headless screenshots are unavailable because the local Edge DevTools runner timed out and the CLI GPU process crashed; do not represent reused layout evidence as a fresh visual capture.",
+    "physical_android": "Samsung Galaxy A40, Android 11, Chrome 151, verified 60 Hz-only hardware. Live 2.3.0 was judged too subtle by Kieran; 2.3.1 requires post-deployment physical confirmation.",
+    "physical_120_hz": "BLOCKED"
+  },
+  "rollback": {
+    "package": "dist/DanceMoves-2.3.0.zip",
+    "sha256": "D690FD0A411BC704E464306B34E84DD40C241B9F96CF0B4E01EDB76D6CBA7CF4"
+  },
+  "publication": "No WordPress mutation has been made. Upload only after action-time approval of the exact 46,490-byte ZIP and SHA-256 above."
+}

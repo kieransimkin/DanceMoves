@@ -14,7 +14,7 @@
   var finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
   var defaults = Object.freeze({
     enabled: true,
-    masterIntensity: 1,
+    masterIntensity: 2,
     coverTiltDegrees: 1.15,
     coverTranslationPixels: 4,
     bloomTravelPixels: 8,
@@ -96,7 +96,7 @@
   var setParameters = function (next) {
     next = next || {};
     settings.enabled = Object.prototype.hasOwnProperty.call(next, "enabled") ? Boolean(next.enabled) : settings.enabled;
-    settings.masterIntensity = clamp(next.masterIntensity, 0, 1.5, settings.masterIntensity);
+    settings.masterIntensity = clamp(next.masterIntensity, 0, 2, settings.masterIntensity);
     settings.coverTiltDegrees = clamp(next.coverTiltDegrees, 0, 4, settings.coverTiltDegrees);
     settings.coverTranslationPixels = clamp(next.coverTranslationPixels, 0, 16, settings.coverTranslationPixels);
     settings.bloomTravelPixels = clamp(next.bloomTravelPixels, 0, 32, settings.bloomTravelPixels);

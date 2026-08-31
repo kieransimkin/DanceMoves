@@ -1,6 +1,6 @@
 # DanceMoves
 
-DanceMoves is Kieran Simkin's WordPress EPK motion runtime. Version 2.0.0 added page-level BPM, lyric-timing and cue-timing properties; a 16-ticks-per-beat musical clock; cue-driven animation resets; named cue and interval handlers; the existing seven device-orientation adapters; and the release-specific Made from the Clay and the Stars effects adapter. Version 2.1.0 moved the neutral shared EPK control and lyric-disclosure transitions onto page-resolved integer tick durations. Version 2.2.0 added catalogue-wide adoption for release-owned CSS animations, transitions, delays and timing custom properties. Version 2.3.0 confines stylesheet conversion to EPK-owned selectors and the timing variables they reference, so a mixed theme or admin stylesheet cannot transfer ownership to unrelated rules; it also carries the separately staged Clay/Stars runtime and harness refinements already present in the workspace.
+DanceMoves is Kieran Simkin's WordPress EPK motion runtime. Version 2.0.0 added page-level BPM, lyric-timing and cue-timing properties; a 16-ticks-per-beat musical clock; cue-driven animation resets; named cue and interval handlers; the existing seven device-orientation adapters; and the release-specific Made from the Clay and the Stars effects adapter. Version 2.1.0 moved the neutral shared EPK control and lyric-disclosure transitions onto page-resolved integer tick durations. Version 2.2.0 added catalogue-wide adoption for release-owned CSS animations, transitions, delays and timing custom properties. Version 2.3.0 confines stylesheet conversion to EPK-owned selectors and the timing variables they reference, so a mixed theme or admin stylesheet cannot transfer ownership to unrelated rules; it also carries the separately staged Clay/Stars runtime and harness refinements already present in the workspace. Version 2.3.1 raises only the Clay/Stars bounded motion gain to 2x so physical phone tilt is clearly visible while reduced motion, geometry and all other EPK systems remain unchanged.
 
 The WordPress plugin name is **DanceMoves**. The distributable ZIP deliberately retains the internal `kieran-epk-device-orientation` folder and entrypoint name so WordPress upgrades the installed plugin rather than installing a parallel copy.
 
@@ -109,6 +109,46 @@ No WordPress upload, timing-media upload, page-meta save or legacy-plugin deacti
 
 ## Potential problems
 
+### A secondary Windows worktree can change unchanged asset bytes
+
+- **Symptom:** the Clay harness reports a production hash mismatch for an untouched asset such as `dance-moves-core.css` immediately after creating an isolated worktree.
+- **Cause when verified:** the repository's Windows `core.autocrlf=true` setting converted LF blobs to CRLF in the new checkout, so raw packaged bytes no longer matched the production hashes even though the CSS semantics were unchanged.
+- **Corrective action:** create the isolated worktree with `git -c core.autocrlf=false worktree add ...`, verify a known untouched production asset hash before editing, and reject any candidate whose unchanged package files do not byte-match the approved baseline.
+- **Verification:** the corrected isolated checkout restored `assets/dance-moves-core.css` to SHA-256 `197E0D51F400A3D875ACB6E12238417FAA3D54853708F72EEB792342F533AD8D`, matching the existing Clay harness manifest.
+- **Limit:** this is for byte-stable release staging; it does not justify ignoring real source or line-ending changes in files intentionally edited by the candidate.
+
+### A clean worktree omits the generated Clay harness candidate
+
+- **Symptom:** `clay-adapter.test.cjs` fails with `ENOENT` for `qa/clay-stars-harness-candidate.html` even though the production source and manifest hashes are valid.
+- **Cause when verified:** the candidate is a deterministic local build artifact and is intentionally untracked, so Git does not populate it in a fresh isolated worktree.
+- **Corrective action:** run the repository-owned `tools/build-clay-stars-preview.ps1 -Harness` against the canonical signed-out Clay page before Unit validation; keep the generated candidate out of the WordPress package.
+- **Verification:** the builder recreated the candidate in the isolated staging worktree and allowed the adapter/harness validation to proceed against the exact current production assets.
+- **Limit:** rebuilding the candidate is valid only while its canonical source path and asset substitutions remain current; it does not replace signed-out public verification after deployment.
+
+### A plugin version bump must update the private phone fixture's cache keys
+
+- **Symptom:** `wordpress-upload-contract.test.cjs` reports that a phone-conformance asset is not cache-versioned to the current plugin even though production PHP correctly declares the new version.
+- **Cause when verified:** the unlisted physical-device fixture retained `?ver=2.3.0` on its four local scripts after the plugin header and contract moved to 2.3.1.
+- **Corrective action:** update every fixture script cache key to the exact plugin version while leaving its capture token, endpoint, schema and behaviour unchanged; rerun the full Unit gate.
+- **Verification:** the 2.3.1 fixture references the production orientation core, simulator, capture policy and conformance runner with matching `?ver=2.3.1` keys and the upload contract passes.
+- **Limit:** cache-key parity does not prove the fixture is deployed or publicly reachable; the test page remains unlisted, `noindex` and excluded from the WordPress ZIP.
+
+### The viewport runner must await its full asynchronous lifecycle
+
+- **Symptom:** `capture-public-viewports.mjs` exits with code zero after creating an empty evidence directory and a temporary Edge profile, with no screenshots, JSON or console output.
+- **Cause when verified:** the module called `main()` without top-level awaiting it, so Node could finish module evaluation while the asynchronous browser lifecycle was still pending. The DevTools WebSocket connection also lacked an explicit deadline.
+- **Corrective action:** top-level await the complete `main()` promise; keep explicit 15-second timers active while connecting and while awaiting every DevTools command response, clear each timer on resolution/error, and reject on expiry. Treat a missing `viewport-evidence.json` as failure regardless of process exit code.
+- **Verification:** the hardened runner returned a visible non-zero `Timed out waiting for Page.enable` error instead of exiting zero with an empty evidence directory.
+- **Limit:** this fixes runner lifecycle and silent connection setup only. Browser launch, target creation, navigation and capture failures retain their own explicit error paths.
+
+### Headless Edge can fail before writing a screenshot when its GPU process is unusable
+
+- **Symptom:** the CLI capture writes no PNG and exits after repeated GPU-process failures ending in `GPU process isn't usable. Goodbye.`
+- **Cause when verified:** Edge reported an unusable GPU process in this Windows session; accompanying encryption and profile-cache errors were observed but were not established as the cause.
+- **Corrective action:** require the screenshot file to exist before accepting the command; keep the failure explicit, use the functioning in-app rendered candidate for scoped DOM/runtime checks, and retain prior fixed-viewport evidence only when the candidate markup and CSS are byte-identical. Obtain fresh post-deployment screenshots with a healthy renderer.
+- **Verification:** the missing PNG caused the fallback command to fail non-zero; no screenshot or viewport pass was claimed. The rendered 1280-pixel candidate separately retained one player, five chapter controls, zero document overflow and no replacement characters.
+- **Limit:** prior layout evidence does not become a fresh 2.3.1 capture. A motion or CSS change that can alter layout still requires new 1440/900/390 rendered evidence before publication.
+
 ### GitHub form snapshot labels may not be associated HTML labels
 
 - **Symptom:** a visible `Repository name *` field appears in the semantic snapshot, but `getByLabel(...).fill(...)` times out with no matches.
@@ -140,6 +180,14 @@ No WordPress upload, timing-media upload, page-meta save or legacy-plugin deacti
 - **Corrective action:** use `tab.goto(...)`, then `tab.playwright.waitForTimeout(...)` and `tab.playwright.evaluate(...)`; address repository files from `/tests/...` or `/qa/...` on the local server.
 - **Verification:** the corrected integration URL returned `PASS`, BPM 120, a 31.25 ms tick, and a released deferred-start element.
 - **Limit:** this applies to the current in-app Browser binding and this repository-root server; re-check the API and server root after recreating either.
+
+### The in-app browser exposes a deliberately small locator surface
+
+- **Symptom:** `waitForSelector`, locator `boundingBox` or locator `hover` reports `is not a function`, and isolated evaluation may not expose browser constructors such as `Event` or `PointerEvent`.
+- **Cause when verified:** this browser controller exposes locator `waitFor`, `click`, `press`, text/attribute reads and isolated DOM evaluation, not the complete upstream Playwright API or every main-world constructor.
+- **Corrective action:** wait with `tab.playwright.locator(selector).waitFor(...)`; read geometry in DOM evaluation; use a supported visible action such as locator `click` when it matches the test. Use a documented main-world path only when ownership or event-constructor behavior is essential.
+- **Verification:** the locator-based wait loaded the exact 2.3.1 Clay candidate, DOM evaluation read its 484.6-pixel cover and runtime state, and a supported click completed without broadening browser access.
+- **Limit:** do not synthesize unsupported APIs or interpret an isolated-world omission as a production-page defect.
 
 ### A saved browser-tab binding can outlive its tab
 

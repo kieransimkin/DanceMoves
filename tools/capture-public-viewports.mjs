@@ -45,14 +45,22 @@ class CdpClient {
 
   async connect() {
     await new Promise((resolve, reject) => {
-      this.socket.addEventListener("open", resolve, { once: true });
-      this.socket.addEventListener("error", reject, { once: true });
+      const timer = setTimeout(() => reject(new Error("Timed out connecting to the Edge DevTools WebSocket")), 15000);
+      this.socket.addEventListener("open", () => {
+        clearTimeout(timer);
+        resolve();
+      }, { once: true });
+      this.socket.addEventListener("error", error => {
+        clearTimeout(timer);
+        reject(error);
+      }, { once: true });
     });
     this.socket.addEventListener("message", event => {
       const message = JSON.parse(event.data);
       if (message.id && this.pending.has(message.id)) {
-        const { resolve, reject } = this.pending.get(message.id);
+        const { resolve, reject, timer } = this.pending.get(message.id);
         this.pending.delete(message.id);
+        clearTimeout(timer);
         if (message.error) reject(new Error(message.error.message));
         else resolve(message.result || {});
         return;
@@ -65,7 +73,11 @@ class CdpClient {
   send(method, params = {}) {
     const id = this.nextId++;
     return new Promise((resolve, reject) => {
-      this.pending.set(id, { resolve, reject });
+      const timer = setTimeout(() => {
+        this.pending.delete(id);
+        reject(new Error(`Timed out waiting for ${method}`));
+      }, 15000);
+      this.pending.set(id, { resolve, reject, timer });
       this.socket.send(JSON.stringify({ id, method, params }));
     });
   }
@@ -188,7 +200,7 @@ async function main() {
   }
 }
 
-main().catch(error => {
+await main().catch(error => {
   console.error(error.stack || String(error));
   process.exit(1);
 });

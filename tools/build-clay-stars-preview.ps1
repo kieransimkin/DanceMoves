@@ -10,16 +10,16 @@ $outputDirectory = Join-Path $repoRoot 'qa'
 $output = Join-Path $outputDirectory $(if ($Harness) { 'clay-stars-harness-candidate.html' } else { 'clay-stars-merged-preview.html' })
 
 $html = Get-Content -LiteralPath $source -Raw -Encoding UTF8
-$html = [regex]::Replace($html, '<link[^>]+kieran-made-from-clay-stars-epk-effects/assets/effects\.css[^>]*>', '<link rel="stylesheet" href="../assets/clay-stars-effects.css?ver=2.3.0-local">', 1)
+$html = [regex]::Replace($html, '<link[^>]+kieran-made-from-clay-stars-epk-effects/assets/effects\.css[^>]*>', '<link rel="stylesheet" href="../assets/clay-stars-effects.css?ver=2.3.1-local">', 1)
 $html = [regex]::Replace($html, '<script[^>]+kieran-made-from-clay-stars-epk-effects/assets/effects\.js[^>]*></script>', '', 1)
-$coreStyle = '<link rel="stylesheet" href="../assets/dance-moves-core.css?ver=2.3.0-local">'
+$coreStyle = '<link rel="stylesheet" href="../assets/dance-moves-core.css?ver=2.3.1-local">'
 $html = $html -replace '</head>', ($coreStyle + "`n</head>")
 $probe = if ($Harness) { '<script src="../tests/harness/plugin-core/harness-probe.js"></script>' } else { '' }
 if ($probe) {
     $html = $html -replace '</head>', ($probe + "`n</head>")
 }
 $scripts = @'
-<script>window.danceMovesConfig={pageId:252,version:"2.3.0",bpm:116,bpmSource:"explicit",lyricTimingUrl:"",cueTimingUrl:"",masterDurationMilliseconds:359523.56,diagnostics:true};</script>
+<script>window.danceMovesConfig={pageId:252,version:"2.3.1",bpm:116,bpmSource:"explicit",lyricTimingUrl:"",cueTimingUrl:"",masterDurationMilliseconds:359523.56,diagnostics:true};</script>
 <script src="../assets/dance-moves-core.js"></script>
 <script src="../assets/clay-stars-effects.js"></script>
 '@

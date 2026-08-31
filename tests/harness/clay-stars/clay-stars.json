@@ -13,7 +13,7 @@
       "../../../assets/dance-moves-core.css": "197E0D51F400A3D875ACB6E12238417FAA3D54853708F72EEB792342F533AD8D",
       "../../../assets/clay-stars-effects.css": "48DE19BAB0DE6B795BC9BF03D94CA6864713EADF87DBF63E47CBE38008BFD41D",
       "../../../assets/dance-moves-core.js": "7337D940C85DAFF366A3B41D7D91997772ACA1C22A53713B5C0529925AA9C59C",
-      "../../../assets/clay-stars-effects.js": "43C5A3129420C4F9AD3AF51B03D2DA41FE358C3C72C97F54CB8F3F4348EDCAE9"
+      "../../../assets/clay-stars-effects.js": "E585A5507183DD90CFFEDE2252091C85823931248A42323739E882E40C08BDB0"
     },
     "inputModes": ["pointer", "touch", "keyboard", "cue"]
   },
@@ -38,7 +38,7 @@
       "description": "Disables Clay visual motion without changing content, WordPress or release metadata."
     },
     {
-      "id": "master-intensity", "group": "master", "label": "Master intensity", "type": "range", "default": 1, "min": 0, "max": 1.5, "step": 0.01,
+      "id": "master-intensity", "group": "master", "label": "Master intensity", "type": "range", "default": 2, "min": 0, "max": 2, "step": 0.01,
       "unit": "", "apply": "adapter", "target": "masterIntensity", "performanceSensitive": true,
       "description": "Scales bounded cover, light and particle response from neutral to the safe review maximum."
     },

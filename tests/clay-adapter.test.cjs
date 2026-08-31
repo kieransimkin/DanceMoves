@@ -111,10 +111,21 @@ function percentile(values, fraction) {
 const env = createEnvironment();
 const effect = env.window.DanceMovesClayStars;
 assert.ok(effect, "P-030 target page initialises the Clay runtime");
+assert.equal(effect.defaults.masterIntensity, 2, "P-033 Clay phone-motion gain defaults to the reviewed 2x setting");
 assert.equal(createEnvironment({ withRoot: false }).window.DanceMovesClayStars, undefined, "P-030 unknown page receives no runtime");
 assert.equal(env.animationScope.target, env.root);
 assert.equal(env.cueMetadata.name, "*");
 assert.equal(env.cueMetadata.metadata.id, "clay-stars:cue-state", "P-043 wildcard handler has a stable ID");
+
+const reviewedGain = createEnvironment();
+reviewedGain.window.DanceMovesClayStars.setMotion({ x: 1, y: -1 });
+reviewedGain.flushRaf();
+assert.equal(reviewedGain.cover.style.getPropertyValue("--ks-ry"), "2.300deg");
+assert.equal(reviewedGain.cover.style.getPropertyValue("--ks-rx"), "2.300deg");
+assert.equal(reviewedGain.cover.style.getPropertyValue("--ks-tx"), "8.000px");
+assert.equal(reviewedGain.cover.style.getPropertyValue("--ks-bloom-x"), "16.000px");
+assert.equal(reviewedGain.cover.style.getPropertyValue("--ks-flare-x"), "36.000px");
+assert.equal(reviewedGain.cover.style.getPropertyValue("--ks-spec-x"), "-48.000px", "P-033 reviewed 2x gain remains inside the existing visual bounds");
 
 const clamped = effect.setParameters({
   enabled: true,
@@ -128,7 +139,7 @@ const clamped = effect.setParameters({
 });
 assert.deepEqual(JSON.parse(JSON.stringify(clamped)), {
   enabled: true,
-  masterIntensity: 1.5,
+  masterIntensity: 2,
   coverTiltDegrees: 4,
   coverTranslationPixels: 16,
   bloomTravelPixels: 32,
@@ -142,10 +153,10 @@ effect.setMotion({ x: -1, y: 1 });
 effect.setMotion({ x: .5, y: -.25 });
 assert.equal(env.rafs.size, 1, "P-033 latest motion sample coalesces to one frame");
 env.flushRaf();
-assert.equal(env.cover.style.getPropertyValue("--ks-ry"), "3.000deg");
-assert.equal(env.cover.style.getPropertyValue("--ks-rx"), "1.500deg");
-assert.equal(env.cover.style.getPropertyValue("--ks-tx"), "12.000px");
-assert.equal(env.cover.style.getPropertyValue("--ks-spec-x"), "-48.000px");
+assert.equal(env.cover.style.getPropertyValue("--ks-ry"), "4.000deg");
+assert.equal(env.cover.style.getPropertyValue("--ks-rx"), "2.000deg");
+assert.equal(env.cover.style.getPropertyValue("--ks-tx"), "16.000px");
+assert.equal(env.cover.style.getPropertyValue("--ks-spec-x"), "-64.000px");
 
 env.control.hovered = true;
 env.control.dispatch("pointerenter");
@@ -195,7 +206,7 @@ assert.equal(effect.snapshot().lifecycle, "visible");
 env.mediaReduce.matches = true;
 env.mediaReduce.dispatch("change");
 assert.equal(env.cover.style.getPropertyValue("--ks-rx"), "0.000deg", "P-036 reduced motion neutralises tilt");
-assert.equal(env.root.style.getPropertyValue("--ks-master-intensity"), "1.5", "P-036 reduced motion does not hide content state");
+assert.equal(env.root.style.getPropertyValue("--ks-master-intensity"), "2", "P-036 reduced motion does not hide content state");
 
 env.mediaReduce.matches = false;
 effect.reset();
