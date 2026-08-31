@@ -73,6 +73,8 @@
   "remaining_gate": {
     "status": "BLOCKED",
     "reason": "Physical-device 60 Hz and 120 Hz traces for P-041/P-042 have not been captured.",
+    "historical_capture_audit": "qa/physical-capture-audit-2026-08-31.json",
+    "historical_capture_interpretation": "Seven private 2026-08-28 Android captures verify native orientation and mapper parity, including two complete 30-second Chrome runs, but record neither immutable DanceMoves build identity nor P-041/P-042 performance metrics and cannot close the gate.",
     "publication_interpretation": "Automated and desktop-browser Phase 4 implementation is complete; do not claim the physical-device performance gate has passed."
   }
 }

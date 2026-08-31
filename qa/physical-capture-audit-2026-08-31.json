@@ -1,0 +1,106 @@
+{
+  "schema": "dance-moves-physical-capture-audit/v1",
+  "audited_at": "2026-08-31T17:02:08+01:00",
+  "scope": "Read-only audit of all private WordPress Motion Capture records and locally connected mobile hardware available for DanceMoves physical validation.",
+  "wordpress_capture_inventory": {
+    "post_type": "ks_motion_capture",
+    "record_count": 7,
+    "post_ids": [663, 662, 661, 660, 645, 644, 643],
+    "all_private": true,
+    "capture_date": "2026-08-28",
+    "platforms_observed": [
+      "Chrome on Android",
+      "Samsung Internet on Android"
+    ],
+    "iphone_safari_observed": false,
+    "all_stored_samples_native_trusted": true,
+    "all_stored_samples_field_dispatch_mapper_parity": true
+  },
+  "full_window_android_captures": [
+    {
+      "post_id": 663,
+      "captured_at": "2026-08-28T08:39:41.364Z",
+      "browser": "Chrome on Android",
+      "capture_duration_milliseconds": 30004.3,
+      "sampled_duration_milliseconds": 29918.4,
+      "processed_pair_count": 1435,
+      "stored_sample_count": 288,
+      "approximate_processed_events_per_second": 47.96,
+      "passed": true
+    },
+    {
+      "post_id": 662,
+      "captured_at": "2026-08-28T08:39:04.255Z",
+      "browser": "Chrome on Android",
+      "capture_duration_milliseconds": 30003.3,
+      "sampled_duration_milliseconds": 29896.4,
+      "processed_pair_count": 1400,
+      "stored_sample_count": 283,
+      "approximate_processed_events_per_second": 46.83,
+      "passed": true
+    }
+  ],
+  "short_legacy_captures": [
+    {
+      "post_id": 661,
+      "browser": "Samsung Internet on Android",
+      "stored_sample_count": 25,
+      "full_window_observed": false,
+      "passed": true
+    },
+    {
+      "post_id": 660,
+      "browser": "Samsung Internet on Android",
+      "stored_sample_count": 25,
+      "full_window_observed": false,
+      "passed": true
+    },
+    {
+      "post_id": 645,
+      "browser": "Samsung Internet on Android",
+      "stored_sample_count": 25,
+      "full_window_observed": false,
+      "passed": true
+    },
+    {
+      "post_id": 644,
+      "browser": "Samsung Internet on Android",
+      "stored_sample_count": 25,
+      "full_window_observed": false,
+      "passed": true
+    },
+    {
+      "post_id": 643,
+      "browser": "Samsung Internet on Android",
+      "stored_sample_count": 25,
+      "full_window_observed": false,
+      "passed": true
+    }
+  ],
+  "capture_schema_limitations": {
+    "plugin_version_recorded": false,
+    "artifact_or_package_hash_recorded": false,
+    "refresh_rate_recorded": false,
+    "effective_fps_recorded": false,
+    "missed_frame_distribution_recorded": false,
+    "orientation_handler_latency_recorded": false,
+    "raf_effect_callback_latency_recorded": false,
+    "input_to_visual_commit_latency_recorded": false,
+    "long_tasks_recorded": false,
+    "plugin_off_dropped_frame_baseline_recorded": false
+  },
+  "local_device_inventory": {
+    "windows_query": "Get-PnpDevice -PresentOnly, elevated read-only",
+    "query_succeeded": true,
+    "identifiable_android_or_iphone_connected": false,
+    "interpretation": "No locally connected phone was available for a new physical run. This does not exclude an unpaired wireless or remote device."
+  },
+  "gate_results": {
+    "historical_android_native_orientation_and_mapper_parity": "PASS",
+    "current_dance_moves_2_3_0_physical_performance_attribution": "BLOCKED",
+    "P_041_60_hz_reference_device": "BLOCKED",
+    "P_042_120_hz_reference_device": "BLOCKED",
+    "physical_iphone_safari": "BLOCKED"
+  },
+  "decision": "The historical private captures are valid Android orientation-parity evidence only. They do not contain the metrics or immutable build identity required to pass P-041 or P-042, and no current physical phone is connected for a replacement run."
+}

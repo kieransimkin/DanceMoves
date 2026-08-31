@@ -74,6 +74,22 @@
 - **Verification:** require 47 imported TSV rows, non-empty title/page ID/URL on every row, and field parity with the JSON manifest for all page IDs before any WordPress migration.
 - **Limit:** structural parity does not verify that the underlying BPM or timing-file evidence is correct; retain the separate evidence gates.
 
+### Windows PnP inventory may require elevated read access
+
+- **Symptom:** `Get-PnpDevice -PresentOnly` returns `Access denied` before a connected-phone inventory can be evaluated.
+- **Cause when verified:** the current non-elevated PowerShell session could not query the Windows PnP provider. The same exact read-only query completed after the user granted elevated access.
+- **Corrective action:** first use non-privileged `pnputil /enum-devices /connected /class USB` and `/class WPD`; when a complete class/friendly-name inventory is required and the user authorises it, repeat only `Get-PnpDevice -PresentOnly` with elevated read access and filter the output to relevant device classes and phone names.
+- **Verification:** the elevated query completed successfully on 2026-08-31 and showed USB peripherals but no identifiable Android or iPhone; the result is recorded in `qa/physical-capture-audit-2026-08-31.json`.
+- **Limit:** absence from the local connected-device inventory does not prove that no unpaired wireless, remote or otherwise inaccessible phone exists.
+
+### Historical orientation captures cannot substitute for performance traces
+
+- **Symptom:** private Motion Capture rows report genuine trusted phone events and complete mapper parity, but P-041/P-042 still lack evidence.
+- **Cause when verified:** `ks-epk-motion-recording/v1` stores orientation values and parity flags only. It does not store plugin/package identity, refresh rate, frame distributions, handler or rAF timing, input-to-commit latency, long tasks, or a plugin-off dropped-frame baseline.
+- **Corrective action:** classify these rows only as historical native-orientation/mapper evidence. Run P-041/P-042 on nominated physical reference devices with the performance telemetry contract, an immutable DanceMoves artifact hash and a matched plugin-off baseline; never derive missing performance fields from orientation event cadence.
+- **Verification:** all seven private records were inspected on 2026-08-31. Two complete Android Chrome runs processed 1,435 and 1,400 pairs over about 30 seconds with all stored parity flags true, but every required physical performance field and iPhone Safari evidence was absent.
+- **Limit:** the historical records predate the current audit and do not identify the tested DanceMoves version, so they cannot be attributed to the deployed 2.3.0 package.
+
 ## Purpose
 
 This document defines two independent gates:

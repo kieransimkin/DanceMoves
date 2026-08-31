@@ -141,6 +141,14 @@ No WordPress upload, timing-media upload, page-meta save or legacy-plugin deacti
 - **Verification:** the corrected integration URL returned `PASS`, BPM 120, a 31.25 ms tick, and a released deferred-start element.
 - **Limit:** this applies to the current in-app Browser binding and this repository-root server; re-check the API and server root after recreating either.
 
+### A saved browser-tab binding can outlive its tab
+
+- **Symptom:** an authenticated read-only audit fails with `Unknown tab` even though the existing in-app browser connection remains healthy.
+- **Cause when verified:** the saved tab had been closed or removed after cleanup while its JavaScript binding remained in the persistent browser-control session.
+- **Corrective action:** keep the existing browser connection, discard only the stale tab binding, create or obtain one fresh tab from that connection, and navigate it to the exact previously verified URL. Use a new variable name or a `let` binding when the tab reference may need replacement.
+- **Verification:** a fresh tab in the existing signed-in browser loaded each private WordPress Motion Capture editor and allowed all seven JSON records to be audited without reauthentication.
+- **Limit:** this recovery applies when the connection is healthy and only the tab is stale; it is not a reason to reset a working browser session or switch browsers.
+
 ### PowerShell loop output must be grouped before piping
 
 - **Symptom:** PowerShell reports `An empty pipe element is not allowed` after a `foreach (...) { ... } | Format-Table` construct.
