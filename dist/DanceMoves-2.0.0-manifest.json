@@ -4,8 +4,8 @@
     "version":  "2.0.0",
     "wordpress_upgrade_slug":  "kieran-epk-device-orientation",
     "zip":  "DanceMoves-2.0.0.zip",
-    "zip_bytes":  33617,
-    "zip_sha256":  "353F0BA1C9354893C43AED7B3611FF0ADF611EC7D3CE0B84AFA921320472D262",
+    "zip_bytes":  33951,
+    "zip_sha256":  "8412FE69B1E9607E6A7E76CFDF790C99C55D8EDBEE5E2A32A478636BF2EE4550",
     "entry_count":  10,
     "root_entrypoint":  "kieran-epk-device-orientation/kieran-epk-device-orientation.php",
     "root_entrypoint_present":  true,
@@ -58,8 +58,8 @@
                   },
                   {
                       "path":  "kieran-epk-device-orientation/README.md",
-                      "bytes":  17650,
-                      "sha256":  "D8D55AB709BEFB94C153599AA18DC36F0A3F91DE11213585D9E4D78C04072AC9"
+                      "bytes":  18529,
+                      "sha256":  "5BBA2FEA4F98012161E075A1C868E0D67E2C48025038653F1801776C1A1FD87B"
                   }
               ]
 }

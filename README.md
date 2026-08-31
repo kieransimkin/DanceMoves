@@ -101,6 +101,14 @@ No WordPress upload, timing-media upload, page-meta save or legacy-plugin deacti
 
 ## Potential problems
 
+### GitHub form snapshot labels may not be associated HTML labels
+
+- **Symptom:** a visible `Repository name *` field appears in the semantic snapshot, but `getByLabel(...).fill(...)` times out with no matches.
+- **Cause:** the snapshot's readable label text is not necessarily exposed through an associated HTML `label` relationship.
+- **Corrective action:** address the control by its verified role and accessible name, such as `getByRole("textbox", { name: "Repository name *", exact: true })`; re-snapshot after changing visibility and verify the repository's `Private` badge after creation.
+- **Verification:** GitHub created `kieransimkin/DanceMoves`, and the signed-in repository page showed `Private`, the expected description and the pushed commit.
+- **Limit:** re-inspect GitHub's current semantic form before reuse because its control names and structure can change.
+
 ### Generated timestamps break deterministic manifests
 
 - **Symptom:** a clean validation run leaves only the migration JSON modified even though its evidence and rows did not change.
