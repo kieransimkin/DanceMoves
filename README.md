@@ -237,6 +237,14 @@ No WordPress upload, timing-media upload, page-meta save or legacy-plugin deacti
 - **Verification:** the corrected public checks returned 7,037 lyric bytes with SHA-256 `4D0363A692A473AE8207D6711155F545FF6EDB7D92B125A2AA4E186B9F27BE7B` and 823 cue bytes with SHA-256 `C32F1D5AA036DBAD051A6BD08C257BA050D3EC8DEFC250ADC22DE6A3FCD15302`, both matching the canonical files.
 - **Limit:** select the decoding path from the response's actual runtime type; do not assume that every `Invoke-WebRequest` response is binary.
 
+### PowerShell text decoding can create a false JavaScript asset hash mismatch
+
+- **Symptom:** a public JavaScript asset fetched through Windows PowerShell appears to be 16,980 bytes and fails its approved SHA-256 check even though the deployed code and version are correct.
+- **Cause when verified:** `Invoke-WebRequest.Content` decoded the UTF-8 JavaScript as text and the subsequent conversion back to bytes changed non-ASCII punctuation. The response object no longer represented the immutable response bytes.
+- **Corrective action:** download JavaScript assets as raw bytes with `curl.exe --output` (or another byte-preserving client), then hash the downloaded file without text decoding or re-encoding.
+- **Verification:** the raw public DanceMoves 2.3.2 orientation asset was 16,974 bytes with SHA-256 `998CB3A77D3E215DCA04C3C6BAAA258B85A581D643ABA7667D4EBF4BAC391C97`, exactly matching the approved package.
+- **Limit:** use this procedure for immutable byte verification. A decoded string remains suitable for semantic text inspection only when byte identity is not being claimed.
+
 ### Windows paths should use ripgrep's glob option rather than a literal wildcard argument
 
 - **Symptom:** `rg` reports Windows error 123 when passed a quoted path ending in `tests/*.cjs`.

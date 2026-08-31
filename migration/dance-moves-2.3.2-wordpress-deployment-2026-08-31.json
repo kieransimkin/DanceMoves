@@ -1,0 +1,89 @@
+{
+  "schema": "dance-moves-wordpress-deployment/v1",
+  "recorded_at": "2026-08-31T18:52:20.7185534+01:00",
+  "status": "published_technical_checks_passed_physical_native_motion_pending_clean_tab",
+  "site": "https://kieransimkin.co.uk/",
+  "plugin": {
+    "name": "DanceMoves",
+    "upgrade_slug": "kieran-epk-device-orientation",
+    "previous_version": "2.3.1",
+    "published_version": "2.3.2",
+    "active_after_update": true
+  },
+  "package": {
+    "path": "dist/DanceMoves-2.3.2.zip",
+    "bytes": 48282,
+    "entries": 11,
+    "sha256": "22007F9B2B199BA1A78B1B685EBB81446DA1216AB6DC74921C6241B1AA61E6A6"
+  },
+  "wordpress_result": "Plugin updated successfully.",
+  "public_orientation_asset": {
+    "url": "https://kieransimkin.co.uk/wp-content/plugins/kieran-epk-device-orientation/assets/ks-epk-device-orientation.js?ver=2.3.2",
+    "status": 200,
+    "bytes": 16974,
+    "sha256": "998CB3A77D3E215DCA04C3C6BAAA258B85A581D643ABA7667D4EBF4BAC391C97",
+    "matches_approved_package": true,
+    "download_mode": "raw bytes"
+  },
+  "catalogue_check": {
+    "manifest_pages": 47,
+    "http_200": 47,
+    "dance_moves_2_3_2": 47,
+    "replacement_character_pages": 0,
+    "admin_bar_pages": 0
+  },
+  "page_252": {
+    "url": "https://kieransimkin.co.uk/made-from-the-clay-and-the-stars-anunnaki/",
+    "bpm": 116,
+    "lyric_timing_url": "https://kieransimkin.co.uk/wp-content/uploads/2026/08/dance-moves-252-lyric.lrc",
+    "lyric_timing_bytes": 7037,
+    "lyric_timing_sha256": "4D0363A692A473AE8207D6711155F545FF6EDB7D92B125A2AA4E186B9F27BE7B",
+    "cue_timing_url": "https://kieransimkin.co.uk/wp-content/uploads/2026/08/dance-moves-252-cue.lrc",
+    "cue_timing_bytes": 823,
+    "cue_timing_sha256": "C32F1D5AA036DBAD051A6BD08C257BA050D3EC8DEFC250ADC22DE6A3FCD15302",
+    "root_count": 1,
+    "cover_count": 1,
+    "player_count": 1,
+    "chapter_count": 5,
+    "legacy_clay_asset_count": 0
+  },
+  "signed_out_viewports": {
+    "evidence": "qa/public-2.3.2-live-2026-08-31/viewport-evidence.json",
+    "widths": [1440, 900, 390],
+    "positive_horizontal_overflow": 0,
+    "replacement_characters": 0,
+    "visual_review": "pass"
+  },
+  "phone": {
+    "model": "Samsung Galaxy A40 (SM-A405FN)",
+    "android": 11,
+    "refresh_hz": 60.000004,
+    "browser": "Chrome 151.0.7922.173",
+    "published_runtime": {
+      "version": "2.3.2",
+      "adapter": "clay-stars",
+      "listener_count": 1,
+      "listening": true,
+      "document_hidden": false,
+      "reduced_motion": false,
+      "master_intensity": 2
+    },
+    "native_event_check": "pending clean browser tab",
+    "reason": "The remaining exact EPK target had previously been used for DevTools sensor emulation. It returned no new native events after the override was cleared, so it cannot be treated as a clean physical sensor pass.",
+    "subjective_visible_motion_judgement": "pending"
+  },
+  "unchanged": [
+    "WordPress page body",
+    "EPK BPM and timing metadata",
+    "lyric timing attachment",
+    "cue timing attachment",
+    "Clay CSS and 2x gain asset",
+    "all non-Clay adapters",
+    "reduced-motion behavior",
+    "timing, cue and interval APIs"
+  ],
+  "rollback": {
+    "path": "dist/DanceMoves-2.3.1.zip",
+    "sha256": "B530E53C81CB7F9300B47DE55C1F79115F2A016AEDBEDEF5D778752903E76BDA"
+  }
+}

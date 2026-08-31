@@ -10,6 +10,9 @@ const emulateCdpOrientation = process.argv.includes("--emulate-cdp-orientation")
 const invokeOrientationListener = process.argv.includes("--invoke-orientation-listener");
 const navigateArgument = process.argv.find(argument => argument.startsWith("--navigate="));
 const navigateUrl = navigateArgument ? navigateArgument.slice("--navigate=".length) : "";
+const waitArgument = process.argv.find(argument => argument.startsWith("--wait-milliseconds="));
+const requestedWait = waitArgument ? Number(waitArgument.slice("--wait-milliseconds=".length)) : 0;
+const diagnosticWaitMilliseconds = Math.max(500, Math.min(15000, requestedWait || (injectLocalOrientation ? 5000 : 2500)));
 if (!webSocketUrl || !/^ws:\/\/127\.0\.0\.1:\d+\/devtools\/page\/[A-Za-z0-9-]+$/.test(webSocketUrl)) {
   console.error("Usage: node tools/inspect-phone-epk.mjs <filtered-local-epk-websocket-url>");
   process.exit(2);
@@ -187,7 +190,7 @@ const expression = `(async () => {
     absolute: event.absolute
   });
   window.addEventListener("deviceorientation", probe, { passive: true });
-  await new Promise(resolve => setTimeout(resolve, ${injectLocalOrientation ? 5000 : 2500}));
+  await new Promise(resolve => setTimeout(resolve, ${diagnosticWaitMilliseconds}));
   window.removeEventListener("deviceorientation", probe);
   const root = document.querySelector(".ks-epk.ks-clay-stars-v2");
   const cover = root && root.querySelector(".epk-cover-wrap");
