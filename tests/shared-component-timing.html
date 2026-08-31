@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>DanceMoves shared component timing test</title>
+  <link rel="stylesheet" href="../assets/dance-moves-core.css">
+  <style>
+    body { margin: 0; background: #10131a; color: #f6f1e6; font: 16px/1.5 system-ui, sans-serif; }
+    .ks-epk { display: grid; gap: 2rem; width: min(42rem, calc(100% - 2rem)); margin: 3rem auto; }
+    .epk-button,.epk-download { display: inline-flex; padding: 1rem; border: 1px solid currentColor; color: inherit; transition: .25s ease; }
+    .epk-button:hover,.epk-download:hover { background: #f6f1e6; color: #10131a; transform: translateY(-3px); }
+    .ks-epk-lyrics-track summary span[aria-hidden] { display: inline-block; transition: transform .2s ease; }
+    .ks-epk-lyrics-track[open] summary span[aria-hidden] { transform: rotate(90deg); }
+  </style>
+  <script>
+    const timingParameters = new URLSearchParams(location.search);
+    window.danceMovesConfig = {
+      pageId: 250,
+      version: "2.2.0",
+      bpm: Number(timingParameters.get("bpm")) || 120,
+      bpmSource: timingParameters.has("bpm") ? "explicit" : "fallback",
+      sharedControlTicks: Number(timingParameters.get("shared") ?? 8),
+      lyricDisclosureTicks: Number(timingParameters.get("lyric")) || 6,
+      cueTimingUrl: "",
+      lyricTimingUrl: ""
+    };
+  </script>
+</head>
+<body>
+  <main class="ks-epk">
+    <a class="epk-button" href="#result">Button</a>
+    <a class="epk-download" href="#result">Download</a>
+    <details class="ks-epk-lyrics-track">
+      <summary>Lyrics <span aria-hidden="true">›</span></summary>
+      <p>Timing test.</p>
+    </details>
+    <output id="result">Rendered fixture</output>
+  </main>
+  <script src="../assets/dance-moves-core.js"></script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 # DanceMoves
 
-DanceMoves is Kieran Simkin's WordPress EPK motion runtime. Version 2.0.0 adds page-level BPM, lyric-timing and cue-timing properties; a 16-ticks-per-beat musical clock; cue-driven animation resets; named cue and interval handlers; the existing seven device-orientation adapters; and the release-specific Made from the Clay and the Stars effects adapter.
+DanceMoves is Kieran Simkin's WordPress EPK motion runtime. Version 2.0.0 added page-level BPM, lyric-timing and cue-timing properties; a 16-ticks-per-beat musical clock; cue-driven animation resets; named cue and interval handlers; the existing seven device-orientation adapters; and the release-specific Made from the Clay and the Stars effects adapter. Version 2.1.0 moved the neutral shared EPK control and lyric-disclosure transitions onto page-resolved integer tick durations. Version 2.2.0 adds catalogue-wide adoption for release-owned CSS animations, transitions, delays and timing custom properties.
 
 The WordPress plugin name is **DanceMoves**. The distributable ZIP deliberately retains the internal `kieran-epk-device-orientation` folder and entrypoint name so WordPress upgrades the installed plugin rather than installing a parallel copy.
 
@@ -27,7 +27,11 @@ The implementation follows the agreed numeric rule:
 - exact half-way cases round upward; and
 - `prefers-reduced-motion` remains authoritative.
 
-CSS receives versioned custom properties such as `--dance-moves-16t`. JavaScript uses `DanceMoves.durationMilliseconds(ticks)`. Sensor sampling, rolling-window measurement and availability timeouts are functional input-processing intervals, not visual effect durations, and remain time-based.
+CSS receives versioned custom properties such as `--dance-moves-16t`. JavaScript uses `DanceMoves.durationMilliseconds(ticks)`. Orientation input keeps only the latest finite, screen-aligned sample and commits it once on the next display frame. Its two-second rolling normalisation and time-based smoothing are functional input processing, not visual effect durations.
+
+The catalogue adopter discovers the rendered EPK root, quantizes release-owned stylesheet, inline, computed and generated pseudo-element timing, registers the full release root for cue resets, and repeats the pass after dynamically inserted motion markup. It preserves the one-millisecond view-timeline sentinel used by November Christmas and the 0.01 ms reduced-motion sentinel. Under `prefers-reduced-motion: reduce`, the owned EPK subtree and its pseudo-elements are clamped to one 0.01 ms iteration.
+
+The adopter changes timing ownership, not the creative design: selectors, keyframes, artwork, inputs and release identity remain page-specific. Pointer, scroll and orientation reactions remain event-driven. Canvas/WebGL effects that compute oscillator phase directly from frame time must use the public `DanceMoves.currentTick({ clock: "audio", audio })` value in their page adapter; CSS scanning cannot safely rewrite shader or drawing code.
 
 An element can delay its CSS animation until a musical boundary:
 
@@ -36,7 +40,7 @@ An element can delay its CSS animation until a musical boundary:
 <div data-dance-moves-start-interval="64" data-dance-moves-start-clock="audio">Starts on a 4/4 bar of the active song</div>
 ```
 
-Without `data-dance-moves-start-clock="audio"`, declarative starts use the page clock. For transitions or JavaScript-driven updates, use `DanceMoves.deferStart(element, ticks, { clock: "audio", start })` or `DanceMoves.scheduleAtInterval(ticks, callback, options)`. Each returns a cancellation function.
+Without `data-dance-moves-start-clock="audio"`, declarative starts use the page clock. For transitions or JavaScript-driven updates, use `DanceMoves.deferStart(element, ticks, { clock: "audio", start, id: "release:entrance" })` or `DanceMoves.scheduleAtInterval(ticks, callback, { id: "release:update" })`. Each returns a cancellation function. Stable IDs are required by the pre-live harness so synchronous page work can be attributed to its owning effect.
 
 ## Cue behavior and page API
 
@@ -49,16 +53,16 @@ Page adapters can subscribe without executing timing-file text:
 ```js
 const unsubscribe = window.DanceMoves.onCue("CHORUS 1", detail => {
   // Perform a page-specific update.
-});
+}, { id: "release:chorus-state" });
 ```
 
-`"*"` subscribes to all cues. The runtime also dispatches bubbling `dance-moves-cue` and backwards-compatible `kieran-epk-cue` custom events.
+`"*"` subscribes to all cues. The runtime also dispatches bubbling `dance-moves-cue` and backwards-compatible `kieran-epk-cue` custom events. Local harnesses can route a data-only cue through the same production path with `DanceMoves.fireCue({ name, type, time })`.
 
 EPK code can attach one-shot or repeating handlers to the active master-length song clock:
 
 ```js
-const removeNext = DanceMoves.onNextInterval(updateOnce, 16);
-const removeLoop = DanceMoves.onEveryInterval(updateRepeatedly, 64);
+const removeNext = DanceMoves.onNextInterval(updateOnce, 16, { id: "release:next-beat" });
+const removeLoop = DanceMoves.onEveryInterval(updateRepeatedly, 64, { id: "release:bar-loop" });
 
 DanceMoves.onNextBeat(updateOnce);  // 16 ticks
 DanceMoves.onEveryBeat(updateRepeatedly);
@@ -67,6 +71,8 @@ DanceMoves.onEveryBar(updateRepeatedly);
 ```
 
 Every registration returns a remover. One-shot handlers remove themselves after firing. Repeating handlers pause with playback and stop at the end of the song or when their remover is called. “Bar” deliberately means four beats; a page using another meter should call the interval functions with its explicit tick count.
+
+Performance diagnostics are disabled unless the boot configuration explicitly contains `diagnostics: true`. A development harness may then attach a bounded receiver with `DanceMoves.setDiagnosticsSink(callback)`. The core does not retain, log or transmit diagnostic records, and ordinary WordPress configuration does not enable the sink. Missing cue or interval IDs are reported as unattributed and block pre-live approval.
 
 ## Release adapters
 
@@ -87,9 +93,11 @@ While the old `Made from Clay and Stars EPK Effects` plugin is active, DanceMove
 
 The complete test design and publication gates are in `TEST-PLAN.md`.
 
-In the source repository, run `tools/validate.ps1` as the single-command coordinator. It rebuilds the migration manifest, checks syntax, runs all automated tests, validates strict UTF-8 and the Clay content transform, and rebuilds the package. Development tests and tools remain in the repository and are intentionally excluded from the WordPress ZIP.
+For every new or materially changed EPK effect, use the reusable live-harness workflow at `../../../../skill-source/epk-effect-test-harness/SKILL.md`. It scaffolds manifest-driven master/timing/effect controls, deterministic input/cue simulation, attributable performance timing, CSS-property/bottleneck audits and pre-live evidence without publishing or writing to WordPress.
 
-The validator checks PHP and JavaScript syntax, unit/contract tests, strict UTF-8, forbidden fixed visual-duration declarations, the page-252 content transform, and the distributable ZIP layout/hashes.
+In the source repository, run `tools/validate.ps1 -Mode Unit` for the normal read-only validation path. It checks syntax, automated contracts, strict UTF-8 and the Clay content transform without rebuilding migration or package artifacts. Run `tools/validate.ps1 -Mode Package` only when an explicit migration/package rebuild is intended, or `tools/validate.ps1 -Mode All` for both stages. Development tests and tools remain in the repository and are intentionally excluded from the WordPress ZIP.
+
+The validator checks PHP and JavaScript syntax, unit/contract tests, strict UTF-8, the page-252 content transform and plugin identity. Package mode additionally rebuilds migration/package artifacts and verifies the distributable ZIP layout, version and hashes. `tools/test-validator-failure.ps1` proves that a deliberate syntax failure returns non-zero and is attributed to its fixture.
 
 No WordPress upload, timing-media upload, page-meta save or legacy-plugin deactivation should occur until the exact ZIP and migration manifest have action-time approval. Public verification must cover signed-out desktop, tablet and mobile rendering, Unicode, reduced motion, audio/chapter controls, cue resets, named handlers and all original seven orientation adapters.
 

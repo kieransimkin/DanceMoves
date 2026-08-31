@@ -1,0 +1,62 @@
+{
+  "schema": "dance-moves-wordpress-staging/v1",
+  "staged_at": "2026-08-31T14:41:14.0130864+01:00",
+  "status": "staged-not-published",
+  "plugin_name": "DanceMoves",
+  "version": "2.1.0",
+  "wordpress_upgrade_slug": "kieran-epk-device-orientation",
+  "package": "dist/DanceMoves-2.1.0.zip",
+  "package_bytes": 34926,
+  "package_sha256": "154217540436505B640AF1E6AE1963D8D7553249DCDC76D292C80CB00E909FEA",
+  "package_entry_count": 10,
+  "scope": {
+    "shared_control_ticks": 8,
+    "shared_control_page_ids": [
+      250, 254, 260, 262, 264, 266, 272, 274, 278, 280,
+      282, 284, 286, 288, 290, 292, 294, 296, 300, 302,
+      304, 306, 308, 312, 314, 316, 318, 320, 322
+    ],
+    "lyric_disclosure_ticks": {
+      "page_130_bpm_85": 5,
+      "page_243_bpm_132": 7,
+      "all_other_pages": 6
+    },
+    "release_specific_effects_changed": false,
+    "wordpress_page_content_changed": false,
+    "wordpress_page_meta_changed": false
+  },
+  "validation": {
+    "php_syntax": "PASS",
+    "javascript_syntax": "PASS",
+    "unit_and_contract_suite_for_production_snapshot": "PASS",
+    "effect_harness_property_audit": "PASS-no-blocking-findings",
+    "strict_utf8": "PASS",
+    "clay_transform_parity": "PASS",
+    "browser_computed_120_bpm": {
+      "shared_control_ticks": 8,
+      "shared_control_duration_seconds": 0.25,
+      "lyric_ticks": 6,
+      "lyric_duration_seconds": 0.1875
+    },
+    "browser_computed_132_bpm": {
+      "lyric_ticks": 7,
+      "lyric_duration_seconds": 0.198864
+    },
+    "browser_computed_85_bpm": {
+      "lyric_ticks": 5,
+      "lyric_duration_seconds": 0.220588
+    },
+    "browser_viewports": {
+      "1440": "PASS-zero-positive-overflow",
+      "900": "PASS-zero-positive-overflow",
+      "390": "PASS-zero-positive-overflow"
+    },
+    "reduced_motion": "PASS-static-and-harness-contract; persisted-browser verification pending publication"
+  },
+  "known_external_caveat": "After the production snapshot passed, an unrelated uncommitted tests/harness/plugin-core/live-lab.html drifted from its vendored lock. Its lock was not refreshed because the drift was unexplained. Production package mode remains PASS and development harness paths are excluded from the ZIP.",
+  "rollback": {
+    "package": "dist/DanceMoves-2.0.0.zip",
+    "sha256": "8412FE69B1E9607E6A7E76CFDF790C99C55D8EDBEE5E2A32A478636BF2EE4550"
+  },
+  "publication_requires_action_time_approval": true
+}

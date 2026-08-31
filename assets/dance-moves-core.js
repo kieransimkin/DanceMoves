@@ -5,7 +5,7 @@
   var DEFAULT_BPM = 120;
   var LONG_DURATION_QUANTUM_TICKS = 16;
   var TICKS_PER_BEAT = 16;
-  var CSS_TICKS = [1, 3, 6, 16, 32, 64, 128, 192, 432, 1584, 2208];
+  var CSS_TICKS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 32, 64, 128, 192, 432, 1584, 2208];
   var handlers = new Map();
   var animationScopes = [];
   var cueList = [];
@@ -13,6 +13,55 @@
   var activeAudio = null;
   var pageClockStarted = window.performance && typeof window.performance.now === "function" ? window.performance.now() : Date.now();
   var referenceDurationSeconds = positiveNumber(rawConfig.masterDurationMilliseconds) / 1000;
+  var diagnosticsAllowed = rawConfig.diagnostics === true;
+  var diagnosticsSink = null;
+
+  function diagnosticNow() {
+    return window.performance && typeof window.performance.now === "function" ? window.performance.now() : Date.now();
+  }
+
+  function diagnosticHandlerId(metadata, fallback) {
+    var value = "";
+    if (typeof metadata === "string") value = metadata;
+    else if (metadata && typeof metadata === "object") value = metadata.id || metadata.handlerId || "";
+    value = String(value || "").trim().slice(0, 160);
+    return value || "unattributed:" + String(fallback || "handler").slice(0, 140);
+  }
+
+  function setDiagnosticsSink(sink) {
+    if (!diagnosticsAllowed) return false;
+    if (sink === null || typeof sink === "undefined") {
+      diagnosticsSink = null;
+      return true;
+    }
+    if (typeof sink !== "function") throw new TypeError("DanceMoves diagnostics sink must be a function or null.");
+    diagnosticsSink = sink;
+    return true;
+  }
+
+  function emitDiagnostic(type, startedAt, details, error) {
+    if (!diagnosticsSink) return;
+    var endedAt = diagnosticNow();
+    var record = {
+      type: String(type),
+      startTime: startedAt,
+      endTime: endedAt,
+      duration: Math.max(0, endedAt - startedAt),
+      pageId: Number(rawConfig.pageId) || 0
+    };
+    if (details) Object.keys(details).forEach(function (key) { record[key] = details[key]; });
+    if (error) record.error = String(error && error.message || error).slice(0, 500);
+    try { diagnosticsSink(record); } catch (sinkError) {}
+  }
+
+  function runDiagnosticSpan(type, details, callback) {
+    if (!diagnosticsSink) return callback();
+    var startedAt = diagnosticNow();
+    var thrown = null;
+    try { return callback(); }
+    catch (error) { thrown = error; throw error; }
+    finally { emitDiagnostic(type, startedAt, details, thrown); }
+  }
 
   function positiveNumber(value) {
     var number = Number(value);
@@ -64,6 +113,7 @@
     if (typeof callback !== "function") throw new TypeError("DanceMoves scheduled start must be a function.");
     var interval = Math.max(1, roundHalfUp(intervalTicks));
     var settings = options || {};
+    var handlerId = diagnosticHandlerId(settings, "schedule-at-interval:" + interval);
     var cancelled = false;
     var frame = 0;
     var timer = 0;
@@ -79,12 +129,23 @@
     function finish(boundaryTick, sourceAudio) {
       if (cancelled) return;
       cancel();
-      callback({
+      var detail = {
         intervalTicks: interval,
         boundaryTick: boundaryTick,
         audio: sourceAudio || null,
         clock: sourceAudio ? "audio" : "page"
-      });
+      };
+      if (!diagnosticsSink) {
+        callback(detail);
+        return;
+      }
+      runDiagnosticSpan("interval-handler", {
+        handlerId: handlerId,
+        intervalTicks: interval,
+        boundaryTick: boundaryTick,
+        clock: detail.clock,
+        repeating: false
+      }, function () { return callback(detail); });
     }
 
     if (settings.clock === "audio" || settings.audio) {
@@ -145,16 +206,26 @@
       }
       if (typeof settings.start === "function") settings.start(boundary);
       target.dispatchEvent(new CustomEvent("dance-moves-start", { bubbles: true, detail: boundary }));
-    }, settings);
+    }, {
+      audio: settings.audio,
+      clock: settings.clock,
+      strictlyFuture: settings.strictlyFuture,
+      handlerId: diagnosticHandlerId(settings, "defer-start:" + String(target.id || target.tagName || "element").toLowerCase())
+    });
   }
 
-  function onNextInterval(func, interval) {
-    return scheduleAtInterval(interval, func, { clock: "audio", strictlyFuture: true });
+  function onNextInterval(func, interval, metadata) {
+    return scheduleAtInterval(interval, func, {
+      clock: "audio",
+      strictlyFuture: true,
+      handlerId: diagnosticHandlerId(metadata, "on-next-interval:" + interval)
+    });
   }
 
-  function onEveryInterval(func, interval) {
+  function onEveryInterval(func, interval, metadata) {
     if (typeof func !== "function") throw new TypeError("DanceMoves interval handler must be a function.");
     var intervalTicks = Math.max(1, roundHalfUp(interval));
+    var handlerId = diagnosticHandlerId(metadata, "on-every-interval:" + intervalTicks);
     var cancelled = false;
     var frame = 0;
     var sourceAudio = null;
@@ -191,7 +262,19 @@
       while (!cancelled && nowTick + 0.02 >= boundaryTick) {
         var detail = { intervalTicks: intervalTicks, boundaryTick: boundaryTick, audio: sourceAudio, clock: "audio" };
         boundaryTick += intervalTicks;
-        try { func(detail); } catch (error) {
+        try {
+          if (diagnosticsSink) {
+            runDiagnosticSpan("interval-handler", {
+              handlerId: handlerId,
+              intervalTicks: intervalTicks,
+              boundaryTick: detail.boundaryTick,
+              clock: detail.clock,
+              repeating: true
+            }, function () { return func(detail); });
+          } else {
+            func(detail);
+          }
+        } catch (error) {
           if (window.console && typeof window.console.error === "function") window.console.error("DanceMoves interval handler failed", error);
         }
       }
@@ -202,10 +285,10 @@
     return remove;
   }
 
-  function onNextBeat(func) { return onNextInterval(func, TICKS_PER_BEAT); }
-  function onEveryBeat(func) { return onEveryInterval(func, TICKS_PER_BEAT); }
-  function onNextBar(func) { return onNextInterval(func, TICKS_PER_BEAT * 4); }
-  function onEveryBar(func) { return onEveryInterval(func, TICKS_PER_BEAT * 4); }
+  function onNextBeat(func, metadata) { return onNextInterval(func, TICKS_PER_BEAT, metadata); }
+  function onEveryBeat(func, metadata) { return onEveryInterval(func, TICKS_PER_BEAT, metadata); }
+  function onNextBar(func, metadata) { return onNextInterval(func, TICKS_PER_BEAT * 4, metadata); }
+  function onEveryBar(func, metadata) { return onEveryInterval(func, TICKS_PER_BEAT * 4, metadata); }
 
   function normaliseCueName(value) {
     return String(value || "")
@@ -250,12 +333,24 @@
 
   function setTimingProperties() {
     var style = document.documentElement.style;
+    var sharedControlTicks = Number(rawConfig.sharedControlTicks) || 0;
+    var lyricDisclosureTicks = quantizeTicks(Number(rawConfig.lyricDisclosureTicks) || 6);
     style.setProperty("--dance-moves-beat", (60000 / bpm).toFixed(6) + "ms");
     style.setProperty("--dance-moves-tick", (3750 / bpm).toFixed(6) + "ms");
     CSS_TICKS.forEach(function (ticks) {
       style.setProperty("--dance-moves-" + ticks + "t", durationMilliseconds(ticks).toFixed(6) + "ms");
     });
     style.setProperty("--dance-moves-neg-64t", (-durationMilliseconds(64)).toFixed(6) + "ms");
+    style.setProperty("--dance-moves-lyric-disclosure-duration", durationMilliseconds(lyricDisclosureTicks).toFixed(6) + "ms");
+    style.setProperty("--dance-moves-lyric-disclosure-ticks", String(lyricDisclosureTicks));
+    if (sharedControlTicks > 0) {
+      sharedControlTicks = quantizeTicks(sharedControlTicks);
+      style.setProperty("--dance-moves-shared-control-duration", durationMilliseconds(sharedControlTicks).toFixed(6) + "ms");
+      style.setProperty("--dance-moves-shared-control-ticks", String(sharedControlTicks));
+      document.documentElement.dataset.danceMovesSharedControls = "true";
+    } else {
+      delete document.documentElement.dataset.danceMovesSharedControls;
+    }
     document.documentElement.dataset.danceMovesBpm = String(bpm);
     document.documentElement.dataset.danceMovesBpmSource = rawConfig.bpmSource === "explicit" ? "explicit" : "fallback";
     document.documentElement.dataset.danceMovesVersion = String(rawConfig.version || "");
@@ -304,6 +399,7 @@
   }
 
   function resetRunningAnimations(audio) {
+    var diagnosticStartedAt = diagnosticsSink ? diagnosticNow() : 0;
     var playbackRate = positiveNumber(audio && audio.playbackRate) || 1;
     var resetCount = 0;
     ownedAnimations().forEach(function (animation) {
@@ -315,14 +411,18 @@
         resetCount += 1;
       } catch (error) {}
     });
+    if (diagnosticsSink) emitDiagnostic("animation-reset", diagnosticStartedAt, { resetCount: resetCount, playbackRate: playbackRate });
     return resetCount;
   }
 
-  function onCue(name, handler) {
+  function onCue(name, handler, metadata) {
     if (typeof handler !== "function") throw new TypeError("DanceMoves cue handler must be a function.");
     var key = name === "*" ? "*" : normaliseCueName(name);
-    if (!handlers.has(key)) handlers.set(key, new Set());
-    handlers.get(key).add(handler);
+    if (!handlers.has(key)) handlers.set(key, new Map());
+    handlers.get(key).set(handler, {
+      callback: handler,
+      id: diagnosticHandlerId(metadata, "cue:" + (key || "unnamed"))
+    });
     return function () {
       var group = handlers.get(key);
       if (!group) return;
@@ -334,33 +434,85 @@
   function callHandlers(key, detail) {
     var group = handlers.get(key);
     if (!group) return;
-    Array.from(group).forEach(function (handler) {
-      try { handler(detail); } catch (error) {
+    Array.from(group.values()).forEach(function (entry) {
+      try {
+        if (diagnosticsSink) {
+          runDiagnosticSpan("cue-handler", {
+            handlerId: entry.id,
+            registration: key,
+            cueName: detail.normalisedName,
+            cueType: detail.normalisedType
+          }, function () { return entry.callback(detail); });
+        } else {
+          entry.callback(detail);
+        }
+      } catch (error) {
         if (window.console && typeof window.console.error === "function") window.console.error("DanceMoves cue handler failed", error);
       }
     });
   }
 
+  function dispatchCueEvent(type, detail) {
+    if (!diagnosticsSink) return document.dispatchEvent(new CustomEvent(type, { bubbles: true, detail: detail }));
+    return runDiagnosticSpan("cue-handler", {
+      handlerId: "custom-event:" + type,
+      registration: type,
+      cueName: detail.normalisedName,
+      cueType: detail.normalisedType
+    }, function () { return document.dispatchEvent(new CustomEvent(type, { bubbles: true, detail: detail })); });
+  }
+
   function dispatchCue(cue, audio) {
-    var detail = {
-      pageId: Number(rawConfig.pageId) || 0,
-      time: cue.time,
-      type: cue.type,
-      name: cue.name,
-      label: cue.label,
-      normalisedType: cue.normalisedType,
-      normalisedName: cue.normalisedName,
-      audio: audio,
-      resetAnimationCount: resetRunningAnimations(audio)
-    };
-    callHandlers(cue.normalisedName, detail);
-    if (cue.normalisedLabel !== cue.normalisedName) callHandlers(cue.normalisedLabel, detail);
-    callHandlers("*", detail);
-    document.dispatchEvent(new CustomEvent("dance-moves-cue", { bubbles: true, detail: detail }));
-    document.dispatchEvent(new CustomEvent("kieran-epk-cue", { bubbles: true, detail: detail }));
+    var diagnosticStartedAt = diagnosticsSink ? diagnosticNow() : 0;
+    var detail;
+    try {
+      detail = {
+        pageId: Number(rawConfig.pageId) || 0,
+        time: cue.time,
+        type: cue.type,
+        name: cue.name,
+        label: cue.label,
+        normalisedType: cue.normalisedType,
+        normalisedName: cue.normalisedName,
+        audio: audio,
+        resetAnimationCount: resetRunningAnimations(audio)
+      };
+      callHandlers(cue.normalisedName, detail);
+      if (cue.normalisedLabel !== cue.normalisedName) callHandlers(cue.normalisedLabel, detail);
+      callHandlers("*", detail);
+      dispatchCueEvent("dance-moves-cue", detail);
+      dispatchCueEvent("kieran-epk-cue", detail);
+      return detail;
+    } finally {
+      if (diagnosticsSink) emitDiagnostic("cue-dispatch-total", diagnosticStartedAt, {
+        cueName: cue.normalisedName,
+        cueType: cue.normalisedType,
+        resetAnimationCount: detail ? detail.resetAnimationCount : 0
+      });
+    }
+  }
+
+  function fireCue(input) {
+    var source = input && typeof input === "object" ? input : {};
+    var name = String(source.name || source.label || "").trim();
+    if (!name) throw new TypeError("DanceMoves fireCue requires a cue name.");
+    var type = String(source.type || "CUE").trim() || "CUE";
+    var label = String(source.label || name).trim() || name;
+    var time = Number(source.time);
+    if (!Number.isFinite(time) || time < 0) time = 0;
+    return dispatchCue({
+      time: time,
+      type: type,
+      name: name,
+      label: label,
+      normalisedType: normaliseCueName(type),
+      normalisedName: normaliseCueName(name),
+      normalisedLabel: normaliseCueName(label)
+    }, null);
   }
 
   function firstCueAfter(time) {
+    var diagnosticStartedAt = diagnosticsSink ? diagnosticNow() : 0;
     var low = 0;
     var high = cueList.length;
     while (low < high) {
@@ -368,6 +520,7 @@
       if (cueList[middle].time <= time + 0.001) low = middle + 1;
       else high = middle;
     }
+    if (diagnosticsSink) emitDiagnostic("cue-reindex", diagnosticStartedAt, { time: Number(time) || 0, nextIndex: low, cueCount: cueList.length });
     return low;
   }
 
@@ -391,12 +544,26 @@
     function tick() {
       state.frame = 0;
       if (audio.paused || audio.ended || state.seeking) return;
-      var now = positiveNumber(audio.currentTime);
-      if (now + 0.001 < state.last) state.next = firstCueAfter(now);
-      while (state.next < cueList.length && cueList[state.next].time <= now + 0.001) {
-        var cue = cueList[state.next];
-        if (cue.time > state.last + 0.001) dispatchCue(cue, audio);
-        state.next += 1;
+      var diagnosticStartedAt = diagnosticsSink ? diagnosticNow() : 0;
+      var firedCount = 0;
+      var now = 0;
+      try {
+        now = positiveNumber(audio.currentTime);
+        if (now + 0.001 < state.last) state.next = firstCueAfter(now);
+        while (state.next < cueList.length && cueList[state.next].time <= now + 0.001) {
+          var cue = cueList[state.next];
+          if (cue.time > state.last + 0.001) {
+            dispatchCue(cue, audio);
+            firedCount += 1;
+          }
+          state.next += 1;
+        }
+      } finally {
+        if (diagnosticsSink) emitDiagnostic("cue-detect", diagnosticStartedAt, {
+          currentTime: now,
+          firedCount: firedCount,
+          nextIndex: state.next
+        });
       }
       state.last = now;
       state.frame = window.requestAnimationFrame(tick);
@@ -470,6 +637,9 @@
       root.dataset.danceMovesBpmSource = rawConfig.bpmSource === "explicit" ? "explicit" : "fallback";
       if (rawConfig.lyricTimingUrl) root.dataset.danceMovesLyricTiming = String(rawConfig.lyricTimingUrl);
       if (rawConfig.cueTimingUrl) root.dataset.danceMovesCueTiming = String(rawConfig.cueTimingUrl);
+      var sharedSelectors = [".ks-epk-lyrics-track summary span[aria-hidden]"];
+      if (rawConfig.sharedControlTicks) sharedSelectors.push(".epk-button", ".epk-download");
+      registerAnimationScope(root, sharedSelectors);
     }
     Array.from(document.querySelectorAll("[data-dance-moves-start-interval]")).forEach(function (target) {
       var interval = Number(target.getAttribute("data-dance-moves-start-interval"));
@@ -503,9 +673,12 @@
     parseTimingFile: parseTimingFile,
     normaliseCueName: normaliseCueName,
     onCue: onCue,
+    fireCue: fireCue,
     registerAnimationScope: registerAnimationScope,
     resetRunningAnimations: resetRunningAnimations,
-    discoverAudio: discoverAudio
+    discoverAudio: discoverAudio,
+    setDiagnosticsSink: setDiagnosticsSink,
+    diagnosticsEnabled: function () { return diagnosticsAllowed && Boolean(diagnosticsSink); }
   };
   window.DanceMoves = api;
   window.KieranEpkMotion = api;

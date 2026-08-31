@@ -173,8 +173,95 @@
     };
   }
 
+  function smoothTimeBased(previous, next, elapsedMilliseconds, timeConstantMilliseconds) {
+    const elapsed = Math.max(0, Number(elapsedMilliseconds) || 0);
+    const timeConstant = Math.max(1, Number(timeConstantMilliseconds) || 32);
+    const alpha = elapsed === 0 ? 0 : 1 - Math.exp(-elapsed / timeConstant);
+    return {
+      x: previous.x + (next.x - previous.x) * alpha,
+      y: previous.y + (next.y - previous.y) * alpha,
+    };
+  }
+
+  function createLatestSampleRafScheduler(options) {
+    if (!options || typeof options.requestFrame !== "function" || typeof options.commit !== "function") {
+      throw new TypeError("A frame requester and commit callback are required");
+    }
+    const requestFrame = options.requestFrame;
+    const cancelFrame = typeof options.cancelFrame === "function" ? options.cancelFrame : function () {};
+    const now = typeof options.now === "function" ? options.now : () => 0;
+    const mapper = options.mapper || createRollingMapper(2000, 1.5);
+    const smoothingTimeConstantMilliseconds = Number(options.smoothingTimeConstantMilliseconds) || 32;
+    let frame = 0;
+    let latestSample = null;
+    let previous = { x: 0, y: 0 };
+    let lastCommitTime = null;
+    let running = true;
+    let commits = 0;
+
+    function flush(frameTimestamp) {
+      frame = 0;
+      if (!running || !latestSample) return;
+      const sample = latestSample;
+      latestSample = null;
+      const commitTime = Number.isFinite(frameTimestamp) ? frameTimestamp : now();
+      const mapped = mapper.push(sample.point, sample.timestamp);
+      const elapsed = lastCommitTime === null
+        ? smoothingTimeConstantMilliseconds * 8
+        : Math.max(0, commitTime - lastCommitTime);
+      previous = smoothTimeBased(previous, mapped, elapsed, smoothingTimeConstantMilliseconds);
+      lastCommitTime = commitTime;
+      commits += 1;
+      options.commit(previous.x, previous.y, {
+        sample: { ...sample.point },
+        sampleTimestamp: sample.timestamp,
+        frameTimestamp: commitTime,
+        sampleAge: Math.max(0, commitTime - sample.timestamp),
+        commitCount: commits,
+      });
+      if (running && latestSample && !frame) frame = requestFrame(flush);
+    }
+
+    function receive(event, angle, timestamp) {
+      if (!running || !hasMotionData(event)) {
+        if (running && typeof options.reject === "function") options.reject(event);
+        return false;
+      }
+      latestSample = {
+        point: screenAligned(event, angle),
+        timestamp: Number.isFinite(timestamp) ? timestamp : now(),
+      };
+      if (!frame) frame = requestFrame(flush);
+      return true;
+    }
+
+    function reset() {
+      if (frame) cancelFrame(frame);
+      frame = 0;
+      latestSample = null;
+      previous = { x: 0, y: 0 };
+      lastCommitTime = null;
+      commits = 0;
+      mapper.reset();
+    }
+
+    function teardown() {
+      reset();
+      running = false;
+    }
+
+    return {
+      receive,
+      reset,
+      teardown,
+      pending: () => Boolean(frame),
+      commitCount: () => commits,
+    };
+  }
+
   return {
     clamp,
+    createLatestSampleRafScheduler,
     createRollingMapper,
     hasMotionData,
     isMobileDevice,
@@ -185,5 +272,6 @@
     screenAngle,
     sensorSupported,
     smooth,
+    smoothTimeBased,
   };
 });

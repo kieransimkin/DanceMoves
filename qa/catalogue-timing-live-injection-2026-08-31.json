@@ -1,0 +1,38 @@
+{
+  "schema": "dance-moves-catalogue-live-injection/v1",
+  "captured_at": "2026-08-31T15:42:21+01:00",
+  "site": "https://kieransimkin.co.uk/",
+  "method": "Read-only main-world injection of the staged DanceMoves catalogue adopter into rendered authenticated public EPK pages; no WordPress save or upload.",
+  "viewports": {
+    "desktop": { "width": 1440, "height": 1000, "conversion_total": 1109 },
+    "tablet": { "width": 900, "height": 1000, "conversion_total": 1109 },
+    "mobile": { "width": 390, "height": 844, "conversion_total": 1102 }
+  },
+  "assertions": {
+    "pages_checked": 17,
+    "viewport_checks": 51,
+    "unquantized_computed_timing_tokens": 0,
+    "epk_root_positive_horizontal_overflow_checks": 0,
+    "page_310_active_named_animations_above_0_02ms_under_reduced_motion": 0
+  },
+  "known_browser_chrome_caveat": "Page 399 had 8px document-only overflow from the signed-in WordPress admin-bar display name; its owned EPK root had zero overflow. Signed-out persisted verification remains required after deployment.",
+  "pages": [
+    { "id": 140, "bpm": 120, "bpm_source": "fallback", "conversions": { "desktop": 100, "tablet": 100, "mobile": 100 } },
+    { "id": 130, "bpm": 85, "bpm_source": "explicit", "conversions": { "desktop": 82, "tablet": 82, "mobile": 82 } },
+    { "id": 150, "bpm": 120, "bpm_source": "fallback", "conversions": { "desktop": 104, "tablet": 104, "mobile": 104 } },
+    { "id": 397, "bpm": 120, "bpm_source": "fallback", "conversions": { "desktop": 20, "tablet": 20, "mobile": 14 } },
+    { "id": 399, "bpm": 120, "bpm_source": "fallback", "conversions": { "desktop": 71, "tablet": 71, "mobile": 71 } },
+    { "id": 243, "bpm": 132, "bpm_source": "explicit", "conversions": { "desktop": 53, "tablet": 53, "mobile": 53 } },
+    { "id": 246, "bpm": 120, "bpm_source": "fallback", "conversions": { "desktop": 89, "tablet": 89, "mobile": 89 } },
+    { "id": 248, "bpm": 120, "bpm_source": "fallback", "conversions": { "desktop": 16, "tablet": 16, "mobile": 16 } },
+    { "id": 252, "bpm": 116, "bpm_source": "explicit", "conversions": { "desktop": 58, "tablet": 58, "mobile": 58 } },
+    { "id": 256, "bpm": 120, "bpm_source": "fallback", "conversions": { "desktop": 14, "tablet": 14, "mobile": 14 } },
+    { "id": 268, "bpm": 120, "bpm_source": "fallback", "conversions": { "desktop": 33, "tablet": 33, "mobile": 33 } },
+    { "id": 270, "bpm": 120, "bpm_source": "fallback", "conversions": { "desktop": 34, "tablet": 34, "mobile": 33 } },
+    { "id": 276, "bpm": 120, "bpm_source": "fallback", "conversions": { "desktop": 29, "tablet": 29, "mobile": 29 } },
+    { "id": 298, "bpm": 120, "bpm_source": "fallback", "conversions": { "desktop": 64, "tablet": 64, "mobile": 64 } },
+    { "id": 310, "bpm": 120, "bpm_source": "fallback", "conversions": { "desktop": 229, "tablet": 229, "mobile": 229 } },
+    { "id": 137, "bpm": 120, "bpm_source": "fallback", "conversions": { "desktop": 99, "tablet": 99, "mobile": 99 } },
+    { "id": 614, "bpm": 120, "bpm_source": "fallback", "conversions": { "desktop": 14, "tablet": 14, "mobile": 14 } }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kieransimkin.co.uk/schemas/epk-effect-harness-results-v1.json",
+  "title": "EPK effect harness result bundle",
+  "type": "object",
+  "required": ["schema", "effectSlug", "capturedAt", "environment", "artifactHashes", "parameters", "tests", "blockers"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": { "const": "epk-effect-harness-results/v1" },
+    "effectSlug": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "capturedAt": { "type": "string", "format": "date-time" },
+    "environment": {
+      "type": "object",
+      "required": ["browser", "device", "viewportWidth", "viewportHeight", "refreshRateHz"],
+      "additionalProperties": true,
+      "properties": {
+        "browser": { "type": "string" },
+        "device": { "type": "string" },
+        "viewportWidth": { "type": "integer", "minimum": 1 },
+        "viewportHeight": { "type": "integer", "minimum": 1 },
+        "refreshRateHz": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "artifactHashes": { "type": "object", "additionalProperties": { "type": "string", "pattern": "^[A-Fa-f0-9]{64}$" } },
+    "parameters": { "type": "object" },
+    "performance": { "type": ["object", "null"] },
+    "cssPropertyFindings": { "type": "array", "items": { "type": "object" } },
+    "bottlenecks": { "type": "array", "items": { "type": "object" } },
+    "tests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "status", "evidence"],
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "status": { "enum": ["PASS", "FAIL", "BLOCKED", "NOT RUN"] },
+          "evidence": { "type": "string" }
+        }
+      }
+    },
+    "blockers": { "type": "array", "items": { "type": "string" } }
+  }
+}

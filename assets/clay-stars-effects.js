@@ -128,6 +128,6 @@
     motion.onCue("*", function (detail) {
       root.dataset.danceMovesCue = detail.normalisedName.toLowerCase().replace(/\s+/g, "-");
       root.dataset.danceMovesCueType = detail.normalisedType.toLowerCase().replace(/\s+/g, "-");
-    });
+    }, { id: "clay-stars:cue-state" });
   }
 }());

@@ -7,7 +7,6 @@
   if (!Core || (!harnessMode && (!Core.isMobileDevice(window) || !Core.sensorSupported(window)))) return;
 
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-  if (reducedMotion.matches) return;
 
   const perceptualAxis = value => {
     const bounded = Core.clamp(value, -1, 1);
@@ -218,83 +217,70 @@
   }
 
   function initialise() {
+    if (window.__ksEpkOrientationRuntime && typeof window.__ksEpkOrientationRuntime.teardown === "function") {
+      window.__ksEpkOrientationRuntime.teardown();
+    }
     const factory = detectFactory();
     const adapter = factory && factory();
     if (!adapter) return;
 
     const windowMilliseconds = 2000;
-    const batchMilliseconds = 30;
     const rollingMapper = Core.createRollingMapper(windowMilliseconds, 1.5);
     let latest = { x: 0, y: 0 };
-    let pendingBatch = null;
-    let sampleTimer = 0;
-    let lastFlushTime = -Infinity;
     let active = false;
     let listening = false;
     let availabilityTimer = 0;
     let control = null;
+    let observer = null;
+    let destroyed = false;
 
     adapter.root.dataset.ksOrientation = "supported";
     adapter.root.dataset.ksOrientationAdapter = config.adapter || "detected";
     adapter.root.dataset.ksOrientationWindow = String(windowMilliseconds);
-    adapter.root.dataset.ksOrientationBatch = String(batchMilliseconds);
+
+    const removeControl = () => {
+      if (control) control.remove();
+      control = null;
+    };
+
+    const scheduler = Core.createLatestSampleRafScheduler({
+      mapper: rollingMapper,
+      smoothingTimeConstantMilliseconds: 32,
+      requestFrame: callback => window.requestAnimationFrame(callback),
+      cancelFrame: frame => window.cancelAnimationFrame(frame),
+      now: () => window.performance.now(),
+      commit(x, y, detail) {
+        if (destroyed || adapter.root.isConnected === false) return;
+        latest = { x, y };
+        if (!active) {
+          active = true;
+          adapter.root.dataset.ksOrientation = "active";
+          window.clearTimeout(availabilityTimer);
+          removeControl();
+        }
+        adapter.apply(x, y);
+        window.EPKEffectHarnessProbe?.noteCommit?.(detail.sampleAge);
+      },
+      reject() {
+        window.EPKEffectHarnessProbe?.noteRejected?.();
+      },
+    });
 
     const reset = () => {
-      window.clearTimeout(sampleTimer);
-      sampleTimer = 0;
-      pendingBatch = null;
-      lastFlushTime = -Infinity;
-      rollingMapper.reset();
+      scheduler.reset();
       latest = { x: 0, y: 0 };
       active = false;
       adapter.root.dataset.ksOrientation = "supported";
       adapter.reset();
     };
 
-    const flushBatch = () => {
-      sampleTimer = 0;
-      if (!pendingBatch) return;
-      const now = window.performance.now();
-      latest = rollingMapper.pushBatch(pendingBatch, now);
-      pendingBatch = null;
-      lastFlushTime = now;
-      adapter.apply(latest.x, latest.y);
-    };
-
     const onOrientation = event => {
-      if (reducedMotion.matches || !Core.hasMotionData(event)) return;
-      const aligned = Core.screenAligned(event, Core.screenAngle(window));
-      const now = window.performance.now();
-      if (!pendingBatch) {
-        pendingBatch = {
-          count: 0,
-          sumX: 0,
-          sumY: 0,
-          minX: Infinity,
-          maxX: -Infinity,
-          minY: Infinity,
-          maxY: -Infinity,
-        };
+      if (reducedMotion.matches) return;
+      if (!Core.hasMotionData(event)) {
+        window.EPKEffectHarnessProbe?.noteRejected?.();
+        return;
       }
-      pendingBatch.count += 1;
-      pendingBatch.sumX += aligned.x;
-      pendingBatch.sumY += aligned.y;
-      pendingBatch.minX = Math.min(pendingBatch.minX, aligned.x);
-      pendingBatch.maxX = Math.max(pendingBatch.maxX, aligned.x);
-      pendingBatch.minY = Math.min(pendingBatch.minY, aligned.y);
-      pendingBatch.maxY = Math.max(pendingBatch.maxY, aligned.y);
-      if (!active) {
-        active = true;
-        adapter.root.dataset.ksOrientation = "active";
-        window.clearTimeout(availabilityTimer);
-        if (control) control.remove();
-        control = null;
-      }
-      if (!sampleTimer) {
-        const remaining = Math.max(0, batchMilliseconds - (now - lastFlushTime));
-        if (remaining === 0) flushBatch();
-        else sampleTimer = window.setTimeout(flushBatch, remaining);
-      }
+      scheduler.receive(event, Core.screenAngle(window), window.performance.now());
     };
 
     const startListening = () => {
@@ -317,6 +303,7 @@
     };
 
     const makePermissionControl = () => {
+      if (control || destroyed) return;
       control = document.createElement("button");
       control.type = "button";
       control.className = "ks-epk-orientation-control";
@@ -341,24 +328,33 @@
     };
 
     const recalibrate = () => {
-      rollingMapper.reset();
-      latest = { x: 0, y: 0 };
-      adapter.reset();
+      reset();
+    };
+
+    const visibilityChanged = () => {
+      if (document.hidden) stopListening();
+      else pageShown();
+    };
+
+    const pageHidden = () => stopListening();
+    const pageShown = () => {
+      if (destroyed || reducedMotion.matches) return;
+      if (Core.permissionRequired(window)) makePermissionControl();
+      else startListening();
     };
 
     window.addEventListener("orientationchange", recalibrate, { passive: true });
     if (window.screen && window.screen.orientation && typeof window.screen.orientation.addEventListener === "function") {
       window.screen.orientation.addEventListener("change", recalibrate);
     }
-    document.addEventListener("visibilitychange", () => {
-      if (document.hidden) recalibrate();
-    });
+    document.addEventListener("visibilitychange", visibilityChanged);
+    window.addEventListener("pagehide", pageHidden);
+    window.addEventListener("pageshow", pageShown);
 
     const preferenceChanged = () => {
       if (reducedMotion.matches) {
         stopListening();
-        if (control) control.remove();
-        control = null;
+        removeControl();
       } else if (Core.permissionRequired(window)) {
         makePermissionControl();
       } else {
@@ -367,6 +363,39 @@
     };
     if (typeof reducedMotion.addEventListener === "function") reducedMotion.addEventListener("change", preferenceChanged);
     else reducedMotion.addListener(preferenceChanged);
+
+    const teardown = () => {
+      if (destroyed) return;
+      destroyed = true;
+      if (listening) window.removeEventListener("deviceorientation", onOrientation);
+      listening = false;
+      window.clearTimeout(availabilityTimer);
+      scheduler.teardown();
+      latest = { x: 0, y: 0 };
+      active = false;
+      adapter.reset();
+      removeControl();
+      window.removeEventListener("orientationchange", recalibrate);
+      window.removeEventListener("pagehide", pageHidden);
+      window.removeEventListener("pageshow", pageShown);
+      document.removeEventListener("visibilitychange", visibilityChanged);
+      if (window.screen && window.screen.orientation && typeof window.screen.orientation.removeEventListener === "function") {
+        window.screen.orientation.removeEventListener("change", recalibrate);
+      }
+      if (typeof reducedMotion.removeEventListener === "function") reducedMotion.removeEventListener("change", preferenceChanged);
+      else if (typeof reducedMotion.removeListener === "function") reducedMotion.removeListener(preferenceChanged);
+      observer?.disconnect();
+      observer = null;
+      if (window.__ksEpkOrientationRuntime?.teardown === teardown) delete window.__ksEpkOrientationRuntime;
+    };
+
+    window.__ksEpkOrientationRuntime = Object.freeze({ reset, teardown });
+    if (typeof window.MutationObserver === "function" && document.documentElement) {
+      observer = new window.MutationObserver(() => {
+        if (adapter.root.isConnected === false) teardown();
+      });
+      observer.observe(document.documentElement, { childList: true, subtree: true });
+    }
 
     if (Core.permissionRequired(window)) makePermissionControl();
     else startListening();

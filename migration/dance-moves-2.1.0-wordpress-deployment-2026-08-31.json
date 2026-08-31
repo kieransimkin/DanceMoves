@@ -1,0 +1,108 @@
+{
+  "schema": "dance-moves-wordpress-deployment/v1",
+  "deployed_at": "2026-08-31T15:00:03+01:00",
+  "site": "https://kieransimkin.co.uk/",
+  "plugin": {
+    "name": "DanceMoves",
+    "version": "2.1.0",
+    "wordpress_upgrade_slug": "kieran-epk-device-orientation",
+    "package": "dist/DanceMoves-2.1.0.zip",
+    "package_bytes": 34926,
+    "package_sha256": "154217540436505B640AF1E6AE1963D8D7553249DCDC76D292C80CB00E909FEA",
+    "wordpress_result": "Plugin updated successfully.",
+    "installed_status": "active"
+  },
+  "preflight": {
+    "previous_version": "2.0.0",
+    "wordpress_installation_size": "1.90 GB",
+    "wordpress_directory": "writable",
+    "wp_content_directory": "writable",
+    "uploads_directory": "writable",
+    "plugins_directory": "writable",
+    "themes_directory": "writable",
+    "capacity_warning_visible": false,
+    "host_free_bytes_available": false
+  },
+  "public_verification": {
+    "signed_out_manifest_pages": 47,
+    "http_200_pages": 47,
+    "dance_moves_core_version": "2.1.0",
+    "dance_moves_css_version": "2.1.0",
+    "missing_core_pages": 0,
+    "wrong_asset_version_pages": 0,
+    "deployed_core_sha256": "EC755C134346656650B89A3F9FD54DFF71AE85F812E1FB0116BE1337E640FFEA",
+    "approved_zip_core_sha256": "EC755C134346656650B89A3F9FD54DFF71AE85F812E1FB0116BE1337E640FFEA",
+    "deployed_core_matches_approved_zip": true
+  },
+  "timing_verification": {
+    "fallback_120_bpm": {
+      "post_id": 250,
+      "bpm_source": "fallback",
+      "tick_milliseconds": 31.25,
+      "shared_control_ticks": 8,
+      "shared_control_milliseconds": 250,
+      "lyric_disclosure_ticks": 6,
+      "lyric_disclosure_milliseconds": 187.5
+    },
+    "explicit_85_bpm": {
+      "post_id": 130,
+      "lyric_disclosure_ticks": 5,
+      "lyric_disclosure_milliseconds": 220.588235
+    },
+    "explicit_132_bpm": {
+      "post_id": 243,
+      "lyric_disclosure_ticks": 7,
+      "lyric_disclosure_milliseconds": 198.863636
+    },
+    "explicit_116_bpm": {
+      "post_id": 252,
+      "lyric_disclosure_ticks": 6,
+      "lyric_disclosure_milliseconds": 193.965517
+    }
+  },
+  "clay_runtime_verification": {
+    "post_id": 252,
+    "master_audio_duration_seconds": 359.52356,
+    "master_length_audio_bound": true,
+    "cue_status": "ready",
+    "cue_count": 19,
+    "lyric_timing_lines": 216,
+    "chapter_buttons": 5,
+    "tested_cue": "ENTRY: VOCAL INTRO",
+    "tested_cue_time_seconds": 12.95,
+    "named_handler_calls": 1,
+    "document_event_calls": 1,
+    "active_animation_resets": 13,
+    "one_off_interval_boundaries": [64],
+    "repeating_beat_boundaries": [64, 80, 96, 112, 128],
+    "repeating_bar_boundaries": [64, 128],
+    "deferred_start_interval_ticks": 64,
+    "deferred_start_boundary_tick": 64
+  },
+  "responsive_and_accessibility": {
+    "viewports": [1440, 900, 390],
+    "positive_horizontal_overflow": 0,
+    "unicode_replacement_characters_in_sampled_pages": 0,
+    "reduced_motion_active_animation_names": [],
+    "reduced_motion_sampled_transition_durations": ["0s"]
+  },
+  "admin_verification": {
+    "post_id": 252,
+    "metabox": "EPK Timing",
+    "fields": ["BPM", "Lyric Timing File", "Cue Timing File"],
+    "bpm": 116,
+    "lyric_timing_file": "dance-moves-252-lyric.lrc",
+    "cue_timing_file": "dance-moves-252-cue.lrc"
+  },
+  "scope": {
+    "wordpress_page_content_changed": false,
+    "wordpress_page_meta_changed": false,
+    "timing_media_changed": false,
+    "release_specific_effects_changed": false
+  },
+  "rollback": {
+    "package": "dist/DanceMoves-2.0.0.zip",
+    "sha256": "8412FE69B1E9607E6A7E76CFDF790C99C55D8EDBEE5E2A32A478636BF2EE4550"
+  },
+  "local_source_note": "The deployed public core matches the exact approved ZIP. The current uncommitted local core subsequently differs from that immutable package and must not be described as deployed until it is intentionally rebuilt, approved and uploaded."
+}

@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kieransimkin.co.uk/schemas/epk-effect-harness-v1.json",
+  "title": "EPK effect harness manifest",
+  "type": "object",
+  "required": ["schemaVersion", "effect", "release", "preview", "parameters", "cues", "selectors", "budgets", "cssPolicy"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "const": 1 },
+    "effect": {
+      "type": "object",
+      "required": ["slug", "title", "pageId", "rootSelector", "candidate", "productionCss", "productionJs", "productionHashes", "inputModes"],
+      "additionalProperties": false,
+      "properties": {
+        "slug": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "title": { "type": "string", "minLength": 1 },
+        "pageId": { "type": "integer", "minimum": 1 },
+        "rootSelector": { "type": "string", "minLength": 1 },
+        "candidate": { "type": "string", "minLength": 1 },
+        "productionCss": { "type": "array", "items": { "type": "string" } },
+        "productionJs": { "type": "array", "items": { "type": "string" } },
+        "productionHashes": { "type": "object", "additionalProperties": { "type": "string", "pattern": "^(PENDING|[A-Fa-f0-9]{64})$" } },
+        "inputModes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "enum": ["pointer", "touch", "keyboard", "orientation", "scroll", "cue"] }
+        }
+      }
+    },
+    "release": {
+      "type": "object",
+      "required": ["bpm", "bpmSource", "masterSha256", "masterDurationMilliseconds"],
+      "additionalProperties": false,
+      "properties": {
+        "bpm": { "type": ["number", "null"], "minimum": 20, "maximum": 400 },
+        "bpmSource": { "enum": ["verified", "explicit", "fallback", "unknown"] },
+        "masterSha256": { "type": "string", "pattern": "^(PENDING|[A-Fa-f0-9]{64})$" },
+        "masterDurationMilliseconds": { "type": ["number", "null"], "minimum": 1 }
+      }
+    },
+    "preview": {
+      "type": "object",
+      "required": ["viewports", "physicalDevices"],
+      "additionalProperties": false,
+      "properties": {
+        "viewports": {
+          "type": "array",
+          "minItems": 3,
+          "items": {
+            "type": "object",
+            "required": ["name", "width", "height"],
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string" },
+              "width": { "type": "integer", "minimum": 320 },
+              "height": { "type": "integer", "minimum": 480 }
+            }
+          }
+        },
+        "physicalDevices": { "type": "array", "items": { "type": "string" }, "minItems": 2 }
+      }
+    },
+    "parameters": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "object",
+        "required": ["id", "group", "label", "type", "default", "unit", "apply", "target", "performanceSensitive", "description"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+          "group": { "enum": ["master", "timing", "effect"] },
+          "label": { "type": "string", "minLength": 1 },
+          "type": { "enum": ["range", "number", "checkbox", "select", "readonly"] },
+          "default": {},
+          "min": { "type": "number" },
+          "max": { "type": "number" },
+          "step": { "type": "number", "exclusiveMinimum": 0 },
+          "unit": { "type": "string" },
+          "apply": { "enum": ["css-variable", "adapter", "readonly"] },
+          "target": { "type": "string" },
+          "performanceSensitive": { "type": "boolean" },
+          "description": { "type": "string", "minLength": 1 },
+          "options": { "type": "array", "items": { "type": ["string", "number", "boolean"] } }
+        }
+      }
+    },
+    "cues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "type", "time"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "type": { "type": "string", "minLength": 1 },
+          "time": { "type": "number", "minimum": 0 }
+        }
+      }
+    },
+    "selectors": {
+      "type": "object",
+      "required": ["owned", "stableControls"],
+      "additionalProperties": false,
+      "properties": {
+        "owned": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "stableControls": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "budgets": {
+      "type": "object",
+      "required": ["orientationP95Milliseconds", "orientationP99Milliseconds", "rafFrameShare", "cueHandlerFrameShare", "cueTotalFrameShare", "droppedFrameDeltaPercentagePoints", "longTaskMilliseconds", "maximumSamples"],
+      "additionalProperties": false,
+      "properties": {
+        "orientationP95Milliseconds": { "type": "number", "exclusiveMinimum": 0 },
+        "orientationP99Milliseconds": { "type": "number", "exclusiveMinimum": 0 },
+        "rafFrameShare": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+        "cueHandlerFrameShare": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+        "cueTotalFrameShare": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+        "droppedFrameDeltaPercentagePoints": { "type": "number", "minimum": 0 },
+        "longTaskMilliseconds": { "type": "number", "minimum": 1 },
+        "maximumSamples": { "type": "integer", "minimum": 100 }
+      }
+    },
+    "cssPolicy": {
+      "type": "object",
+      "required": ["failContinuous", "review"],
+      "additionalProperties": false,
+      "properties": {
+        "failContinuous": { "type": "array", "items": { "type": "string" } },
+        "review": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

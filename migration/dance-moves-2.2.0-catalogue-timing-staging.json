@@ -1,0 +1,62 @@
+{
+  "schema": "dance-moves-wordpress-staging/v1",
+  "staged_at": "2026-08-31T15:42:21+01:00",
+  "status": "staged-not-published",
+  "plugin_name": "DanceMoves",
+  "version": "2.2.0",
+  "wordpress_upgrade_slug": "kieran-epk-device-orientation",
+  "package": "dist/DanceMoves-2.2.0.zip",
+  "package_bytes": 41502,
+  "package_sha256": "8051911EE03D4D3524440D9F62F4CD6731244FB29C7C0A2738C94B7B00065438",
+  "package_entry_count": 11,
+  "scope": {
+    "catalogue_timing_asset": "assets/dance-moves-catalogue-timing.js",
+    "catalogue_timing_asset_sha256": "89A9A750AA0B0936516DE8D44C090C989530A0767C5EDDFB98038DDE84E20013",
+    "release_specific_epk_systems_adopted": 17,
+    "owned_css_timing": [
+      "animation-duration",
+      "animation-delay",
+      "transition-duration",
+      "transition-delay",
+      "referenced timing custom properties",
+      "generated before and after pseudo-elements"
+    ],
+    "cue_reset_scope": "entire detected release EPK root",
+    "dynamic_markup": "requestAnimationFrame-batched MutationObserver re-application",
+    "wordpress_page_content_changed": false,
+    "wordpress_page_meta_changed": false,
+    "timing_media_changed": false
+  },
+  "validation": {
+    "validate_mode_all": "PASS",
+    "php_and_javascript_syntax": "PASS",
+    "unit_and_contract_suite": "PASS",
+    "effect_harness": "PASS-no-blocking-findings",
+    "strict_utf8": "PASS",
+    "clay_transform_parity": "PASS",
+    "live_read_only_injection": {
+      "pages": 17,
+      "viewport_checks": 51,
+      "desktop_1440_conversion_total": 1109,
+      "tablet_900_conversion_total": 1109,
+      "mobile_390_conversion_total": 1102,
+      "unquantized_computed_timing_tokens": 0,
+      "epk_root_positive_horizontal_overflow_checks": 0
+    },
+    "reduced_motion": "PASS-page-310-generated-pseudo-animation-clamped-to-one-0.01ms-iteration",
+    "evidence": "qa/catalogue-timing-live-injection-2026-08-31.json"
+  },
+  "known_limits": [
+    "The 44 pages without evidence-backed BPM retain blank page BPM metadata and use the labelled 120 BPM runtime fallback.",
+    "CSS adoption does not rewrite raw frame-time canvas or WebGL oscillator code; those systems must consume DanceMoves.currentTick in their page adapters.",
+    "Named page cue updates cannot be invented for releases without a canonical cue file; page 252 remains the only catalogue page with canonical cue timing.",
+    "Persisted signed-out WordPress verification is pending exact-package action-time approval and deployment."
+  ],
+  "rollback": {
+    "current_live_package": "dist/DanceMoves-2.1.0.zip",
+    "current_live_sha256": "154217540436505B640AF1E6AE1963D8D7553249DCDC76D292C80CB00E909FEA",
+    "previous_full_runtime_package": "dist/DanceMoves-2.0.0.zip",
+    "previous_full_runtime_sha256": "8412FE69B1E9607E6A7E76CFDF790C99C55D8EDBEE5E2A32A478636BF2EE4550"
+  },
+  "publication_requires_action_time_approval": true
+}

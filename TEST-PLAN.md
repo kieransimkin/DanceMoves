@@ -2,6 +2,70 @@
 
 ## Potential problems
 
+### Windows execution policy can block the validator before any test runs
+
+- **Symptom:** invoking `tools\\validate.ps1` directly fails with `PSSecurityException` and `running scripts is disabled on this system`.
+- **Cause:** the current Windows PowerShell execution policy blocks direct script execution even though the validator source is local and readable.
+- **Corrective action:** run the same checked-in validator with `powershell -NoProfile -ExecutionPolicy Bypass -File .\\tools\\validate.ps1 -Mode <mode>`; do not change the machine-wide execution policy.
+- **Verification:** the validator proceeded through PHP syntax and the Node contract suites, then reported the next attributable harness-lock result.
+- **Limit:** the process-level bypass permits this one invocation; it does not validate the script's content or make a failing test pass.
+
+### Cross-realm arrays can fail strict deep equality in VM tests
+
+- **Symptom:** a Node `vm` fixture reports that two arrays have the same `['*']` structure but are not reference-equal under `assert.deepStrictEqual`.
+- **Cause:** the production array was created in the VM realm and has a different prototype from the host test realm.
+- **Corrective action:** normalize the small primitive collection into the host realm with `Array.from()` and compare its stable serialized value.
+- **Verification:** the catalogue timing fixture accepts the wildcard ownership scope and continues to assert the computed tick conversions.
+- **Limit:** use this only for cross-realm primitive fixtures; object-rich structures should be validated field by field rather than flattened indiscriminately.
+
+### A DOM timing fixture needs a real CSSStyleDeclaration surface
+
+- **Symptom:** the catalogue timing VM test reaches the root element and fails with `TypeError: style.getPropertyValue is not a function`.
+- **Cause:** the minimal root fixture exposed only an iterable `style`, while the production adopter correctly calls the CSSStyleDeclaration `getPropertyValue`, `getPropertyPriority` and `setProperty` methods on every inspected element.
+- **Corrective action:** give the fixture no-op implementations of the three CSSStyleDeclaration methods while retaining an empty iterator.
+- **Verification:** the adopter completes root and rule traversal, then the test reaches its duration, reduced-motion and view-timeline assertions.
+- **Limit:** the no-op root style is appropriate only because this fixture's timed declarations live in its CSS rules; inline-style conversion requires a populated style mock or a browser test.
+
+### Dense one-line DevTools expressions can hide an audit syntax error
+
+- **Symptom:** `Runtime.evaluate` returns `SyntaxError: Unexpected token` before any catalogue result is produced.
+- **Cause:** a compressed nested-loop audit expression lost a structural delimiter while being transported as one line.
+- **Corrective action:** keep the main-world audit as a structured multiline source string, evaluate it separately from the injected runtime, and inspect the protocol exception before reading a result value.
+- **Verification:** the corrected expression completed on all 17 release-specific EPK systems at 1440, 900 and 390 pixels.
+- **Limit:** successful evaluation proves only that the audit ran; its root choice and assertions still require independent checks.
+
+### The document marker is not the owned EPK root
+
+- **Symptom:** a catalogue audit reports WordPress toolbar controls as unquantized page motion and shows zero release conversions.
+- **Cause:** DanceMoves marks both `document.documentElement` and the release root as ready, and an unrestricted ready-marker selector returns `<html>` first.
+- **Corrective action:** resolve the release root from the configured page selector or exclude `document.documentElement`; assert the expected root identity before interpreting timing records.
+- **Verification:** the corrected audit selected all 17 expected release roots and found zero unquantized computed timing tokens after adoption at all three viewport classes.
+- **Limit:** this is an audit-selection rule; the document marker remains useful as a page-level readiness signal.
+
+### Repeated read-only injection can leave duplicate generated style IDs
+
+- **Symptom:** a reduced-motion probe reads a generated timing style without the latest media rule even though the injected source contains it.
+- **Cause:** injecting successive development revisions into the same main-world document can leave more than one `#dance-moves-catalogue-pseudo-timing` element; `querySelector` returns the oldest one.
+- **Corrective action:** use a clean navigation context for each revision, or inspect every matching style node and the final computed value; never treat the first duplicate development node as production state.
+- **Verification:** the final computed pseudo-element duration on page 310 was `0.01ms`, with no active named animation above the reduced-motion threshold.
+- **Limit:** normal WordPress enqueue loads one catalogue runtime; this warning applies to deliberate repeated development injection.
+
+### Reduced motion must outrank generated pseudo-element timing
+
+- **Symptom:** page 310's `garden-light-drift` pseudo-element retains a 24-second running duration under emulated reduced motion after catalogue quantization.
+- **Cause:** the generated quantized pseudo-element rule was appended after a same-specificity reduced-motion rule, so source order restored the long duration.
+- **Corrective action:** emit the reduced-motion rule after generated timing rules and give it a two-attribute owned-root selector; clamp the owned subtree and its pseudo-elements to one `0.01ms` iteration with zero delay.
+- **Verification:** the exact staged runtime reports no active named animation above `0.02ms` and zero document overflow on page 310 under `prefers-reduced-motion: reduce`.
+- **Limit:** inert declarations with `animation-name: none` may retain long source values, but they do not animate; page scripts and canvas loops still need their own reduced-motion branch.
+
+### Signed-in WordPress chrome can look like EPK overflow
+
+- **Symptom:** page 399 reports eight pixels of document overflow at every viewport while its EPK root itself fits exactly.
+- **Cause:** the authenticated WordPress admin bar's display-name control extends beyond the viewport; it is absent from signed-out public rendering.
+- **Corrective action:** report EPK-root and document overflow separately, list document-only offenders, and repeat the release gate signed out after publication.
+- **Verification:** all 17 EPK roots had zero positive overflow at 1440, 900 and 390 pixels; the only signed-in document offender was the admin-bar display name.
+- **Limit:** excluding known admin chrome is valid only when the owned EPK root is clean and signed-out persisted verification is still performed.
+
 ### Ordered dictionaries can export as blank TSV columns
 
 - **Symptom:** the JSON manifest contains all 47 populated page objects, while the TSV has 48 lines but blank title, page ID, URL and BPM columns.
@@ -37,11 +101,11 @@ Those tests cover core orientation maths, rolling-window mapping, simulated even
 
 They are not yet the acceptance suite for the new low-latency design:
 
-- `runtime.test.cjs` currently requires a 30 ms visual rate limit and batching metadata.
+- `runtime.test.cjs` now requires latest-sample rAF coalescing; the legacy 30 ms visual rate limit and batching metadata have been removed.
 - `wordpress-upload-contract.test.cjs` currently requires a `background-position` transition.
-- `README.md` names `tools/validate.ps1`, but that coordinator is not present in the current plugin folder.
+- `tools/validate.ps1` exists, but its original default path rebuilt migration and package artifacts during ordinary validation; read-only and explicit package modes are required.
 
-The new suite must replace those two legacy performance expectations with one-pending-`requestAnimationFrame` coalescing and compositor-only movement. It must also add a real validator that produces one combined result and exits non-zero on any required failure.
+The new suite must replace those two legacy performance expectations with one-pending-`requestAnimationFrame` coalescing and compositor-only movement. The validator must grow from the implemented Unit/Package/All foundation into the combined browser, performance and pre-live coordinator described below.
 
 ## Gate A — plugin release
 
@@ -80,7 +144,7 @@ The new suite must replace those two legacy performance expectations with one-pe
 |---|---|---|---|
 | P-020 | Availability and permission | Insecure context and unsupported device fail closed; iOS permission is requested only from a user gesture; denial leaves the EPK fully usable | Required automated plus physical device |
 | P-021 | Finite input and axes | Null, missing, `NaN` and infinite samples are ignored; beta/gamma and screen-orientation changes map consistently in portrait and both landscapes | Required automated |
-| P-022 | Rolling normalisation | The documented 10-second rolling window expires old extrema, respects the minimum span and maps/clamps output to `[-1,+1]` without division spikes | Required automated |
+| P-022 | Rolling normalisation | The DanceMoves production two-second rolling window expires old extrema, respects the minimum span and maps/clamps output to `[-1,+1]` without division spikes; changing that duration requires a separate A/B tuning decision and physical-device evidence | Required automated |
 | P-023 | Latest-sample coalescing | A burst of 240 synthetic sensor events before one display frame schedules exactly one pending rAF and commits the final valid sample, not an average or stale sample | Required automated |
 | P-024 | At-most-one visual commit | The sensor listener only validates/stores data and requests a frame; DOM writes never exceed rAF callbacks and are zero while no new valid sample is pending | Required automated instrumentation |
 | P-025 | Hot-path layout safety | No `getBoundingClientRect`, computed-style, `offset*`, `scroll*` or other layout read occurs in the sensor callback or visual commit | Required static plus instrumented browser |
@@ -290,10 +354,50 @@ Publication remains a separate, approval-gated operation. No test runner may upl
 - **Verification:** P-023, P-024 and P-034 pass, and searches/tests prove no continuous adapter path animates `background-position` or uses a fixed visual cadence.
 - **Limit:** static absence is insufficient; the real-device performance gates must also pass.
 
-### A documented validator command can be mistaken for an implemented gate
+### Read-only validation can unexpectedly rebuild release artifacts
 
-- **Symptom:** the README instructs maintainers to run `tools/validate.ps1`, but the file is absent.
-- **Cause:** documentation and the current plugin inventory have drifted.
-- **Corrective action:** treat orchestration as unimplemented until the proposed validator exists, calls every required automated suite, records artifact hashes and exits non-zero on any required failure.
-- **Verification:** a deliberate failing fixture produces a non-zero exit and names the failed test; the corrected fixture produces one complete PASS manifest.
-- **Limit:** the validator cannot replace WordPress staging, physical-device evidence or action-time publication approval.
+- **Symptom:** running the normal validation command changes migration manifests or files under `dist` even though no package build was intended.
+- **Cause:** the original coordinator always invoked migration building and packaging.
+- **Corrective action:** use `-Mode Unit` as the read-only default, require explicit `-Mode Package` or `-Mode All` for release-artifact writes, and keep the deliberate failing fixture outside ordinary scans.
+- **Verification:** Unit mode leaves migration/dist hashes unchanged; `tools/test-validator-failure.ps1` confirms a non-zero attributed failure; Package mode alone performs the declared rebuild.
+- **Limit:** the implemented modes do not yet provide the planned browser, physical-device or per-EPK pre-live orchestration.
+
+### A UTF-8 BOM can make a valid PowerShell-generated manifest fail in Node
+
+- **Symptom:** `JSON.parse()` fails at the first character with `SyntaxError: Unexpected token '﻿'` even though PowerShell can read the JSON and the visible first character is `{`.
+- **Cause:** the existing migration manifest begins with a UTF-8 byte-order mark, which Node's `JSON.parse()` does not remove automatically.
+- **Corrective action:** read the file as UTF-8 and remove only a leading `U+FEFF` before parsing: `.replace(/^\uFEFF/, "")`. Do not rewrite or strip intentional Unicode elsewhere in the manifest.
+- **Verification:** `tools/audit-live-epk-motion.mjs` subsequently fetched all 47 manifest pages, received HTTP 200 for each, preserved the Arabic/Persian titles, and wrote both JSON and TSV audit artifacts.
+- **Limit:** apply this only to a leading BOM at the JSON transport boundary; it does not justify deleting other Unicode characters or accepting malformed JSON.
+
+### Intentional production-asset edits invalidate the live-harness hash pin
+
+- **Symptom:** unit validation fails in `harness-foundation.test.cjs` with `production hash mismatch` immediately after an intentional core CSS or JavaScript change.
+- **Cause:** the harness manifest pins the exact production assets it exercises, so any legitimate source change makes the earlier snapshot stale.
+- **Corrective action:** inspect the production diff first, calculate SHA-256 for each intentionally changed asset, and update only the matching `productionHashes` entry in `tests/harness/plugin-core/effect-harness.manifest.json`. Never refresh hashes merely to silence unexplained drift.
+- **Verification:** the foundation test matches both current production hashes and the full Unit validator reaches the property audit.
+- **Limit:** a matching hash proves fixture/source identity, not that the changed motion is accessible, performant or visually correct.
+
+### A shared transition list can accidentally introduce a continuous paint risk
+
+- **Symptom:** the effect-harness validator reports `CSS_CONTINUOUS_RISK` for `box-shadow in transition` after an otherwise small timing migration.
+- **Cause:** a broad shared transition-property list included `box-shadow` even though the basic EPK hover state does not change that property.
+- **Corrective action:** compare the actual base and interactive states and keep only properties that visibly change. For the shared EPK controls, use `background-color, color, transform, border-color`; do not add `box-shadow` speculatively.
+- **Verification:** the harness reports no blocking findings, the computed transition property contains only the four intended properties, and Unit validation passes.
+- **Limit:** release-specific controls may legitimately use other properties, but they require their own performance trace and must not inherit this neutral shared decision automatically.
+
+### Browser evaluation may not expose the Web Animations API in the isolated test world
+
+- **Symptom:** a live-page check throws `TypeError: document.getAnimations is not a function` even though the page's main runtime is using Web Animations and DanceMoves has initialized.
+- **Cause:** the browser controller's isolated evaluation world did not expose `document.getAnimations`, while the tab's main-world Chrome DevTools Protocol runtime did.
+- **Corrective action:** feature-detect `document.getAnimations` in isolated checks; for animation ownership, reduced-motion and public API verification, bind the developer-protocol controller to the current tab and evaluate in the main world. Never interpret an isolated-world API omission as proof that the public page lacks the feature.
+- **Verification:** the main-world runtime exposed DanceMoves 2.1.0, returned the complete public timing API, loaded 19 cues, reset 13 owned animations at a live cue and reported no active animations under emulated reduced motion.
+- **Limit:** this is a test-controller compatibility workaround; it does not waive the need to check the rendered DOM, computed styles and user-visible behaviour.
+
+### `Invoke-WebRequest` content type varies with the response MIME type
+
+- **Symptom:** an otherwise read-only SHA-256 check fails while hashing `Invoke-WebRequest.Content`, may print the fetched asset in the error, or `ZipArchive.Close()` is reported as unavailable.
+- **Cause:** binary timing-file responses expose `Content` as `byte[]`, text JavaScript responses expose it as `string`, and .NET `ZipArchive` uses `Dispose()` rather than `Close()` in this PowerShell runtime.
+- **Corrective action:** normalize response content to bytes with a type check, UTF-8 encode only string content, hash the resulting byte array, and dispose archive streams and archives with `Dispose()`.
+- **Verification:** the signed-out deployed `dance-moves-core.js` hash was `EC755C134346656650B89A3F9FD54DFF71AE85F812E1FB0116BE1337E640FFEA`, exactly matching the file inside the approved DanceMoves 2.1.0 ZIP.
+- **Limit:** byte equality proves deployed-file identity; it does not by itself prove runtime initialization, accessibility or visual correctness.

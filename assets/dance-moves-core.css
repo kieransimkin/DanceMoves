@@ -5,11 +5,31 @@
   animation-play-state: paused !important;
 }
 
+/* Phase 1 catalogue migration: neutral shared EPK controls only. */
+html[data-dance-moves-shared-controls="true"] .ks-epk .epk-button,
+html[data-dance-moves-shared-controls="true"] .ks-epk .epk-download {
+  transition-property: background-color, color, transform, border-color !important;
+  transition-duration: var(--dance-moves-shared-control-duration) !important;
+  transition-timing-function: ease !important;
+}
+
+.ks-epk .ks-epk-lyrics-track summary span[aria-hidden] {
+  transition-property: transform !important;
+  transition-duration: var(--dance-moves-lyric-disclosure-duration) !important;
+  transition-timing-function: ease !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   [data-dance-moves-start-interval],
   [data-dance-moves-start-interval]::before,
   [data-dance-moves-start-interval]::after {
     animation: none !important;
     transition-duration: 0.01ms !important;
+  }
+
+  html[data-dance-moves-shared-controls="true"] .ks-epk .epk-button,
+  html[data-dance-moves-shared-controls="true"] .ks-epk .epk-download,
+  .ks-epk .ks-epk-lyrics-track summary span[aria-hidden] {
+    transition: none !important;
   }
 }

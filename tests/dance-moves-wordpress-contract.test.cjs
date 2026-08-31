@@ -10,13 +10,15 @@ const clayCss = fs.readFileSync(path.join(root, "assets/clay-stars-effects.css")
 const clayJs = fs.readFileSync(path.join(root, "assets/clay-stars-effects.js"), "utf8");
 
 assert.match(php, /Plugin Name:\s*DanceMoves/);
-assert.match(php, /Version:\s*2\.0\.0/);
+assert.match(php, /Version:\s*2\.2\.0/);
 for (const key of [
   "_dance_moves_bpm",
   "_dance_moves_lyric_timing_id",
   "_dance_moves_cue_timing_id",
   "_dance_moves_master_duration_ms"
 ]) assert.ok(php.includes(key), `${key} is registered`);
+assert.match(php, /\$display_bpm\s*=\s*is_numeric\(\$stored_bpm\)[\s\S]*\(float\) \$stored_bpm >= 20[\s\S]*\(float\) \$stored_bpm <= 400/);
+assert.match(php, /esc_attr\(\$display_bpm\)/);
 
 for (const label of ["BPM", "Lyric Timing File", "Cue Timing File"]) {
   assert.ok(php.includes(label), `${label} is present in Edit Page`);
@@ -41,6 +43,10 @@ assert.match(core, /resetRunningAnimations/);
 assert.match(core, /animation\.currentTime = 0/);
 assert.match(core, /window\.DanceMoves = api/);
 assert.match(core, /onCue: onCue/);
+assert.match(core, /fireCue: fireCue/);
+assert.match(core, /setDiagnosticsSink: setDiagnosticsSink/);
+assert.match(core, /rawConfig\.diagnostics === true/);
+assert.doesNotMatch(php, /['"]diagnostics['"]\s*=>\s*true/, "ordinary WordPress configuration must leave diagnostics disabled");
 assert.match(core, /dance-moves-cue/);
 assert.match(core, /kieran-epk-cue/);
 assert.match(core, /Math\.abs\(duration - referenceDurationSeconds\)/);
@@ -59,6 +65,7 @@ assert.match(clayCss, /prefers-reduced-motion:\s*reduce/);
 assert.match(clayJs, /durationMilliseconds\(32\)/);
 assert.match(clayJs, /registerAnimationScope/);
 assert.match(clayJs, /motion\.onCue\("\*"/);
+assert.match(clayJs, /clay-stars:cue-state/);
 assert.doesNotMatch(clayJs, /setTimeout\([^\n]+,\s*1100\)/);
 
 const visualDeclarations = clayCss

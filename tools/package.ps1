@@ -4,7 +4,11 @@ param()
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $dist = Join-Path $repoRoot 'dist'
-$version = '2.0.0'
+$entrypoint = Get-Content -LiteralPath (Join-Path $repoRoot 'kieran-epk-device-orientation.php') -Raw -Encoding UTF8
+if ($entrypoint -notmatch 'Version:\s*([0-9]+(?:\.[0-9]+){2})') {
+    throw 'Unable to establish the DanceMoves version from the plugin entrypoint.'
+}
+$version = $Matches[1]
 $slug = 'kieran-epk-device-orientation'
 $zip = Join-Path $dist ("DanceMoves-{0}.zip" -f $version)
 $manifestPath = Join-Path $dist ("DanceMoves-{0}-manifest.json" -f $version)

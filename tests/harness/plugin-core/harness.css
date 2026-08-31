@@ -1,0 +1,74 @@
+:root {
+  color-scheme: dark;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  background: #0b0d12;
+  color: #f5f7fb;
+}
+
+* { box-sizing: border-box; }
+
+body { margin: 0; min-width: 320px; }
+
+button, input, select { font: inherit; }
+
+button, select, input[type="number"] {
+  border: 1px solid #343b4b;
+  border-radius: 8px;
+  background: #181c25;
+  color: inherit;
+}
+
+button { padding: 8px 10px; cursor: pointer; }
+button:hover { border-color: #7c9cff; }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid #8eb0ff; outline-offset: 2px; }
+button[aria-pressed="true"] { background: #274174; border-color: #8eb0ff; }
+
+.lab { min-height: 100vh; }
+.lab__header { display: flex; justify-content: space-between; gap: 24px; padding: 18px 22px; border-bottom: 1px solid #242a36; background: #11141b; }
+.lab__header h1 { margin: 2px 0 4px; font-size: clamp(1.35rem, 3vw, 2.2rem); }
+.lab__header p { margin: 0; color: #aeb7c8; }
+.lab__eyebrow { color: #8eb0ff !important; text-transform: uppercase; letter-spacing: .14em; font-size: .72rem; font-weight: 700; }
+.lab__actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
+.lab__workspace { display: grid; grid-template-columns: minmax(240px, 300px) minmax(0, 1fr) minmax(220px, 270px); min-height: calc(100vh - 102px); }
+.lab__controls, .lab__metrics { padding: 16px; overflow: auto; background: #11141b; }
+.lab__controls { border-right: 1px solid #242a36; }
+.lab__metrics { border-left: 1px solid #242a36; }
+.lab__panel { margin: 0 0 16px; padding: 14px; border: 1px solid #292f3c; border-radius: 10px; background: #151923; }
+.lab__panel h2, .lab__metrics h2 { margin: 0 0 12px; font-size: 1rem; }
+.lab__panel label { display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; margin: 0 0 12px; color: #dce2ef; font-size: .88rem; }
+.lab__panel label input, .lab__panel label select { grid-column: 1 / -1; width: 100%; }
+.lab__panel output { color: #8eb0ff; font-variant-numeric: tabular-nums; }
+.lab__button-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+.lab__ab { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-top: 10px; }
+.lab__stage { min-width: 0; overflow: auto; padding: 20px; background: linear-gradient(135deg, #0d1017, #151925); }
+.lab__viewport { margin: 0 auto; max-width: 100%; border: 1px solid #3a4254; border-radius: 10px; overflow: hidden; box-shadow: 0 18px 60px #0008; background: white; }
+.lab__viewport iframe { display: block; width: 100%; height: 100%; min-height: 640px; border: 0; background: white; }
+#metrics { display: grid; gap: 7px; margin: 0 0 20px; }
+#metrics div { display: flex; justify-content: space-between; gap: 12px; padding-bottom: 6px; border-bottom: 1px solid #282e3a; }
+#metrics dt { color: #aeb7c8; }
+#metrics dd { margin: 0; color: #f5f7fb; font-variant-numeric: tabular-nums; }
+.lab__timeline { max-height: 300px; overflow: auto; margin: 0; padding-left: 22px; color: #b8c2d5; font-size: .78rem; }
+.lab__timeline li { margin-bottom: 5px; }
+
+@media (max-width: 1100px) {
+  .lab__workspace { grid-template-columns: 270px minmax(0, 1fr); }
+  .lab__metrics { grid-column: 1 / -1; border-left: 0; border-top: 1px solid #242a36; }
+  #metrics { grid-template-columns: repeat(4, 1fr); }
+}
+
+@media (max-width: 760px) {
+  .lab__header { align-items: flex-start; flex-direction: column; }
+  .lab__actions { justify-content: flex-start; }
+  .lab__workspace { display: block; }
+  .lab__controls { border-right: 0; border-bottom: 1px solid #242a36; }
+  .lab__stage { padding: 10px; }
+  #metrics { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+@media (forced-colors: active) {
+  button, select, input, .lab__panel, .lab__viewport { border: 1px solid ButtonText; }
+}

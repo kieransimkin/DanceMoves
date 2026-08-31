@@ -1,0 +1,113 @@
+{
+  "$schema": "./effect-harness.schema.json",
+  "schemaVersion": 1,
+  "effect": {
+    "slug": "dance-moves-core",
+    "title": "DanceMoves core",
+    "pageId": 252,
+    "rootSelector": "[data-dance-moves-core-harness]",
+    "candidate": "candidate.html",
+    "productionCss": ["../../../assets/dance-moves-core.css"],
+    "productionJs": ["../../../assets/dance-moves-core.js", "../../../assets/dance-moves-catalogue-timing.js"],
+    "productionHashes": {
+      "../../../assets/dance-moves-core.css": "197E0D51F400A3D875ACB6E12238417FAA3D54853708F72EEB792342F533AD8D",
+      "../../../assets/dance-moves-core.js": "7337D940C85DAFF366A3B41D7D91997772ACA1C22A53713B5C0529925AA9C59C",
+      "../../../assets/dance-moves-catalogue-timing.js": "89A9A750AA0B0936516DE8D44C090C989530A0767C5EDDFB98038DDE84E20013"
+    },
+    "inputModes": ["pointer", "keyboard", "cue"]
+  },
+  "release": {
+    "bpm": null,
+    "bpmSource": "unknown",
+    "masterSha256": "PENDING",
+    "masterDurationMilliseconds": null
+  },
+  "preview": {
+    "viewports": [
+      { "name": "desktop", "width": 1440, "height": 1000 },
+      { "name": "tablet", "width": 900, "height": 1100 },
+      { "name": "mobile", "width": 390, "height": 844 }
+    ],
+    "physicalDevices": ["iPhone Safari", "Android Chrome"]
+  },
+  "parameters": [
+    {
+      "id": "master-intensity",
+      "group": "master",
+      "label": "Master intensity",
+      "type": "range",
+      "default": 1,
+      "min": 0,
+      "max": 1.5,
+      "step": 0.01,
+      "unit": "",
+      "apply": "css-variable",
+      "target": "--dance-moves-harness-intensity",
+      "performanceSensitive": true,
+      "description": "Scales the neutral diagnostics fixture inside fixed bounds; it does not alter WordPress or release metadata."
+    },
+    {
+      "id": "production-bpm",
+      "group": "timing",
+      "label": "Production BPM fallback",
+      "type": "readonly",
+      "default": 120,
+      "unit": "BPM",
+      "apply": "readonly",
+      "target": "DanceMoves.bpm",
+      "performanceSensitive": false,
+      "description": "Displays the production core fallback used by this non-release fixture."
+    },
+    {
+      "id": "interval-ticks",
+      "group": "timing",
+      "label": "Comparison interval",
+      "type": "range",
+      "default": 16,
+      "min": 1,
+      "max": 128,
+      "step": 1,
+      "unit": "ticks",
+      "apply": "adapter",
+      "target": "intervalTicks",
+      "performanceSensitive": false,
+      "description": "Calls the production durationMilliseconds function for live tick-duration comparison."
+    },
+    {
+      "id": "fixture-depth",
+      "group": "effect",
+      "label": "Fixture travel",
+      "type": "range",
+      "default": 1,
+      "min": 0,
+      "max": 2,
+      "step": 0.01,
+      "unit": "",
+      "apply": "adapter",
+      "target": "fixtureDepth",
+      "performanceSensitive": true,
+      "description": "Changes only the neutral diagnostics fixture travel used to verify live motion transport."
+    }
+  ],
+  "cues": [
+    { "name": "HARNESS PULSE", "type": "TEST", "time": 0 }
+  ],
+  "selectors": {
+    "owned": ["[data-dance-moves-core-harness]", ".core-fixture"],
+    "stableControls": ["[data-stable-control]"]
+  },
+  "budgets": {
+    "orientationP95Milliseconds": 0.5,
+    "orientationP99Milliseconds": 1,
+    "rafFrameShare": 0.25,
+    "cueHandlerFrameShare": 0.25,
+    "cueTotalFrameShare": 0.5,
+    "droppedFrameDeltaPercentagePoints": 1,
+    "longTaskMilliseconds": 50,
+    "maximumSamples": 20000
+  },
+  "cssPolicy": {
+    "failContinuous": ["width", "height", "top", "right", "bottom", "left", "margin", "padding", "gap", "background-position", "background-size", "box-shadow", "text-shadow", "object-position", "mask-position", "mask-size"],
+    "review": ["filter", "backdrop-filter", "clip-path", "mask-image", "mix-blend-mode", "background-image", "border-radius", "will-change"]
+  }
+}

@@ -58,6 +58,7 @@ function createEnvironment({ mobile = true, permission = false, adapter = "dmitr
     matchMedia,
     performance: { now: () => clock },
     requestAnimationFrame: callback => { raf.push(callback); return raf.length; },
+    cancelAnimationFrame: id => { if (id > 0 && id <= raf.length) raf[id - 1] = () => {}; },
     clearTimeout: id => timers.delete(id),
     setTimeout: (callback, delay = 0) => {
       const id = nextTimer++;
@@ -126,7 +127,7 @@ automatic.windowListeners.deviceorientation({ beta: 0, gamma: 10 });
 automatic.flush();
 assert.equal(automatic.root.dataset.ksOrientation, "active");
 assert.equal(automatic.root.dataset.ksOrientationWindow, "2000");
-assert.equal(automatic.root.dataset.ksOrientationBatch, "30");
+assert.equal(automatic.root.dataset.ksOrientationBatch, undefined);
 assert.notEqual(automatic.properties.get("--parallax-x"), "0.00px");
 const automaticTilt = Math.abs(parseFloat(automatic.properties.get("--tilt-y")));
 const automaticShift = Math.abs(parseFloat(automatic.properties.get("--parallax-x")));
@@ -136,14 +137,15 @@ assert.ok(automaticShift > 6 && automaticShift <= 14, `Dmitri parallax is percep
 const batched = createEnvironment({ mobile: true, permission: false });
 batched.advance(0);
 batched.windowListeners.deviceorientation({ beta: 0, gamma: 0 });
+batched.flush();
 const baselineTarget = batched.properties.get("--parallax-x");
 batched.advance(5);
 batched.windowListeners.deviceorientation({ beta: 2, gamma: 4 });
 batched.advance(10);
 batched.windowListeners.deviceorientation({ beta: 4, gamma: 8 });
-assert.equal(batched.properties.get("--parallax-x"), baselineTarget, "events inside the cadence boundary do not retarget CSS early");
+assert.equal(batched.properties.get("--parallax-x"), baselineTarget, "a sensor burst does not write CSS before its display frame");
 batched.flush();
-assert.notEqual(batched.properties.get("--parallax-x"), baselineTarget, "the coalesced batch retargets CSS when the boundary opens");
+assert.notEqual(batched.properties.get("--parallax-x"), baselineTarget, "the newest coalesced sample retargets CSS on the display frame");
 
 const fastPath = createEnvironment({ mobile: true, permission: false });
 fastPath.advance(0);
@@ -152,15 +154,19 @@ fastPath.flush();
 fastPath.advance(30);
 fastPath.windowListeners.deviceorientation({ beta: 0, gamma: 10 });
 fastPath.flush();
-assert.equal(fastPath.properties.get("--parallax-x"), "-14.00px");
+const firstSmoothedTarget = fastPath.properties.get("--parallax-x");
+assert.ok(parseFloat(firstSmoothedTarget) < -5 && parseFloat(firstSmoothedTarget) >= -14, "the bounded target moves promptly in the sample direction");
 fastPath.advance(35);
 fastPath.windowListeners.deviceorientation({ beta: 0, gamma: 0 });
-assert.equal(fastPath.properties.get("--parallax-x"), "-14.00px", "a new reading cannot exceed the 30 ms visual rate limit");
+assert.equal(fastPath.properties.get("--parallax-x"), firstSmoothedTarget, "a new reading does not write CSS before rAF");
 fastPath.flush();
-assert.equal(fastPath.properties.get("--parallax-x"), "14.00px", "the queued reading immediately changes the CSS target at the next cadence boundary");
+const returningTarget = fastPath.properties.get("--parallax-x");
+assert.ok(parseFloat(returningTarget) > parseFloat(firstSmoothedTarget), "the next display frame moves toward the newest reading");
 fastPath.advance(65);
 fastPath.windowListeners.deviceorientation({ beta: 0, gamma: 10 });
-assert.equal(fastPath.properties.get("--parallax-x"), "-14.00px", "a new reading immediately changes the CSS target when the cadence boundary is open");
+assert.equal(fastPath.properties.get("--parallax-x"), returningTarget, "sensor delivery never performs a visual commit synchronously");
+fastPath.flush();
+assert.ok(parseFloat(fastPath.properties.get("--parallax-x")) < parseFloat(returningTarget), "the next rAF commits the newest reading with time-based smoothing");
 
 const walk = createEnvironment({ mobile: true, permission: false, adapter: "walk-with-me" });
 walk.advance(0);

@@ -1,0 +1,60 @@
+{
+  "schema": "dance-moves-harness-browser-smoke/v1",
+  "capturedAt": "2026-08-31T14:41:52.8992751+01:00",
+  "environment": {
+    "browser": "Codex in-app browser",
+    "origin": "http://127.0.0.1:8877",
+    "viewportPreset": "mobile",
+    "viewportWidth": 390,
+    "viewportHeight": 844,
+    "physicalDevice": false
+  },
+  "artifacts": {
+    "manifestSha256": "D08FB6661C58F1079F9900B22B0EEC39A260E4AB11D341DACBD296F7E6742882",
+    "harnessRuntimeSha256": "A5154BAEF4431923152177BF141CD0F3D41EFBE16637C5621C9BD8AF8D4871D8",
+    "danceMovesCoreJsSha256": "EC755C134346656650B89A3F9FD54DFF71AE85F812E1FB0116BE1337E640FFEA",
+    "danceMovesCoreCssSha256": "197E0D51F400A3D875ACB6E12238417FAA3D54853708F72EEB792342F533AD8D"
+  },
+  "checks": [
+    {
+      "id": "H-FOUNDATION-001",
+      "status": "PASS",
+      "name": "Same-origin candidate handshake",
+      "evidence": "Visible status reached Candidate connected and the production core reported BPM 120 with 16 ticks = 500.000 ms."
+    },
+    {
+      "id": "H-FOUNDATION-002",
+      "status": "PASS",
+      "name": "Live master parameter",
+      "evidence": "Master intensity changed from 1 to 1.25 and the candidate root received --dance-moves-harness-intensity: 1.25."
+    },
+    {
+      "id": "H-FOUNDATION-003",
+      "status": "PASS",
+      "name": "Responsive preview selector",
+      "evidence": "The preview frame changed to width 390px and height 844px."
+    },
+    {
+      "id": "H-FOUNDATION-004",
+      "status": "PASS",
+      "name": "Reset",
+      "evidence": "Reset restored --dance-moves-harness-intensity from 1.25 to 1 and returned motion variables to 0.00px."
+    },
+    {
+      "id": "H-FOUNDATION-005",
+      "status": "PASS",
+      "name": "Bounded metrics capture",
+      "evidence": "A short gentle-path capture returned 65 samples, 29.57 effective FPS, 33.50 ms frame p95, zero reported long tasks and zero reported dropped frames. These background in-app values are smoke evidence only, not a release-device performance result."
+    },
+    {
+      "id": "H-FOUNDATION-006",
+      "status": "BLOCKED",
+      "name": "Console attribution",
+      "evidence": "The controller log repeated MutationObserver observe parameter 1 is not of type Node without a source URL. No MutationObserver occurrence exists in the harness source; ownership remains unattributed and must be independently traced before pre-live use."
+    }
+  ],
+  "status": "BLOCKED",
+  "blockers": [
+    "Unattributed MutationObserver error requires an ordinary-browser source URL or stack before it can be assigned or cleared."
+  ]
+}

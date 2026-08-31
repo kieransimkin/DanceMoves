@@ -7,6 +7,7 @@ const page = fs.readFileSync(path.join(__dirname, "epk-motion-lab-4f8c8d11-6a28-
 const runtime = fs.readFileSync(path.join(__dirname, "mobile-api-conformance.js"), "utf8");
 const css = fs.readFileSync(path.join(__dirname, "../assets/ks-epk-device-orientation.css"), "utf8");
 
+const pluginVersion = plugin.match(/Version:\s*([0-9]+(?:\.[0-9]+){2})/)?.[1];
 const phpToken = plugin.match(/KS_EPK_MOTION_CAPTURE_TOKEN',\s*'([a-f0-9]{64})'/)?.[1];
 const pageToken = page.match(/token:\s*"([a-f0-9]{64})"/)?.[1];
 assert.ok(phpToken, "WordPress endpoint token is present");
@@ -15,17 +16,20 @@ assert.match(page, /noindex,nofollow,noarchive,nosnippet,noimageindex/);
 assert.match(page, /\/wp-json\/ks-epk-motion\/v1\/capture/);
 assert.match(page, /full 30-second recording/);
 assert.match(page, /motion-capture-policy\.js/);
+assert.ok(pluginVersion, "WordPress plugin version is present");
 for (const asset of [
   "ks-epk-device-orientation-core.js",
   "simulated-device-orientation-event.js",
   "motion-capture-policy.js",
   "mobile-api-conformance.js",
 ]) {
-  assert.match(page, new RegExp(`${asset.replaceAll(".", "\\.")}\\?ver=1\\.2\\.4`), `${asset} is cache-versioned`);
+  const escapedVersion = pluginVersion.replaceAll(".", "\\.");
+  assert.match(page, new RegExp(`${asset.replaceAll(".", "\\.")}\\?ver=${escapedVersion}`), `${asset} is cache-versioned to the current plugin`);
 }
 assert.match(plugin, /Plugin Name:\s*DanceMoves/);
-assert.match(plugin, /Version:\s*2\.0\.0/);
-assert.match(plugin, /DANCE_MOVES_VERSION',\s*'2\.0\.0'/);
+assert.match(plugin, /Version:\s*2\.2\.0/);
+assert.match(plugin, /DANCE_MOVES_VERSION',\s*'2\.2\.0'/);
+assert.match(plugin, /dance-moves-catalogue-timing/);
 assert.match(plugin, /'post_status'\s*=>\s*'private'/);
 assert.match(plugin, /count\(\$samples\)\s*>\s*500/);
 assert.match(plugin, /strlen\(\$encoded\)\s*>\s*262144/);

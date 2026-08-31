@@ -2,7 +2,7 @@
 /**
  * Plugin Name: DanceMoves
  * Description: Adds BPM-synchronised motion, lyric and cue timing properties, named cue handlers, and permission-aware orientation control to EPK pages.
- * Version: 2.0.0
+ * Version: 2.2.0
  * Author: Kieran Simkin
  * License: GPL-2.0-or-later
  */
@@ -11,7 +11,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('DANCE_MOVES_VERSION', '2.0.0');
+define('DANCE_MOVES_VERSION', '2.2.0');
 define('KS_EPK_ORIENTATION_VERSION', DANCE_MOVES_VERSION);
 define('KS_EPK_MOTION_CAPTURE_TOKEN', 'e4c1d9a77fb446608e796a0f8fd8f576e59d2e67bca54a4d9f7fd06fbef3e1c2');
 
@@ -31,6 +31,24 @@ function dance_moves_orientation_adapters() {
         276 => 'walk-with-me',
         298 => 'dmitri-my-talisman',
     );
+}
+
+function dance_moves_shared_control_pages() {
+    return array(
+        250, 254, 260, 262, 264, 266, 272, 274, 278, 280,
+        282, 284, 286, 288, 290, 292, 294, 296, 300, 302,
+        304, 306, 308, 312, 314, 316, 318, 320, 322,
+    );
+}
+
+function dance_moves_lyric_disclosure_ticks($page_id) {
+    if (130 === (int) $page_id) {
+        return 5;
+    }
+    if (243 === (int) $page_id) {
+        return 7;
+    }
+    return 6;
 }
 
 function dance_moves_attachment_url($attachment_id) {
@@ -66,6 +84,8 @@ function dance_moves_get_page_config($page_id) {
         'tickDefinition' => 'sixteenth-of-beat',
         'ticksPerBeat' => 16,
         'longDurationQuantumTicks' => 16,
+        'sharedControlTicks' => in_array((int) $page_id, dance_moves_shared_control_pages(), true) ? 8 : 0,
+        'lyricDisclosureTicks' => dance_moves_lyric_disclosure_ticks($page_id),
     );
 }
 
@@ -94,6 +114,14 @@ function ks_epk_orientation_enqueue_runtime() {
         true
     );
     wp_localize_script('dance-moves-core', 'danceMovesConfig', $config);
+
+    wp_enqueue_script(
+        'dance-moves-catalogue-timing',
+        $base_url . 'dance-moves-catalogue-timing.js',
+        array('dance-moves-core'),
+        DANCE_MOVES_VERSION,
+        true
+    );
 
     if (DANCE_MOVES_CLAY_STARS_PAGE_ID === (int) $page_id && !defined('KS_CLAY_STARS_EFFECTS_VERSION')) {
         wp_enqueue_style(
@@ -426,11 +454,12 @@ function dance_moves_file_field($post_id, $label, $field_name, $meta_key, $allow
 function dance_moves_render_meta_box($post) {
     wp_nonce_field('dance_moves_save_epk_timing', 'dance_moves_epk_timing_nonce');
     $stored_bpm = get_post_meta($post->ID, DANCE_MOVES_META_BPM, true);
+    $display_bpm = is_numeric($stored_bpm) && (float) $stored_bpm >= 20 && (float) $stored_bpm <= 400 ? $stored_bpm : '';
     ?>
     <p>
         <label for="dance_moves_bpm"><strong>BPM</strong></label>
-        <input class="widefat" type="number" min="20" max="400" step="0.001" id="dance_moves_bpm" name="dance_moves_bpm" value="<?php echo esc_attr($stored_bpm); ?>" placeholder="120">
-        <span class="description"><?php echo $stored_bpm === '' ? 'Unknown; DanceMoves currently uses the 120 BPM fallback.' : 'Stored as the page BPM property.'; ?></span>
+        <input class="widefat" type="number" min="20" max="400" step="0.001" id="dance_moves_bpm" name="dance_moves_bpm" value="<?php echo esc_attr($display_bpm); ?>" placeholder="120">
+        <span class="description"><?php echo $display_bpm === '' ? 'Unknown; DanceMoves currently uses the 120 BPM fallback.' : 'Stored as the page BPM property.'; ?></span>
     </p>
     <?php
     dance_moves_file_field($post->ID, 'Lyric Timing File', 'dance_moves_lyric_timing_id', DANCE_MOVES_META_LYRIC_TIMING, array('lrc'));

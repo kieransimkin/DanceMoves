@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+  <title>DanceMoves core harness candidate</title>
+  <script src="./harness-probe.js?v=0cfc2281"></script>
+  <link rel="stylesheet" href="../../../assets/dance-moves-core.css">
+  <style>
+    :root { color-scheme: dark; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; overflow: hidden; background: #11151d; color: #f5f2e9; font-family: system-ui, sans-serif; }
+    [data-dance-moves-core-harness] { --dance-moves-harness-intensity: 1; --dance-moves-harness-depth: 1; --dance-moves-harness-x: 0px; --dance-moves-harness-y: 0px; width: min(34rem, calc(100vw - 2rem)); padding: 2rem; border: 1px solid #ffffff30; border-radius: 1.25rem; background: #1d2533; box-shadow: 0 1.5rem 4rem #0008; }
+    .core-fixture { display: grid; min-height: 14rem; place-items: center; border-radius: 1rem; background: linear-gradient(135deg, #283952, #171d29); transform: translate3d(var(--dance-moves-harness-x), var(--dance-moves-harness-y), 0); }
+    .core-fixture span { transform: scale(calc(.8 + (.2 * var(--dance-moves-harness-intensity)))); opacity: calc(.35 + (.65 * var(--dance-moves-harness-intensity))); }
+    .core-readout { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem 1rem; margin-block-start: 1rem; }
+    .core-readout output { font-variant-numeric: tabular-nums; }
+    @media (prefers-reduced-motion: reduce) { .core-fixture { transform: none; } }
+  </style>
+  <script>
+    window.danceMovesConfig = {
+      version: "2.2.0",
+      pageId: 252,
+      bpm: 120,
+      bpmSource: "fallback",
+      masterDurationMilliseconds: 180000,
+      diagnostics: true
+    };
+  </script>
+</head>
+<body>
+  <main class="ks-epk" data-dance-moves-core-harness>
+    <h1>DanceMoves core diagnostics fixture</h1>
+    <p>This neutral fixture exercises the production clock and the harness transport. It is not an EPK creative effect.</p>
+    <div class="core-fixture" aria-hidden="true"><span>DanceMoves</span></div>
+    <div class="core-readout" aria-live="polite">
+      <span>Production BPM</span><output data-core-bpm>pending</output>
+      <span>Selected interval</span><output data-core-duration>pending</output>
+    </div>
+    <button type="button" data-stable-control>Keyboard and focus stability control</button>
+  </main>
+  <script src="../../../assets/dance-moves-core.js?v=7337d940"></script>
+  <script src="../../../assets/dance-moves-catalogue-timing.js?v=89a9a750"></script>
+  <script src="./effect-under-test-adapter.js"></script>
+  <script src="./harness-bridge.js"></script>
+</body>
+</html>

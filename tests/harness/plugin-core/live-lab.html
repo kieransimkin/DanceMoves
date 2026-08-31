@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+  <title>EPK effect live test lab</title>
+  <link rel="stylesheet" href="./harness.css">
+</head>
+<body>
+  <main class="lab" id="epk-effect-lab">
+    <header class="lab__header">
+      <div>
+        <p class="lab__eyebrow">Local read-only QA</p>
+        <h1 id="lab-title">EPK effect live test lab</h1>
+        <p id="lab-status" role="status">Loading manifest…</p>
+      </div>
+      <div class="lab__actions" aria-label="Harness actions">
+        <button type="button" id="reset">Reset</button>
+        <button type="button" id="capture">Start capture</button>
+        <button type="button" id="import">Import preset</button>
+        <button type="button" id="export">Export preset + metrics</button>
+        <input type="file" id="import-file" accept="application/json,.json" hidden>
+      </div>
+    </header>
+
+    <section class="lab__workspace">
+      <aside class="lab__controls" aria-label="Effect controls">
+        <div class="lab__panel">
+          <h2>Preview</h2>
+          <label>Viewport
+            <select id="viewport"></select>
+          </label>
+          <div class="lab__ab" role="group" aria-label="Preset comparison">
+            <button type="button" id="preset-a" aria-pressed="true">A · defaults</button>
+            <button type="button" id="preset-b" aria-pressed="false">B · candidate</button>
+          </div>
+        </div>
+
+        <div id="parameter-groups"></div>
+
+        <div class="lab__panel">
+          <h2>Input</h2>
+          <label>X <output id="x-output">0.00</output>
+            <input id="motion-x" type="range" min="-1" max="1" step="0.01" value="0">
+          </label>
+          <label>Y <output id="y-output">0.00</output>
+            <input id="motion-y" type="range" min="-1" max="1" step="0.01" value="0">
+          </label>
+          <div class="lab__button-grid" id="paths" aria-label="Deterministic motion paths">
+            <button type="button" data-path="gentle">Gentle</button>
+            <button type="button" data-path="sweep">Sweep</button>
+            <button type="button" data-path="spin">Spin</button>
+            <button type="button" data-path="maze">Maze</button>
+            <button type="button" data-path="noise">Noise</button>
+            <button type="button" data-path="stop">Stop</button>
+          </div>
+        </div>
+
+        <div class="lab__panel">
+          <h2>Cues</h2>
+          <label>Cue
+            <select id="cue"></select>
+          </label>
+          <div class="lab__button-grid">
+            <button type="button" id="fire-cue">Fire cue</button>
+            <button type="button" id="fire-cues">Run cues</button>
+          </div>
+        </div>
+      </aside>
+
+      <section class="lab__stage" aria-label="Effect preview">
+        <div class="lab__viewport" id="viewport-frame">
+          <iframe id="candidate" title="Exact EPK effect candidate" src="./candidate.html"></iframe>
+        </div>
+      </section>
+
+      <aside class="lab__metrics" aria-label="Live performance metrics">
+        <h2>Performance</h2>
+        <dl id="metrics">
+          <div><dt>FPS</dt><dd data-metric="fps">—</dd></div>
+          <div><dt>Frame p95</dt><dd data-metric="frameP95">—</dd></div>
+          <div><dt>Orientation p95</dt><dd data-metric="orientationP95">—</dd></div>
+          <div><dt>rAF p95</dt><dd data-metric="rafP95">—</dd></div>
+          <div><dt>Cue p95</dt><dd data-metric="cueP95">—</dd></div>
+          <div><dt>Long tasks</dt><dd data-metric="longTasks">—</dd></div>
+          <div><dt>Dropped frames</dt><dd data-metric="dropped">—</dd></div>
+          <div><dt>Samples</dt><dd data-metric="samples">—</dd></div>
+        </dl>
+        <h2>Timeline</h2>
+        <ol id="timeline" class="lab__timeline"></ol>
+      </aside>
+    </section>
+  </main>
+  <script src="./harness-runtime.js?v=A5154BAE"></script>
+</body>
+</html>
