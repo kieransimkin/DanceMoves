@@ -118,7 +118,7 @@ assert.equal(lifecycleScheduler.scheduler.receive({ beta: 1, gamma: 1 }, 0, 40),
 assert.doesNotMatch(runtimeSource, /ksOrientationBatch|batchMilliseconds|pendingBatch|pushBatch\(/);
 assert.doesNotMatch(runtimeSource, /getBoundingClientRect|getComputedStyle|offset(?:Width|Height|Top|Left)|scroll(?:Width|Height|Top|Left)|client(?:Width|Height|Top|Left)/);
 
-function runtimeEnvironment({ permission = false } = {}) {
+function runtimeEnvironment({ permission = false, adapter = "dmitri-my-talisman" } = {}) {
   const windowListeners = new Map();
   const documentListeners = new Map();
   const orientationListeners = new Set();
@@ -128,6 +128,8 @@ function runtimeEnvironment({ permission = false } = {}) {
   const controls = [];
   const observers = [];
   const properties = new Map();
+  const claySamples = [];
+  const clayLifecycle = [];
   let nextFrame = 1;
   let nextTimer = 1;
   let clock = 0;
@@ -173,7 +175,7 @@ function runtimeEnvironment({ permission = false } = {}) {
   const window = {
     DeviceOrientationEvent: OrientationEvent,
     KSEpkOrientationCore: Core,
-    ksEpkOrientationConfig: { adapter: "dmitri-my-talisman", pageId: 298 },
+    ksEpkOrientationConfig: { adapter, pageId: adapter === "clay-stars" ? 252 : 298 },
     navigator: { userAgent: "Mozilla/5.0 (iPhone) Mobile", maxTouchPoints: 5 },
     screen: {
       width: 390,
@@ -197,6 +199,13 @@ function runtimeEnvironment({ permission = false } = {}) {
     removeEventListener(name, callback) { remove(windowListeners, name, callback); },
     MutationObserver,
   };
+  if (adapter === "clay-stars") {
+    window.DanceMovesClayStars = {
+      root,
+      setMotion(sample) { claySamples.push({ ...sample }); },
+      lifecycle(state) { clayLifecycle.push(state); },
+    };
+  }
   const document = {
     readyState: "complete",
     hidden: false,
@@ -205,7 +214,10 @@ function runtimeEnvironment({ permission = false } = {}) {
     addEventListener(name, callback) { add(documentListeners, name, callback); },
     removeEventListener(name, callback) { remove(documentListeners, name, callback); },
     getElementById: () => null,
-    querySelector: selector => selector === ".dmt-epk" ? root : null,
+    querySelector: selector => {
+      if (adapter === "clay-stars" && selector === ".ks-epk.ks-clay-stars-v2") return root;
+      return selector === ".dmt-epk" ? root : null;
+    },
     createElement() {
       const listeners = new Map();
       return {
@@ -227,6 +239,7 @@ function runtimeEnvironment({ permission = false } = {}) {
   }
   return {
     window, document, root, properties, controls, observers, frames, orientationListeners, reducedListeners,
+    claySamples, clayLifecycle,
     load,
     emitWindow(name, event) { emit(windowListeners, name, event); },
     emitDocument(name, event) { emit(documentListeners, name, event); },
@@ -281,6 +294,34 @@ assert.equal(runtime.frames.size, 0);
 assert.equal(runtime.listenerCount("deviceorientation"), 0);
 assert.equal(runtime.properties.size, 0);
 assert.equal(runtime.orientationListeners.size, 0);
+
+// The Clay/Stars page uses the shared device-orientation mapper and routes its
+// bounded display coordinates into the release-specific public motion API.
+const clay = runtimeEnvironment({ adapter: "clay-stars" });
+clay.load();
+assert.equal(clay.listenerCount("deviceorientation"), 1);
+assert.equal(clay.clayLifecycle.at(-1), "visible");
+assert.deepEqual(JSON.parse(JSON.stringify(clay.window.__ksEpkOrientationRuntime.snapshot())), {
+  adapter: "clay-stars",
+  active: false,
+  listening: true,
+  destroyed: false,
+  latest: { x: 0, y: 0 },
+  reducedMotion: false,
+  documentHidden: false,
+});
+clay.emitWindow("deviceorientation", { beta: 0, gamma: 0 });
+clay.flushFrame(0);
+clay.emitWindow("deviceorientation", { beta: -12, gamma: 9 });
+clay.flushFrame(32);
+assert.ok(clay.claySamples.length >= 2, "Clay receives neutral and moved samples");
+assert.ok(Math.abs(clay.claySamples.at(-1).x) > 0.2, "Clay receives perceptually scaled horizontal motion");
+assert.ok(Math.abs(clay.claySamples.at(-1).y) > 0.2, "Clay receives perceptually scaled vertical motion");
+assert.equal(clay.root.dataset.ksOrientation, "active");
+assert.equal(clay.window.__ksEpkOrientationRuntime.snapshot().active, true);
+clay.setReduced(true);
+assert.equal(clay.listenerCount("deviceorientation"), 0);
+assert.equal(clay.clayLifecycle.at(-1), "visible", "visible reduced-motion reset remains neutral without inventing page visibility");
 
 // P-020: permission remains user-gesture gated and creates one control.
 (async () => {

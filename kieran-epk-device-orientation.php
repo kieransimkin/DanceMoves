@@ -2,7 +2,7 @@
 /**
  * Plugin Name: DanceMoves
  * Description: Adds BPM-synchronised motion, lyric and cue timing properties, named cue handlers, and permission-aware orientation control to EPK pages.
- * Version: 2.3.1
+ * Version: 2.3.2
  * Author: Kieran Simkin
  * License: GPL-2.0-or-later
  */
@@ -11,7 +11,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('DANCE_MOVES_VERSION', '2.3.1');
+define('DANCE_MOVES_VERSION', '2.3.2');
 define('KS_EPK_ORIENTATION_VERSION', DANCE_MOVES_VERSION);
 define('KS_EPK_MOTION_CAPTURE_TOKEN', 'e4c1d9a77fb446608e796a0f8fd8f576e59d2e67bca54a4d9f7fd06fbef3e1c2');
 
@@ -26,6 +26,7 @@ function dance_moves_orientation_adapters() {
         130 => 'dying-for-a-diagnosis',
         140 => 'light-will-win',
         243 => 'presents-and-chocolate',
+        252 => 'clay-stars',
         268 => 'fully-nocturnal',
         270 => 'amnesty-honestly',
         276 => 'walk-with-me',
@@ -158,10 +159,15 @@ function ks_epk_orientation_enqueue_runtime() {
         true
     );
 
+    $orientation_dependencies = array('ks-epk-device-orientation-core', 'dance-moves-core');
+    if (DANCE_MOVES_CLAY_STARS_PAGE_ID === (int) $page_id && !defined('KS_CLAY_STARS_EFFECTS_VERSION')) {
+        $orientation_dependencies[] = 'dance-moves-clay-stars';
+    }
+
     wp_enqueue_script(
         'ks-epk-device-orientation',
         $base_url . 'ks-epk-device-orientation.js',
-        array('ks-epk-device-orientation-core', 'dance-moves-core'),
+        $orientation_dependencies,
         KS_EPK_ORIENTATION_VERSION,
         true
     );

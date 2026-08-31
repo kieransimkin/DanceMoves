@@ -1,6 +1,6 @@
 # DanceMoves
 
-DanceMoves is Kieran Simkin's WordPress EPK motion runtime. Version 2.0.0 added page-level BPM, lyric-timing and cue-timing properties; a 16-ticks-per-beat musical clock; cue-driven animation resets; named cue and interval handlers; the existing seven device-orientation adapters; and the release-specific Made from the Clay and the Stars effects adapter. Version 2.1.0 moved the neutral shared EPK control and lyric-disclosure transitions onto page-resolved integer tick durations. Version 2.2.0 added catalogue-wide adoption for release-owned CSS animations, transitions, delays and timing custom properties. Version 2.3.0 confines stylesheet conversion to EPK-owned selectors and the timing variables they reference, so a mixed theme or admin stylesheet cannot transfer ownership to unrelated rules; it also carries the separately staged Clay/Stars runtime and harness refinements already present in the workspace. Version 2.3.1 raises only the Clay/Stars bounded motion gain to 2x so physical phone tilt is clearly visible while reduced motion, geometry and all other EPK systems remain unchanged.
+DanceMoves is Kieran Simkin's WordPress EPK motion runtime. Version 2.0.0 added page-level BPM, lyric-timing and cue-timing properties; a 16-ticks-per-beat musical clock; cue-driven animation resets; named cue and interval handlers; the existing seven device-orientation adapters; and the release-specific Made from the Clay and the Stars effects adapter. Version 2.1.0 moved the neutral shared EPK control and lyric-disclosure transitions onto page-resolved integer tick durations. Version 2.2.0 added catalogue-wide adoption for release-owned CSS animations, transitions, delays and timing custom properties. Version 2.3.0 confines stylesheet conversion to EPK-owned selectors and the timing variables they reference, so a mixed theme or admin stylesheet cannot transfer ownership to unrelated rules; it also carries the separately staged Clay/Stars runtime and harness refinements already present in the workspace. Version 2.3.1 raises the Clay/Stars bounded motion gain to 2x. Version 2.3.2 routes the shared permission-aware orientation runtime into that Clay/Stars adapter so physical device events actually drive its motion API while reduced motion, geometry and all other EPK systems remain unchanged.
 
 The WordPress plugin name is **DanceMoves**. The distributable ZIP deliberately retains the internal `kieran-epk-device-orientation` folder and entrypoint name so WordPress upgrades the installed plugin rather than installing a parallel copy.
 
@@ -197,6 +197,30 @@ No WordPress upload, timing-media upload, page-meta save or legacy-plugin deacti
 - **Verification:** a fresh tab in the existing signed-in browser loaded each private WordPress Motion Capture editor and allowed all seven JSON records to be audited without reauthentication.
 - **Limit:** this recovery applies when the connection is healthy and only the tab is stale; it is not a reason to reset a working browser session or switch browsers.
 
+### The desktop browser controller cannot attach directly to an Android DevTools WebSocket
+
+- **Symptom:** a phone-tab diagnostic through the persistent desktop browser controller fails with `WebSocket is not defined` even after ADB has exposed an exact filtered EPK target.
+- **Cause when verified:** the controller's JavaScript runtime does not provide a WebSocket client, while the installed local Node runtime used by the existing CDP tooling does.
+- **Corrective action:** after informed approval for Chrome's broader debugging surface, enumerate targets locally without printing unrelated tabs, select the exact EPK URL, and pass only that page's local WebSocket URL to `tools/inspect-phone-epk.mjs`.
+- **Verification:** require the diagnostic output URL to equal the selected EPK URL and inspect only that returned page state.
+- **Limit:** ADB's `chrome_devtools_remote` endpoint exposes Chrome's tab-debugging surface before filtering. Never enable it without informed approval, and never enumerate, attach to or report unrelated targets.
+
+### Android Chrome background tabs can stall timer-based DevTools diagnostics
+
+- **Symptom:** `Runtime.evaluate` times out after a diagnostic awaits a page timer, even though DevTools connected and `Runtime.enable` succeeded.
+- **Cause when verified:** the disposable injected EPK tab stalled and the second same-origin EPK tab was background-throttled. Its timer-based probe did not complete until the exact disposable tab was closed and the original EPK became foreground.
+- **Corrective action:** close only the explicitly created disposable test tab, confirm the remaining exact EPK target is visible, and rerun the bounded diagnostic there. Reload the target with cache disabled when a stale asset version is present.
+- **Verification:** the foreground EPK returned its full runtime snapshot, current script versions and sensor state without touching another Chrome target.
+- **Limit:** never close or navigate a tab that was not created or explicitly placed in scope for the test.
+
+### Synthetic orientation dispatch is not a physical Android sensor proof
+
+- **Symptom:** an event dispatched inside one DevTools evaluation is observed by a temporary listener from that evaluation but not by a production listener created in another execution world; the listener still appears in `DOMDebugger.getEventListeners`.
+- **Cause when verified:** Android Chrome kept the DevTools evaluation worlds isolated for this synthetic event path. The result does not show that the production listener is absent or that native sensor delivery is broken.
+- **Corrective action:** use the deterministic shared-runtime unit test to prove mapper-to-adapter routing, use the exact phone tab only to confirm the production listener is installed and listening, and reserve a physical-device pass for actual native events plus visible transforms after deployment.
+- **Verification:** the 2.3.2 unit fixture delivers bounded orientation samples into the real Clay adapter factory, marks it active, and stops listening under reduced motion; the phone runtime reports one Clay `deviceorientation` listener with `listening: true`.
+- **Limit:** do not represent CDP event dispatch, listener invocation or device-orientation overrides as trusted physical sensor evidence.
+
 ### PowerShell loop output must be grouped before piping
 
 - **Symptom:** PowerShell reports `An empty pipe element is not allowed` after a `foreach (...) { ... } | Format-Table` construct.
@@ -204,6 +228,14 @@ No WordPress upload, timing-media upload, page-meta save or legacy-plugin deacti
 - **Corrective action:** group the emitted loop results as `$(foreach (...) { ... }) | Format-Table`, or use `ForEach-Object` in the pipeline.
 - **Verification:** the grouped command completed and returned the intended DanceMoves file line/byte inventory.
 - **Limit:** this fixes command parsing only; it does not validate the inspected files.
+
+### `Invoke-WebRequest` can return binary timing files as a byte array
+
+- **Symptom:** hashing an uploaded `.lrc` response after passing `Invoke-WebRequest.Content` through `UTF8.GetBytes()` produces a much larger byte count and a false SHA-256 mismatch; calling string methods such as `Substring()` on the content can also report that `System.Byte` has no such method.
+- **Cause when verified:** WordPress served the timing files as `application/octet-stream`, so Windows PowerShell exposed `Content` as the original `byte[]` rather than as a string. Re-encoding that array changed the data being hashed.
+- **Corrective action:** when `Content -is [byte[]]`, hash those bytes directly; only UTF-8 encode the value when it is actually a string.
+- **Verification:** the corrected public checks returned 7,037 lyric bytes with SHA-256 `4D0363A692A473AE8207D6711155F545FF6EDB7D92B125A2AA4E186B9F27BE7B` and 823 cue bytes with SHA-256 `C32F1D5AA036DBAD051A6BD08C257BA050D3EC8DEFC250ADC22DE6A3FCD15302`, both matching the canonical files.
+- **Limit:** select the decoding path from the response's actual runtime type; do not assume that every `Invoke-WebRequest` response is binary.
 
 ### Windows paths should use ripgrep's glob option rather than a literal wildcard argument
 

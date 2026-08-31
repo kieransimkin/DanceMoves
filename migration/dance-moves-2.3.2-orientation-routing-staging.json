@@ -1,0 +1,78 @@
+{
+  "schema": "dance-moves-fix-staging/v1",
+  "recorded_at": "2026-08-31T18:37:27.6159977+01:00",
+  "status": "validated_packaged_pending_exact_upload_approval",
+  "plugin": "DanceMoves",
+  "version": "2.3.2",
+  "diagnosis": {
+    "page": 252,
+    "url": "https://kieransimkin.co.uk/made-from-the-clay-and-the-stars-anunnaki/",
+    "observed_live_version": "2.3.1",
+    "user_observation": "no visible movement",
+    "native_phone_events_observed_before_fix": 32,
+    "device_orientation_available": true,
+    "reduced_motion": false,
+    "clay_runtime_present": true,
+    "orientation_runtime_present": false,
+    "root_cause": "Page 252 loaded the Clay effects API but was absent from the shared orientation adapter map, so native deviceorientation events were never routed into DanceMovesClayStars.setMotion()."
+  },
+  "fix": {
+    "page_252_adapter": "clay-stars",
+    "shared_orientation_runtime_enqueued": true,
+    "clay_runtime_dependency_enforced": true,
+    "adapter_calls": "DanceMovesClayStars.setMotion",
+    "perceptual_axis_mapping": true,
+    "runtime_snapshot_added": true,
+    "master_intensity": 2
+  },
+  "validation": {
+    "unit": "pass",
+    "package": "pass",
+    "runtime_fixture": "pass",
+    "runtime_fixture_checks": [
+      "one orientation listener",
+      "bounded non-zero Clay x/y samples",
+      "active state after motion",
+      "listener removal under reduced motion"
+    ],
+    "phone_exact_tab": {
+      "adapter": "clay-stars",
+      "listener_count": 1,
+      "listening": true,
+      "reduced_motion": false,
+      "document_hidden": false,
+      "physical_post_fix_judgement": "pending_after_deployment"
+    }
+  },
+  "package": {
+    "path": "dist/DanceMoves-2.3.2.zip",
+    "bytes": 48282,
+    "entries": 11,
+    "upgrade_root": true,
+    "sha256": "22007F9B2B199BA1A78B1B685EBB81446DA1216AB6DC74921C6241B1AA61E6A6"
+  },
+  "critical_files": [
+    {
+      "path": "assets/ks-epk-device-orientation.js",
+      "bytes": 16974,
+      "sha256": "998CB3A77D3E215DCA04C3C6BAAA258B85A581D643ABA7667D4EBF4BAC391C97"
+    },
+    {
+      "path": "kieran-epk-device-orientation.php",
+      "bytes": 25707,
+      "sha256": "35E0B3160732D7098B2332B2DC17A7F81CF20F0B46A62F2CEA86BAE4F226D196"
+    }
+  ],
+  "unchanged": [
+    "page body",
+    "BPM and timing metadata",
+    "lyric and cue attachments",
+    "Clay CSS and 2x gain asset",
+    "named cue and interval APIs",
+    "other page adapters"
+  ],
+  "rollback": {
+    "path": "dist/DanceMoves-2.3.1.zip",
+    "sha256": "B530E53C81CB7F9300B47DE55C1F79115F2A016AEDBEDEF5D778752903E76BDA"
+  }
+}

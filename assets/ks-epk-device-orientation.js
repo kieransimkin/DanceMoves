@@ -195,6 +195,23 @@
     };
   }
 
+  function clayStars() {
+    const root = document.querySelector(".ks-epk.ks-clay-stars-v2");
+    const api = window.DanceMovesClayStars;
+    if (!root || !api || api.root !== root || typeof api.setMotion !== "function") return null;
+    if (typeof api.lifecycle === "function") api.lifecycle(document.hidden ? "hidden" : "visible");
+    return {
+      root,
+      apply(x, y) {
+        api.setMotion({ x: perceptualAxis(x), y: perceptualAxis(y) });
+      },
+      reset() {
+        if (typeof api.lifecycle === "function") api.lifecycle(document.hidden ? "hidden" : "visible");
+        else api.setMotion({ x: 0, y: 0 });
+      },
+    };
+  }
+
   const factories = {
     "light-will-win": lightWillWin,
     "dying-for-a-diagnosis": dyingForADiagnosis,
@@ -203,6 +220,7 @@
     "amnesty-honestly": amnestyHonestly,
     "walk-with-me": walkWithMe,
     "dmitri-my-talisman": dmitriMyTalisman,
+    "clay-stars": clayStars,
   };
 
   function detectFactory() {
@@ -213,6 +231,7 @@
     if (document.querySelector('.ks-epk.fn-live[data-release="fully-nocturnal"]')) return fullyNocturnal;
     if (document.querySelector('.ks-epk[data-release="walk-with-me"]')) return walkWithMe;
     if (document.querySelector(".dmt-epk")) return dmitriMyTalisman;
+    if (document.querySelector(".ks-epk.ks-clay-stars-v2")) return clayStars;
     return null;
   }
 
@@ -389,7 +408,16 @@
       if (window.__ksEpkOrientationRuntime?.teardown === teardown) delete window.__ksEpkOrientationRuntime;
     };
 
-    window.__ksEpkOrientationRuntime = Object.freeze({ reset, teardown });
+    const snapshot = () => ({
+      adapter: config.adapter || "detected",
+      active,
+      listening,
+      destroyed,
+      latest: { ...latest },
+      reducedMotion: reducedMotion.matches,
+      documentHidden: document.hidden,
+    });
+    window.__ksEpkOrientationRuntime = Object.freeze({ reset, teardown, snapshot });
     if (typeof window.MutationObserver === "function" && document.documentElement) {
       observer = new window.MutationObserver(() => {
         if (adapter.root.isConnected === false) teardown();

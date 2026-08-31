@@ -1,0 +1,77 @@
+{
+  "schema": "dance-moves-wordpress-deployment/v1",
+  "recorded_at": "2026-08-31T18:07:17.0236832+01:00",
+  "status": "published_technical_checks_passed_physical_motion_failed",
+  "site": "https://kieransimkin.co.uk/",
+  "plugin": {
+    "name": "DanceMoves",
+    "upgrade_slug": "kieran-epk-device-orientation",
+    "previous_version": "2.3.0",
+    "published_version": "2.3.1",
+    "active_after_update": true
+  },
+  "package": {
+    "path": "dist/DanceMoves-2.3.1.zip",
+    "bytes": 46490,
+    "entries": 11,
+    "sha256": "B530E53C81CB7F9300B47DE55C1F79115F2A016AEDBEDEF5D778752903E76BDA"
+  },
+  "wordpress_result": "Plugin updated successfully.",
+  "public_asset": {
+    "url": "https://kieransimkin.co.uk/wp-content/plugins/kieran-epk-device-orientation/assets/clay-stars-effects.js?ver=2.3.1",
+    "status": 200,
+    "bytes": 12624,
+    "sha256": "E585A5507183DD90CFFEDE2252091C85823931248A42323739E882E40C08BDB0",
+    "matches_approved_package": true,
+    "master_intensity_default": 2
+  },
+  "catalogue_check": {
+    "manifest_pages": 47,
+    "http_200": 47,
+    "dance_moves_2_3_1": 47,
+    "replacement_character_pages": 0,
+    "admin_bar_pages": 0
+  },
+  "page_252": {
+    "url": "https://kieransimkin.co.uk/made-from-the-clay-and-the-stars-anunnaki/",
+    "bpm": 116,
+    "lyric_timing_url": "https://kieransimkin.co.uk/wp-content/uploads/2026/08/dance-moves-252-lyric.lrc",
+    "lyric_timing_bytes": 7037,
+    "lyric_timing_sha256": "4D0363A692A473AE8207D6711155F545FF6EDB7D92B125A2AA4E186B9F27BE7B",
+    "cue_timing_url": "https://kieransimkin.co.uk/wp-content/uploads/2026/08/dance-moves-252-cue.lrc",
+    "cue_timing_bytes": 823,
+    "cue_timing_sha256": "C32F1D5AA036DBAD051A6BD08C257BA050D3EC8DEFC250ADC22DE6A3FCD15302",
+    "root_count": 1,
+    "player_count": 1,
+    "chapter_count": 5,
+    "legacy_clay_asset_count": 0
+  },
+  "signed_out_viewports": {
+    "evidence": "qa/public-2.3.1-live-2026-08-31/viewport-evidence.json",
+    "widths": [1440, 900, 390],
+    "positive_horizontal_overflow": 0,
+    "replacement_characters": 0,
+    "visual_review": "pass"
+  },
+  "phone": {
+    "model": "Samsung Galaxy A40 (SM-A405FN)",
+    "android": 11,
+    "refresh_hz": 60.000004,
+    "browser": "Chrome 151.0.7922.173",
+    "cache_busted_url_opened": true,
+    "subjective_gain_judgement": "no_movement_observed"
+  },
+  "unchanged": [
+    "WordPress page body",
+    "EPK BPM and timing metadata",
+    "lyric timing attachment",
+    "cue timing attachment",
+    "all non-Clay adapters",
+    "reduced-motion behavior",
+    "timing, cue and interval APIs"
+  ],
+  "rollback": {
+    "path": "../DanceMoves/dist/DanceMoves-2.3.0.zip",
+    "sha256": "D690FD0A411BC704E464306B34E84DD40C241B9F96CF0B4E01EDB76D6CBA7CF4"
+  }
+}
