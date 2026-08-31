@@ -17,7 +17,7 @@
     const timingParameters = new URLSearchParams(location.search);
     window.danceMovesConfig = {
       pageId: 250,
-      version: "2.2.0",
+      version: "2.3.0",
       bpm: Number(timingParameters.get("bpm")) || 120,
       bpmSource: timingParameters.has("bpm") ? "explicit" : "fallback",
       sharedControlTicks: Number(timingParameters.get("shared") ?? 8),

@@ -15,7 +15,7 @@ assert.match(source, /REDUCED_MOTION_MAXIMUM_MILLISECONDS/);
 assert.match(source, /VIEW_TIMELINE_SENTINEL_MILLISECONDS/);
 assert.match(source, /registerAnimationScope\(root, \["\*"\]\)/);
 assert.match(source, /ROOT_SELECTORS/);
-assert.match(source, /rulesOwnRoot/);
+assert.doesNotMatch(source, /ownedSheet\s*\|\|/, "a stylesheet containing one EPK selector must not transfer ownership to unrelated rules");
 assert.match(source, /convertComputedDeclaration/);
 assert.match(source, /convertPseudoDeclarations/);
 assert.match(source, /dance-moves-catalogue-pseudo-timing/);
@@ -67,11 +67,22 @@ const viewRule = {
     [Symbol.iterator]: function* () { yield* Object.keys(this.values); }
   }
 };
+const unrelatedRule = {
+  type: 1,
+  selectorText: ".wp-admin .toolbar",
+  style: {
+    values: { "transition-duration": "0.4s" },
+    getPropertyValue(name) { return this.values[name] || ""; },
+    getPropertyPriority() { return ""; },
+    setProperty(name, value) { this.values[name] = value; },
+    [Symbol.iterator]: function* () { yield* Object.keys(this.values); }
+  }
+};
 const documentElement = { dataset: {} };
 const document = {
   querySelector: selector => selector === ".ks-epk" ? root : null,
-  querySelectorAll: () => [root],
-  styleSheets: [{ href: null, cssRules: [animationRule, viewRule] }],
+  querySelectorAll: selector => String(selector).includes("ks-epk") ? [root] : [],
+  styleSheets: [{ href: null, cssRules: [animationRule, viewRule, unrelatedRule] }],
   createElement() { return { id: "", textContent: "" }; },
   head: { appendChild() {} },
   documentElement
@@ -112,6 +123,7 @@ assert.equal(animationRule.style.values["animation-delay"], "-3500.000000ms", "n
 assert.equal(animationRule.style.values["transition-duration"], "187.500000ms", "0.2 seconds becomes 6 ticks at 120 BPM");
 assert.equal(animationRule.style.values["transition-delay"], "0.01ms", "reduced-motion sentinel remains authoritative");
 assert.equal(viewRule.style.values["animation-duration"], "1ms", "view-timeline interpolation sentinel stays view-driven");
+assert.equal(unrelatedRule.style.values["transition-duration"], "0.4s", "unrelated rules in a mixed stylesheet remain untouched");
 assert.equal(root.dataset.danceMovesCatalogueTiming, "ready");
 assert.equal(documentElement.dataset.danceMovesCatalogueTiming, "ready");
 assert.equal(window.DanceMovesCatalogueTiming.snapshot().conversionCount, 3);

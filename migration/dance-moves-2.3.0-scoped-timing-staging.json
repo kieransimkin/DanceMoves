@@ -1,0 +1,55 @@
+{
+  "schema": "dance-moves-wordpress-staging/v1",
+  "created_at": "2026-08-31T16:20:42+01:00",
+  "plugin_name": "DanceMoves",
+  "version": "2.3.0",
+  "package": "dist/DanceMoves-2.3.0.zip",
+  "package_bytes": 42610,
+  "package_sha256": "D690FD0A411BC704E464306B34E84DD40C241B9F96CF0B4E01EDB76D6CBA7CF4",
+  "entry_count": 11,
+  "wordpress_upgrade_slug": "kieran-epk-device-orientation",
+  "production_assets": {
+    "assets/dance-moves-catalogue-timing.js": "E2CBBE1729BF52D69C060C8999D157B45BCBDA96D7EE9FE93131FD86F45525BE",
+    "assets/clay-stars-effects.js": "43C5A3129420C4F9AD3AF51B03D2DA41FE358C3C72C97F54CB8F3F4348EDCAE9",
+    "assets/clay-stars-effects.css": "48DE19BAB0DE6B795BC9BF03D94CA6864713EADF87DBF63E47CBE38008BFD41D"
+  },
+  "live_baseline": {
+    "version": "2.2.0",
+    "status": "active and verified",
+    "package_sha256": "8051911EE03D4D3524440D9F62F4CD6731244FB29C7C0A2738C94B7B00065438",
+    "catalogue_asset_sha256": "89A9A750AA0B0936516DE8D44C090C989530A0767C5EDDFB98038DDE84E20013",
+    "catalogue_pages_http_200": 47,
+    "responsive_runtime_checks_ready": 51
+  },
+  "scope": [
+    "Confine catalogue stylesheet timing conversion to selectors that own an EPK root and to externally defined timing custom properties those selectors reference.",
+    "Prevent WordPress theme and admin rules in mixed stylesheets from inheriting EPK timing ownership.",
+    "Include the separately staged Clay/Stars lifecycle, bounded-parameter, compositor and shared-harness refinements present in the source tree.",
+    "Keep page bodies, BPM metadata and uploaded LRC/CUE media unchanged."
+  ],
+  "validation": {
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\tools\\validate.ps1 -Mode All",
+    "status": "PASS",
+    "page_manifest": {
+      "pages": 47,
+      "explicit_bpm": 3,
+      "fallback_bpm": 44,
+      "lyric_files": 12,
+      "cue_files": 1
+    },
+    "shared_harness": "PASS",
+    "clay_adapter_contracts": "PASS",
+    "legacy_collision": "PASS",
+    "strict_utf8": "PASS",
+    "package_layout": "PASS"
+  },
+  "rollback": {
+    "package": "dist/DanceMoves-2.2.0.zip",
+    "sha256": "8051911EE03D4D3524440D9F62F4CD6731244FB29C7C0A2738C94B7B00065438"
+  },
+  "wordpress_action": {
+    "status": "pending exact action-time approval",
+    "approved": false,
+    "instruction": "Upload only the exact 2.3.0 ZIP and SHA-256 recorded above, replace the existing plugin once, then repeat signed-out asset, catalogue, responsive, reduced-motion and cue/audio verification."
+  }
+}

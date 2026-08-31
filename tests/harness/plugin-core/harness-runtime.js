@@ -12,6 +12,7 @@
     activePreset: "a",
     captureActive: false,
     candidateConnected: false,
+    candidateUrl: "",
     latestMetrics: null,
     pathFrame: 0,
     pathName: "stop",
@@ -332,6 +333,11 @@
     const message = event.data;
     if (!message || message.channel !== CHANNEL) return;
     if (message.type === "ready") {
+      if (state.candidateUrl && new URL(message.payload?.href || "", location.href).href !== state.candidateUrl) {
+        addTimeline(`error: candidate URL mismatch (${message.payload?.href || "missing"})`);
+        nodes.status.textContent = "Harness failed: candidate URL mismatch";
+        return;
+      }
       send("configure", { manifest: state.manifest, values: state.values });
       markCandidateConnected();
     } else if (message.type === "parameter-applied") {
@@ -399,17 +405,20 @@
       presetA: byId("preset-a"), presetB: byId("preset-b"), motionX: byId("motion-x"), motionY: byId("motion-y"),
       xOutput: byId("x-output"), yOutput: byId("y-output"), paths: byId("paths"), fireCue: byId("fire-cue"), fireCues: byId("fire-cues")
     });
-    const response = await fetch("./effect-harness.manifest.json", { cache: "no-store" });
+    const manifestUrl = new URLSearchParams(location.search).get("manifest") || "./effect-harness.manifest.json";
+    const response = await fetch(manifestUrl, { cache: "no-store" });
     if (!response.ok) throw new Error(`Manifest request failed: ${response.status}`);
     state.manifest = await response.json();
     state.defaults = Object.fromEntries(state.manifest.parameters.map(parameter => [parameter.id, parameter.default]));
     state.values = { ...state.defaults };
     state.candidatePreset = { ...state.defaults };
+    state.candidateUrl = new URL(state.manifest.effect.candidate, response.url).href;
     byId("lab-title").textContent = `${state.manifest.effect.title} · live test lab`;
     buildParameters();
     buildViewports();
     buildCues();
     bindStaticControls();
+    nodes.candidate.src = state.candidateUrl;
     configureCandidate();
   }
 

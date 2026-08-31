@@ -12,7 +12,7 @@
     "productionHashes": {
       "../../../assets/dance-moves-core.css": "197E0D51F400A3D875ACB6E12238417FAA3D54853708F72EEB792342F533AD8D",
       "../../../assets/dance-moves-core.js": "7337D940C85DAFF366A3B41D7D91997772ACA1C22A53713B5C0529925AA9C59C",
-      "../../../assets/dance-moves-catalogue-timing.js": "89A9A750AA0B0936516DE8D44C090C989530A0767C5EDDFB98038DDE84E20013"
+      "../../../assets/dance-moves-catalogue-timing.js": "E2CBBE1729BF52D69C060C8999D157B45BCBDA96D7EE9FE93131FD86F45525BE"
     },
     "inputModes": ["pointer", "keyboard", "cue"]
   },

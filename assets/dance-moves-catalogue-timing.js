@@ -141,23 +141,18 @@
     });
   }
 
-  function rulesOwnRoot(rules) {
-    return Array.from(rules || []).some(function (rule) {
-      if (rule.type === 1 && selectorOwnsRoot(rule.selectorText)) return true;
-      return rule.cssRules ? rulesOwnRoot(rule.cssRules) : false;
-    });
-  }
-
-  function convertDeclaration(style, source, motionVariables, viewTimeline) {
-    MOTION_PROPERTIES.forEach(function (property) {
-      var before = style.getPropertyValue(property);
-      if (!before) return;
-      var result = replaceTimeTokens(before, { viewTimeline: viewTimeline && property.indexOf("animation-") === 0 });
-      if (result.value !== before) {
-        style.setProperty(property, result.value, style.getPropertyPriority(property));
-        recordConversion(source, property, before, result.value, result.conversions);
-      }
-    });
+  function convertDeclaration(style, source, motionVariables, viewTimeline, includeMotionProperties) {
+    if (includeMotionProperties !== false) {
+      MOTION_PROPERTIES.forEach(function (property) {
+        var before = style.getPropertyValue(property);
+        if (!before) return;
+        var result = replaceTimeTokens(before, { viewTimeline: viewTimeline && property.indexOf("animation-") === 0 });
+        if (result.value !== before) {
+          style.setProperty(property, result.value, style.getPropertyPriority(property));
+          recordConversion(source, property, before, result.value, result.conversions);
+        }
+      });
+    }
 
     Array.from(style).filter(function (property) {
       return property.indexOf("--") === 0 && motionVariables.has(property) && !property.startsWith("--dance-moves-");
@@ -172,12 +167,24 @@
     });
   }
 
-  function convertRules(rules, sheetLabel, motionVariables, ownedSheet) {
+  function convertRules(rules, sheetLabel, motionVariables) {
     Array.from(rules || []).forEach(function (rule, index) {
-      if (rule.type === 1 && (ownedSheet || selectorOwnsRoot(rule.selectorText))) {
-        convertDeclaration(rule.style, sheetLabel + ":rule:" + index, motionVariables, ruleUsesViewTimeline(rule));
+      if (rule.type === 1) {
+        var ownsRoot = selectorOwnsRoot(rule.selectorText);
+        var definesReferencedVariable = Array.from(rule.style).some(function (property) {
+          return property.indexOf("--") === 0 && motionVariables.has(property) && !property.startsWith("--dance-moves-");
+        });
+        if (ownsRoot || definesReferencedVariable) {
+          convertDeclaration(
+            rule.style,
+            sheetLabel + ":rule:" + index,
+            motionVariables,
+            ownsRoot && ruleUsesViewTimeline(rule),
+            ownsRoot
+          );
+        }
       }
-      if (rule.cssRules) convertRules(rule.cssRules, sheetLabel + ":group:" + index, motionVariables, ownedSheet);
+      if (rule.cssRules) convertRules(rule.cssRules, sheetLabel + ":group:" + index, motionVariables);
     });
   }
 
@@ -243,7 +250,7 @@
     Array.from(document.styleSheets).forEach(function (sheet, index) {
       var rules = accessibleRules(sheet);
       if (!rules) return;
-      convertRules(rules, sheet.href || "inline-sheet-" + index, motionVariables, rulesOwnRoot(rules));
+      convertRules(rules, sheet.href || "inline-sheet-" + index, motionVariables);
     });
 
     var pseudoRules = [];

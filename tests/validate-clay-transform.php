@@ -3,7 +3,8 @@ declare(strict_types=1);
 
 define('ABSPATH', __DIR__);
 
-function is_page($id = 0): bool { return 252 === $id; }
+$current_page_id = 252;
+function is_page($id = 0): bool { global $current_page_id; return (int) $id === $current_page_id; }
 function is_admin(): bool { return false; }
 function in_the_loop(): bool { return true; }
 function is_main_query(): bool { return true; }
@@ -24,6 +25,10 @@ if (false === $base || false === $candidate) {
 
 require $repo . '/kieran-epk-device-orientation.php';
 $transformed = dance_moves_clay_stars_filter_content($base);
+$transformed_twice = dance_moves_clay_stars_filter_content($transformed);
+$current_page_id = 999;
+$untargeted = dance_moves_clay_stars_filter_content($base);
+$current_page_id = 252;
 $candidate_without_assets = preg_replace(
     array(
         '#<style id="ks-clay-stars-warm-light-style">.*?</style>\n#s',
@@ -35,6 +40,8 @@ $candidate_without_assets = preg_replace(
 
 $checks = array(
     'transform_matches_approved_candidate_dom' => is_string($candidate_without_assets) && hash_equals(hash('sha256', $candidate_without_assets), hash('sha256', $transformed)),
+    'transform_is_idempotent' => hash_equals(hash('sha256', $transformed), hash('sha256', $transformed_twice)),
+    'unknown_page_is_untouched' => hash_equals(hash('sha256', $base), hash('sha256', $untargeted)),
     'warm_bloom_count' => 1 === substr_count($transformed, 'class="ks-warm-bloom"'),
     'lens_flare_count' => 1 === substr_count($transformed, 'class="ks-lens-flare"'),
     'specular_sweep_count' => 1 === substr_count($transformed, 'class="ks-specular-sweep"'),

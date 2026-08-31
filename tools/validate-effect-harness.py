@@ -214,20 +214,35 @@ def validate_manifest(root: Path, manifest: dict, report: Report) -> None:
     validate_parameters(manifest, report)
 
 
+def keyframe_ranges(text: str) -> list[tuple[int, int]]:
+    ranges: list[tuple[int, int]] = []
+    for match in re.finditer(r"@(?:-webkit-)?keyframes\b", text, re.I):
+        opening = text.find("{", match.end())
+        if opening == -1:
+            continue
+        depth = 0
+        for index in range(opening, len(text)):
+            if text[index] == "{":
+                depth += 1
+            elif text[index] == "}":
+                depth -= 1
+                if depth == 0:
+                    ranges.append((opening, index + 1))
+                    break
+    return ranges
+
+
 def scan_css_text(text: str, relative: str, policy: dict, report: Report) -> None:
     fail = {item.lower() for item in policy.get("failContinuous", [])}
     review = {item.lower() for item in policy.get("review", [])}
-    in_keyframes = False
-    keyframe_depth = 0
+    ranges = keyframe_ranges(text)
+    line_offset = 0
     for line_number, line in enumerate(text.splitlines(), 1):
         lower = line.lower()
-        if "@keyframes" in lower or "@-webkit-keyframes" in lower:
-            in_keyframes = True
-            keyframe_depth = 0
-        if in_keyframes:
-            keyframe_depth += line.count("{") - line.count("}")
         for match in re.finditer(r"(?<![-\w])([a-z-]+)\s*:\s*([^;{}]+)", lower):
             prop, value = match.group(1), match.group(2)
+            absolute_offset = line_offset + match.start()
+            in_keyframes = any(start <= absolute_offset < end for start, end in ranges)
             trigger = "keyframes" if in_keyframes else "transition" if prop.startswith("transition") else "declaration"
             candidates = {prop} if trigger != "declaration" or prop in review else set()
             if prop.startswith("transition"):
@@ -244,8 +259,7 @@ def scan_css_text(text: str, relative: str, policy: dict, report: Report) -> Non
         for consumer in re.finditer(r"([a-z-]+)\s*:[^;{}]*var\((--[A-Za-z0-9_-]+)", line):
             prop, variable = consumer.group(1).lower(), consumer.group(2)
             report.variable_consumers.setdefault(variable, []).append({"property": prop, "path": relative, "line": str(line_number)})
-        if in_keyframes and keyframe_depth <= 0 and "}" in line:
-            in_keyframes = False
+        line_offset += len(line) + 1
 
 
 def scan_css(path: Path, root: Path, policy: dict, report: Report) -> None:
@@ -267,16 +281,26 @@ def scan_javascript(path: Path, root: Path, policy: dict, report: Report) -> Non
     scan_javascript_text(path.read_text(encoding="utf-8"), relative, policy, report)
 
 
-def validate_harness(root: Path, mode: str) -> Report:
-    report = Report(root, mode)
+def validate_harness(root: Path, mode: str, manifest_file: Path | None = None, shared_root: Path | None = None) -> Report:
+    manifest_path = manifest_file or (root / "effect-harness.manifest.json")
+    asset_root = manifest_path.parent
+    common_root = shared_root or root
+    shared_manifest = manifest_file is not None
+    report = Report(asset_root, mode)
     if not root.is_dir():
         report.add("FAIL", "ROOT", "Harness directory does not exist")
         return report
     for name in REQUIRED_FILES:
-        if not (root / name).is_file():
+        if shared_manifest and name == "effect-harness.manifest.json":
+            continue
+        if shared_manifest and name == "candidate.html":
+            continue
+        required_root = asset_root if shared_manifest and name == "effect-under-test-adapter.js" else common_root
+        if not (required_root / name).is_file():
             report.add("FAIL", "REQUIRED_FILE", f"Required file missing: {name}", name)
-    strict_text_files(root, report)
-    manifest_path = root / "effect-harness.manifest.json"
+    strict_text_files(common_root, report)
+    if asset_root != common_root:
+        strict_text_files(asset_root, report)
     if not manifest_path.is_file():
         return report
     try:
@@ -287,14 +311,16 @@ def validate_harness(root: Path, mode: str) -> Report:
     if not isinstance(manifest, dict):
         report.add("FAIL", "MANIFEST", "Manifest root must be an object")
         return report
-    validate_manifest(root, manifest, report)
+    validate_manifest(asset_root, manifest, report)
 
-    combined = "\n".join((root / name).read_text(encoding="utf-8") for name in ["live-lab.html", "harness-runtime.js", "harness-bridge.js", "effect-under-test-adapter.js"] if (root / name).is_file())
+    combined_paths = [common_root / name for name in ["live-lab.html", "harness-runtime.js", "harness-bridge.js"]]
+    combined_paths.append(asset_root / "effect-under-test-adapter.js")
+    combined = "\n".join(path.read_text(encoding="utf-8") for path in combined_paths if path.is_file())
     if re.search(r"wp-json/wp/v2|admin-ajax\.php|\bmethod\s*:\s*[\"'](?:POST|PUT|PATCH|DELETE)", combined, re.I):
         report.add("FAIL", "MUTATION", "Harness contains a possible WordPress or mutating network path")
     pending = []
     for name in ["candidate.html", "effect-under-test-adapter.js"]:
-        path = root / name
+        path = asset_root / name
         if path.is_file() and "HARNESS-INTEGRATION-PENDING" in path.read_text(encoding="utf-8"):
             pending.append(name)
     if pending:
@@ -303,33 +329,36 @@ def validate_harness(root: Path, mode: str) -> Report:
     policy = manifest.get("cssPolicy") if isinstance(manifest.get("cssPolicy"), dict) else {"failContinuous": [], "review": []}
     scanned: set[Path] = set()
     css_assets = manifest.get("effect", {}).get("productionCss", [])
-    for path in [resolve_asset(root, item) for item in css_assets]:
+    for path in [resolve_asset(asset_root, item) for item in css_assets]:
         if path.is_file() and path not in scanned:
-            scan_css(path, root, policy, report)
+            scan_css(path, asset_root, policy, report)
             scanned.add(path)
     js_assets = manifest.get("effect", {}).get("productionJs", [])
-    for path in [root / "effect-under-test-adapter.js", *[resolve_asset(root, item) for item in js_assets]]:
+    for path in [asset_root / "effect-under-test-adapter.js", *[resolve_asset(asset_root, item) for item in js_assets]]:
         if path.is_file():
-            scan_javascript(path, root, policy, report)
-    candidate = root / "candidate.html"
+            scan_javascript(path, asset_root, policy, report)
+    candidate_name = manifest.get("effect", {}).get("candidate", "candidate.html")
+    candidate = resolve_asset(asset_root, candidate_name)
+    if not candidate.is_file():
+        report.add("FAIL", "REQUIRED_FILE", f"Required candidate missing: {candidate_name}", str(candidate_name))
     if candidate.is_file():
         candidate_text = candidate.read_text(encoding="utf-8")
         for index, match in enumerate(re.finditer(r"<style\b[^>]*>(.*?)</style>", candidate_text, re.I | re.S), 1):
             scan_css_text(match.group(1), f"candidate.html#inline-style-{index}", policy, report)
         for index, match in enumerate(re.finditer(r"<script\b(?![^>]*\bsrc\s*=)[^>]*>(.*?)</script>", candidate_text, re.I | re.S), 1):
             scan_javascript_text(match.group(1), f"candidate.html#inline-script-{index}", policy, report)
-    harness_css = root / "harness.css"
+    harness_css = common_root / "harness.css"
     if harness_css.is_file() and "prefers-reduced-motion" not in harness_css.read_text(encoding="utf-8"):
         report.add("FAIL", "REDUCED_MOTION", "Harness CSS lacks reduced-motion handling", "harness.css")
 
     if mode == "prelive":
         for name in PRELIVE_EVIDENCE:
-            if not (root / name).is_file():
+            if not (asset_root / name).is_file():
                 report.add("FAIL", "EVIDENCE", f"Pre-live evidence missing: {name}", name)
         modes = manifest.get("effect", {}).get("inputModes", [])
         if "orientation" in modes:
             for name in ["evidence/physical/iphone-safari.json", "evidence/physical/android-chrome.json"]:
-                if not (root / name).is_file():
+                if not (asset_root / name).is_file():
                     report.add("FAIL", "PHYSICAL_DEVICE", f"Orientation effect evidence missing: {name}", name)
     return report
 
@@ -339,8 +368,15 @@ def main() -> int:
     parser.add_argument("harness", type=Path)
     parser.add_argument("--mode", choices=["scaffold", "prelive"], default="scaffold")
     parser.add_argument("--json-out", type=Path)
+    parser.add_argument("--manifest-file", type=Path, help="Validate an effect manifest that reuses a shared harness core")
+    parser.add_argument("--shared-root", type=Path, help="Shared live-lab/runtime directory used with --manifest-file")
     args = parser.parse_args()
-    report = validate_harness(args.harness.resolve(), args.mode)
+    report = validate_harness(
+        args.harness.resolve(),
+        args.mode,
+        args.manifest_file.resolve() if args.manifest_file else None,
+        args.shared_root.resolve() if args.shared_root else None,
+    )
     result = report.result()
     output = json.dumps(result, indent=2, ensure_ascii=False)
     print(output)

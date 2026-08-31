@@ -10,7 +10,7 @@ const clayCss = fs.readFileSync(path.join(root, "assets/clay-stars-effects.css")
 const clayJs = fs.readFileSync(path.join(root, "assets/clay-stars-effects.js"), "utf8");
 
 assert.match(php, /Plugin Name:\s*DanceMoves/);
-assert.match(php, /Version:\s*2\.2\.0/);
+assert.match(php, /Version:\s*2\.3\.0/);
 for (const key of [
   "_dance_moves_bpm",
   "_dance_moves_lyric_timing_id",
@@ -62,11 +62,14 @@ for (const ticks of [6, 32, 128, 192, 432, 1584, 2208]) {
 }
 assert.ok(clayCss.includes("--dance-moves-neg-64t"), "Clay/Stars uses a four-beat phase offset");
 assert.match(clayCss, /prefers-reduced-motion:\s*reduce/);
-assert.match(clayJs, /durationMilliseconds\(32\)/);
+assert.match(clayJs, /durationMilliseconds\(settings\.particleReleaseTicks\)/);
+assert.match(clayCss, /--ks-particle-release-duration/);
 assert.match(clayJs, /registerAnimationScope/);
 assert.match(clayJs, /motion\.onCue\("\*"/);
 assert.match(clayJs, /clay-stars:cue-state/);
 assert.doesNotMatch(clayJs, /setTimeout\([^\n]+,\s*1100\)/);
+assert.doesNotMatch(clayCss.slice(clayCss.indexOf("@keyframes")), /background-position\s*:/);
+assert.doesNotMatch(clayCss, /will-change\s*:[^;]*(?:filter|background-position)/);
 
 const visualDeclarations = clayCss
   .split(/\r?\n/)
@@ -74,7 +77,7 @@ const visualDeclarations = clayCss
   .filter(line => !/:\s*$/.test(line))
   .filter(line => !/:\s*none(?:\s*!important)?;/.test(line));
 for (const line of visualDeclarations) {
-  assert.match(line, /var\(--dance-moves-/, `Visual duration is tick-derived: ${line.trim()}`);
+  assert.match(line, /var\(--(?:dance-moves-|ks-particle-release-duration)/, `Visual duration is tick-derived: ${line.trim()}`);
 }
 
 console.log("DanceMoves WordPress metadata, cue API and tick-duration contract tests passed");

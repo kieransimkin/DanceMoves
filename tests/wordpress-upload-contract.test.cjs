@@ -27,8 +27,8 @@ for (const asset of [
   assert.match(page, new RegExp(`${asset.replaceAll(".", "\\.")}\\?ver=${escapedVersion}`), `${asset} is cache-versioned to the current plugin`);
 }
 assert.match(plugin, /Plugin Name:\s*DanceMoves/);
-assert.match(plugin, /Version:\s*2\.2\.0/);
-assert.match(plugin, /DANCE_MOVES_VERSION',\s*'2\.2\.0'/);
+assert.match(plugin, /Version:\s*2\.3\.0/);
+assert.match(plugin, /DANCE_MOVES_VERSION',\s*'2\.3\.0'/);
 assert.match(plugin, /dance-moves-catalogue-timing/);
 assert.match(plugin, /'post_status'\s*=>\s*'private'/);
 assert.match(plugin, /count\(\$samples\)\s*>\s*500/);

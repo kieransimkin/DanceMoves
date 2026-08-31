@@ -55,12 +55,12 @@ for (const helper of ["onNextInterval", "onEveryInterval", "onNextBeat", "onEver
   assert.equal(typeof fallback.api[helper], "function", `${helper} is public`);
 }
 
-const clay = load({ bpm: 116, bpmSource: "explicit", version: "2.2.0" });
+const clay = load({ bpm: 116, bpmSource: "explicit", version: "2.3.0" });
 assert.equal(clay.api.bpm, 116);
 assert.equal(clay.api.bpmSource, "explicit");
 assert.ok(Math.abs(clay.api.durationMilliseconds(32) - 1034.4827586) < 0.0001);
 
-const shared120 = load({ bpm: 120, sharedControlTicks: 8, lyricDisclosureTicks: 6, version: "2.2.0" });
+const shared120 = load({ bpm: 120, sharedControlTicks: 8, lyricDisclosureTicks: 6, version: "2.3.0" });
 shared120.listeners.DOMContentLoaded();
 assert.equal(shared120.properties.get("--dance-moves-shared-control-ticks"), "8");
 assert.equal(shared120.properties.get("--dance-moves-shared-control-duration"), "250.000000ms");
@@ -68,13 +68,13 @@ assert.equal(shared120.properties.get("--dance-moves-lyric-disclosure-ticks"), "
 assert.equal(shared120.properties.get("--dance-moves-lyric-disclosure-duration"), "187.500000ms");
 assert.equal(shared120.document.documentElement.dataset.danceMovesSharedControls, "true");
 
-const lyric132 = load({ bpm: 132, lyricDisclosureTicks: 7, version: "2.2.0" });
+const lyric132 = load({ bpm: 132, lyricDisclosureTicks: 7, version: "2.3.0" });
 lyric132.listeners.DOMContentLoaded();
 assert.equal(lyric132.properties.get("--dance-moves-lyric-disclosure-ticks"), "7");
 assert.equal(lyric132.properties.get("--dance-moves-lyric-disclosure-duration"), "198.863636ms");
 assert.equal(lyric132.document.documentElement.dataset.danceMovesSharedControls, undefined);
 
-const lyric85 = load({ bpm: 85, lyricDisclosureTicks: 5, version: "2.2.0" });
+const lyric85 = load({ bpm: 85, lyricDisclosureTicks: 5, version: "2.3.0" });
 lyric85.listeners.DOMContentLoaded();
 assert.equal(lyric85.properties.get("--dance-moves-lyric-disclosure-ticks"), "5");
 assert.equal(lyric85.properties.get("--dance-moves-lyric-disclosure-duration"), "220.588235ms");

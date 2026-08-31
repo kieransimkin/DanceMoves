@@ -1,117 +1,248 @@
-/* ks-clay-stars-warm-light-v1-motion */
+/* ks-clay-stars-warm-light-v2-motion */
 (function () {
   "use strict";
+
   var root = document.querySelector(".ks-epk.ks-clay-stars-v2");
   if (!root) return;
+  if (window.DanceMovesClayStars && window.DanceMovesClayStars.root === root && typeof window.DanceMovesClayStars.snapshot === "function" && !window.DanceMovesClayStars.snapshot().destroyed) return;
+
   var motion = window.DanceMoves || null;
   var cover = root.querySelector(".epk-cover-wrap");
   if (!cover) return;
+
   var reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
   var finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
+  var defaults = Object.freeze({
+    enabled: true,
+    masterIntensity: 1,
+    coverTiltDegrees: 1.15,
+    coverTranslationPixels: 4,
+    bloomTravelPixels: 8,
+    flareTravelPixels: 18,
+    specularTravelPixels: 24,
+    particleReleaseTicks: 32
+  });
+  var settings = Object.assign({}, defaults);
   var frame = 0;
   var pendingX = 0;
   var pendingY = 0;
-  var clamp = function (value) { return Math.max(-1, Math.min(1, value)); };
-  var apply = function (nx, ny) {
-    cover.style.setProperty("--ks-rx", (-ny * 1.15).toFixed(2) + "deg");
-    cover.style.setProperty("--ks-ry", (nx * 1.15).toFixed(2) + "deg");
-    cover.style.setProperty("--ks-tx", (nx * 4).toFixed(2) + "px");
-    cover.style.setProperty("--ks-ty", (ny * 4).toFixed(2) + "px");
-    cover.style.setProperty("--ks-bloom-x", (nx * 8).toFixed(2) + "px");
-    cover.style.setProperty("--ks-bloom-y", (ny * 7).toFixed(2) + "px");
-    cover.style.setProperty("--ks-flare-x", (nx * 18).toFixed(2) + "px");
-    cover.style.setProperty("--ks-flare-y", (ny * 14).toFixed(2) + "px");
-    cover.style.setProperty("--ks-spec-x", (-nx * 24).toFixed(2) + "px");
-    cover.style.setProperty("--ks-spec-y", (-ny * 18).toFixed(2) + "px");
+  var lastX = 0;
+  var lastY = 0;
+  var pointerBounds = null;
+  var destroyed = false;
+  var disposers = [];
+  var cueUnsubscribe = null;
+  var computedStyleReads = 0;
+  var motionCommits = 0;
+  var particleSamples = 0;
+
+  var clamp = function (value, minimum, maximum, fallback) {
+    var number = Number(value);
+    return Number.isFinite(number) ? Math.max(minimum, Math.min(maximum, number)) : fallback;
   };
-  var flush = function () { frame = 0; apply(pendingX, pendingY); };
-  var reset = function () {
-    pendingX = 0;
-    pendingY = 0;
+
+  var listen = function (target, type, handler, options) {
+    if (!target || !target.addEventListener) return;
+    target.addEventListener(type, handler, options);
+    disposers.push(function () { target.removeEventListener(type, handler, options); });
+  };
+
+  var durationMilliseconds = function (ticks) {
+    return motion && typeof motion.durationMilliseconds === "function"
+      ? motion.durationMilliseconds(ticks)
+      : ticks * (3750 / 116);
+  };
+
+  var apply = function (nx, ny) {
+    var active = settings.enabled && !reduce.matches ? settings.masterIntensity : 0;
+    lastX = clamp(nx, -1, 1, 0);
+    lastY = clamp(ny, -1, 1, 0);
+    var x = lastX * active;
+    var y = lastY * active;
+    cover.style.setProperty("--ks-rx", (-y * settings.coverTiltDegrees).toFixed(3) + "deg");
+    cover.style.setProperty("--ks-ry", (x * settings.coverTiltDegrees).toFixed(3) + "deg");
+    cover.style.setProperty("--ks-tx", (x * settings.coverTranslationPixels).toFixed(3) + "px");
+    cover.style.setProperty("--ks-ty", (y * settings.coverTranslationPixels).toFixed(3) + "px");
+    cover.style.setProperty("--ks-bloom-x", (x * settings.bloomTravelPixels).toFixed(3) + "px");
+    cover.style.setProperty("--ks-bloom-y", (y * settings.bloomTravelPixels * .875).toFixed(3) + "px");
+    cover.style.setProperty("--ks-flare-x", (x * settings.flareTravelPixels).toFixed(3) + "px");
+    cover.style.setProperty("--ks-flare-y", (y * settings.flareTravelPixels * .777777778).toFixed(3) + "px");
+    cover.style.setProperty("--ks-spec-x", (-x * settings.specularTravelPixels).toFixed(3) + "px");
+    cover.style.setProperty("--ks-spec-y", (-y * settings.specularTravelPixels * .75).toFixed(3) + "px");
+    motionCommits += 1;
+  };
+
+  var flush = function () {
+    frame = 0;
+    if (!destroyed) apply(pendingX, pendingY);
+  };
+
+  var setMotion = function (sample) {
+    if (destroyed) return false;
+    pendingX = clamp(sample && sample.x, -1, 1, 0);
+    pendingY = clamp(sample && sample.y, -1, 1, 0);
+    if (!frame) frame = window.requestAnimationFrame(flush);
+    return true;
+  };
+
+  var cancelMotion = function () {
     if (frame) window.cancelAnimationFrame(frame);
     frame = 0;
+    pendingX = 0;
+    pendingY = 0;
     apply(0, 0);
   };
-  var move = function (event) {
-    if (reduce.matches || !finePointer.matches) return reset();
-    var rect = cover.getBoundingClientRect();
-    if (!rect.width || !rect.height) return reset();
-    pendingX = clamp(((event.clientX - rect.left) / rect.width) * 2 - 1);
-    pendingY = clamp(((event.clientY - rect.top) / rect.height) * 2 - 1);
-    if (!frame) frame = window.requestAnimationFrame(flush);
-  };
-  cover.addEventListener("pointermove", move, { passive: true });
-  cover.addEventListener("pointerleave", reset, { passive: true });
-  document.addEventListener("visibilitychange", function () { if (document.hidden) reset(); }, { passive: true });
-  window.addEventListener("orientationchange", reset, { passive: true });
-  reduce.addEventListener && reduce.addEventListener("change", reset);
-  finePointer.addEventListener && finePointer.addEventListener("change", reset);
-  reset();
 
-  var particleControls = Array.prototype.slice.call(root.querySelectorAll(".epk-button, .epk-download, .ks-clay-stars-chapters button"));
-  var releaseTimers = new WeakMap();
-  var releaseFrames = new WeakMap();
-  var releaseSnapshots = new WeakMap();
-  var stopParticleSampling = function (control) {
-    var frameId = releaseFrames.get(control);
-    if (frameId) window.cancelAnimationFrame(frameId);
-    releaseFrames.delete(control);
+  var setParameters = function (next) {
+    next = next || {};
+    settings.enabled = Object.prototype.hasOwnProperty.call(next, "enabled") ? Boolean(next.enabled) : settings.enabled;
+    settings.masterIntensity = clamp(next.masterIntensity, 0, 1.5, settings.masterIntensity);
+    settings.coverTiltDegrees = clamp(next.coverTiltDegrees, 0, 4, settings.coverTiltDegrees);
+    settings.coverTranslationPixels = clamp(next.coverTranslationPixels, 0, 16, settings.coverTranslationPixels);
+    settings.bloomTravelPixels = clamp(next.bloomTravelPixels, 0, 32, settings.bloomTravelPixels);
+    settings.flareTravelPixels = clamp(next.flareTravelPixels, 0, 48, settings.flareTravelPixels);
+    settings.specularTravelPixels = clamp(next.specularTravelPixels, 0, 64, settings.specularTravelPixels);
+    settings.particleReleaseTicks = Math.round(clamp(next.particleReleaseTicks, 1, 128, settings.particleReleaseTicks));
+    root.style.setProperty("--ks-master-intensity", settings.enabled ? String(settings.masterIntensity) : "0");
+    root.style.setProperty("--ks-particle-release-duration", durationMilliseconds(settings.particleReleaseTicks).toFixed(6) + "ms");
+    apply(lastX, lastY);
+    return Object.assign({}, settings);
   };
-  var sampleParticleOrbit = function (control) {
-    var orbit = window.getComputedStyle(control, "::after");
-    var opacity = Number(orbit.opacity);
-    if (Number.isFinite(opacity) && opacity >= .02) {
-      releaseSnapshots.set(control, {
-        opacity: opacity,
-        transform: orbit.transform === "none" ? "rotate(0deg) scale(.96)" : orbit.transform,
-        filter: orbit.filter === "none" ? "drop-shadow(0 0 4px rgba(212,175,55,.44))" : orbit.filter
-      });
-    }
+
+  var move = function (event) {
+    if (reduce.matches || !finePointer.matches || !settings.enabled || !pointerBounds) return cancelMotion();
+    if (!pointerBounds.width || !pointerBounds.height) return cancelMotion();
+    setMotion({
+      x: ((event.clientX - pointerBounds.left) / pointerBounds.width) * 2 - 1,
+      y: ((event.clientY - pointerBounds.top) / pointerBounds.height) * 2 - 1
+    });
   };
-  var startParticleSampling = function (control) {
-    stopParticleSampling(control);
-    var tick = function () {
-      sampleParticleOrbit(control);
-      if (control.matches(":hover") || document.activeElement === control) {
-        releaseFrames.set(control, window.requestAnimationFrame(tick));
-      } else {
-        releaseFrames.delete(control);
-      }
-    };
-    releaseFrames.set(control, window.requestAnimationFrame(tick));
+
+  var refreshPointerBounds = function () {
+    pointerBounds = cover.getBoundingClientRect();
   };
-  var clearParticleRelease = function (control) {
-    var timer = releaseTimers.get(control);
-    if (timer) window.clearTimeout(timer);
-    releaseTimers.delete(control);
-    control.classList.remove("ks-particle-release");
-    control.style.removeProperty("--ks-orbit-release-opacity");
-    control.style.removeProperty("--ks-orbit-release-transform");
-    control.style.removeProperty("--ks-orbit-release-filter");
+
+  var resetPointer = function () {
+    pointerBounds = null;
+    cancelMotion();
   };
-  var beginParticleRelease = function (control) {
-    stopParticleSampling(control);
-    var snapshot = releaseSnapshots.get(control);
-    clearParticleRelease(control);
-    if (reduce.matches) return;
-    if (!snapshot) return;
-    control.style.setProperty("--ks-orbit-release-opacity", String(snapshot.opacity));
-    control.style.setProperty("--ks-orbit-release-transform", snapshot.transform);
-    control.style.setProperty("--ks-orbit-release-filter", snapshot.filter);
-    control.classList.add("ks-particle-release");
-    releaseSnapshots.delete(control);
-    var releaseDuration = motion ? motion.durationMilliseconds(32) : 1034.482759;
-    releaseTimers.set(control, window.setTimeout(function () { clearParticleRelease(control); }, releaseDuration));
-  };
-  particleControls.forEach(function (control) {
-    control.addEventListener("pointerenter", function () { clearParticleRelease(control); releaseSnapshots.delete(control); startParticleSampling(control); }, { passive: true });
-    control.addEventListener("pointerleave", function () { beginParticleRelease(control); }, { passive: true });
-    control.addEventListener("focus", function () { clearParticleRelease(control); releaseSnapshots.delete(control); startParticleSampling(control); }, { passive: true });
-    control.addEventListener("blur", function () { if (!control.matches(":hover")) beginParticleRelease(control); }, { passive: true });
+
+  listen(cover, "pointerenter", refreshPointerBounds, { passive: true });
+  listen(cover, "pointermove", move, { passive: true });
+  listen(cover, "pointerleave", resetPointer, { passive: true });
+
+  var controls = Array.prototype.slice.call(root.querySelectorAll(".epk-button, .epk-download, .ks-clay-stars-chapters button"));
+  var controlStates = controls.map(function (control) {
+    return { control: control, releaseTimer: 0, sampleFrame: 0, snapshot: null };
   });
-  var resetParticleReleases = function () { particleControls.forEach(function (control) { stopParticleSampling(control); releaseSnapshots.delete(control); clearParticleRelease(control); }); };
-  document.addEventListener("visibilitychange", function () { if (document.hidden) resetParticleReleases(); }, { passive: true });
-  reduce.addEventListener && reduce.addEventListener("change", resetParticleReleases);
+
+  var stopParticleSample = function (state) {
+    if (state.sampleFrame) window.cancelAnimationFrame(state.sampleFrame);
+    state.sampleFrame = 0;
+  };
+
+  var sampleParticleOrbit = function (state) {
+    if (!state.control.isConnected) return;
+    computedStyleReads += 1;
+    var orbit = window.getComputedStyle(state.control, "::after");
+    var opacity = Number(orbit.opacity);
+    if (!Number.isFinite(opacity) || opacity < .02) return;
+    particleSamples += 1;
+    state.snapshot = {
+      opacity: opacity,
+      transform: orbit.transform === "none" ? "rotate(0deg) scale(.96)" : orbit.transform
+    };
+  };
+
+  var scheduleParticleSample = function (state) {
+    stopParticleSample(state);
+    state.sampleFrame = window.requestAnimationFrame(function () {
+      state.sampleFrame = 0;
+      if (destroyed || !state.control.isConnected) return;
+      if (state.control.matches(":hover") || document.activeElement === state.control) sampleParticleOrbit(state);
+    });
+  };
+
+  var clearParticleRelease = function (state) {
+    if (state.releaseTimer) window.clearTimeout(state.releaseTimer);
+    state.releaseTimer = 0;
+    state.control.classList.remove("ks-particle-release");
+    state.control.style.removeProperty("--ks-orbit-release-opacity");
+    state.control.style.removeProperty("--ks-orbit-release-transform");
+  };
+
+  var prepareParticle = function (state) {
+    clearParticleRelease(state);
+    state.snapshot = null;
+    scheduleParticleSample(state);
+  };
+
+  var beginParticleRelease = function (state) {
+    stopParticleSample(state);
+    var snapshot = state.snapshot;
+    clearParticleRelease(state);
+    if (reduce.matches || !settings.enabled || !state.control.isConnected || !snapshot) return;
+    state.control.style.setProperty("--ks-orbit-release-opacity", String(snapshot.opacity));
+    state.control.style.setProperty("--ks-orbit-release-transform", snapshot.transform);
+    state.control.classList.add("ks-particle-release");
+    state.snapshot = null;
+    state.releaseTimer = window.setTimeout(function () { clearParticleRelease(state); }, durationMilliseconds(settings.particleReleaseTicks));
+  };
+
+  controlStates.forEach(function (state) {
+    listen(state.control, "pointerenter", function () { prepareParticle(state); }, { passive: true });
+    listen(state.control, "pointerleave", function () { beginParticleRelease(state); }, { passive: true });
+    listen(state.control, "focus", function () { prepareParticle(state); }, { passive: true });
+    listen(state.control, "blur", function () { if (!state.control.matches(":hover")) beginParticleRelease(state); }, { passive: true });
+  });
+
+  var resetParticles = function () {
+    controlStates.forEach(function (state) {
+      stopParticleSample(state);
+      state.snapshot = null;
+      clearParticleRelease(state);
+    });
+  };
+
+  var setCueState = function (detail) {
+    detail = detail || {};
+    var name = String(detail.normalisedName || detail.name || "").trim();
+    var type = String(detail.normalisedType || detail.type || "").trim();
+    if (!name && !type) {
+      delete root.dataset.danceMovesCue;
+      delete root.dataset.danceMovesCueType;
+      return;
+    }
+    root.dataset.danceMovesCue = name.toLowerCase().replace(/\s+/g, "-");
+    root.dataset.danceMovesCueType = type.toLowerCase().replace(/\s+/g, "-");
+  };
+
+  var lifecycle = function (state) {
+    if (state === "seeking" || state === "hidden" || state === "pagehide" || state === "reduced-motion") {
+      setCueState(null);
+      resetParticles();
+      cancelMotion();
+    } else if (state === "seeked") {
+      setCueState({ name: "seeked", type: "state" });
+    } else if (state === "visible" || state === "pageshow") {
+      cancelMotion();
+    }
+    root.dataset.danceMovesClayLifecycle = state;
+  };
+
+  listen(document, "visibilitychange", function () { lifecycle(document.hidden ? "hidden" : "visible"); }, { passive: true });
+  listen(window, "pagehide", function () { lifecycle("pagehide"); }, { passive: true });
+  listen(window, "pageshow", function () { lifecycle("pageshow"); }, { passive: true });
+  listen(window, "orientationchange", resetPointer, { passive: true });
+  listen(window, "resize", function () { pointerBounds = null; }, { passive: true });
+  listen(reduce, "change", function () { lifecycle(reduce.matches ? "reduced-motion" : "visible"); });
+  listen(finePointer, "change", resetPointer);
+
+  var audio = root.querySelector("audio");
+  if (audio) {
+    listen(audio, "seeking", function () { lifecycle("seeking"); });
+    listen(audio, "seeked", function () { lifecycle("seeked"); });
+  }
 
   if (motion) {
     motion.registerAnimationScope(root, [
@@ -125,9 +256,60 @@
       ".epk-download",
       ".ks-clay-stars-chapters button"
     ]);
-    motion.onCue("*", function (detail) {
-      root.dataset.danceMovesCue = detail.normalisedName.toLowerCase().replace(/\s+/g, "-");
-      root.dataset.danceMovesCueType = detail.normalisedType.toLowerCase().replace(/\s+/g, "-");
-    }, { id: "clay-stars:cue-state" });
+    cueUnsubscribe = motion.onCue("*", setCueState, { id: "clay-stars:cue-state" });
   }
+
+  var reset = function () {
+    settings = Object.assign({}, defaults);
+    setCueState(null);
+    resetParticles();
+    cancelMotion();
+    setParameters(settings);
+    root.dataset.danceMovesClayLifecycle = "reset";
+  };
+
+  var snapshot = function () {
+    return {
+      destroyed: destroyed,
+      settings: Object.assign({}, settings),
+      motion: { x: lastX, y: lastY, pendingFrame: Boolean(frame), commits: motionCommits },
+      particles: {
+        controls: controlStates.length,
+        pendingFrames: controlStates.filter(function (state) { return Boolean(state.sampleFrame); }).length,
+        pendingTimers: controlStates.filter(function (state) { return Boolean(state.releaseTimer); }).length,
+        computedStyleReads: computedStyleReads,
+        samples: particleSamples
+      },
+      cue: root.dataset.danceMovesCue || "",
+      cueType: root.dataset.danceMovesCueType || "",
+      lifecycle: root.dataset.danceMovesClayLifecycle || ""
+    };
+  };
+
+  var teardown = function () {
+    if (destroyed) return;
+    destroyed = true;
+    resetParticles();
+    if (frame) window.cancelAnimationFrame(frame);
+    frame = 0;
+    disposers.splice(0).forEach(function (dispose) { dispose(); });
+    if (typeof cueUnsubscribe === "function") cueUnsubscribe();
+    cueUnsubscribe = null;
+    root.dataset.danceMovesClayRuntime = "stopped";
+  };
+
+  var api = Object.freeze({
+    root: root,
+    defaults: defaults,
+    setParameters: setParameters,
+    setMotion: setMotion,
+    setCueState: setCueState,
+    lifecycle: lifecycle,
+    reset: reset,
+    snapshot: snapshot,
+    teardown: teardown
+  });
+  window.DanceMovesClayStars = api;
+  root.dataset.danceMovesClayRuntime = "ready";
+  reset();
 }());

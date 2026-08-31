@@ -244,6 +244,22 @@ DanceMoves 2.2.0 completes shared CSS timing ownership for the 17 release-specif
 - Read-only main-world injection across the 17 systems and 1440, 900 and 390 pixel viewports produced 51 passing checks, 3,320 conversions in total, zero unquantized computed timing tokens and zero owned-root horizontal overflow.
 - Exact staged package: `../dist/DanceMoves-2.2.0.zip`, SHA-256 `8051911EE03D4D3524440D9F62F4CD6731244FB29C7C0A2738C94B7B00065438`.
 - Staging receipt: `dance-moves-2.2.0-catalogue-timing-staging.json`.
+
+## DanceMoves 2.3.0 scoped ownership correction
+
+Post-deployment QA of the approved 2.2.0 package found that one EPK selector caused its complete containing stylesheet to be treated as EPK-owned. On mixed WordPress stylesheets, that could quantize unrelated theme or authenticated admin transitions. The correction removes stylesheet-level ownership transfer: motion properties are converted only on rules whose selectors resolve to an owned EPK root, while externally defined custom properties are converted only when an owned rule references them.
+
+The regression fixture places `.wp-admin .toolbar { transition-duration: .4s; }` beside an owned EPK rule and requires the unrelated duration to remain `.4s`. The complete 2.3.0 gate passes that contract, the Clay/Stars adapter and legacy-collision suites, both shared-harness validations, strict UTF-8, the deterministic 47-page timing manifest and the production-only package layout.
+
+- Exact staged package: `../dist/DanceMoves-2.3.0.zip`
+- Bytes: 42,610
+- Entries: 11
+- SHA-256: `D690FD0A411BC704E464306B34E84DD40C241B9F96CF0B4E01EDB76D6CBA7CF4`
+- Catalogue runtime SHA-256: `E2CBBE1729BF52D69C060C8999D157B45BCBDA96D7EE9FE93131FD86F45525BE`
+- Staging receipt: `dance-moves-2.3.0-scoped-timing-staging.json`
+- Rollback: `DanceMoves-2.2.0.zip`, SHA-256 `8051911EE03D4D3524440D9F62F4CD6731244FB29C7C0A2738C94B7B00065438`
+
+No page body, BPM property, LRC attachment or CUE attachment changes are part of this correction. WordPress replacement remains approval-gated to the exact ZIP hash above.
 - Live-injection evidence: `../qa/catalogue-timing-live-injection-2026-08-31.json`.
 
 This does not infer unavailable musical data. The 44 unknown-BPM pages continue to store no BPM property and use the labelled 120 fallback. Page 252 remains the only page with a canonical cue file, so release-specific named cue choreography is not invented elsewhere. Canvas/WebGL oscillators that derive phase from raw frame time remain page-adapter work and should use `DanceMoves.currentTick({ clock: "audio", audio })`; the CSS adopter cannot rewrite drawing or shader code safely.

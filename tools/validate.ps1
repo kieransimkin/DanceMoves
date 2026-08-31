@@ -47,8 +47,16 @@ function Invoke-UnitValidation {
     & php (Join-Path $repoRoot 'tests\validate-clay-transform.php')
     if ($LASTEXITCODE -ne 0) { throw 'Clay/Stars content-transform validation failed.' }
 
+    & php (Join-Path $repoRoot 'tests\validate-clay-legacy-collision.php')
+    if ($LASTEXITCODE -ne 0) { throw 'Clay/Stars legacy-plugin collision validation failed.' }
+
     & python -X utf8 (Join-Path $PSScriptRoot 'validate-effect-harness.py') (Join-Path $repoRoot 'tests\harness\plugin-core') --mode scaffold
     if ($LASTEXITCODE -ne 0) { throw 'DanceMoves core harness validation failed.' }
+
+    $clayHarness = Join-Path $repoRoot 'tests\harness\clay-stars'
+    $clayHarnessOutput = & python -X utf8 (Join-Path $PSScriptRoot 'validate-effect-harness.py') $clayHarness --mode scaffold --manifest-file (Join-Path $clayHarness 'clay-stars.json') --shared-root (Join-Path $repoRoot 'tests\harness\plugin-core')
+    if ($LASTEXITCODE -ne 0) { throw 'Clay/Stars shared harness validation failed.' }
+    Write-Output 'Clay/Stars shared harness validation passed.'
 
     $strictUtf8 = New-Object System.Text.UTF8Encoding($false, $true)
     $textExtensions = @('.php', '.js', '.cjs', '.mjs', '.css', '.md', '.html', '.json', '.tsv', '.ps1', '.lrc')

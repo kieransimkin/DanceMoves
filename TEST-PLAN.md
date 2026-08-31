@@ -401,3 +401,67 @@ Publication remains a separate, approval-gated operation. No test runner may upl
 - **Corrective action:** normalize response content to bytes with a type check, UTF-8 encode only string content, hash the resulting byte array, and dispose archive streams and archives with `Dispose()`.
 - **Verification:** the signed-out deployed `dance-moves-core.js` hash was `EC755C134346656650B89A3F9FD54DFF71AE85F812E1FB0116BE1337E640FFEA`, exactly matching the file inside the approved DanceMoves 2.1.0 ZIP.
 - **Limit:** byte equality proves deployed-file identity; it does not by itself prove runtime initialization, accessibility or visual correctness.
+
+### One EPK selector must not transfer timing ownership to an entire stylesheet
+
+- **Symptom:** an authenticated rendered page reports hundreds of converted declarations, including WordPress theme or admin rules that are unrelated to the EPK.
+- **Cause:** catalogue adoption treated a stylesheet as wholly owned when any selector in it matched an EPK root, so unrelated sibling rules inherited timing conversion.
+- **Corrective action:** decide ownership per style rule. Convert animation and transition properties only for selectors that resolve to an owned EPK root; in unrelated rules, convert only custom properties that an owned rule demonstrably references.
+- **Verification:** `catalogue-timing.test.cjs` places an unrelated `.wp-admin .toolbar` transition in the same stylesheet as an EPK selector and requires its `.4s` duration to remain unchanged; the complete Unit validator passes.
+- **Limit:** referenced custom properties may be defined outside the owned selector and still need conversion. Do not restrict those definitions without first tracing their consumers.
+
+### Fixed waits can audit the catalogue before adoption is ready
+
+- **Symptom:** all rendered systems report the catalogue timing root as not ready after a nominal 250 ms delay, despite the asset loading successfully.
+- **Cause:** stylesheet traversal, dynamic markup and browser scheduling do not have a reliable fixed completion time.
+- **Corrective action:** wait for `[data-dance-moves-catalogue-root="ready"]` with a bounded timeout before sampling computed timing, overflow or conversion counts.
+- **Verification:** after waiting on the explicit marker, all 51 desktop/tablet/mobile checks across the 17 release systems reached ready state.
+- **Limit:** readiness proves the adopter finished its current pass; dynamic content inserted later must still be covered by its observer and separately tested.
+
+### Same-version WordPress replacement can leave an open tab on stale JavaScript
+
+- **Symptom:** WordPress reports a successful same-version plugin replacement, while an already-open browser tab continues to execute the earlier catalogue asset.
+- **Cause:** the public URL and `?ver=` cache key are unchanged, allowing the browser cache to retain the previous bytes.
+- **Corrective action:** hash the exact enqueued public asset URL against the approved ZIP, temporarily disable the test tab's network cache for runtime QA, then restore normal cache behaviour. Prefer a new semantic version for any subsequent corrective package.
+- **Verification:** the exact 2.2.0 catalogue URL returned the approved 12,799-byte asset and SHA-256 `89A9A750AA0B0936516DE8D44C090C989530A0767C5EDDFB98038DDE84E20013`; fresh-cache runtime checks then initialized the deployed build.
+- **Limit:** do not clear the user's browser cache as a workaround. Byte identity and fresh-cache runtime behaviour are both required.
+
+### Raw root width can count intentionally clipped decoration as overflow
+
+- **Symptom:** an EPK root has a large `scrollWidth - clientWidth` even though the visible document has zero horizontal overflow.
+- **Cause:** release artwork and atmospheric layers intentionally extend beyond a root whose computed `overflow-x` is `hidden`; the raw scroll box still includes those clipped descendants.
+- **Corrective action:** record both document overflow and root overflow, inspect the root's computed overflow mode and test fixed-viewport screenshots. Treat only visible/user-reachable overflow as the layout failure.
+- **Verification:** affected roots were clipped with `overflow-x: hidden`, while the rendered document remained at zero positive overflow; page 399's remaining eight pixels were isolated to authenticated WordPress admin chrome and absent from signed-out HTML.
+- **Limit:** hidden overflow is not automatically safe; verify that no required control, focus indicator or content is clipped.
+
+### Browser controller evaluation may omit same-origin `fetch`
+
+- **Symptom:** a public asset hashing expression fails with `TypeError: fetch is not a function` in the controller's isolated evaluation world.
+- **Cause:** that evaluation world does not expose the page's normal `fetch` surface.
+- **Corrective action:** perform same-origin byte reads in the tab's main-world developer-protocol runtime and hash the returned bytes there; keep isolated evaluation for DOM operations it supports.
+- **Verification:** all nine deployed plugin assets were read and byte-matched to the approved 2.2.0 package.
+- **Limit:** this is a controller-world workaround, not permission to bypass cross-origin or authentication boundaries.
+
+### A keyframe audit can accidentally include later media queries
+
+- **Symptom:** the Clay compositor test reports a layout property in keyframes even though every actual keyframe animates only transform and opacity.
+- **Cause:** the test sliced from the first `@keyframes` to end-of-file, so `max-width:` in a later media query matched the layout-property expression.
+- **Corrective action:** bound the inspected source from the first keyframe to the first following media query before applying declaration checks.
+- **Verification:** the corrected assertion still scans every Clay keyframe block, finds no layout declaration, and the complete Unit validator passes.
+- **Limit:** if future keyframes are added after media queries, replace this boundary with a brace-aware keyframe parser rather than silently excluding them.
+
+### A release adapter directory is not necessarily a standalone effect harness
+
+- **Symptom:** the generic harness validator reports every scaffold file missing when pointed at `tests/harness/clay-stars`.
+- **Cause:** that folder intentionally contains a release manifest and thin adapter consumed by the generated shared harness; it is not a self-contained harness root.
+- **Corrective action:** validate `plugin-core` directly for the shared scaffold, then invoke the validator's shared-manifest mode with the Clay manifest and `plugin-core` as `--shared-root`; retain `clay-adapter.test.cjs` for runtime contracts.
+- **Verification:** both shared scaffold passes, the Clay shared-manifest pass and the Clay adapter contract now run in Unit mode.
+- **Limit:** promote the Clay folder to a standalone harness only by adding the complete required scaffold; do not add placeholder files merely to silence this error.
+
+### Minified CSS can close a keyframe and continue with other rules on one line
+
+- **Symptom:** the shared Clay harness reports many static layout declarations as continuously animated, all at one minified candidate line.
+- **Cause:** line-scoped keyframe state classified every declaration on a line containing `@keyframes` as part of that animation, even after its closing brace.
+- **Corrective action:** calculate brace-bounded character ranges for each standard or WebKit keyframe block and classify every declaration by its own absolute offset.
+- **Verification:** the same generated Clay candidate changed from multiple false blocking findings to `PASS`; its one remaining `box-shadow` transition is retained as a review warning, and Unit mode now runs this shared-manifest validator.
+- **Limit:** the range scanner assumes balanced CSS braces; malformed CSS remains a validation failure and must not be normalized silently.
