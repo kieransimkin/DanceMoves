@@ -1,0 +1,966 @@
+﻿{
+    "schema":  "dance-moves-page-migration/v1",
+    "manifest_date":  "2026-08-31",
+    "source_pages":  "Z:\\My Songs\\Releases\\EPK Batch 2026\\published-pages.tsv",
+    "source_canonical_registry":  "Z:\\My Songs\\Releases\\lyric-timing-canonical-registry.json",
+    "source_known_bpm":  "Z:\\My Songs\\Releases\\WordPress EPK Template\\plugins\\DanceMoves\\migration\\known-bpm.json",
+    "page_count":  47,
+    "explicit_bpm_count":  3,
+    "fallback_bpm_count":  44,
+    "eligible_lyric_timing_count":  12,
+    "cue_timing_count":  1,
+    "pages":  [
+                  {
+                      "title":  "Light Will Win (Shubh Diwali)",
+                      "post_id":  140,
+                      "url":  "https://kieransimkin.co.uk/light-will-win/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "no_canonical_timing_below_threshold",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "Dying for a Diagnosis",
+                      "post_id":  130,
+                      "url":  "https://kieransimkin.co.uk/dying-for-a-diagnosis/",
+                      "bpm_property":  85,
+                      "effective_bpm":  85,
+                      "bpm_source":  "explicit",
+                      "bpm_confidence":  "user-approved technical description",
+                      "bpm_evidence":  "Dying for a Diagnosis/submission-pack/00-press-one-sheet.md",
+                      "master_duration_milliseconds":  332752.494,
+                      "master_sha256":  "DE7E42C06929742074F93C3E48288E5CE0419C97A553BBD8F7DC754D8EE9194F",
+                      "lyric_timing_status":  "canonical_estimated_pending_listening_qa",
+                      "lyric_timing_eligible":  true,
+                      "lyric_timing":  {
+                                           "path":  "Dying for a Diagnosis/lyric-timing-2026-08-31/synced-lyrics-estimated.lrc",
+                                           "sha256":  "801232EC68D7AB76B6B82B996E326E2CAC877505C0882CB955D5BC3812AA502C",
+                                           "bytes":  5741
+                                       },
+                      "cue_timing":  null,
+                      "proposed_action":  [
+                                              "set_bpm",
+                                              "set_master_duration",
+                                              "upload_or_reuse_lyric_timing"
+                                          ]
+                  },
+                  {
+                      "title":  "Moderate or Good",
+                      "post_id":  150,
+                      "url":  "https://kieransimkin.co.uk/moderate-or-good/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "not_in_canonical_registry",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "Santa Flies Tonight",
+                      "post_id":  397,
+                      "url":  "https://kieransimkin.co.uk/santa-flies-tonight/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "canonical_estimated_pending_listening_qa",
+                      "lyric_timing_eligible":  true,
+                      "lyric_timing":  {
+                                           "path":  "Santa Flies Tonight/lyric-timing-2026-08-31/master-improvement-check/synced-lyrics-estimated.lrc",
+                                           "sha256":  "930FCAFF66A71FCA1C4655FCC82E34B6673542B861E9360C68E674D2DF597EE3",
+                                           "bytes":  1993
+                                       },
+                      "cue_timing":  null,
+                      "proposed_action":  [
+                                              "upload_or_reuse_lyric_timing"
+                                          ]
+                  },
+                  {
+                      "title":  "Christmas Tat",
+                      "post_id":  399,
+                      "url":  "https://kieransimkin.co.uk/christmas-tat/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "no_canonical_timing_below_threshold",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "Presents \u0026 Chocolate",
+                      "post_id":  243,
+                      "url":  "https://kieransimkin.co.uk/presents-chocolate/",
+                      "bpm_property":  132,
+                      "effective_bpm":  132,
+                      "bpm_source":  "explicit",
+                      "bpm_confidence":  "medium-high",
+                      "bpm_evidence":  "Presents \u0026 Chocolate/bpm-and-motion-clock-2026-08-31.md",
+                      "master_duration_milliseconds":  212436.145,
+                      "master_sha256":  "2471B0299A401CFFEA84611BE419CAE5945A184266A6DDEA0B6D5EEED306AF7B",
+                      "lyric_timing_status":  "canonical_estimated_pending_listening_qa",
+                      "lyric_timing_eligible":  true,
+                      "lyric_timing":  {
+                                           "path":  "Presents \u0026 Chocolate/lyric-timing-2026-08-31/master-improvement-check/synced-lyrics-estimated.lrc",
+                                           "sha256":  "14950FAC3092A0B9BC0A24CB9C9F1D3D29E9A504592CE57D3D5886C148128B7F",
+                                           "bytes":  3004
+                                       },
+                      "cue_timing":  null,
+                      "proposed_action":  [
+                                              "set_bpm",
+                                              "set_master_duration",
+                                              "upload_or_reuse_lyric_timing"
+                                          ]
+                  },
+                  {
+                      "title":  "Fighting Entropy",
+                      "post_id":  246,
+                      "url":  "https://kieransimkin.co.uk/fighting-entropy/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "canonical_estimated_pending_listening_qa",
+                      "lyric_timing_eligible":  true,
+                      "lyric_timing":  {
+                                           "path":  "Fighting Entropy/lyric-timing-2026-08-26/synced-lyrics-estimated.lrc",
+                                           "sha256":  "F1DB8CCABC1B275C58C1CE0FC59E402F4A3A96131E66104FEA79337A9A4B8C71",
+                                           "bytes":  5528
+                                       },
+                      "cue_timing":  null,
+                      "proposed_action":  [
+                                              "upload_or_reuse_lyric_timing"
+                                          ]
+                  },
+                  {
+                      "title":  "November Christmas",
+                      "post_id":  248,
+                      "url":  "https://kieransimkin.co.uk/november-christmas/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "canonical_estimated_pending_listening_qa",
+                      "lyric_timing_eligible":  true,
+                      "lyric_timing":  {
+                                           "path":  "November Christmas/lyric-timing-2026-08-31/master-improvement-check/synced-lyrics-estimated.lrc",
+                                           "sha256":  "5E090931EB9582344CB774CC36D7C3456C7E5EF12F53E823397AA5B669497E11",
+                                           "bytes":  2843
+                                       },
+                      "cue_timing":  null,
+                      "proposed_action":  [
+                                              "upload_or_reuse_lyric_timing"
+                                          ]
+                  },
+                  {
+                      "title":  "PBXin\u0027",
+                      "post_id":  250,
+                      "url":  "https://kieransimkin.co.uk/pbxin/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "canonical_estimated_pending_listening_qa",
+                      "lyric_timing_eligible":  true,
+                      "lyric_timing":  {
+                                           "path":  "PBXin\u0027/timing-alignment/v1/synced-lyrics-estimated.lrc",
+                                           "sha256":  "4342232CF6AD6B8A1508D21FE3E6A450E6C4227CB15974A5649AA7022032E340",
+                                           "bytes":  2329
+                                       },
+                      "cue_timing":  null,
+                      "proposed_action":  [
+                                              "upload_or_reuse_lyric_timing"
+                                          ]
+                  },
+                  {
+                      "title":  "Made from the clay and the stars (Anunnaki)",
+                      "post_id":  252,
+                      "url":  "https://kieransimkin.co.uk/made-from-the-clay-and-the-stars-anunnaki/",
+                      "bpm_property":  116,
+                      "effective_bpm":  116,
+                      "bpm_source":  "explicit",
+                      "bpm_confidence":  "moderate",
+                      "bpm_evidence":  "Made from the clay and the stars/wordpress-warm-light-effects-2026-08-31/master-bpm-analysis-2026-08-31.json",
+                      "master_duration_milliseconds":  359523.56,
+                      "master_sha256":  "03F681507F47389AD6E7085C9C0167D74F6AC24A6F2ABC497CA356AEDBE1B838",
+                      "lyric_timing_status":  "canonical_user_edited_locked",
+                      "lyric_timing_eligible":  true,
+                      "lyric_timing":  {
+                                           "path":  "Made from the clay and the stars/made from the clay and the stars - corrected metadata.lrc",
+                                           "sha256":  "4D0363A692A473AE8207D6711155F545FF6EDB7D92B125A2AA4E186B9F27BE7B",
+                                           "bytes":  7037
+                                       },
+                      "cue_timing":  {
+                                         "path":  "Made from the clay and the stars/made from the clay and the stars - musical cues.lrc",
+                                         "sha256":  "C32F1D5AA036DBAD051A6BD08C257BA050D3EC8DEFC250ADC22DE6A3FCD15302",
+                                         "bytes":  823
+                                     },
+                      "proposed_action":  [
+                                              "set_bpm",
+                                              "set_master_duration",
+                                              "upload_or_reuse_lyric_timing",
+                                              "upload_or_reuse_cue_timing"
+                                          ]
+                  },
+                  {
+                      "title":  "Blame Putin",
+                      "post_id":  254,
+                      "url":  "https://kieransimkin.co.uk/blame-putin/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "canonical_estimated_pending_listening_qa",
+                      "lyric_timing_eligible":  true,
+                      "lyric_timing":  {
+                                           "path":  "Blame Putin/lyric-timing-2026-08-31/master-improvement-check/synced-lyrics-estimated.lrc",
+                                           "sha256":  "D550EE807901144DA7888F7970095B0A099BEE5FF8845654B738DC7947C2EFB0",
+                                           "bytes":  3476
+                                       },
+                      "cue_timing":  null,
+                      "proposed_action":  [
+                                              "upload_or_reuse_lyric_timing"
+                                          ]
+                  },
+                  {
+                      "title":  "Paper dreams from the sky",
+                      "post_id":  256,
+                      "url":  "https://kieransimkin.co.uk/paper-dreams-from-the-sky/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "canonical_estimated_pending_listening_qa",
+                      "lyric_timing_eligible":  true,
+                      "lyric_timing":  {
+                                           "path":  "Paper dreams from the sky/lyric-timing-2026-08-28/synced-lyrics-estimated.lrc",
+                                           "sha256":  "B654C0EF8839AC6F43FC01409B20BAD86DEC8570BE3A7A9EA42B6D731CCD44C2",
+                                           "bytes":  4339
+                                       },
+                      "cue_timing":  null,
+                      "proposed_action":  [
+                                              "upload_or_reuse_lyric_timing"
+                                          ]
+                  },
+                  {
+                      "title":  "Silly Sausage Britain",
+                      "post_id":  258,
+                      "url":  "https://kieransimkin.co.uk/silly-sausage-britain/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "canonical_estimated_pending_listening_qa",
+                      "lyric_timing_eligible":  true,
+                      "lyric_timing":  {
+                                           "path":  "Silly Sausage Britain/lyric-timing-2026-08-31/master-recheck/synced-lyrics-estimated.lrc",
+                                           "sha256":  "93C405ACBA10085AE6525BF6CE0997AD78BB26ECCF934F7DB26B1B1F8B608F52",
+                                           "bytes":  3112
+                                       },
+                      "cue_timing":  null,
+                      "proposed_action":  [
+                                              "upload_or_reuse_lyric_timing"
+                                          ]
+                  },
+                  {
+                      "title":  "Arcadians",
+                      "post_id":  260,
+                      "url":  "https://kieransimkin.co.uk/arcadians/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "canonical_estimated_pending_listening_qa",
+                      "lyric_timing_eligible":  true,
+                      "lyric_timing":  {
+                                           "path":  "Arcadians/lyric-timing-2026-08-26/synced-lyrics-estimated.lrc",
+                                           "sha256":  "48E1803929825F5DC69CADBE6B3A05CE0EF5F92CCBC2569C264C0E0794EF38E7",
+                                           "bytes":  2053
+                                       },
+                      "cue_timing":  null,
+                      "proposed_action":  [
+                                              "upload_or_reuse_lyric_timing"
+                                          ]
+                  },
+                  {
+                      "title":  "Chips and Ketchup",
+                      "post_id":  262,
+                      "url":  "https://kieransimkin.co.uk/chips-and-ketchup/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "no_canonical_timing_below_threshold",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "The Truth is a Virus",
+                      "post_id":  264,
+                      "url":  "https://kieransimkin.co.uk/the-truth-is-a-virus/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "canonical_estimated_pending_listening_qa",
+                      "lyric_timing_eligible":  true,
+                      "lyric_timing":  {
+                                           "path":  "The Truth is a Virus/lyric-timing-2026-08-31/master-improvement-check/synced-lyrics-estimated.lrc",
+                                           "sha256":  "D95C3C545DDCF06F78B3B2F21BF20CD1DD482B91C21A1BB35C0289C255D93BB6",
+                                           "bytes":  2634
+                                       },
+                      "cue_timing":  null,
+                      "proposed_action":  [
+                                              "upload_or_reuse_lyric_timing"
+                                          ]
+                  },
+                  {
+                      "title":  "Hit Piece",
+                      "post_id":  266,
+                      "url":  "https://kieransimkin.co.uk/hit-piece/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "not_in_canonical_registry",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "Fully Nocturnal",
+                      "post_id":  268,
+                      "url":  "https://kieransimkin.co.uk/fully-nocturnal/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "not_in_canonical_registry",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "Amnesty, honestly? (Spanish Migrant Invasion)",
+                      "post_id":  270,
+                      "url":  "https://kieransimkin.co.uk/amnesty-honestly-spanish-migrant-invasion/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "not_in_canonical_registry",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "So you\u0027re a racist now, father?",
+                      "post_id":  272,
+                      "url":  "https://kieransimkin.co.uk/so-youre-a-racist-now-father/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "not_in_canonical_registry",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "Bed of Lies",
+                      "post_id":  274,
+                      "url":  "https://kieransimkin.co.uk/bed-of-lies/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "not_in_canonical_registry",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "Walk With Me",
+                      "post_id":  276,
+                      "url":  "https://kieransimkin.co.uk/walk-with-me/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "not_in_canonical_registry",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "Battling a Bin (Nigel Farage Vs Count BinFace)",
+                      "post_id":  278,
+                      "url":  "https://kieransimkin.co.uk/battling-a-bin-nigel-farage-vs-count-binface/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "not_in_canonical_registry",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "Fur Coat Taxi",
+                      "post_id":  280,
+                      "url":  "https://kieransimkin.co.uk/fur-coat-taxi/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "not_in_canonical_registry",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "Tool of the State",
+                      "post_id":  282,
+                      "url":  "https://kieransimkin.co.uk/tool-of-the-state/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "not_in_canonical_registry",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "Wardialing",
+                      "post_id":  284,
+                      "url":  "https://kieransimkin.co.uk/wardialing/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "not_in_canonical_registry",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "They Listen",
+                      "post_id":  286,
+                      "url":  "https://kieransimkin.co.uk/they-listen/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "not_in_canonical_registry",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "I Don\u0027t Care (Restore Britain Anthem)",
+                      "post_id":  288,
+                      "url":  "https://kieransimkin.co.uk/i-dont-care-restore-britain-anthem/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "not_in_canonical_registry",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "On Top Of The World",
+                      "post_id":  290,
+                      "url":  "https://kieransimkin.co.uk/on-top-of-the-world/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "not_in_canonical_registry",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "Gremlins",
+                      "post_id":  292,
+                      "url":  "https://kieransimkin.co.uk/gremlins/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "not_in_canonical_registry",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "Time is a gift",
+                      "post_id":  294,
+                      "url":  "https://kieransimkin.co.uk/time-is-a-gift/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "not_in_canonical_registry",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "Lost Girls",
+                      "post_id":  296,
+                      "url":  "https://kieransimkin.co.uk/lost-girls/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "not_in_canonical_registry",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "Dmitri My Talisman",
+                      "post_id":  298,
+                      "url":  "https://kieransimkin.co.uk/dmitri-my-talisman/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "not_in_canonical_registry",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "Edie Rose (feat. DarthTwisty101\u0027s Music)",
+                      "post_id":  300,
+                      "url":  "https://kieransimkin.co.uk/edie-rose-feat-darthtwisty101s-music/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "not_in_canonical_registry",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "Vibe Killer",
+                      "post_id":  302,
+                      "url":  "https://kieransimkin.co.uk/vibe-killer/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "not_in_canonical_registry",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "Tarquin and the Hairy Biker",
+                      "post_id":  304,
+                      "url":  "https://kieransimkin.co.uk/tarquin-and-the-hairy-biker/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "not_in_canonical_registry",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "Emerald Shooting Star",
+                      "post_id":  306,
+                      "url":  "https://kieransimkin.co.uk/emerald-shooting-star/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "not_in_canonical_registry",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "Faded Dreams",
+                      "post_id":  308,
+                      "url":  "https://kieransimkin.co.uk/faded-dreams/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "not_in_canonical_registry",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "We Don\u0027t Need No Room To Roll",
+                      "post_id":  310,
+                      "url":  "https://kieransimkin.co.uk/we-dont-need-no-room-to-roll/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "not_in_canonical_registry",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "Rupert Lowe for PM",
+                      "post_id":  312,
+                      "url":  "https://kieransimkin.co.uk/rupert-lowe-for-pm/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "not_in_canonical_registry",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "Parallel Life (feat. North Laine)",
+                      "post_id":  314,
+                      "url":  "https://kieransimkin.co.uk/parallel-life-feat-north-laine/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "not_in_canonical_registry",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "Alfie",
+                      "post_id":  316,
+                      "url":  "https://kieransimkin.co.uk/alfie/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "not_in_canonical_registry",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "Mouse Ali Bye Bye (موش علی بای بای)",
+                      "post_id":  318,
+                      "url":  "https://kieransimkin.co.uk/mouse-ali-bye-bye/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "not_in_canonical_registry",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "So Slow Down",
+                      "post_id":  320,
+                      "url":  "https://kieransimkin.co.uk/so-slow-down/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "not_in_canonical_registry",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "Return of Freedom (بازگشت آزادی)",
+                      "post_id":  322,
+                      "url":  "https://kieransimkin.co.uk/return-of-freedom/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "not_in_canonical_registry",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "Birth Stories",
+                      "post_id":  137,
+                      "url":  "https://kieransimkin.co.uk/birth-stories/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "not_in_canonical_registry",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "Hell Gondola",
+                      "post_id":  614,
+                      "url":  "https://kieransimkin.co.uk/hell-gondola/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "no_canonical_timing_below_threshold",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  }
+              ]
+}

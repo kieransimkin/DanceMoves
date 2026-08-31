@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>DanceMoves integration harness</title>
+  <style>
+    body { margin: 0; padding: 2rem; color: #f7f2e9; background: #100b19; font: 16px/1.5 system-ui, sans-serif; }
+    .ks-epk { max-width: 48rem; margin: auto; }
+    .owned { width: 5rem; height: 5rem; border-radius: 50%; background: #c49986; animation: dance-moves-harness-orbit var(--dance-moves-32t, 1s) linear infinite; }
+    .deferred { margin-top: 1rem; animation: dance-moves-harness-pulse var(--dance-moves-16t, .5s) linear infinite; }
+    @keyframes dance-moves-harness-orbit { to { transform: rotate(360deg) translateX(2rem); } }
+    @keyframes dance-moves-harness-pulse { 50% { opacity: .4; } }
+    #result { padding: 1rem; border: 1px solid currentColor; }
+  </style>
+  <script>
+    window.danceMovesConfig = {
+      pageId: 999,
+      version: "2.0.0",
+      bpm: 120,
+      bpmSource: "explicit",
+      cueTimingUrl: "fixtures/synthetic-cues.lrc",
+      lyricTimingUrl: "",
+      masterDurationMilliseconds: 2000
+    };
+  </script>
+  <link rel="stylesheet" href="../assets/dance-moves-core.css">
+</head>
+<body>
+  <main class="ks-epk">
+    <h1>DanceMoves integration harness</h1>
+    <p id="result" aria-live="polite">RUNNING</p>
+    <div class="owned" aria-hidden="true"></div>
+    <div class="deferred" data-dance-moves-start-interval="16">Deferred beat start</div>
+    <audio id="synthetic-audio"></audio>
+  </main>
+  <script src="../assets/dance-moves-core.js"></script>
+  <script>
+    (function () {
+      "use strict";
+      var audio = document.getElementById("synthetic-audio");
+      var result = document.getElementById("result");
+      var currentTime = 0;
+      var paused = true;
+      Object.defineProperty(audio, "duration", { configurable: true, get: function () { return 2; } });
+      Object.defineProperty(audio, "currentTime", { configurable: true, get: function () { return currentTime; }, set: function (value) { currentTime = Number(value) || 0; } });
+      Object.defineProperty(audio, "paused", { configurable: true, get: function () { return paused; } });
+      Object.defineProperty(audio, "ended", { configurable: true, get: function () { return currentTime >= 2; } });
+      Object.defineProperty(audio, "playbackRate", { configurable: true, writable: true, value: 1 });
+
+      var cues = [];
+      var resets = [];
+      var nextBeatCalls = 0;
+      var everyBeatCalls = 0;
+      window.DanceMoves.registerAnimationScope(document.querySelector(".ks-epk"), [".owned"]);
+      window.DanceMoves.onCue("*", function (detail) {
+        cues.push(detail.normalisedName);
+        resets.push(detail.resetAnimationCount);
+      });
+      window.DanceMoves.onNextBeat(function () { nextBeatCalls += 1; });
+      var removeEveryBeat = window.DanceMoves.onEveryBeat(function () { everyBeatCalls += 1; });
+
+      setTimeout(function () {
+        audio.dispatchEvent(new Event("loadedmetadata"));
+        paused = false;
+        audio.dispatchEvent(new Event("play"));
+        var timer = setInterval(function () {
+          currentTime += 0.05;
+          audio.dispatchEvent(new Event("timeupdate"));
+          if (currentTime < 2) return;
+          clearInterval(timer);
+          paused = true;
+          audio.dispatchEvent(new Event("ended"));
+          var callsAtEnd = everyBeatCalls;
+          setTimeout(function () {
+            removeEveryBeat();
+            var deferredStarted = document.querySelector(".deferred").dataset.danceMovesStarted === "true";
+            var stoppedAtEnd = everyBeatCalls === callsAtEnd;
+            var passed = cues.join(",") === "ONE,TWO" && resets.length === 2 && resets.every(function (count) { return count >= 1; }) && nextBeatCalls === 1 && everyBeatCalls >= 1 && stoppedAtEnd && deferredStarted;
+            result.textContent = passed ? "PASS" : "FAIL cues=" + cues.join(",") + " resets=" + resets.join(",") + " next=" + nextBeatCalls + " every=" + everyBeatCalls + " stopped=" + stoppedAtEnd + " deferred=" + deferredStarted;
+            document.documentElement.dataset.integrationResult = passed ? "pass" : "fail";
+          }, 120);
+        }, 25);
+      }, 100);
+    }());
+  </script>
+</body>
+</html>

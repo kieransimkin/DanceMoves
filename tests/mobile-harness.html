@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>EPK orientation motion harness</title>
+  <link rel="stylesheet" href="../assets/ks-epk-device-orientation.css?ver=1.2.4">
+  <link rel="stylesheet" href="mobile-harness.css?ver=1.2.4">
+</head>
+<body>
+  <main class="harness-shell">
+    <header class="harness-heading">
+      <p class="harness-kicker">Local test harness · 390 × 760 mobile viewport</p>
+      <h1>EPK orientation motion</h1>
+      <p>Dispatch synthetic orientation events through the production 2-second rolling mapper and selected EPK adapter.</p>
+    </header>
+
+    <section class="harness-controls" aria-label="Simulation controls">
+      <label>EPK adapter
+        <select id="adapter-select">
+          <option value="light-will-win">Light Will Win</option>
+          <option value="dying-for-a-diagnosis">Dying for a Diagnosis</option>
+          <option value="presents-and-chocolate">Presents &amp; Chocolate</option>
+          <option value="fully-nocturnal">Fully Nocturnal</option>
+          <option value="amnesty-honestly">Amnesty, honestly?</option>
+          <option value="walk-with-me">Walk With Me</option>
+          <option value="dmitri-my-talisman">Dmitri My Talisman</option>
+        </select>
+      </label>
+      <label>Permission path
+        <select id="permission-select">
+          <option value="automatic">Automatic data</option>
+          <option value="required">Gesture-gated permission</option>
+        </select>
+      </label>
+      <label>Screen rotation
+        <select id="rotation-select">
+          <option value="0">Portrait · 0°</option>
+          <option value="90">Landscape right · 90°</option>
+          <option value="-90">Landscape left · −90°</option>
+          <option value="180">Portrait inverted · 180°</option>
+        </select>
+      </label>
+      <label>Motion sequence
+        <select id="sequence-select">
+          <option value="gentle">Recorded gentle orbit</option>
+          <option value="sweep">Recorded full-range sweep</option>
+          <option value="figure-eight">Recorded figure eight</option>
+          <option value="pocket-lift">Recorded pocket lift</option>
+          <option value="random-spin">Recorded random phone spin</option>
+          <option value="maze-solver">Recorded maze solve</option>
+        </select>
+      </label>
+
+      <div class="harness-slider">
+        <label for="beta-input">Beta <output id="beta-value">0.0°</output></label>
+        <input id="beta-input" type="range" min="-45" max="45" step="0.1" value="0">
+      </div>
+      <div class="harness-slider">
+        <label for="gamma-input">Gamma <output id="gamma-value">0.0°</output></label>
+        <input id="gamma-input" type="range" min="-45" max="45" step="0.1" value="0">
+      </div>
+
+      <div class="harness-actions">
+        <button id="start-button" type="button">Play recording</button>
+        <button id="stop-button" type="button">Pause</button>
+        <button id="reset-button" type="button">Reset window</button>
+      </div>
+      <div class="harness-playback">
+        <label for="playback-progress">Playback <output id="playback-time">00:00 / 00:12</output></label>
+        <progress id="playback-progress" max="12000" value="0">0%</progress>
+      </div>
+      <p id="harness-status" role="status" aria-live="polite">Ready.</p>
+    </section>
+
+    <section class="harness-manual" aria-labelledby="manual-heading">
+      <div class="harness-manual-copy">
+        <p class="harness-kicker">Direct manipulation</p>
+        <h2 id="manual-heading">Drag the orientation ball</h2>
+        <p>Drag inside the field to tilt the simulated phone. Arrow keys move one degree; hold Shift for five degrees. Every change is dispatched as a real synthetic <code>deviceorientation</code> event.</p>
+      </div>
+      <div id="motion-ball-field" class="motion-ball-field" aria-label="Two-axis device orientation control">
+        <span class="motion-axis motion-axis--top">Back</span>
+        <span class="motion-axis motion-axis--right">Right</span>
+        <span class="motion-axis motion-axis--bottom">Forward</span>
+        <span class="motion-axis motion-axis--left">Left</span>
+        <span class="motion-cross motion-cross--x" aria-hidden="true"></span>
+        <span class="motion-cross motion-cross--y" aria-hidden="true"></span>
+        <button id="motion-ball" class="motion-ball" type="button" aria-label="Simulated device orientation: beta 0 degrees, gamma 0 degrees"></button>
+      </div>
+    </section>
+
+    <section class="harness-stage" aria-label="Emulated mobile preview">
+      <div class="harness-phone">
+        <div class="harness-phone-bar" aria-hidden="true"><span>9:41</span><i></i><span>5G ▰</span></div>
+        <div id="harness-preview" class="harness-preview"></div>
+      </div>
+      <div class="harness-readout" aria-label="Rolling sensor calculations">
+        <h2>2-second rolling window</h2>
+        <dl>
+          <div><dt>Samples</dt><dd id="metric-samples">0</dd></div>
+          <div><dt>Mean X</dt><dd id="metric-mean-x">0.00°</dd></div>
+          <div><dt>Min / max X</dt><dd id="metric-range-x">0.00° / 0.00°</dd></div>
+          <div><dt>Mapped X</dt><dd id="metric-map-x">0.000</dd></div>
+          <div><dt>Mean Y</dt><dd id="metric-mean-y">0.00°</dd></div>
+          <div><dt>Min / max Y</dt><dd id="metric-range-y">0.00° / 0.00°</dd></div>
+          <div><dt>Mapped Y</dt><dd id="metric-map-y">0.000</dd></div>
+          <div><dt>Runtime state</dt><dd id="metric-state">waiting</dd></div>
+        </dl>
+        <h2>Applied cover movement</h2>
+        <code id="metric-transform">none</code>
+      </div>
+    </section>
+  </main>
+
+  <script src="simulated-device-orientation-event.js?ver=1.2.4"></script>
+  <script>
+    (() => {
+      const params = new URLSearchParams(location.search);
+      const adapter = params.get('adapter') || 'light-will-win';
+      const permission = params.get('permission') || 'automatic';
+      window.ksEpkOrientationConfig = { adapter, harness: true, pageId: 0, version: 'harness' };
+
+      const SimulatedDeviceOrientationEvent = window.KSSimulatedDeviceOrientationEvent;
+      if (permission === 'required') {
+        SimulatedDeviceOrientationEvent.requestPermission = async () => 'granted';
+      }
+      window.DeviceOrientationEvent = SimulatedDeviceOrientationEvent;
+
+      const views = {
+        'light-will-win': `<main id="light-will-win-top" class="demo demo-lww"><header class="lww-hero"><p>Light Will Win</p><span>Official cover background</span></header><article class="lww-player-card">Player card</article><blockquote class="lww-story-quote">“Light finds a route.”</blockquote><div class="lww-fact">Release fact</div></main>`,
+        'dying-for-a-diagnosis': `<main class="dfad-motion-stage demo demo-dfad"><p>Dying for a Diagnosis</p><div class="dfad-cover" data-tilt><span>Cover</span></div><figure class="dfad-art-break" data-parallax><img alt="Parallax artwork test layer" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='260'%3E%3Crect width='420' height='260' fill='%23ad9270'/%3E%3Cpath d='M0 210L130 90l85 75 70-110 135 155' fill='none' stroke='%234b211f' stroke-width='18'/%3E%3C/svg%3E"></figure></main>`,
+        'presents-and-chocolate': `<main class="ks-epk demo demo-pc" data-release="presents-and-chocolate"><p>Presents &amp; Chocolate</p><div class="epk-cover-wrap"><div class="epk-cover">Cover float</div></div></main>`,
+        'fully-nocturnal': `<main class="ks-epk fn-live demo demo-fn" data-release="fully-nocturnal" data-fnx-motion="on"><p>Fully Nocturnal</p><div class="fnx-horizon-glow"></div><div class="fnx-road"></div><div class="epk-cover-wrap"><div class="epk-cover">Night cover</div></div></main>`,
+        'amnesty-honestly': `<main class="ks-epk demo demo-amnesty"><div class="epk-hero"><div class="epk-cover-wrap"><div class="epk-cover">Cover depth</div></div><h1 class="epk-heading">Amnesty, honestly?</h1></div></main>`,
+        'walk-with-me': `<main class="ks-epk demo demo-wwm" data-release="walk-with-me"><p>Walk With Me</p><div class="epk-cover-wrap wwm-cover-stage"><img class="epk-cover" src="https://kieransimkin.co.uk/wp-content/uploads/2026/08/walk-with-me-cover.jpg" alt="Walk With Me cover artwork"><span class="wwm-neon-route" aria-hidden="true"></span></div><small>Official cover and route tilt stage</small></main>`,
+        'dmitri-my-talisman': `<main class="dmt-epk demo demo-dmt"><div class="chamber"></div><p>Dmitri My Talisman</p><div class="cover-frame">Talisman cover</div></main>`,
+      };
+      document.getElementById('harness-preview').innerHTML = views[adapter] || views['light-will-win'];
+    })();
+  </script>
+  <script src="../assets/ks-epk-device-orientation-core.js?ver=1.2.4"></script>
+  <script src="../assets/ks-epk-device-orientation.js?ver=1.2.4"></script>
+  <script src="motion-recordings.js?ver=1.2.4"></script>
+  <script src="mobile-harness.js?ver=1.2.4"></script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+.ks-epk-orientation-control {
+  position: fixed;
+  z-index: 999998;
+  left: max(.75rem, env(safe-area-inset-left));
+  bottom: max(.75rem, env(safe-area-inset-bottom));
+  min-height: 2.75rem;
+  padding: .65rem .9rem;
+  border: 1px solid rgba(255, 255, 255, .72);
+  border-radius: 999px;
+  color: #fff;
+  background: rgba(12, 12, 16, .88);
+  box-shadow: 0 .5rem 2rem rgba(0, 0, 0, .42);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  font: 700 .72rem/1 system-ui, sans-serif;
+  letter-spacing: .05em;
+  cursor: pointer;
+}
+
+.ks-epk-orientation-control:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+
+.ks-epk-orientation-control:disabled {
+  cursor: default;
+  opacity: .72;
+}
+
+.ks-epk[data-release="presents-and-chocolate"][data-ks-orientation="active"] .epk-cover-wrap {
+  animation: none;
+  transform: translate3d(var(--pc-sensor-x, 0px), var(--pc-sensor-y, 0px), 0) rotate(var(--pc-sensor-rotate, 0deg));
+}
+
+#light-will-win-top[data-ks-orientation="active"] .lww-hero {
+  background-position: calc(50% + var(--lww-cover-x, 0px)) calc(44% + var(--lww-cover-y, 0px));
+}
+
+.ks-epk[data-release="walk-with-me"][data-ks-orientation="active"] .wwm-cover-stage {
+  transform: perspective(1100px) rotateX(var(--wwm-tilt-x, 0deg)) rotateY(var(--wwm-tilt-y, 0deg)) translate(var(--wwm-shift-x, 0px), var(--wwm-shift-y, 0px)) !important;
+}
+
+/* Raw sensor callbacks are coalesced to 30 ms states. CSS interpolates between
+   those states so the browser's compositor, rather than JavaScript, carries
+   the visible motion. */
+#light-will-win-top[data-ks-orientation="active"] .lww-hero {
+  transition: background-position var(--dance-moves-3t, 93.75ms) cubic-bezier(.15, .8, .2, 1) !important;
+  will-change: background-position;
+}
+
+#light-will-win-top[data-ks-orientation="active"] :is(.lww-player-card,.lww-story-quote,.lww-glass,.lww-contact-card,.lww-fact),
+.dfad-motion-stage[data-ks-orientation="active"] :is([data-tilt],[data-parallax] img),
+[data-ks-orientation-adapter="presents-and-chocolate"][data-ks-orientation="active"] .epk-cover-wrap,
+[data-ks-orientation-adapter="fully-nocturnal"][data-ks-orientation="active"] :is(.fnx-horizon-glow,.fnx-road,.epk-cover-wrap,.epk-cover),
+[data-ks-orientation-adapter="amnesty-honestly"][data-ks-orientation="active"] :is(.epk-cover-wrap,.epk-heading),
+[data-ks-orientation-adapter="walk-with-me"][data-ks-orientation="active"] .wwm-cover-stage,
+[data-ks-orientation-adapter="dmitri-my-talisman"][data-ks-orientation="active"] :is(.chamber,.cover-frame) {
+  transition: transform var(--dance-moves-3t, 93.75ms) cubic-bezier(.15, .8, .2, 1) !important;
+  will-change: transform;
+}
+
+@media (max-width: 900px) {
+  #light-will-win-top[data-ks-orientation="active"] .lww-hero {
+    background-position: calc(58% + var(--lww-cover-x, 0px)) calc(46% + var(--lww-cover-y, 0px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ks-epk-orientation-control { display: none !important; }
+  .ks-epk[data-release="presents-and-chocolate"] .epk-cover-wrap { transform: none !important; }
+  .ks-epk[data-release="walk-with-me"] .wwm-cover-stage { transform: none !important; }
+  [data-ks-orientation] *,
+  [data-ks-orientation] *::before,
+  [data-ks-orientation] *::after {
+    transition: none !important;
+    will-change: auto !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .ks-epk-orientation-control {
+    color: ButtonText;
+    background: ButtonFace;
+    border-color: ButtonText;
+    forced-color-adjust: auto;
+  }
+}

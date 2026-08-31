@@ -1,0 +1,15 @@
+/* Elements with a declarative start interval stay on their first frame until DanceMoves releases them. */
+[data-dance-moves-start-interval]:not([data-dance-moves-started="true"]),
+[data-dance-moves-start-interval]:not([data-dance-moves-started="true"])::before,
+[data-dance-moves-start-interval]:not([data-dance-moves-started="true"])::after {
+  animation-play-state: paused !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-dance-moves-start-interval],
+  [data-dance-moves-start-interval]::before,
+  [data-dance-moves-start-interval]::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+}

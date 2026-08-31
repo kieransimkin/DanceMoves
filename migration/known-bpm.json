@@ -1,0 +1,51 @@
+{
+  "schema": "dance-moves-known-bpm/v1",
+  "generated_on": "2026-08-31",
+  "fallback_bpm": 120,
+  "pages": {
+    "130": {
+      "title": "Dying for a Diagnosis",
+      "bpm": 85,
+      "confidence": "user-approved technical description",
+      "evidence": "Dying for a Diagnosis/submission-pack/00-press-one-sheet.md",
+      "master_path": "Dying for a Diagnosis/Dying for a Diagnosis - mastered.wav",
+      "master_sha256": "DE7E42C06929742074F93C3E48288E5CE0419C97A553BBD8F7DC754D8EE9194F",
+      "master_duration_milliseconds": 332752.494
+    },
+    "243": {
+      "title": "Presents & Chocolate",
+      "bpm": 132,
+      "confidence": "medium-high",
+      "evidence": "Presents & Chocolate/bpm-and-motion-clock-2026-08-31.md",
+      "master_path": "Presents & Chocolate/Presents & Chocolate - mastered.wav",
+      "master_sha256": "2471B0299A401CFFEA84611BE419CAE5945A184266A6DDEA0B6D5EEED306AF7B",
+      "master_duration_milliseconds": 212436.145
+    },
+    "252": {
+      "title": "Made from the clay and the stars (Anunnaki)",
+      "bpm": 116,
+      "confidence": "moderate",
+      "evidence": "Made from the clay and the stars/wordpress-warm-light-effects-2026-08-31/master-bpm-analysis-2026-08-31.json",
+      "master_path": "Made from the clay and the stars/Made from the clay and the starts (Anunnaki) - mastered.wav",
+      "master_sha256": "03F681507F47389AD6E7085C9C0167D74F6AC24A6F2ABC497CA356AEDBE1B838",
+      "master_duration_milliseconds": 359523.56
+    }
+  },
+  "excluded_candidates": [
+    {
+      "title": "Emerald Shooting Star",
+      "candidate_bpm": 107,
+      "reason": "Stem-archive filename evidence is recorded locally but not yet verified against the canonical release master."
+    },
+    {
+      "title": "Dmitri My Talisman",
+      "candidate_bpm": 136,
+      "reason": "A stem archive carries 136 BPM, but release guidance still requires verified tempo evidence before audio-reactive motion."
+    },
+    {
+      "title": "So Slow Down",
+      "candidate_bpm": null,
+      "reason": "Local Big Beat Banger and Big Beat Dub variants carry conflicting 99 and 98 BPM labels and are not safely mapped to the published page."
+    }
+  ]
+}

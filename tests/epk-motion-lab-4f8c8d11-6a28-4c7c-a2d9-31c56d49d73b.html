@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+  <meta name="referrer" content="no-referrer">
+  <title>EPK genuine motion API conformance test</title>
+  <link rel="stylesheet" href="mobile-api-conformance.css">
+</head>
+<body>
+  <main>
+    <p class="kicker">Physical-device test · local processing only</p>
+    <h1>Genuine motion API comparison</h1>
+    <p class="lead">This page captures native phone-orientation samples, replays each through the simulator event class, and compares both paths through the production 2-second rolling mapper. Sensor data stays in this browser unless you choose to upload it privately to WordPress.</p>
+
+    <section class="panel">
+      <h2>Run on a phone</h2>
+      <ol>
+        <li>Hold the phone upright, then press the button.</li>
+        <li>Allow motion access if the phone asks.</li>
+        <li>Tilt and rotate gently for the full 30-second recording.</li>
+      </ol>
+      <button id="start-test" type="button">Start genuine sensor comparison</button>
+      <p id="status" role="status" aria-live="polite">Waiting to start.</p>
+      <progress id="progress" max="30" value="0">0 of 30 seconds</progress>
+    </section>
+
+    <section class="panel" aria-labelledby="results-heading">
+      <h2 id="results-heading">Conformance results</h2>
+      <dl id="results">
+        <div><dt>Secure context</dt><dd id="secure-result">Checking…</dd></div>
+        <div><dt>Native API</dt><dd id="api-result">Checking…</dd></div>
+        <div><dt>Events processed</dt><dd id="pairs-result">0 processed · 0 stored</dd></div>
+        <div><dt>Field parity</dt><dd id="field-result">Waiting</dd></div>
+        <div><dt>Dispatch parity</dt><dd id="dispatch-result">Waiting</dd></div>
+        <div><dt>Mapper parity</dt><dd id="mapper-result">Waiting</dd></div>
+        <div><dt>Expected difference</dt><dd>Native events are trusted; synthetic events cannot be.</dd></div>
+        <div><dt>Overall</dt><dd id="overall-result">Not run</dd></div>
+      </dl>
+      <div class="result-actions">
+        <a id="download-recording" hidden>Download genuine recording JSON</a>
+        <button id="upload-recording" type="button" hidden>Upload recording privately to WordPress</button>
+      </div>
+      <p id="upload-status" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="panel">
+      <h2>Comparison log</h2>
+      <pre id="comparison-log">No samples yet.</pre>
+    </section>
+  </main>
+  <script>
+    window.ksMotionCaptureConfig = {
+      endpoint: "/wp-json/ks-epk-motion/v1/capture",
+      token: "e4c1d9a77fb446608e796a0f8fd8f576e59d2e67bca54a4d9f7fd06fbef3e1c2"
+    };
+  </script>
+  <script src="../assets/ks-epk-device-orientation-core.js?ver=1.2.4"></script>
+  <script src="simulated-device-orientation-event.js?ver=1.2.4"></script>
+  <script src="motion-capture-policy.js?ver=1.2.4"></script>
+  <script src="mobile-api-conformance.js?ver=1.2.4"></script>
+</body>
+</html>

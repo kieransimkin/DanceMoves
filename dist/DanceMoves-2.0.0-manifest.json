@@ -1,0 +1,65 @@
+﻿{
+    "schema":  "dance-moves-package/v1",
+    "plugin_name":  "DanceMoves",
+    "version":  "2.0.0",
+    "wordpress_upgrade_slug":  "kieran-epk-device-orientation",
+    "zip":  "DanceMoves-2.0.0.zip",
+    "zip_bytes":  33617,
+    "zip_sha256":  "353F0BA1C9354893C43AED7B3611FF0ADF611EC7D3CE0B84AFA921320472D262",
+    "entry_count":  10,
+    "root_entrypoint":  "kieran-epk-device-orientation/kieran-epk-device-orientation.php",
+    "root_entrypoint_present":  true,
+    "forward_slash_entries":  true,
+    "files":  [
+                  {
+                      "path":  "kieran-epk-device-orientation/assets/clay-stars-effects.css",
+                      "bytes":  25080,
+                      "sha256":  "EF9B0EBF24CC4EBA1EA672D8D3E85DC1301761F75AA8F6CB507ACC88F7A5CF28"
+                  },
+                  {
+                      "path":  "kieran-epk-device-orientation/assets/clay-stars-effects.js",
+                      "bytes":  6612,
+                      "sha256":  "8CB0E2A2CADBCED995C3C0D45F26D959DEBCEEB369975D8229DE3818CA4B6989"
+                  },
+                  {
+                      "path":  "kieran-epk-device-orientation/assets/dance-moves-admin.js",
+                      "bytes":  1704,
+                      "sha256":  "889D2642EFC2F60F10058D371EC38BA0CC4DEF9AC7C7D7C1C23943F452210CB6"
+                  },
+                  {
+                      "path":  "kieran-epk-device-orientation/assets/dance-moves-core.css",
+                      "bytes":  642,
+                      "sha256":  "56DA7213690AB21B4C73054CF486C7F5CF82A08A46A249448DEE675717826674"
+                  },
+                  {
+                      "path":  "kieran-epk-device-orientation/assets/dance-moves-core.js",
+                      "bytes":  20356,
+                      "sha256":  "4024B1AD1D59C253171A7217BFF9B90806FEA4C447B05DE4E0133396E6E636B7"
+                  },
+                  {
+                      "path":  "kieran-epk-device-orientation/assets/ks-epk-device-orientation.css",
+                      "bytes":  3502,
+                      "sha256":  "3D8A1103A9B5A3F2177E0866A005EC9E6BB6B1FF7B9FF2517FD7427EE4FB0B7B"
+                  },
+                  {
+                      "path":  "kieran-epk-device-orientation/assets/ks-epk-device-orientation.js",
+                      "bytes":  14492,
+                      "sha256":  "1A0FD9421D42C910E9FF3641D9A6291C2B9B1B1081F33EBD08A2B4E539683DC1"
+                  },
+                  {
+                      "path":  "kieran-epk-device-orientation/assets/ks-epk-device-orientation-core.js",
+                      "bytes":  6224,
+                      "sha256":  "3CC54369A225C62483DC19D3BFA744BB9D47F77299D78C429420851270C1CBC6"
+                  },
+                  {
+                      "path":  "kieran-epk-device-orientation/kieran-epk-device-orientation.php",
+                      "bytes":  24495,
+                      "sha256":  "CB7F1D4839197E12F3AA9ED41519926574751BD2B243D2B0608FB812B5B6DD80"
+                  },
+                  {
+                      "path":  "kieran-epk-device-orientation/README.md",
+                      "bytes":  17650,
+                      "sha256":  "D8D55AB709BEFB94C153599AA18DC36F0A3F91DE11213585D9E4D78C04072AC9"
+                  }
+              ]
+}
