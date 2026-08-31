@@ -221,6 +221,14 @@ No WordPress upload, timing-media upload, page-meta save or legacy-plugin deacti
 - **Verification:** the 2.3.2 unit fixture delivers bounded orientation samples into the real Clay adapter factory, marks it active, and stops listening under reduced motion; the phone runtime reports one Clay `deviceorientation` listener with `listening: true`.
 - **Limit:** do not represent CDP event dispatch, listener invocation or device-orientation overrides as trusted physical sensor evidence.
 
+### A previously emulated Android Chrome target can stop yielding native orientation events
+
+- **Symptom:** the production listener is installed and reports `listening: true`, the document is visible and reduced motion is off, but an Android Chrome target previously used for DevTools orientation emulation yields zero native events after the override is cleared.
+- **Cause when known:** the affected target had been used for sensor emulation and remained unsuitable for a clean physical proof. Chrome's internal reason for retaining that state was not established.
+- **Corrective action:** close only that exact, explicitly scoped EPK test tab, open the public EPK in a new Chrome tab, activate that exact target and repeat the bounded diagnostic without synthetic dispatch, listener invocation or a CDP orientation override.
+- **Verification:** the new DanceMoves 2.3.2 target delivered 88 native events in eight seconds, set the shared runtime and Clay adapter active, committed 21 motion frames and applied non-zero cover tilt and translation.
+- **Limit:** a fresh target is evidence for the physical event path only when no emulation or injected event is used in that target. Never close, enumerate or inspect unrelated phone tabs.
+
 ### PowerShell loop output must be grouped before piping
 
 - **Symptom:** PowerShell reports `An empty pipe element is not allowed` after a `foreach (...) { ... } | Format-Table` construct.

@@ -1,0 +1,60 @@
+{
+  "schema": "dance-moves-phone-native-motion/v1",
+  "recorded_at": "2026-08-31T19:16:28.2809537+01:00",
+  "status": "PASS",
+  "url": "https://kieransimkin.co.uk/made-from-the-clay-and-the-stars-anunnaki/?dance-moves-phone-live=232",
+  "device": {
+    "model": "Samsung Galaxy A40 (SM-A405FN)",
+    "android": 11,
+    "refresh_hz": 60.000004,
+    "browser": "Chrome 151.0.7922.173"
+  },
+  "conditions": {
+    "target_created_after_closing_previous_emulated_target": true,
+    "document_visible": true,
+    "secure_context": true,
+    "reduced_motion": false,
+    "synthetic_event_used": false,
+    "cdp_orientation_override_used": false,
+    "listener_invocation_used": false,
+    "sample_milliseconds": 8000
+  },
+  "assets": {
+    "dance_moves_version": "2.3.2",
+    "script_count": 5,
+    "orientation_runtime_present": true,
+    "clay_api_present": true
+  },
+  "native_events": {
+    "count": 88,
+    "sample": [
+      { "alpha": 21.6, "beta": 43.8, "gamma": 20.6, "absolute": false },
+      { "alpha": 20.5, "beta": 43.2, "gamma": 25.0, "absolute": false },
+      { "alpha": 22.3, "beta": 48.9, "gamma": 32.3, "absolute": false }
+    ]
+  },
+  "shared_runtime": {
+    "adapter": "clay-stars",
+    "active": true,
+    "listening": true,
+    "listener_count": 1,
+    "destroyed": false,
+    "latest_x": 0.9999891150014882,
+    "latest_y": 0.7937783723006013,
+    "status": "active"
+  },
+  "clay_adapter": {
+    "master_intensity": 2,
+    "motion_x": 0.9999945574859337,
+    "motion_y": 0.8909424068370533,
+    "commits": 21,
+    "lifecycle": "visible"
+  },
+  "cover_css_variables": {
+    "rx": "-2.049deg",
+    "ry": "2.300deg",
+    "tx": "8.000px",
+    "ty": "7.128px"
+  },
+  "conclusion": "Trusted native Android orientation events reached the published DanceMoves 2.3.2 shared runtime and Clay adapter and produced non-zero bounded cover transforms. The functional physical motion path passes; Kieran's subjective gain judgement is separate."
+}

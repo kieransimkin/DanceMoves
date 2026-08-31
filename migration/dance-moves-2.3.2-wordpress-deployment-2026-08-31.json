@@ -1,7 +1,7 @@
 {
   "schema": "dance-moves-wordpress-deployment/v1",
   "recorded_at": "2026-08-31T18:52:20.7185534+01:00",
-  "status": "published_technical_checks_passed_physical_native_motion_pending_clean_tab",
+  "status": "published_technical_and_native_motion_passed_subjective_gain_pending",
   "site": "https://kieransimkin.co.uk/",
   "plugin": {
     "name": "DanceMoves",
@@ -68,8 +68,18 @@
       "reduced_motion": false,
       "master_intensity": 2
     },
-    "native_event_check": "pending clean browser tab",
-    "reason": "The remaining exact EPK target had previously been used for DevTools sensor emulation. It returned no new native events after the override was cleared, so it cannot be treated as a clean physical sensor pass.",
+    "native_event_check": "pass",
+    "native_event_evidence": "qa/phone-2.3.2-native-motion-2026-08-31.json",
+    "native_events_in_8_seconds": 88,
+    "clay_motion_commits": 21,
+    "cover_css_variables": {
+      "rx": "-2.049deg",
+      "ry": "2.300deg",
+      "tx": "8.000px",
+      "ty": "7.128px"
+    },
+    "synthetic_or_emulated_input_used": false,
+    "functional_motion_path": "pass",
     "subjective_visible_motion_judgement": "pending"
   },
   "unchanged": [
