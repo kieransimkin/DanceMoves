@@ -40,7 +40,7 @@ function Resolve-ReleasePath([string]$relativePath) {
 function Get-FileEvidence([string]$path) {
     if (-not $path) { return $null }
     $item = Get-Item -LiteralPath $path
-    [ordered]@{
+    [pscustomobject][ordered]@{
         path = $path.Substring($releasesRoot.Length + 1).Replace('\', '/')
         sha256 = (Get-FileHash -Algorithm SHA256 -LiteralPath $path).Hash
         bytes = $item.Length
@@ -67,7 +67,7 @@ $rows = foreach ($page in $pages) {
         }
     }
 
-    [ordered]@{
+    [pscustomobject][ordered]@{
         title = $page.title
         post_id = [int]$page.post_id
         url = $page.url

@@ -1,5 +1,15 @@
 # DanceMoves test and EPK publication gates
 
+## Potential problems
+
+### Ordered dictionaries can export as blank TSV columns
+
+- **Symptom:** the JSON manifest contains all 47 populated page objects, while the TSV has 48 lines but blank title, page ID, URL and BPM columns.
+- **Cause:** `Select-Object` and `Export-Csv` did not expose ordered-dictionary keys as ordinary PowerShell object properties.
+- **Corrective action:** cast each generated migration row to `[pscustomobject][ordered]` before collecting or exporting it.
+- **Verification:** require 47 imported TSV rows, non-empty title/page ID/URL on every row, and field parity with the JSON manifest for all page IDs before any WordPress migration.
+- **Limit:** structural parity does not verify that the underlying BPM or timing-file evidence is correct; retain the separate evidence gates.
+
 ## Purpose
 
 This document defines two independent gates:
