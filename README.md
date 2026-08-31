@@ -236,3 +236,27 @@ No WordPress upload, timing-media upload, page-meta save or legacy-plugin deacti
 - **Corrective action:** stop after one failed mutation, verify no partial install/save, retain the exact package hash, and block retries until host-level free space/temp-file health is verified.
 - **Verification:** perform one small reversible probe after remediation, remove it, then make the approved change once and verify signed out.
 - **Limit:** WordPress directory-writable status alone does not prove sufficient disk, quota, inode or temp-mount capacity.
+
+### Older Windows PowerShell lacks the modern static SHA-256 helpers
+
+- **Symptom:** a verification command fails because `[Security.Cryptography.SHA256]::HashData` or `[Convert]::ToHexString` does not exist.
+- **Cause when verified:** Windows PowerShell is using an older .NET surface without those newer static APIs.
+- **Corrective action:** create `[Security.Cryptography.SHA256]::Create()`, call `ComputeHash($bytes)`, convert with `[BitConverter]::ToString(...).Replace('-','')`, and dispose the hash object in `finally`.
+- **Verification:** all four public DanceMoves asset hashes matched their local package entries byte-for-byte.
+- **Limit:** this is a portable hashing fallback; it does not establish that the fetched URL is the intended release unless the URL, version and expected manifest are also checked.
+
+### Headless browser window sizing can mimic mobile overflow
+
+- **Symptom:** a `--window-size=390,... --screenshot` capture appears clipped or reports a wider-than-requested mobile page even though the responsive CSS is correct.
+- **Cause when verified:** the command-line screenshot path retained a browser minimum layout width instead of a true 390-pixel emulated viewport.
+- **Corrective action:** use DevTools Protocol `Emulation.setDeviceMetricsOverride`, then record `innerWidth`, document/body scroll widths and the screenshot from that same session.
+- **Verification:** signed-out 1440, 900 and 390-pixel captures reported the exact requested inner widths and zero positive horizontal overflow.
+- **Limit:** viewport emulation verifies layout geometry, not physical sensor cadence, thermal throttling or real 60/120 Hz device performance.
+
+### Line-based keyframe scanners misclassify minified CSS
+
+- **Symptom:** one minified inline style produces thousands of false continuous-animation failures and very large evidence output after its first `@keyframes` declaration.
+- **Cause when verified:** the scanner carried an `in_keyframes` flag for the rest of the physical line, even after the keyframe block's closing brace.
+- **Corrective action:** locate each keyframe block with brace-balanced character ranges, classify declarations by absolute character offset, and cap evidence snippets around the matching declaration.
+- **Verification:** the Clay/Stars shared harness changed from false failure to `PASS`; the only remaining risky transition is the bounded page-owned `box-shadow` review warning.
+- **Limit:** brace balancing is a static CSS check; pre-live traces still decide whether bounded transitions and page-owned effects meet runtime budgets.

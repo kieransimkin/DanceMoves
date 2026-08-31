@@ -1,0 +1,121 @@
+{
+  "schema": "dance-moves-wordpress-deployment/v1",
+  "deployed_at": "2026-08-31T16:42:04+01:00",
+  "plugin_name": "DanceMoves",
+  "version": "2.3.0",
+  "package": "dist/DanceMoves-2.3.0.zip",
+  "package_bytes": 42610,
+  "package_sha256": "D690FD0A411BC704E464306B34E84DD40C241B9F96CF0B4E01EDB76D6CBA7CF4",
+  "source_commit": "4c85dc8e2cbd782391cc24e57a8b392a9b26c099",
+  "approval": {
+    "approved": true,
+    "scope": "Exact DanceMoves 2.3.0 ZIP, 42,610 bytes, SHA-256 D690FD0A411BC704E464306B34E84DD40C241B9F96CF0B4E01EDB76D6CBA7CF4",
+    "action": "Replace the active 2.2.0 plugin once and run persisted public QA"
+  },
+  "wordpress": {
+    "uploaded_package_id": 735,
+    "comparison": {
+      "current_name": "DanceMoves",
+      "current_version": "2.2.0",
+      "uploaded_name": "DanceMoves",
+      "uploaded_version": "2.3.0"
+    },
+    "result": "Plugin updated successfully.",
+    "installed_plugins": {
+      "name": "DanceMoves",
+      "version": "2.3.0",
+      "active": true
+    }
+  },
+  "public_asset_verification": {
+    "all_match_approved_package": true,
+    "assets": {
+      "clay-stars-effects.css": "48DE19BAB0DE6B795BC9BF03D94CA6864713EADF87DBF63E47CBE38008BFD41D",
+      "clay-stars-effects.js": "43C5A3129420C4F9AD3AF51B03D2DA41FE358C3C72C97F54CB8F3F4348EDCAE9",
+      "dance-moves-admin.js": "889D2642EFC2F60F10058D371EC38BA0CC4DEF9AC7C7D7C1C23943F452210CB6",
+      "dance-moves-catalogue-timing.js": "E2CBBE1729BF52D69C060C8999D157B45BCBDA96D7EE9FE93131FD86F45525BE",
+      "dance-moves-core.css": "197E0D51F400A3D875ACB6E12238417FAA3D54853708F72EEB792342F533AD8D",
+      "dance-moves-core.js": "7337D940C85DAFF366A3B41D7D91997772ACA1C22A53713B5C0529925AA9C59C",
+      "ks-epk-device-orientation.css": "7CCD445D0B3F7EDC474BA4E43CFD31BF2F8A7888C97CB2D7017A81C0DD645CCB",
+      "ks-epk-device-orientation.js": "AD3DD5392A9385D1FF6228915F915BBA834A08743A29C3CE656AAC7B433F4A6C",
+      "ks-epk-device-orientation-core.js": "6691A9F8BA02153EADE32295170A40E0988554BD847129983E177D93824AE4F6"
+    }
+  },
+  "catalogue_signed_out": {
+    "pages": 47,
+    "http_200": 47,
+    "version_2_3_0": 47,
+    "admin_bar_present": 0,
+    "replacement_character_pages": 0,
+    "explicit_bpm": {
+      "130": 85,
+      "243": 132,
+      "252": 116
+    },
+    "fallback_120_pages": 44,
+    "failures": 0
+  },
+  "responsive_runtime": {
+    "release_systems": 17,
+    "viewports": [1440, 900, 390],
+    "checks": 51,
+    "ready": 51,
+    "unquantized_timing_tokens": 0,
+    "unicode_replacement_characters": 0,
+    "asset_version_failures": 0,
+    "known_authenticated_chrome": {
+      "page_id": 399,
+      "positive_overflow_pixels": 8,
+      "cause": "WordPress admin toolbar",
+      "signed_out_html_has_admin_bar": false
+    },
+    "signed_out_page_252_evidence": "qa/published-2.2.0/viewport-evidence.json"
+  },
+  "reduced_motion": {
+    "page_id": 310,
+    "active_animations_over_0_02_milliseconds": 0,
+    "long_transitions": 0,
+    "garden_light_drift_duration": "1e-05s",
+    "document_overflow": 0
+  },
+  "cue_audio_contract": {
+    "page_id": 252,
+    "bpm": 116,
+    "master_duration_seconds": 359.52356,
+    "audio_timing": "master-length",
+    "cue_count": 19,
+    "cue_status": "ready",
+    "public_api_functions_present": true,
+    "animation_probe": {
+      "before_current_time": 2500,
+      "after_current_time": 0,
+      "after_play_state": "running"
+    },
+    "live_playback": {
+      "cue": "VOCAL INTRO",
+      "cue_type": "ENTRY",
+      "cue_time_seconds": 12.95,
+      "on_next_beat_calls": 1,
+      "on_every_beat_calls": 3
+    },
+    "bar_boundary_playback": {
+      "on_next_bar_calls": 1,
+      "on_every_bar_calls": 1,
+      "on_next_interval_64_calls": 1,
+      "on_every_interval_64_calls": 1
+    },
+    "clay_named_cue_state": "vocal-intro"
+  },
+  "admin_fields": {
+    "page_id": 252,
+    "panel": "EPK Timing",
+    "bpm": 116,
+    "lyric_timing_file": "dance-moves-252-lyric.lrc",
+    "cue_timing_file": "dance-moves-252-cue.lrc",
+    "editable_controls_present": true
+  },
+  "rollback": {
+    "package": "dist/DanceMoves-2.2.0.zip",
+    "sha256": "8051911EE03D4D3524440D9F62F4CD6731244FB29C7C0A2738C94B7B00065438"
+  }
+}

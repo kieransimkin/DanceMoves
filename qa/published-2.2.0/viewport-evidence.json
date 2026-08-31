@@ -1,6 +1,6 @@
 {
   "schema": "dance-moves-public-viewport-evidence/v1",
-  "capturedAt": "2026-08-31T14:55:17.069Z",
+  "capturedAt": "2026-08-31T15:33:49.136Z",
   "url": "https://kieransimkin.co.uk/made-from-the-clay-and-the-stars-anunnaki/",
   "browser": "Microsoft Edge headless via DevTools Protocol",
   "signedOut": true,
@@ -17,15 +17,17 @@
       "positiveHorizontalOverflow": 0,
       "hasAdminBar": false,
       "replacementCharacters": 0,
-      "danceMovesCore": "https://kieransimkin.co.uk/wp-content/plugins/kieran-epk-device-orientation/assets/dance-moves-core.js?ver=2.2.0",
-      "clayStars": "https://kieransimkin.co.uk/wp-content/plugins/kieran-epk-device-orientation/assets/clay-stars-effects.js?ver=2.2.0",
+      "danceMovesCore": "https://kieransimkin.co.uk/wp-content/plugins/kieran-epk-device-orientation/assets/dance-moves-core.js?ver=2.3.0",
+      "clayStars": "https://kieransimkin.co.uk/wp-content/plugins/kieran-epk-device-orientation/assets/clay-stars-effects.js?ver=2.3.0",
       "legacyClayAssets": [],
       "rootCount": 1,
       "coverCount": 1,
       "playerCount": 1,
-      "chapterCount": 0,
+      "chapterCount": 5,
+      "pageButtonCount": 5,
+      "chapterContainerCount": 1,
       "screenshot": "desktop-1440.png",
-      "screenshotSha256": "0D85918D1F096B8BE9DCE95778F1CE7B716F360873C4B334EC4D32FDDAA63937"
+      "screenshotSha256": "96FF19ED11C8A793A805547D279FA053460C5D2A956F2C412489BC9A3EC6B847"
     },
     {
       "name": "tablet-900",
@@ -39,15 +41,17 @@
       "positiveHorizontalOverflow": 0,
       "hasAdminBar": false,
       "replacementCharacters": 0,
-      "danceMovesCore": "https://kieransimkin.co.uk/wp-content/plugins/kieran-epk-device-orientation/assets/dance-moves-core.js?ver=2.2.0",
-      "clayStars": "https://kieransimkin.co.uk/wp-content/plugins/kieran-epk-device-orientation/assets/clay-stars-effects.js?ver=2.2.0",
+      "danceMovesCore": "https://kieransimkin.co.uk/wp-content/plugins/kieran-epk-device-orientation/assets/dance-moves-core.js?ver=2.3.0",
+      "clayStars": "https://kieransimkin.co.uk/wp-content/plugins/kieran-epk-device-orientation/assets/clay-stars-effects.js?ver=2.3.0",
       "legacyClayAssets": [],
       "rootCount": 1,
       "coverCount": 1,
       "playerCount": 1,
-      "chapterCount": 0,
+      "chapterCount": 5,
+      "pageButtonCount": 5,
+      "chapterContainerCount": 1,
       "screenshot": "tablet-900.png",
-      "screenshotSha256": "339424C4EF4E429C9AFDA68F2D5D1A33310CA390884061D6483021579A65DF94"
+      "screenshotSha256": "326EC6A10764ECC2F721BDFF89A88BB7FB34D9E3E493E4430041763CCA4A00B2"
     },
     {
       "name": "mobile-390",
@@ -61,15 +65,17 @@
       "positiveHorizontalOverflow": 0,
       "hasAdminBar": false,
       "replacementCharacters": 0,
-      "danceMovesCore": "https://kieransimkin.co.uk/wp-content/plugins/kieran-epk-device-orientation/assets/dance-moves-core.js?ver=2.2.0",
-      "clayStars": "https://kieransimkin.co.uk/wp-content/plugins/kieran-epk-device-orientation/assets/clay-stars-effects.js?ver=2.2.0",
+      "danceMovesCore": "https://kieransimkin.co.uk/wp-content/plugins/kieran-epk-device-orientation/assets/dance-moves-core.js?ver=2.3.0",
+      "clayStars": "https://kieransimkin.co.uk/wp-content/plugins/kieran-epk-device-orientation/assets/clay-stars-effects.js?ver=2.3.0",
       "legacyClayAssets": [],
       "rootCount": 1,
       "coverCount": 1,
       "playerCount": 1,
-      "chapterCount": 0,
+      "chapterCount": 5,
+      "pageButtonCount": 5,
+      "chapterContainerCount": 1,
       "screenshot": "mobile-390.png",
-      "screenshotSha256": "E3ABC9BCC90C07DDA0C1A189C263918D8821970ECBB122BCBF85C169E0B3866D"
+      "screenshotSha256": "C56062857F0AECC06191A4A1E4177BADB76757AB7E23AB59407FCE8AF2F7DB91"
     }
   ]
 }

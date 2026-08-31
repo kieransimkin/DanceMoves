@@ -149,7 +149,9 @@ async function main() {
           rootCount: document.querySelectorAll(".ks-epk.ks-clay-stars-v2").length,
           coverCount: document.querySelectorAll(".epk-cover-wrap").length,
           playerCount: document.querySelectorAll("audio").length,
-          chapterCount: document.querySelectorAll("[data-ks-clay-stars-chapter]").length
+          chapterCount: document.querySelectorAll("button[data-time][aria-controls], [data-time][aria-controls]").length,
+          pageButtonCount: document.querySelectorAll("button").length,
+          chapterContainerCount: document.querySelectorAll(".ks-clay-stars-chapters, nav[aria-label='Track chapters']").length
         })`,
         returnByValue: true,
       });

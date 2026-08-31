@@ -232,6 +232,13 @@ def keyframe_ranges(text: str) -> list[tuple[int, int]]:
     return ranges
 
 
+def compact_source(text: str, index: int, width: int = 240) -> str:
+    start = max(0, index - (width // 3))
+    end = min(len(text), start + width)
+    snippet = re.sub(r"\s+", " ", text[start:end]).strip()
+    return ("..." if start else "") + snippet + ("..." if end < len(text) else "")
+
+
 def scan_css_text(text: str, relative: str, policy: dict, report: Report) -> None:
     fail = {item.lower() for item in policy.get("failContinuous", [])}
     review = {item.lower() for item in policy.get("review", [])}
@@ -249,7 +256,7 @@ def scan_css_text(text: str, relative: str, policy: dict, report: Report) -> Non
                 candidates.update(name for name in fail | review if re.search(rf"(?<![-\w]){re.escape(name)}(?![-\w])", value))
             for name in sorted(candidates & (fail | review)):
                 classification = "block" if name in fail and trigger in {"keyframes", "transition"} else "review"
-                finding = {"classification": classification, "property": name, "trigger": trigger, "path": relative, "line": line_number, "source": line.strip()}
+                finding = {"classification": classification, "property": name, "trigger": trigger, "path": relative, "line": line_number, "source": compact_source(text, absolute_offset)}
                 report.property_findings.append(finding)
                 if classification == "block":
                     if trigger == "keyframes":

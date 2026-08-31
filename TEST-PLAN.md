@@ -465,3 +465,35 @@ Publication remains a separate, approval-gated operation. No test runner may upl
 - **Corrective action:** calculate brace-bounded character ranges for each standard or WebKit keyframe block and classify every declaration by its own absolute offset.
 - **Verification:** the same generated Clay candidate changed from multiple false blocking findings to `PASS`; its one remaining `box-shadow` transition is retained as a review warning, and Unit mode now runs this shared-manifest validator.
 - **Limit:** the range scanner assumes balanced CSS braces; malformed CSS remains a validation failure and must not be normalized silently.
+
+### WordPress exposes duplicate Add Plugin links
+
+- **Symptom:** an exact `Add Plugin` role locator fails strict mode because both the Plugins submenu and page-title action are visible.
+- **Cause:** WordPress renders two links with the same accessible name in different navigation regions.
+- **Corrective action:** scope the locator to `#wpbody-content` for the page-title action, or to the explicitly labelled main navigation when the submenu is intended.
+- **Verification:** the scoped page-title link opened the uploader and the approved ZIP reached the 2.2.0-to-2.3.0 comparison screen.
+- **Limit:** do not resolve duplicate mutation controls with `.first()` unless the containing region and intended action have already been established.
+
+### Scripted audio playback can be blocked without a user gesture
+
+- **Symptom:** `audio.play()` rejects with `NotAllowedError` and no cue or interval callback fires.
+- **Cause:** Chromium's autoplay policy requires a user activation even for this muted test path.
+- **Corrective action:** prepare the read-only timing position and handlers, focus the visible native audio control and use its Space-key play action, then pause and restore the track position after sampling.
+- **Verification:** visible playback crossed the 12.95-second `VOCAL INTRO` cue, fired one next-beat handler and three repeating beat handlers; a second run fired the next/every bar and 64-tick interval handlers once each.
+- **Limit:** do not disable autoplay policy or synthesize playback state. Keep test playback muted and stop it immediately after the bounded sample.
+
+### The public cue event uses a hyphenated name
+
+- **Symptom:** an animation resets and the named Clay cue handler updates, but a test listener reports zero document cue events.
+- **Cause:** the listener used `dance-moves:cue`; the published contract is `dance-moves-cue`.
+- **Corrective action:** bind to the exact event name exported by the core contract and keep named handler verification separate.
+- **Verification:** the corrected listener observed exactly one event from `DanceMoves.fireCue`, while the owned animation reset from 2,500 ms to 0 and remained running.
+- **Limit:** do not infer event names from dataset keys or CSS naming conventions; use the documented runtime contract.
+
+### Nested JavaScript templates can remove regular-expression escapes
+
+- **Symptom:** a signed-out audit reports every page missing versioned scripts even though the HTML visibly contains both URLs.
+- **Cause:** a regular expression embedded inside a JavaScript template string lost the intended escapes before main-world evaluation.
+- **Corrective action:** for exact immutable asset URLs, use direct `String.includes()` checks; reserve generated regular expressions for cases that require pattern matching and inspect their final source first.
+- **Verification:** the corrected exact-URL audit found core and catalogue 2.3.0 on all 47 pages with zero failures.
+- **Limit:** exact substring checks do not replace parsing where URL normalization, alternate hosts or multiple equivalent encodings are valid.
