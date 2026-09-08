@@ -1,0 +1,88 @@
+{
+  "schema": "dance-moves-adaptive-performance-staging/v1",
+  "generatedAt": "2026-09-08T03:39:48+01:00",
+  "repository": {
+    "branch": "adaptive-performance-staging-2026-09-08",
+    "baseCommit": "9b965e6fff620f87dfb0a1d44ea4d1014774de6f"
+  },
+  "plugin": {
+    "name": "DanceMoves",
+    "version": "2.3.3",
+    "wordpressUpgradeSlug": "kieran-epk-device-orientation"
+  },
+  "scope": {
+    "pageId": 252,
+    "release": "Made from the clay and the stars (Anunnaki)",
+    "rootSelector": ".ks-epk.ks-clay-stars-v2",
+    "change": "Measured release-scoped visual quality reduction for sustained low frame rate"
+  },
+  "policy": {
+    "defaultProfile": "full",
+    "profiles": ["full", "constrained", "minimal"],
+    "windowMilliseconds": 1600,
+    "settleMilliseconds": 1200,
+    "retryMilliseconds": 300,
+    "recheckMilliseconds": 10000,
+    "minimumIntervals": 6,
+    "maximumIntervalMilliseconds": 250,
+    "fullMinimumFps": 45,
+    "constrainedMinimumFps": 50,
+    "poorWindowsBeforeReduction": 2,
+    "backgroundAndHiddenTimeIgnored": true,
+    "reducedMotionAuthoritative": true,
+    "profileDirectionPerPageSession": "downward-only"
+  },
+  "effects": {
+    "constrainedStops": [
+      "ks-cloud-drift-a",
+      "ks-cloud-drift-b",
+      "ks-particle-dance",
+      "ambient ks-gold-sparkle loops"
+    ],
+    "minimalAdditionallyRemoves": [
+      "cloud blur/saturation filters",
+      "cloud and atmosphere screen blending"
+    ],
+    "preserved": [
+      "BPM and tick durations",
+      "lyric and cue timing",
+      "named cue and interval handlers",
+      "cue reset semantics for remaining active effects",
+      "phone orientation tilt and warm-light response",
+      "keyboard, focus and audio/chapter controls"
+    ]
+  },
+  "source": {
+    "entrypointSha256": "2B6289B8BF028ECB1B03F22FB4738A665A95EE938C744CF39AA7947F1C327094",
+    "clayCssSha256": "06624BA68EB248EE6BF1F742F8E87FAF74BAB50727155D69BCB5396795BF9D11",
+    "clayJsSha256": "0EA0958FA627B9E39EAD2DD7B77A42DB76C0CC5951C8A127241931FCD6CB9569"
+  },
+  "package": {
+    "path": "dist/DanceMoves-2.3.3.zip",
+    "bytes": 53109,
+    "sha256": "4E29B831EDF297A10354AB1A7A0C5FDDCE47AE8A96420A4E02C7261B49408938",
+    "entryCount": 11,
+    "manifest": "dist/DanceMoves-2.3.3-manifest.json"
+  },
+  "evidence": {
+    "canonicalFixture": "qa/prelive/clay-stars/canonical-live-2.3.2.html",
+    "canonicalFixtureSha256": "2F3EC40E763E712CCFD5F94C818E0D651F9F98EF8CA925FEB05A9F39D464B038",
+    "localBrowser": "qa/adaptive-2.3.3-local-2026-09-08/browser-evidence.json",
+    "unit": "PASS",
+    "package": "PASS",
+    "renderedDesktopTabletMobile": "PASS",
+    "headlessEdge": "BLOCKED",
+    "physical60HzCandidate": "BLOCKED_PENDING_DEPLOYMENT",
+    "physical120HzCandidate": "BLOCKED_DEVICE_UNAVAILABLE"
+  },
+  "wordpress": {
+    "mutationPerformed": false,
+    "status": "PENDING_EXACT_PACKAGE_APPROVAL",
+    "requiredApproval": "Upload and activate dist/DanceMoves-2.3.3.zip with SHA-256 4E29B831EDF297A10354AB1A7A0C5FDDCE47AE8A96420A4E02C7261B49408938 on kieransimkin.co.uk"
+  },
+  "rollback": {
+    "path": "dist/DanceMoves-2.3.2.zip",
+    "bytes": 48282,
+    "sha256": "22007F9B2B199BA1A78B1B685EBB81446DA1216AB6DC74921C6241B1AA61E6A6"
+  }
+}

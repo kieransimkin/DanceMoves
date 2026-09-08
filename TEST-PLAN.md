@@ -249,6 +249,7 @@ Test the plugin-off page and the same page with DanceMoves enabled on the same r
 | P-044 | CSS/property trace | The property audit has no unapproved layout/paint animation; continuous tilt produces compositor updates without recurring layout or full-page paint; promoted layers stay bounded and the tab remains responsive | Property inventory, DevTools trace and layer evidence |
 | P-045 | Five-minute soak | No listener/timer/rAF growth, unbounded sample retention, progressive frame-rate collapse, crash or visibly stuck state after hide/show, cue bursts and rotate cycles | Before/after counters and trace |
 | P-046 | Fault injection | Missing timing file, failed fetch, invalid BPM, missing root, no matching audio, permission denial and handler exception degrade to a readable functional EPK without uncaught errors | Automated browser log |
+| P-047 | Adaptive visual quality | The release starts at full quality; healthy windows never reduce it; one poor window cannot reduce it; two consecutive visible windows below the full threshold select constrained; a recovered constrained rate does not select minimal; two further poor constrained windows select minimal; hidden/background/reduced-motion time is not judged; every profile preserves page content, timing, cues and interactive input | Deterministic state contract, rendered computed styles and matched physical trace |
 
 The budgets above are release blockers for the nominated reference devices. If a browser cannot expose a metric, mark it `BLOCKED`, not `PASS`, and obtain equivalent physical-device evidence before release.
 
@@ -460,11 +461,11 @@ Publication remains a separate, approval-gated operation. No test runner may upl
 
 ### A keyframe audit can accidentally include later media queries
 
-- **Symptom:** the Clay compositor test reports a layout property in keyframes even though every actual keyframe animates only transform and opacity.
-- **Cause:** the test sliced from the first `@keyframes` to end-of-file, so `max-width:` in a later media query matched the layout-property expression.
-- **Corrective action:** bound the inspected source from the first keyframe to the first following media query before applying declaration checks.
-- **Verification:** the corrected assertion still scans every Clay keyframe block, finds no layout declaration, and the complete Unit validator passes.
-- **Limit:** if future keyframes are added after media queries, replace this boundary with a brace-aware keyframe parser rather than silently excluding them.
+- **Symptom:** the Clay compositor test reports a layout or filter property in keyframes even though every actual keyframe animates only transform and opacity.
+- **Cause when verified:** a broad source slice included ordinary selectors after the final keyframe; stopping at the first later media query still misclassifies static adaptive rules inserted before that media query.
+- **Corrective action:** extract every standard keyframe block with brace-balanced character ranges and apply prohibited-property checks only to those exact blocks.
+- **Verification:** the corrected assertion scans all Clay keyframes, rejects forbidden declarations inside them, accepts the static minimal-profile `filter:none` rule and passes the complete Unit validator.
+- **Limit:** brace-balanced source inspection is a static structural test; rendered computed-style and performance evidence remain separate gates.
 
 ### A release adapter directory is not necessarily a standalone effect harness
 

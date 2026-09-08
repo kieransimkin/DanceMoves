@@ -1,0 +1,12 @@
+*.css text eol=lf
+*.js text eol=lf
+*.cjs text eol=lf
+*.mjs text eol=lf
+*.php text eol=lf
+*.md text eol=lf
+*.html text eol=lf
+*.json text eol=lf
+*.ps1 text eol=lf
+*.tsv text eol=lf
+*.lrc text eol=lf
+qa/prelive/clay-stars/canonical-live-2.3.2.html -whitespace

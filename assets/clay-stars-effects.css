@@ -446,6 +446,41 @@
   }
 }
 
+/* Adaptive quality remains full by default. Only two consecutive measured
+   low-frame-rate windows add one of these release-scoped profiles. */
+.ks-clay-stars-v2:is([data-dance-moves-performance="constrained"], [data-dance-moves-performance="minimal"]) .ks-cloud-field::before,
+.ks-clay-stars-v2:is([data-dance-moves-performance="constrained"], [data-dance-moves-performance="minimal"]) .ks-cloud-field::after {
+  animation: none !important;
+  transform: translate3d(0, 0, 0) scale(1.05) !important;
+  will-change: auto;
+}
+
+.ks-clay-stars-v2:is([data-dance-moves-performance="constrained"], [data-dance-moves-performance="minimal"]) .epk-atmosphere::after {
+  animation: none !important;
+  transform: none !important;
+  opacity: calc(.42 * var(--ks-master-intensity));
+  will-change: auto;
+}
+
+.ks-clay-stars-v2:is([data-dance-moves-performance="constrained"], [data-dance-moves-performance="minimal"]) .epk-heading::before,
+.ks-clay-stars-v2:is([data-dance-moves-performance="constrained"], [data-dance-moves-performance="minimal"]) .ks-clay-stars-player-copy::before,
+.ks-clay-stars-v2:is([data-dance-moves-performance="constrained"], [data-dance-moves-performance="minimal"]) .epk-cosmology-head::before,
+.ks-clay-stars-v2:is([data-dance-moves-performance="constrained"], [data-dance-moves-performance="minimal"]) .epk-artwork > div::before,
+.ks-clay-stars-v2:is([data-dance-moves-performance="constrained"], [data-dance-moves-performance="minimal"]) .ks-epk-lyrics > div:first-child::before,
+.ks-clay-stars-v2:is([data-dance-moves-performance="constrained"], [data-dance-moves-performance="minimal"]) .epk-button::before,
+.ks-clay-stars-v2:is([data-dance-moves-performance="constrained"], [data-dance-moves-performance="minimal"]) .epk-download::before,
+.ks-clay-stars-v2:is([data-dance-moves-performance="constrained"], [data-dance-moves-performance="minimal"]) .ks-clay-stars-chapters button::before {
+  animation: none !important;
+  transform: translate3d(0, 0, 0) scale(1) !important;
+}
+
+.ks-clay-stars-v2[data-dance-moves-performance="minimal"] .ks-cloud-field::before,
+.ks-clay-stars-v2[data-dance-moves-performance="minimal"] .ks-cloud-field::after,
+.ks-clay-stars-v2[data-dance-moves-performance="minimal"] .epk-atmosphere::after {
+  filter: none !important;
+  mix-blend-mode: normal !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ks-clay-stars-v2 .epk-cover-wrap,
   .ks-clay-stars-v2 .ks-warm-bloom,

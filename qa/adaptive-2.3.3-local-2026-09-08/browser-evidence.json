@@ -1,0 +1,119 @@
+{
+  "schema": "dance-moves-adaptive-browser-evidence/v1",
+  "capturedAt": "2026-09-08T03:39:48+01:00",
+  "candidate": {
+    "version": "2.3.3-local",
+    "url": "http://127.0.0.1:8917/qa/clay-stars-harness-candidate.html?candidate=2.3.3-adaptive-2",
+    "sha256": "5B592697D0B4170CF72B3442ACBFAED3A6DF7716CE5E8D827B3D86E86278FA54",
+    "bytes": 192348,
+    "sourceFixture": "../prelive/clay-stars/canonical-live-2.3.2.html",
+    "sourceFixtureSha256": "2F3EC40E763E712CCFD5F94C818E0D651F9F98EF8CA925FEB05A9F39D464B038"
+  },
+  "renderer": "Codex in-app Browser",
+  "identity": {
+    "title": "Made from the clay and the stars (Anunnaki) – Kieran Simkin's Portfolio",
+    "rootCount": 1,
+    "audioCount": 1,
+    "chapterCount": 5,
+    "replacementCharacters": 0
+  },
+  "fullProfile": {
+    "observedImmediatelyAfterReload": true,
+    "profile": "full",
+    "reason": "initial",
+    "cloudBefore": {
+      "animationName": "ks-cloud-drift-a",
+      "animationDuration": "51.2069s",
+      "filter": "blur(58px) saturate(0.88)",
+      "mixBlendMode": "screen"
+    },
+    "atmosphereAfter": {
+      "animationName": "ks-particle-dance",
+      "animationDuration": "4.13793s",
+      "mixBlendMode": "screen"
+    },
+    "headingBefore": {
+      "animationName": "ks-gold-sparkle",
+      "animationDuration": "6.2069s"
+    }
+  },
+  "responsive": [
+    {
+      "name": "desktop",
+      "width": 1440,
+      "height": 1000,
+      "positiveHorizontalOverflow": 0,
+      "documentHeight": 8964,
+      "coverWidth": 489.8541870117187,
+      "coverHeight": 489.8541870117187,
+      "profileAtRead": "full"
+    },
+    {
+      "name": "tablet",
+      "width": 900,
+      "height": 1100,
+      "positiveHorizontalOverflow": 0,
+      "documentHeight": 7530,
+      "coverWidth": 386.5740661621094,
+      "coverHeight": 386.5740661621094,
+      "profileAtRead": "full"
+    },
+    {
+      "name": "mobile",
+      "width": 390,
+      "height": 844,
+      "positiveHorizontalOverflow": 0,
+      "documentHeight": 9330,
+      "coverWidth": 346.66668701171875,
+      "coverHeight": 346.66668701171875,
+      "profileAtRead": "full"
+    }
+  ],
+  "responsiveParity": {
+    "rootCountEach": 1,
+    "audioCountEach": 1,
+    "chapterCountEach": 5,
+    "replacementCharactersEach": 0,
+    "orderedSingleSectionsEach": [
+      ".epk-hero",
+      ".ks-clay-stars-player",
+      ".epk-cosmology",
+      ".epk-artwork",
+      ".ks-epk-lyrics"
+    ]
+  },
+  "adaptiveFallback": {
+    "observedAfterSevenSecondsAt390x844": true,
+    "profile": "minimal",
+    "reason": "low-fps-after-constrained",
+    "cloudBefore": {
+      "animationName": "none",
+      "filter": "none",
+      "mixBlendMode": "normal",
+      "transform": "matrix(1.05, 0, 0, 1.05, 0, 0)"
+    },
+    "atmosphereAfter": {
+      "animationName": "none",
+      "filter": "none",
+      "mixBlendMode": "normal",
+      "transform": "none"
+    },
+    "headingBefore": {
+      "animationName": "none",
+      "filter": "none",
+      "mixBlendMode": "normal",
+      "transform": "matrix(1, 0, 0, 1, 0, 0)"
+    },
+    "positiveHorizontalOverflow": 0
+  },
+  "headlessRunner": {
+    "status": "BLOCKED",
+    "error": "Timed out waiting for Page.enable",
+    "resultClaimed": false
+  },
+  "limitations": [
+    "This proves rendered profile switching and responsive geometry in the desktop in-app renderer, not physical-phone frame rate.",
+    "The constrained-only computed state is covered deterministically by clay-adapter.test.cjs; the live renderer progressed from constrained to minimal before its separate computed-style read.",
+    "Fresh physical 60 Hz evidence remains required after an approved WordPress deployment; 120 Hz remains unavailable on the reference Galaxy A40."
+  ]
+}

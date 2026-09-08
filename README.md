@@ -1,6 +1,6 @@
 # DanceMoves
 
-DanceMoves is Kieran Simkin's WordPress EPK motion runtime. Version 2.0.0 added page-level BPM, lyric-timing and cue-timing properties; a 16-ticks-per-beat musical clock; cue-driven animation resets; named cue and interval handlers; the existing seven device-orientation adapters; and the release-specific Made from the Clay and the Stars effects adapter. Version 2.1.0 moved the neutral shared EPK control and lyric-disclosure transitions onto page-resolved integer tick durations. Version 2.2.0 added catalogue-wide adoption for release-owned CSS animations, transitions, delays and timing custom properties. Version 2.3.0 confines stylesheet conversion to EPK-owned selectors and the timing variables they reference, so a mixed theme or admin stylesheet cannot transfer ownership to unrelated rules; it also carries the separately staged Clay/Stars runtime and harness refinements already present in the workspace. Version 2.3.1 raises the Clay/Stars bounded motion gain to 2x. Version 2.3.2 routes the shared permission-aware orientation runtime into that Clay/Stars adapter so physical device events actually drive its motion API while reduced motion, geometry and all other EPK systems remain unchanged.
+DanceMoves is Kieran Simkin's WordPress EPK motion runtime. Version 2.0.0 added page-level BPM, lyric-timing and cue-timing properties; a 16-ticks-per-beat musical clock; cue-driven animation resets; named cue and interval handlers; the existing seven device-orientation adapters; and the release-specific Made from the Clay and the Stars effects adapter. Version 2.1.0 moved the neutral shared EPK control and lyric-disclosure transitions onto page-resolved integer tick durations. Version 2.2.0 added catalogue-wide adoption for release-owned CSS animations, transitions, delays and timing custom properties. Version 2.3.0 confines stylesheet conversion to EPK-owned selectors and the timing variables they reference, so a mixed theme or admin stylesheet cannot transfer ownership to unrelated rules; it also carries the separately staged Clay/Stars runtime and harness refinements already present in the workspace. Version 2.3.1 raises the Clay/Stars bounded motion gain to 2x. Version 2.3.2 routes the shared permission-aware orientation runtime into that Clay/Stars adapter so physical device events actually drive its motion API while reduced motion, geometry and all other EPK systems remain unchanged. Version 2.3.3 adds measured, release-scoped adaptive performance tiers for Clay/Stars: healthy devices retain the full treatment, while only sustained low frame rate stops the expensive ambient loops and, if still necessary, removes their filters.
 
 The WordPress plugin name is **DanceMoves**. The distributable ZIP deliberately retains the internal `kieran-epk-device-orientation` folder and entrypoint name so WordPress upgrades the installed plugin rather than installing a parallel copy.
 
@@ -89,6 +89,14 @@ Page 252's visual treatment remains release-specific. DanceMoves reuses its neut
 
 While the old `Made from Clay and Stars EPK Effects` plugin is active, DanceMoves suppresses its page-252 assets and content transform. Deactivating the old plugin makes DanceMoves take over on the next request, preventing a double-loaded effect stack.
 
+## Adaptive Clay/Stars performance
+
+Page 252 starts every ordinary session in the `full` profile. DanceMoves waits for the visible page to settle, measures animation-frame intervals for 1.6 seconds and uses the median interval rather than a user-agent or device-class guess. Background/hidden time and individual gaps above 250 milliseconds are discarded, so tab throttling cannot reduce the effect.
+
+Two consecutive measured windows below 45 FPS change only the release-scoped root to `constrained`. That tier stops the two full-page cloud drifts, the atmosphere particle loop and the ambient gold sparkle loops, while preserving their static appearance, BPM/cue behaviour, phone tilt, warm-light response and controls. After a settle period, two further windows below 50 FPS change to `minimal`, which also removes blur and screen blending from those static ambient planes. A healthy constrained measurement stops the reduction there. Profiles only step downward during one page session, avoiding quality oscillation after the reduction has restored frame rate.
+
+The selected profile is exposed as `data-dance-moves-performance="full|constrained|minimal"` on the Clay/Stars EPK root. `DanceMovesClayStars.snapshot().performance` reports the current profile, reason, measured frame-rate statistics and reduction count without retaining or transmitting samples. `prefers-reduced-motion` remains authoritative and stops the sampler as well as non-essential motion.
+
 ## Validation and packaging
 
 The complete test design and publication gates are in `TEST-PLAN.md`.
@@ -113,9 +121,25 @@ No WordPress upload, timing-media upload, page-meta save or legacy-plugin deacti
 
 - **Symptom:** the Clay harness reports a production hash mismatch for an untouched asset such as `dance-moves-core.css` immediately after creating an isolated worktree.
 - **Cause when verified:** the repository's Windows `core.autocrlf=true` setting converted LF blobs to CRLF in the new checkout, so raw packaged bytes no longer matched the production hashes even though the CSS semantics were unchanged.
-- **Corrective action:** create the isolated worktree with `git -c core.autocrlf=false worktree add ...`, verify a known untouched production asset hash before editing, and reject any candidate whose unchanged package files do not byte-match the approved baseline.
-- **Verification:** the corrected isolated checkout restored `assets/dance-moves-core.css` to SHA-256 `197E0D51F400A3D875ACB6E12238417FAA3D54853708F72EEB792342F533AD8D`, matching the existing Clay harness manifest.
+- **Corrective action:** add explicit LF attributes for packaged and validated text formats, normalise the candidate's staged source once, hash canonical LF bytes in the cross-platform harness, and verify a known untouched production asset before packaging. Reject unexplained semantic differences rather than accepting a raw line-ending mismatch.
+- **Verification:** canonical LF hashing restored `assets/dance-moves-core.css` to SHA-256 `197E0D51F400A3D875ACB6E12238417FAA3D54853708F72EEB792342F533AD8D`, matching the existing Clay harness manifest; the WordPress package manifest independently pins the exact archived bytes.
 - **Limit:** this is for byte-stable release staging; it does not justify ignoring real source or line-ending changes in files intentionally edited by the candidate.
+
+### A static adaptive fallback can be misclassified as a keyframe declaration
+
+- **Symptom:** the Clay adapter test reports `P-034 no keyframe animates filter` after adding a legitimate static `filter:none` fallback outside every animation.
+- **Cause when verified:** the test sliced everything from the first `@keyframes` token to the first later `@media` token, so ordinary selectors placed after the final keyframe were incorrectly treated as keyframe content.
+- **Corrective action:** extract each `@keyframes` block with balanced braces and run the prohibited-property assertions only against those exact blocks.
+- **Verification:** the same test accepts the static minimal-tier filter rule while still rejecting prohibited declarations inside any keyframe; all Clay adapter contracts pass.
+- **Limit:** this is a structural source check, not rendered proof that a browser applies the intended adaptive selector.
+
+### A multi-file exact-context patch is atomic when one hunk is stale
+
+- **Symptom:** a multi-file patch fails because one expected line differs from the current file, even though its other hunks were valid.
+- **Cause when verified:** one versioned README/build-script context line was stale or mistyped; the patch tool requires every hunk in a call to match before writing any of them.
+- **Corrective action:** reread the exact target lines, split the change into small related patches and apply only corrected contexts.
+- **Verification:** the failed calls left no partial edit; `git diff --check`, exact version searches and the succeeding unit contracts show only the intended 2.3.3 references.
+- **Limit:** atomic failure prevents partial writes for that call only; always inspect the resulting diff because later successful calls are independent.
 
 ### A clean worktree omits the generated Clay harness candidate
 
@@ -124,6 +148,38 @@ No WordPress upload, timing-media upload, page-meta save or legacy-plugin deacti
 - **Corrective action:** run the repository-owned `tools/build-clay-stars-preview.ps1 -Harness` against the canonical signed-out Clay page before Unit validation; keep the generated candidate out of the WordPress package.
 - **Verification:** the builder recreated the candidate in the isolated staging worktree and allowed the adapter/harness validation to proceed against the exact current production assets.
 - **Limit:** rebuilding the candidate is valid only while its canonical source path and asset substitutions remain current; it does not replace signed-out public verification after deployment.
+
+### A reusable signed-out filename can contain the wrong EPK
+
+- **Symptom:** the generated Clay candidate opens with another release's title and contains no `.ks-clay-stars-v2` root even though the JavaScript-only adapter contracts pass.
+- **Cause when verified:** the builder trusted a mutable release-folder filename whose current contents were a Patriotic Revolution EPK rather than the Clay/Stars page; the exact earlier overwrite operation was not established.
+- **Corrective action:** store the current signed-out Clay page as a version-labelled QA fixture, pin its SHA-256, assert its title, single root, audio, five chapter controls and signed-out state before substitution, then remove every remote DanceMoves asset before injecting the local candidate once.
+- **Verification:** the corrected fixture is 193,347 bytes with SHA-256 `2F3EC40E763E712CCFD5F94C818E0D651F9F98EF8CA925FEB05A9F39D464B038`; the rendered candidate has the correct title, one root, one player, five chapters and one local 2.3.3 core/Clay script each.
+- **Limit:** the fixture is point-in-time evidence for pre-live testing; the currently rendered signed-out WordPress page remains canonical and must be refreshed after deployment.
+
+### A local test port can already serve another worktree
+
+- **Symptom:** a cache-busted localhost candidate still returns an old page after the expected file was rebuilt, and stopping the newly launched command does not stop responses on that port.
+- **Cause when verified:** port 8765 was already owned by another persistent local server and continued serving its different repository after the new process was stopped.
+- **Corrective action:** do not terminate or inspect the unknown server; choose a fresh port, pass the candidate repository with the server's explicit directory option, and verify the response title and byte count from the shell before opening it in the browser.
+- **Verification:** port 8917 returned the 192,348-byte Clay/Stars candidate, and the browser loaded all local 2.3.3 assets from that port.
+- **Limit:** a successful localhost response verifies the selected test server only; it does not prove public WordPress state.
+
+### Sandboxed ADB can lose the Android profile directory
+
+- **Symptom:** the exact read-only `adb devices -l` command exits with `Cannot mkdir '\\.android': Permission denied` even after `ANDROID_USER_HOME` is set to the existing user Android directory.
+- **Cause when verified:** the restricted command environment did not expose the normal Android profile/daemon context, so ADB still resolved its configuration directory at the filesystem root.
+- **Corrective action:** rerun only the exact installed `adb.exe devices -l` status check with approved host access and the task-specific `ANDROID_USER_HOME`; do not redefine `HOME`, forward Chrome DevTools or inspect phone tabs.
+- **Verification:** the approved host check started the ADB daemon and completed normally; its device list was empty, so no physical 2.3.3 candidate result was claimed.
+- **Limit:** this recovery fixes only the local ADB profile error. An empty list means the phone is currently disconnected or unauthorised and leaves physical performance evidence blocked.
+
+### A blanket UTF-8 rewrite can alter intentional BOM bytes
+
+- **Symptom:** a mechanical line-ending pass marks many otherwise untouched JSON, Markdown, JavaScript and test files as modified.
+- **Cause when verified:** writing every tracked text file with a no-BOM encoder removed intentional UTF-8 byte-order marks as well as normalising line endings.
+- **Corrective action:** stop before packaging, restore the worktree from the separately staged exact candidate, keep explicit LF attributes for future checkouts and limit hashing normalisation to the known cross-platform source-hash comparison. Do not bulk-rewrite historical evidence.
+- **Verification:** after restoration, `git status` returned to only the intended 2.3.3 source, test, documentation and QA files; unchanged DanceMoves core hashes again matched the baseline.
+- **Limit:** restoring from the index is safe here only because the task used a dedicated clean worktree and every intended edit had already been staged and reviewed.
 
 ### A plugin version bump must update the private phone fixture's cache keys
 

@@ -12,6 +12,7 @@
 
   var reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
   var finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
+  var performanceInput = window.danceMovesClayPerformanceConfig || {};
   var defaults = Object.freeze({
     enabled: true,
     masterIntensity: 2,
@@ -35,11 +36,146 @@
   var computedStyleReads = 0;
   var motionCommits = 0;
   var particleSamples = 0;
+  var performanceFrame = 0;
+  var performanceTimer = 0;
+  var performanceWindowStartedAt = null;
+  var performanceLastFrameAt = null;
+  var performanceIntervals = [];
+  var performancePoorWindows = 0;
+  var performanceProfile = "full";
+  var performanceReason = "initial";
+  var performanceWindows = 0;
+  var performanceReductions = 0;
+  var performanceLastFps = null;
+  var performanceLastMedian = null;
+  var performanceLastP95 = null;
 
   var clamp = function (value, minimum, maximum, fallback) {
     var number = Number(value);
     return Number.isFinite(number) ? Math.max(minimum, Math.min(maximum, number)) : fallback;
   };
+
+  var performanceSettings = Object.freeze({
+    enabled: performanceInput.enabled !== false,
+    windowMilliseconds: clamp(performanceInput.windowMilliseconds, 500, 5000, 1600),
+    settleMilliseconds: clamp(performanceInput.settleMilliseconds, 0, 10000, 1200),
+    retryMilliseconds: clamp(performanceInput.retryMilliseconds, 0, 10000, 300),
+    recheckMilliseconds: clamp(performanceInput.recheckMilliseconds, 1000, 60000, 10000),
+    minimumIntervals: Math.round(clamp(performanceInput.minimumIntervals, 4, 240, 6)),
+    maximumIntervalMilliseconds: clamp(performanceInput.maximumIntervalMilliseconds, 100, 1000, 250),
+    fullMinimumFps: clamp(performanceInput.fullMinimumFps, 20, 60, 45),
+    constrainedMinimumFps: clamp(performanceInput.constrainedMinimumFps, 20, 60, 50),
+    poorWindowsBeforeReduction: Math.round(clamp(performanceInput.poorWindowsBeforeReduction, 2, 5, 2))
+  });
+
+  var percentile = function (values, fraction) {
+    if (!values.length) return null;
+    var sorted = values.slice().sort(function (left, right) { return left - right; });
+    return sorted[Math.min(sorted.length - 1, Math.max(0, Math.ceil(sorted.length * fraction) - 1))];
+  };
+
+  var setPerformanceProfile = function (profile, reason) {
+    if (profile !== "full" && profile !== "constrained" && profile !== "minimal") return false;
+    if (performanceProfile !== profile) performanceReductions += 1;
+    performanceProfile = profile;
+    performanceReason = reason || "measured";
+    root.dataset.danceMovesPerformance = profile;
+    root.dataset.danceMovesPerformanceReason = performanceReason;
+    return true;
+  };
+
+  var stopPerformanceMonitor = function () {
+    if (performanceFrame) window.cancelAnimationFrame(performanceFrame);
+    if (performanceTimer) window.clearTimeout(performanceTimer);
+    performanceFrame = 0;
+    performanceTimer = 0;
+    performanceWindowStartedAt = null;
+    performanceLastFrameAt = null;
+    performanceIntervals = [];
+  };
+
+  var schedulePerformanceWindow;
+
+  var finishPerformanceWindow = function () {
+    performanceFrame = 0;
+    performanceWindowStartedAt = null;
+    performanceLastFrameAt = null;
+    performanceWindows += 1;
+    if (performanceIntervals.length < performanceSettings.minimumIntervals) {
+      performancePoorWindows = 0;
+      performanceIntervals = [];
+      schedulePerformanceWindow(performanceSettings.recheckMilliseconds);
+      return;
+    }
+    var median = percentile(performanceIntervals, .5);
+    var p95 = percentile(performanceIntervals, .95);
+    performanceIntervals = [];
+    performanceLastMedian = median;
+    performanceLastP95 = p95;
+    performanceLastFps = median > 0 ? 1000 / median : null;
+    var minimumFps = performanceProfile === "full"
+      ? performanceSettings.fullMinimumFps
+      : performanceSettings.constrainedMinimumFps;
+    if (performanceLastFps !== null && performanceLastFps < minimumFps) performancePoorWindows += 1;
+    else performancePoorWindows = 0;
+
+    if (performancePoorWindows >= performanceSettings.poorWindowsBeforeReduction) {
+      performancePoorWindows = 0;
+      if (performanceProfile === "full") {
+        setPerformanceProfile("constrained", "sustained-low-fps");
+        schedulePerformanceWindow(performanceSettings.settleMilliseconds);
+        return;
+      }
+      if (performanceProfile === "constrained") {
+        setPerformanceProfile("minimal", "low-fps-after-constrained");
+        stopPerformanceMonitor();
+        return;
+      }
+    }
+    schedulePerformanceWindow(performancePoorWindows ? performanceSettings.retryMilliseconds : performanceSettings.recheckMilliseconds);
+  };
+
+  var samplePerformanceFrame = function (timestamp) {
+    performanceFrame = 0;
+    if (destroyed || reduce.matches || document.hidden || performanceProfile === "minimal") {
+      stopPerformanceMonitor();
+      return;
+    }
+    var now = Number(timestamp);
+    if (!Number.isFinite(now)) {
+      schedulePerformanceWindow(performanceSettings.recheckMilliseconds);
+      return;
+    }
+    if (performanceWindowStartedAt === null) {
+      performanceWindowStartedAt = now;
+      performanceLastFrameAt = now;
+    } else {
+      var interval = now - performanceLastFrameAt;
+      performanceLastFrameAt = now;
+      if (interval > 0 && interval <= performanceSettings.maximumIntervalMilliseconds) {
+        performanceIntervals.push(interval);
+      } else if (interval > performanceSettings.maximumIntervalMilliseconds) {
+        performanceWindowStartedAt = now;
+        performanceIntervals = [];
+      }
+    }
+    if (now - performanceWindowStartedAt >= performanceSettings.windowMilliseconds) finishPerformanceWindow();
+    else performanceFrame = window.requestAnimationFrame(samplePerformanceFrame);
+  };
+
+  schedulePerformanceWindow = function (delay) {
+    if (!performanceSettings.enabled || destroyed || reduce.matches || document.hidden || performanceProfile === "minimal") return;
+    if (performanceFrame || performanceTimer) return;
+    performanceTimer = window.setTimeout(function () {
+      performanceTimer = 0;
+      performanceWindowStartedAt = null;
+      performanceLastFrameAt = null;
+      performanceIntervals = [];
+      performanceFrame = window.requestAnimationFrame(samplePerformanceFrame);
+    }, Math.max(0, Number(delay) || 0));
+  };
+
+  setPerformanceProfile("full", "initial");
 
   var listen = function (target, type, handler, options) {
     if (!target || !target.addEventListener) return;
@@ -222,10 +358,12 @@
       setCueState(null);
       resetParticles();
       cancelMotion();
+      if (state === "hidden" || state === "pagehide" || state === "reduced-motion") stopPerformanceMonitor();
     } else if (state === "seeked") {
       setCueState({ name: "seeked", type: "state" });
     } else if (state === "visible" || state === "pageshow") {
       cancelMotion();
+      schedulePerformanceWindow(performanceSettings.settleMilliseconds);
     }
     root.dataset.danceMovesClayLifecycle = state;
   };
@@ -280,6 +418,18 @@
         computedStyleReads: computedStyleReads,
         samples: particleSamples
       },
+      performance: {
+        enabled: performanceSettings.enabled,
+        profile: performanceProfile,
+        reason: performanceReason,
+        monitoring: Boolean(performanceFrame || performanceTimer),
+        poorWindows: performancePoorWindows,
+        windows: performanceWindows,
+        reductions: performanceReductions,
+        lastFps: performanceLastFps,
+        lastMedianFrameMilliseconds: performanceLastMedian,
+        lastP95FrameMilliseconds: performanceLastP95
+      },
       cue: root.dataset.danceMovesCue || "",
       cueType: root.dataset.danceMovesCueType || "",
       lifecycle: root.dataset.danceMovesClayLifecycle || ""
@@ -289,6 +439,7 @@
   var teardown = function () {
     if (destroyed) return;
     destroyed = true;
+    stopPerformanceMonitor();
     resetParticles();
     if (frame) window.cancelAnimationFrame(frame);
     frame = 0;
@@ -312,4 +463,5 @@
   window.DanceMovesClayStars = api;
   root.dataset.danceMovesClayRuntime = "ready";
   reset();
+  schedulePerformanceWindow(performanceSettings.settleMilliseconds);
 }());

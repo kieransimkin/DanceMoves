@@ -48,7 +48,7 @@ class Element extends Target {
   getBoundingClientRect() { return { left: 10, top: 20, width: 200, height: 100 }; }
 }
 
-function createEnvironment({ withRoot = true, withMotion = true, withAudio = true } = {}) {
+function createEnvironment({ withRoot = true, withMotion = true, withAudio = true, performanceMonitoring = false } = {}) {
   const cover = new Element("cover");
   const control = new Element("control");
   const audio = new Element("audio");
@@ -80,7 +80,19 @@ function createEnvironment({ withRoot = true, withMotion = true, withAudio = tru
     setTimeout(callback, milliseconds) { const id = ++timerId; timers.set(id, { callback, milliseconds }); return id; },
     clearTimeout(id) { timers.delete(id); },
     getComputedStyle() { computedStyleReads += 1; return { opacity: ".86", transform: "matrix(1, 0, 0, 1, 2, -2)" }; },
-    matchMedia(query) { return query.includes("reduced-motion") ? mediaReduce : mediaFine; }
+    matchMedia(query) { return query.includes("reduced-motion") ? mediaReduce : mediaFine; },
+    danceMovesClayPerformanceConfig: {
+      enabled: performanceMonitoring,
+      windowMilliseconds: 1000,
+      settleMilliseconds: 0,
+      retryMilliseconds: 0,
+      recheckMilliseconds: 1000,
+      minimumIntervals: 4,
+      maximumIntervalMilliseconds: 250,
+      fullMinimumFps: 45,
+      constrainedMinimumFps: 50,
+      poorWindowsBeforeReduction: 2
+    }
   });
   if (withMotion) {
     windowTarget.DanceMoves = {
@@ -108,6 +120,37 @@ function percentile(values, fraction) {
   return sorted[Math.min(sorted.length - 1, Math.ceil(sorted.length * fraction) - 1)];
 }
 
+function extractKeyframes(css) {
+  const blocks = [];
+  let searchFrom = 0;
+  while (searchFrom < css.length) {
+    const start = css.indexOf("@keyframes", searchFrom);
+    if (start === -1) break;
+    const openingBrace = css.indexOf("{", start);
+    assert.notEqual(openingBrace, -1, "every @keyframes rule has an opening brace");
+    let depth = 1;
+    let cursor = openingBrace + 1;
+    while (cursor < css.length && depth > 0) {
+      if (css[cursor] === "{") depth += 1;
+      else if (css[cursor] === "}") depth -= 1;
+      cursor += 1;
+    }
+    assert.equal(depth, 0, "every @keyframes rule has balanced braces");
+    blocks.push(css.slice(start, cursor));
+    searchFrom = cursor;
+  }
+  return blocks.join("\n");
+}
+
+function runPerformanceWindow(environment, intervalMilliseconds) {
+  environment.flushTimers();
+  let timestamp = 0;
+  while (timestamp <= 1100) {
+    environment.flushRaf(timestamp);
+    timestamp += intervalMilliseconds;
+  }
+}
+
 const env = createEnvironment();
 const effect = env.window.DanceMovesClayStars;
 assert.ok(effect, "P-030 target page initialises the Clay runtime");
@@ -116,6 +159,46 @@ assert.equal(createEnvironment({ withRoot: false }).window.DanceMovesClayStars, 
 assert.equal(env.animationScope.target, env.root);
 assert.equal(env.cueMetadata.name, "*");
 assert.equal(env.cueMetadata.metadata.id, "clay-stars:cue-state", "P-043 wildcard handler has a stable ID");
+assert.equal(effect.snapshot().performance.enabled, false, "adaptive monitoring can be disabled for deterministic non-performance fixtures");
+
+const fastPerformance = createEnvironment({ performanceMonitoring: true });
+runPerformanceWindow(fastPerformance, 16.667);
+runPerformanceWindow(fastPerformance, 16.667);
+assert.equal(fastPerformance.window.DanceMovesClayStars.snapshot().performance.profile, "full", "full effects remain untouched when measured frame rate is healthy");
+assert.equal(fastPerformance.window.DanceMovesClayStars.snapshot().performance.reductions, 0);
+
+const adaptivePerformance = createEnvironment({ performanceMonitoring: true });
+runPerformanceWindow(adaptivePerformance, 100);
+assert.equal(adaptivePerformance.window.DanceMovesClayStars.snapshot().performance.profile, "full", "one poor window cannot reduce effects");
+runPerformanceWindow(adaptivePerformance, 100);
+assert.equal(adaptivePerformance.window.DanceMovesClayStars.snapshot().performance.profile, "constrained", "two poor windows stop the high-cost ambient loops");
+assert.equal(adaptivePerformance.root.dataset.danceMovesPerformanceReason, "sustained-low-fps");
+runPerformanceWindow(adaptivePerformance, 18.4);
+runPerformanceWindow(adaptivePerformance, 18.4);
+assert.equal(adaptivePerformance.window.DanceMovesClayStars.snapshot().performance.profile, "constrained", "a roughly 54 FPS constrained profile does not discard more effects");
+
+const minimalPerformance = createEnvironment({ performanceMonitoring: true });
+runPerformanceWindow(minimalPerformance, 100);
+runPerformanceWindow(minimalPerformance, 100);
+runPerformanceWindow(minimalPerformance, 100);
+runPerformanceWindow(minimalPerformance, 100);
+assert.equal(minimalPerformance.window.DanceMovesClayStars.snapshot().performance.profile, "minimal", "continued poor frame rate after the first reduction enables the filter-light tier");
+assert.equal(minimalPerformance.window.DanceMovesClayStars.snapshot().performance.monitoring, false, "minimal tier stops the sampler to avoid needless work");
+
+const lifecyclePerformance = createEnvironment({ performanceMonitoring: true });
+assert.equal(lifecyclePerformance.window.DanceMovesClayStars.snapshot().performance.monitoring, true);
+lifecyclePerformance.document.hidden = true;
+lifecyclePerformance.document.dispatch("visibilitychange");
+assert.equal(lifecyclePerformance.window.DanceMovesClayStars.snapshot().performance.monitoring, false, "hidden tabs are never judged as poor frame rate");
+lifecyclePerformance.document.hidden = false;
+lifecyclePerformance.document.dispatch("visibilitychange");
+assert.equal(lifecyclePerformance.window.DanceMovesClayStars.snapshot().performance.monitoring, true, "visible tabs resume a fresh measurement window");
+lifecyclePerformance.mediaReduce.matches = true;
+lifecyclePerformance.mediaReduce.dispatch("change");
+assert.equal(lifecyclePerformance.window.DanceMovesClayStars.snapshot().performance.monitoring, false, "reduced motion remains authoritative over adaptive sampling");
+lifecyclePerformance.window.DanceMovesClayStars.teardown();
+assert.equal(lifecyclePerformance.rafs.size, 0);
+assert.equal(lifecyclePerformance.timers.size, 0);
 
 const reviewedGain = createEnvironment();
 reviewedGain.window.DanceMovesClayStars.setMotion({ x: 1, y: -1 });
@@ -244,9 +327,7 @@ assert.equal(env.cueUnsubscribed, true, "P-045 teardown removes the named cue ha
 
 assert.ok(createEnvironment({ withMotion: false, withAudio: false }).window.DanceMovesClayStars, "P-046 missing core/audio leaves a readable effect API without throwing");
 
-const keyframeStart = productionCss.indexOf("@keyframes");
-const firstMediaAfterKeyframes = productionCss.indexOf("@media", keyframeStart);
-const keyframes = productionCss.slice(keyframeStart, firstMediaAfterKeyframes === -1 ? undefined : firstMediaAfterKeyframes);
+const keyframes = extractKeyframes(productionCss);
 assert.doesNotMatch(keyframes, /background-position\s*:/i, "P-034 no keyframe animates background-position");
 assert.doesNotMatch(keyframes, /\b(?:width|height|top|right|bottom|left|inset|margin|padding|gap)\s*:/i, "P-034 no keyframe animates layout properties");
 assert.doesNotMatch(keyframes, /filter\s*:/i, "P-034 no keyframe animates filter");
@@ -254,6 +335,9 @@ assert.doesNotMatch(productionCss, /will-change\s*:[^;]*(?:filter|background-pos
 assert.match(productionCss, /--ks-particle-release-duration/);
 assert.match(productionCss, /prefers-reduced-motion:\s*reduce/);
 assert.match(productionCss, /forced-colors:\s*active/);
+assert.match(productionCss, /data-dance-moves-performance="constrained"/);
+assert.match(productionCss, /data-dance-moves-performance="minimal"/);
+assert.match(productionCss, /low-frame-rate windows/);
 assert.match(productionCss, /\\1214E\s+\\1202D\s+\\121A0/, "P-038 Cuneiform remains transport-safe CSS escapes");
 assert.doesNotMatch(productionCss, /\uFFFD/);
 
@@ -270,8 +354,12 @@ for (const id of ["effect-enabled", "master-intensity", "particle-release-ticks"
 
 for (const [asset, expected] of Object.entries(manifest.effect.productionHashes)) {
   assert.match(expected, /^[A-F0-9]{64}$/, `production hash must be pinned: ${asset}`);
-  const actual = crypto.createHash("sha256").update(fs.readFileSync(path.resolve(path.dirname(manifestPath), asset))).digest("hex").toUpperCase();
-  assert.equal(actual, expected, `production hash mismatch: ${asset}`);
+  const canonicalBytes = Buffer.from(
+    fs.readFileSync(path.resolve(path.dirname(manifestPath), asset), "utf8").replace(/\r\n/g, "\n"),
+    "utf8"
+  );
+  const actual = crypto.createHash("sha256").update(canonicalBytes).digest("hex").toUpperCase();
+  assert.equal(actual, expected, `canonical-LF production hash mismatch: ${asset}`);
 }
 
 assert.match(adapterSource, /DanceMovesClayStars/);
@@ -325,12 +413,20 @@ for (const selector of ["epk-actions > p:empty", "ks-clay-stars-chapters > br", 
 }
 
 const candidate = fs.readFileSync(path.join(repoRoot, "qa", "clay-stars-harness-candidate.html"), "utf8");
+assert.match(candidate, /<title>Made from the clay and the stars \(Anunnaki\)/, "candidate retains the canonical release identity");
+assert.equal((candidate.match(/class="[^"]*ks-clay-stars-v2[^"]*"/g) || []).length, 1, "candidate has one release root");
+assert.equal((candidate.match(/<audio\b/g) || []).length, 1, "candidate retains the canonical player");
+assert.equal((candidate.match(/<button[^>]+data-time=/g) || []).length, 5, "candidate retains all chapter controls");
 assert.ok(candidate.indexOf("harness-probe.js") < candidate.indexOf("dance-moves-core.js"), "probe loads before production core");
 assert.ok(candidate.indexOf("clay-stars-effects.js") < candidate.indexOf("effect-under-test-adapter.js"), "thin adapter loads after the production Clay runtime");
+assert.equal((candidate.match(/dance-moves-core\.js\?ver=2\.3\.3-local/g) || []).length, 1, "candidate loads one local 2.3.3 core");
+assert.equal((candidate.match(/clay-stars-effects\.js\?ver=2\.3\.3-local/g) || []).length, 1, "candidate loads one local 2.3.3 Clay adapter");
 assert.equal((candidate.match(/class="ks-warm-bloom"/g) || []).length, 1, "P-032 candidate has one warm bloom");
 assert.equal((candidate.match(/class="ks-lens-flare"/g) || []).length, 1, "P-032 candidate has one lens flare");
 assert.equal((candidate.match(/class="ks-specular-sweep"/g) || []).length, 1, "P-032 candidate has one specular sweep");
 assert.doesNotMatch(candidate, /kieran-made-from-clay-stars-epk-effects\/assets/, "P-031 candidate has no legacy effect assets");
+assert.doesNotMatch(candidate, /wp-content\/plugins\/kieran-epk-device-orientation/, "candidate has no remote plugin assets mixed with local code");
+assert.doesNotMatch(candidate, /Patriotic Revolution/, "candidate cannot silently use another EPK's snapshot");
 
 console.log("Clay/Stars P-030 through P-040 and P-043 through P-046 automated contracts passed");
 console.log("P-041/P-042 synthetic software budgets passed; physical 60 Hz/120 Hz evidence remains BLOCKED until device runs");
