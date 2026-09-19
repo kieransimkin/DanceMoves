@@ -114,6 +114,42 @@ lifecycleScheduler.flush(32);
 assert.equal(lifecycleScheduler.commits.length, 0);
 assert.equal(lifecycleScheduler.scheduler.receive({ beta: 1, gamma: 1 }, 0, 40), false);
 
+// P-029: DOM targets are rate-limited while the newest target is retained for
+// a trailing CSS transition, and sub-threshold sensor jitter is suppressed.
+{
+  let clock = 0;
+  let nextTimer = 1;
+  const timers = new Map();
+  const commits = [];
+  const targets = Core.createTransitionTargetScheduler({
+    intervalMilliseconds: 65,
+    minimumDelta: 0.02,
+    now: () => clock,
+    schedule(callback, delay) { const id = nextTimer++; timers.set(id, { callback, delay }); return id; },
+    cancel(id) { timers.delete(id); },
+    commit(x, y, detail) { commits.push({ x, y, detail }); },
+  });
+  assert.equal(targets.receive(0, 0, { sampleAge: 2 }), true);
+  assert.equal(commits.length, 1, "the first usable target is immediate");
+  clock = 16;
+  targets.receive(0.2, -0.2, { sampleAge: 3 });
+  clock = 32;
+  targets.receive(0.7, -0.6, { sampleAge: 4 });
+  assert.equal(commits.length, 1, "rapid input does not write the DOM every frame");
+  assert.equal(timers.size, 1, "one trailing target timer owns the burst");
+  clock = 65;
+  [...timers.values()][0].callback();
+  timers.clear();
+  assert.deepEqual({ x: commits.at(-1).x, y: commits.at(-1).y }, { x: 0.7, y: -0.6 });
+  clock = 130;
+  targets.receive(0.71, -0.61, {});
+  assert.equal(commits.length, 2, "two-axis jitter below the minimum delta is ignored");
+  targets.reset();
+  assert.equal(targets.pending(), false);
+  targets.teardown();
+  assert.equal(targets.receive(1, 1, {}), false);
+}
+
 // P-025: production hot paths contain no layout reads or fixed-cadence batching.
 assert.doesNotMatch(runtimeSource, /ksOrientationBatch|batchMilliseconds|pendingBatch|pushBatch\(/);
 assert.doesNotMatch(runtimeSource, /getBoundingClientRect|getComputedStyle|offset(?:Width|Height|Top|Left)|scroll(?:Width|Height|Top|Left)|client(?:Width|Height|Top|Left)/);
@@ -129,6 +165,7 @@ function runtimeEnvironment({ permission = false, adapter = "dmitri-my-talisman"
   const observers = [];
   const properties = new Map();
   const claySamples = [];
+  const clayTargetSamples = [];
   const clayLifecycle = [];
   let nextFrame = 1;
   let nextTimer = 1;
@@ -149,9 +186,14 @@ function runtimeEnvironment({ permission = false, adapter = "dmitri-my-talisman"
     addListener(callback) { reducedListeners.add(callback); },
     removeListener(callback) { reducedListeners.delete(callback); },
   };
+  const classes = new Set();
   const root = {
     isConnected: true,
-    classList: { contains: () => false },
+    classList: {
+      add(name) { classes.add(name); },
+      remove(name) { classes.delete(name); },
+      contains(name) { return classes.has(name); },
+    },
     dataset: {},
     querySelector: () => null,
     style: {
@@ -175,7 +217,13 @@ function runtimeEnvironment({ permission = false, adapter = "dmitri-my-talisman"
   const window = {
     DeviceOrientationEvent: OrientationEvent,
     KSEpkOrientationCore: Core,
-    ksEpkOrientationConfig: { adapter, pageId: adapter === "clay-stars" ? 252 : 298 },
+    ksEpkOrientationConfig: {
+      adapter,
+      pageId: adapter === "clay-stars" ? 252 : adapter === "california-screamin" ? 839 : 298,
+      bpm: adapter === "clay-stars" ? 116 : adapter === "california-screamin" ? 110 : 120,
+      ticksPerBeat: 16,
+      transitionTargetTicks: 2,
+    },
     navigator: { userAgent: "Mozilla/5.0 (iPhone) Mobile", maxTouchPoints: 5 },
     screen: {
       width: 390,
@@ -203,6 +251,7 @@ function runtimeEnvironment({ permission = false, adapter = "dmitri-my-talisman"
     window.DanceMovesClayStars = {
       root,
       setMotion(sample) { claySamples.push({ ...sample }); },
+      setMotionTarget(sample) { clayTargetSamples.push({ ...sample }); },
       lifecycle(state) { clayLifecycle.push(state); },
     };
   }
@@ -216,6 +265,7 @@ function runtimeEnvironment({ permission = false, adapter = "dmitri-my-talisman"
     getElementById: () => null,
     querySelector: selector => {
       if (adapter === "clay-stars" && selector === ".ks-epk.ks-clay-stars-v2") return root;
+      if (adapter === "california-screamin" && selector.includes("#cs-epk.cs-epk")) return root;
       return selector === ".dmt-epk" ? root : null;
     },
     createElement() {
@@ -239,12 +289,18 @@ function runtimeEnvironment({ permission = false, adapter = "dmitri-my-talisman"
   }
   return {
     window, document, root, properties, controls, observers, frames, orientationListeners, reducedListeners,
-    claySamples, clayLifecycle,
+    claySamples, clayTargetSamples, clayLifecycle,
     load,
     emitWindow(name, event) { emit(windowListeners, name, event); },
     emitDocument(name, event) { emit(documentListeners, name, event); },
     listenerCount(name) { return windowListeners.get(name)?.size || 0; },
     flushFrame,
+    flushTimers(timestamp, maximumDelay = Infinity) {
+      clock = timestamp;
+      const pending = [...timers.entries()].filter(([, item]) => item.delay <= maximumDelay);
+      pending.forEach(([id]) => timers.delete(id));
+      pending.forEach(([, item]) => item.callback());
+    },
     setReduced(value) { reduced = value; for (const callback of [...reducedListeners]) callback({ matches: value }); },
   };
 }
@@ -314,14 +370,34 @@ clay.emitWindow("deviceorientation", { beta: 0, gamma: 0 });
 clay.flushFrame(0);
 clay.emitWindow("deviceorientation", { beta: -12, gamma: 9 });
 clay.flushFrame(32);
-assert.ok(clay.claySamples.length >= 2, "Clay receives neutral and moved samples");
-assert.ok(Math.abs(clay.claySamples.at(-1).x) > 0.2, "Clay receives perceptually scaled horizontal motion");
-assert.ok(Math.abs(clay.claySamples.at(-1).y) > 0.2, "Clay receives perceptually scaled vertical motion");
+assert.equal(clay.clayTargetSamples.length, 1, "Clay does not add a nested per-frame DOM target");
+clay.flushTimers(65, 100);
+assert.ok(clay.clayTargetSamples.length >= 2, "Clay receives the latest trailing transition target");
+assert.equal(clay.claySamples.length, 0, "the shared path bypasses Clay's pointer rAF scheduler");
+assert.ok(Math.abs(clay.clayTargetSamples.at(-1).x) > 0.2, "Clay receives perceptually scaled horizontal motion");
+assert.ok(Math.abs(clay.clayTargetSamples.at(-1).y) > 0.2, "Clay receives perceptually scaled vertical motion");
 assert.equal(clay.root.dataset.ksOrientation, "active");
 assert.equal(clay.window.__ksEpkOrientationRuntime.snapshot().active, true);
 clay.setReduced(true);
 assert.equal(clay.listenerCount("deviceorientation"), 0);
 assert.equal(clay.clayLifecycle.at(-1), "visible", "visible reduced-motion reset remains neutral without inventing page visibility");
+
+const california = runtimeEnvironment({ adapter: "california-screamin" });
+california.load();
+california.emitWindow("deviceorientation", { beta: 0, gamma: 0 });
+california.flushFrame(0);
+california.emitWindow("deviceorientation", { beta: 8, gamma: -10 });
+california.flushFrame(32);
+california.flushTimers(69, 100);
+assert.equal(california.root.dataset.ksOrientationAdapter, "california-screamin");
+assert.equal(california.root.dataset.ksOrientationTargetTicks, "2");
+assert.ok(Math.abs(Number(california.properties.get("--cs-x"))) > 0.2);
+assert.ok(Math.abs(Number(california.properties.get("--cs-y"))) > 0.2);
+california.root.classList.add("motion-paused");
+california.emitWindow("deviceorientation", { beta: -10, gamma: 10 });
+california.flushFrame(140);
+assert.equal(california.properties.get("--cs-x"), "0", "the page's Pause visual effects state remains authoritative");
+assert.equal(california.properties.get("--cs-y"), "0");
 
 // P-020: permission remains user-gesture gated and creates one control.
 (async () => {

@@ -1,0 +1,68 @@
+{
+  "$schema": "../plugin-core/effect-harness.schema.json",
+  "schemaVersion": 1,
+  "effect": {
+    "slug": "california-screamin",
+    "title": "California Screamin'",
+    "pageId": 839,
+    "rootSelector": "#cs-epk.cs-epk[data-release=california-screamin]",
+    "candidate": "../../../qa/california-screamin-harness-candidate.html",
+    "propertyInventory": "property-inventory.json",
+    "productionCss": ["../../../assets/dance-moves-core.css", "../../../assets/ks-epk-device-orientation.css"],
+    "productionJs": ["../../../assets/dance-moves-core.js", "../../../assets/dance-moves-catalogue-timing.js", "../../../assets/ks-epk-device-orientation-core.js", "../../../assets/ks-epk-device-orientation.js"],
+    "productionHashes": {
+      "../../../assets/dance-moves-core.css": "197E0D51F400A3D875ACB6E12238417FAA3D54853708F72EEB792342F533AD8D",
+      "../../../assets/ks-epk-device-orientation.css": "1CB19DA11F6158853D893AF15460FBEABAD4A0D3665505D9857A3137713A8E42",
+      "../../../assets/dance-moves-core.js": "7337D940C85DAFF366A3B41D7D91997772ACA1C22A53713B5C0529925AA9C59C",
+      "../../../assets/dance-moves-catalogue-timing.js": "E2CBBE1729BF52D69C060C8999D157B45BCBDA96D7EE9FE93131FD86F45525BE",
+      "../../../assets/ks-epk-device-orientation-core.js": "97DA95E3062C89CB4BEEB0795A4DB7A8A31887890DB41BB9334A7B256135C73D",
+      "../../../assets/ks-epk-device-orientation.js": "538F07DF6606860082DE36744119F7C8DFEA5CF8C8D2FC76C53730F48FB48C86"
+    },
+    "inputModes": ["pointer", "touch", "keyboard", "orientation"]
+  },
+  "release": {
+    "bpm": 110,
+    "bpmSource": "artist-confirmed",
+    "masterSha256": "E38FA7A90AF18A372EEDE57329DA5E98D968C6F66F8BEB8E309932F399BD4979",
+    "masterDurationMilliseconds": 212007.46
+  },
+  "preview": {
+    "viewports": [
+      { "name": "desktop", "width": 1440, "height": 1000 },
+      { "name": "tablet", "width": 900, "height": 1100 },
+      { "name": "mobile", "width": 390, "height": 844 }
+    ],
+    "physicalDevices": ["iPhone Safari 60 Hz", "Android Chrome 120 Hz"]
+  },
+  "parameters": [
+    {
+      "id": "effect-enabled", "group": "master", "label": "Effect enabled", "type": "checkbox", "default": true,
+      "unit": "", "apply": "adapter", "target": "motion-paused", "performanceSensitive": true,
+      "description": "Uses the page's existing Pause visual effects state without changing WordPress content."
+    },
+    {
+      "id": "production-bpm", "group": "timing", "label": "Verified master BPM", "type": "readonly", "default": 110,
+      "unit": " BPM", "apply": "readonly", "target": "DanceMoves.bpm", "performanceSensitive": false,
+      "description": "The artist-confirmed page BPM; lab controls never write it back."
+    }
+  ],
+  "cues": [],
+  "selectors": {
+    "owned": ["#cs-epk", ".cs-cover-stage", ".cs-cover", ".cs-cables", ".cs-cover-glow"],
+    "stableControls": ["#cs-motion-toggle", "#cs-let-out", "#cs-audio"]
+  },
+  "budgets": {
+    "orientationP95Milliseconds": 0.5,
+    "orientationP99Milliseconds": 1,
+    "rafFrameShare": 0.25,
+    "cueHandlerFrameShare": 0.25,
+    "cueTotalFrameShare": 0.5,
+    "droppedFrameDeltaPercentagePoints": 1,
+    "longTaskMilliseconds": 50,
+    "maximumSamples": 20000
+  },
+  "cssPolicy": {
+    "failContinuous": ["width", "height", "top", "right", "bottom", "left", "inset", "margin", "padding", "gap", "background-position", "background-size", "box-shadow", "text-shadow", "object-position", "mask-position", "mask-size"],
+    "review": ["filter", "backdrop-filter", "clip-path", "mask-image", "mix-blend-mode", "background-image", "border-radius", "will-change"]
+  }
+}

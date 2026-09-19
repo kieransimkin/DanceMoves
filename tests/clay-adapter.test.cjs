@@ -419,8 +419,8 @@ assert.equal((candidate.match(/<audio\b/g) || []).length, 1, "candidate retains 
 assert.equal((candidate.match(/<button[^>]+data-time=/g) || []).length, 5, "candidate retains all chapter controls");
 assert.ok(candidate.indexOf("harness-probe.js") < candidate.indexOf("dance-moves-core.js"), "probe loads before production core");
 assert.ok(candidate.indexOf("clay-stars-effects.js") < candidate.indexOf("effect-under-test-adapter.js"), "thin adapter loads after the production Clay runtime");
-assert.equal((candidate.match(/dance-moves-core\.js\?ver=2\.3\.3-local/g) || []).length, 1, "candidate loads one local 2.3.3 core");
-assert.equal((candidate.match(/clay-stars-effects\.js\?ver=2\.3\.3-local/g) || []).length, 1, "candidate loads one local 2.3.3 Clay adapter");
+assert.equal((candidate.match(/dance-moves-core\.js\?ver=2\.3\.4-local/g) || []).length, 1, "candidate loads one local 2.3.4 core");
+assert.equal((candidate.match(/clay-stars-effects\.js\?ver=2\.3\.4-local/g) || []).length, 1, "candidate loads one local 2.3.4 Clay adapter");
 assert.equal((candidate.match(/class="ks-warm-bloom"/g) || []).length, 1, "P-032 candidate has one warm bloom");
 assert.equal((candidate.match(/class="ks-lens-flare"/g) || []).length, 1, "P-032 candidate has one lens flare");
 assert.equal((candidate.match(/class="ks-specular-sweep"/g) || []).length, 1, "P-032 candidate has one specular sweep");

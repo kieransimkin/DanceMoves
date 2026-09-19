@@ -167,6 +167,7 @@ The new suite must replace those two legacy performance expectations with one-pe
 | P-026 | Bounded outputs | Every adapter clamps all translations, rotations, scales, light positions and opacity values to its documented range under extreme and rapidly alternating input | Required property/fuzz test |
 | P-027 | Lifecycle reset | `visibilitychange`, page hide, orientation change, reduced-motion change and adapter removal cancel pending work, clear stale samples and restore neutral styles | Required automated browser/runtime |
 | P-028 | Multiple instances | Reinitialisation, page-cache restore and repeated content transforms create one listener set, one control and one decorative layer; teardown removes all owned listeners | Required automated browser/runtime |
+| P-029 | Tick-paced transition targets | The first finite target is immediate; later writes publish only the latest meaningful target at the configured integer-tick cadence, retain at most one trailing timer, suppress sub-delta jitter and cancel pending work on reset/teardown | Required automated browser/runtime |
 
 ### Performance telemetry contract
 
@@ -209,6 +210,7 @@ The measurement harness must measure its own empty-wrapper overhead and subtract
 | P-037 | Forced colours and contrast | Controls, focus indicators and state remain perceivable in forced colours and at the documented contrast target | Required browser plus review |
 | P-038 | Unicode-generated content | Cuneiform and other supplementary-plane generated content resolves to the intended code points in computed `content`; no replacement glyph or mojibake appears | Required automated DOM plus screenshot |
 | P-039 | WordPress formatting artefacts | Proven direct-child `<br>`/empty-`<p>` artefacts are neutralised only inside the release scope; intentional paragraphs and line breaks remain | Required rendered-DOM test |
+| P-040 | California adapter | Page 839 activates only the California Screamin' adapter, writes bounded `--cs-x`/`--cs-y` targets consumed by transform, neutralises them while paused/reduced, and preserves the exact page content at 1440, 900 and 390 px | Required automated browser plus visual QA |
 
 ### CSS property and bottleneck audit
 

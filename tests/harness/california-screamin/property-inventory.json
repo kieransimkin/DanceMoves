@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "pageId": 839,
+  "adapter": "california-screamin",
+  "verifiedAgainst": "published payload F846DF4D21248F2AAB77C4A8F7DE8A1ABA9DF8C5050246AA242DAAEC28608ACB and DanceMoves 2.3.4",
+  "writes": [
+    {
+      "properties": ["--cs-x", "--cs-y"],
+      "selector": "#cs-epk :is(.cs-cover,.cs-cables,.cs-cover-glow)",
+      "consumer": "transform",
+      "classification": "compositor-candidate",
+      "applicable": true
+    }
+  ]
+}

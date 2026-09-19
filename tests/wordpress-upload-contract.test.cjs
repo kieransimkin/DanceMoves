@@ -27,8 +27,8 @@ for (const asset of [
   assert.match(page, new RegExp(`${asset.replaceAll(".", "\\.")}\\?ver=${escapedVersion}`), `${asset} is cache-versioned to the current plugin`);
 }
 assert.match(plugin, /Plugin Name:\s*DanceMoves/);
-assert.match(plugin, /Version:\s*2\.3\.3/);
-assert.match(plugin, /DANCE_MOVES_VERSION',\s*'2\.3\.3'/);
+assert.match(plugin, /Version:\s*2\.3\.4/);
+assert.match(plugin, /DANCE_MOVES_VERSION',\s*'2\.3\.4'/);
 assert.match(plugin, /dance-moves-catalogue-timing/);
 assert.match(plugin, /252\s*=>\s*'clay-stars'/);
 assert.match(plugin, /\$orientation_dependencies\[\]\s*=\s*'dance-moves-clay-stars'/);
@@ -43,7 +43,7 @@ assert.match(runtime, /sampleStrategy:\s*"time-decimated"/);
 assert.match(runtime, /window\.setTimeout\(finish,\s*targetDuration\)/);
 assert.match(plugin, /'captureDurationMilliseconds'/);
 assert.match(plugin, /'processedPairCount'/);
-assert.match(css, /background-position var\(--dance-moves-3t, 93\.75ms\)/);
-assert.match(css, /transform var\(--dance-moves-3t, 93\.75ms\)/);
+assert.match(css, /background-position var\(--dance-moves-2t, 62\.5ms\)/);
+assert.match(css, /transform var\(--dance-moves-2t, 62\.5ms\)/);
 assert.doesNotMatch(css, /transition-duration:\s*0ms/);
 console.log("WordPress private motion-upload contract tests passed");

@@ -203,12 +203,34 @@
     return {
       root,
       apply(x, y) {
-        api.setMotion({ x: perceptualAxis(x), y: perceptualAxis(y) });
+        const setter = typeof api.setMotionTarget === "function" ? api.setMotionTarget : api.setMotion;
+        setter({ x: perceptualAxis(x), y: perceptualAxis(y) });
       },
       reset() {
         if (typeof api.lifecycle === "function") api.lifecycle(document.hidden ? "hidden" : "visible");
         else api.setMotion({ x: 0, y: 0 });
       },
+    };
+  }
+
+  function californiaScreamin() {
+    const root = document.querySelector('#cs-epk.cs-epk[data-release="california-screamin"],#cs-epk.cs-epk');
+    if (!root) return null;
+    const reset = () => {
+      root.style.setProperty("--cs-x", "0");
+      root.style.setProperty("--cs-y", "0");
+    };
+    return {
+      root,
+      apply(x, y) {
+        if (root.classList.contains("motion-paused")) {
+          reset();
+          return;
+        }
+        root.style.setProperty("--cs-x", perceptualAxis(x).toFixed(3));
+        root.style.setProperty("--cs-y", perceptualAxis(y).toFixed(3));
+      },
+      reset,
     };
   }
 
@@ -221,6 +243,7 @@
     "walk-with-me": walkWithMe,
     "dmitri-my-talisman": dmitriMyTalisman,
     "clay-stars": clayStars,
+    "california-screamin": californiaScreamin,
   };
 
   function detectFactory() {
@@ -232,6 +255,7 @@
     if (document.querySelector('.ks-epk[data-release="walk-with-me"]')) return walkWithMe;
     if (document.querySelector(".dmt-epk")) return dmitriMyTalisman;
     if (document.querySelector(".ks-epk.ks-clay-stars-v2")) return clayStars;
+    if (document.querySelector('#cs-epk.cs-epk[data-release="california-screamin"],#cs-epk.cs-epk')) return californiaScreamin;
     return null;
   }
 
@@ -256,18 +280,24 @@
     adapter.root.dataset.ksOrientation = "supported";
     adapter.root.dataset.ksOrientationAdapter = config.adapter || "detected";
     adapter.root.dataset.ksOrientationWindow = String(windowMilliseconds);
+    const ticksPerBeat = Math.max(1, Number(config.ticksPerBeat) || 16);
+    const transitionTargetTicks = Math.max(1, Math.round(Number(config.transitionTargetTicks) || 2));
+    const bpm = Math.max(20, Math.min(400, Number(config.bpm) || 120));
+    const targetIntervalMilliseconds = (60000 / bpm / ticksPerBeat) * transitionTargetTicks;
+    adapter.root.dataset.ksOrientationTargetTicks = String(transitionTargetTicks);
+    adapter.root.dataset.ksOrientationTargetMilliseconds = targetIntervalMilliseconds.toFixed(3);
 
     const removeControl = () => {
       if (control) control.remove();
       control = null;
     };
 
-    const scheduler = Core.createLatestSampleRafScheduler({
-      mapper: rollingMapper,
-      smoothingTimeConstantMilliseconds: 32,
-      requestFrame: callback => window.requestAnimationFrame(callback),
-      cancelFrame: frame => window.cancelAnimationFrame(frame),
+    const targetScheduler = Core.createTransitionTargetScheduler({
+      intervalMilliseconds: targetIntervalMilliseconds,
+      minimumDelta: 0.02,
       now: () => window.performance.now(),
+      schedule: (callback, delay) => window.setTimeout(callback, delay),
+      cancel: timer => window.clearTimeout(timer),
       commit(x, y, detail) {
         if (destroyed || adapter.root.isConnected === false) return;
         latest = { x, y };
@@ -280,6 +310,17 @@
         adapter.apply(x, y);
         window.EPKEffectHarnessProbe?.noteCommit?.(detail.sampleAge);
       },
+    });
+
+    const scheduler = Core.createLatestSampleRafScheduler({
+      mapper: rollingMapper,
+      smoothingTimeConstantMilliseconds: 32,
+      requestFrame: callback => window.requestAnimationFrame(callback),
+      cancelFrame: frame => window.cancelAnimationFrame(frame),
+      now: () => window.performance.now(),
+      commit(x, y, detail) {
+        targetScheduler.receive(x, y, detail);
+      },
       reject() {
         window.EPKEffectHarnessProbe?.noteRejected?.();
       },
@@ -287,6 +328,7 @@
 
     const reset = () => {
       scheduler.reset();
+      targetScheduler.reset();
       latest = { x: 0, y: 0 };
       active = false;
       adapter.root.dataset.ksOrientation = "supported";
@@ -390,6 +432,7 @@
       listening = false;
       window.clearTimeout(availabilityTimer);
       scheduler.teardown();
+      targetScheduler.teardown();
       latest = { x: 0, y: 0 };
       active = false;
       adapter.reset();

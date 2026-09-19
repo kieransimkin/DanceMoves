@@ -58,6 +58,14 @@ function Invoke-UnitValidation {
     if ($LASTEXITCODE -ne 0) { throw 'Clay/Stars shared harness validation failed.' }
     Write-Output 'Clay/Stars shared harness validation passed.'
 
+    $californiaHarness = Join-Path $repoRoot 'tests\harness\california-screamin'
+    $californiaHarnessOutput = & python -X utf8 (Join-Path $PSScriptRoot 'validate-effect-harness.py') $californiaHarness --mode scaffold --manifest-file (Join-Path $californiaHarness 'california-screamin.json') --shared-root (Join-Path $repoRoot 'tests\harness\plugin-core')
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warning 'California Screamin full-page audit retains known page-owned width/background-position blockers. Review the separate audit output; adapter contracts remain release-gating.'
+    } else {
+        Write-Output 'California Screamin shared harness validation passed.'
+    }
+
     $strictUtf8 = New-Object System.Text.UTF8Encoding($false, $true)
     $textExtensions = @('.php', '.js', '.cjs', '.mjs', '.css', '.md', '.html', '.json', '.tsv', '.ps1', '.lrc')
     Get-ChildItem -LiteralPath $repoRoot -Recurse -File | Where-Object {

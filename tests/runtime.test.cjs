@@ -100,6 +100,7 @@ function createEnvironment({ mobile = true, permission = false, adapter = "dmitr
     windowListeners,
     advance(value) { clock = value; },
     flush() {
+      while (raf.length) raf.shift()();
       [...timers.entries()]
         .filter(([, timer]) => timer.delay <= 100)
         .forEach(([id, timer]) => {

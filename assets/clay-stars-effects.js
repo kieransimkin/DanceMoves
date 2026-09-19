@@ -29,6 +29,7 @@
   var pendingY = 0;
   var lastX = 0;
   var lastY = 0;
+  var lastMotionProperties = Object.create(null);
   var pointerBounds = null;
   var destroyed = false;
   var disposers = [];
@@ -189,22 +190,29 @@
       : ticks * (3750 / 116);
   };
 
+  var setMotionProperty = function (name, value) {
+    if (lastMotionProperties[name] === value) return false;
+    lastMotionProperties[name] = value;
+    cover.style.setProperty(name, value);
+    return true;
+  };
+
   var apply = function (nx, ny) {
     var active = settings.enabled && !reduce.matches ? settings.masterIntensity : 0;
     lastX = clamp(nx, -1, 1, 0);
     lastY = clamp(ny, -1, 1, 0);
     var x = lastX * active;
     var y = lastY * active;
-    cover.style.setProperty("--ks-rx", (-y * settings.coverTiltDegrees).toFixed(3) + "deg");
-    cover.style.setProperty("--ks-ry", (x * settings.coverTiltDegrees).toFixed(3) + "deg");
-    cover.style.setProperty("--ks-tx", (x * settings.coverTranslationPixels).toFixed(3) + "px");
-    cover.style.setProperty("--ks-ty", (y * settings.coverTranslationPixels).toFixed(3) + "px");
-    cover.style.setProperty("--ks-bloom-x", (x * settings.bloomTravelPixels).toFixed(3) + "px");
-    cover.style.setProperty("--ks-bloom-y", (y * settings.bloomTravelPixels * .875).toFixed(3) + "px");
-    cover.style.setProperty("--ks-flare-x", (x * settings.flareTravelPixels).toFixed(3) + "px");
-    cover.style.setProperty("--ks-flare-y", (y * settings.flareTravelPixels * .777777778).toFixed(3) + "px");
-    cover.style.setProperty("--ks-spec-x", (-x * settings.specularTravelPixels).toFixed(3) + "px");
-    cover.style.setProperty("--ks-spec-y", (-y * settings.specularTravelPixels * .75).toFixed(3) + "px");
+    setMotionProperty("--ks-rx", (-y * settings.coverTiltDegrees).toFixed(3) + "deg");
+    setMotionProperty("--ks-ry", (x * settings.coverTiltDegrees).toFixed(3) + "deg");
+    setMotionProperty("--ks-tx", (x * settings.coverTranslationPixels).toFixed(3) + "px");
+    setMotionProperty("--ks-ty", (y * settings.coverTranslationPixels).toFixed(3) + "px");
+    setMotionProperty("--ks-bloom-x", (x * settings.bloomTravelPixels).toFixed(3) + "px");
+    setMotionProperty("--ks-bloom-y", (y * settings.bloomTravelPixels * .875).toFixed(3) + "px");
+    setMotionProperty("--ks-flare-x", (x * settings.flareTravelPixels).toFixed(3) + "px");
+    setMotionProperty("--ks-flare-y", (y * settings.flareTravelPixels * .777777778).toFixed(3) + "px");
+    setMotionProperty("--ks-spec-x", (-x * settings.specularTravelPixels).toFixed(3) + "px");
+    setMotionProperty("--ks-spec-y", (-y * settings.specularTravelPixels * .75).toFixed(3) + "px");
     motionCommits += 1;
   };
 
@@ -218,6 +226,16 @@
     pendingX = clamp(sample && sample.x, -1, 1, 0);
     pendingY = clamp(sample && sample.y, -1, 1, 0);
     if (!frame) frame = window.requestAnimationFrame(flush);
+    return true;
+  };
+
+  var setMotionTarget = function (sample) {
+    if (destroyed) return false;
+    if (frame) window.cancelAnimationFrame(frame);
+    frame = 0;
+    pendingX = clamp(sample && sample.x, -1, 1, 0);
+    pendingY = clamp(sample && sample.y, -1, 1, 0);
+    apply(pendingX, pendingY);
     return true;
   };
 
@@ -454,6 +472,7 @@
     defaults: defaults,
     setParameters: setParameters,
     setMotion: setMotion,
+    setMotionTarget: setMotionTarget,
     setCueState: setCueState,
     lifecycle: lifecycle,
     reset: reset,

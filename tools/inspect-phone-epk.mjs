@@ -90,12 +90,12 @@ if (injectLocalOrientation) {
     window.ksEpkOrientationConfig = ${JSON.stringify({
     adapter: "clay-stars",
     pageId: 252,
-    version: "2.3.3-local-phone-test",
+    version: "2.3.4-local-phone-test",
     bpm: 116,
     bpmSource: "explicit"
   })}; true;`);
-  await evaluate(`${coreSource}\n;true;\n//# sourceURL=dance-moves-phone-orientation-core-2.3.3.js`, { returnByValue: false });
-  await evaluate(`${runtimeSource}\n;true;\n//# sourceURL=dance-moves-phone-orientation-2.3.3.js`, { returnByValue: false });
+  await evaluate(`${coreSource}\n;true;\n//# sourceURL=dance-moves-phone-orientation-core-2.3.4.js`, { returnByValue: false });
+  await evaluate(`${runtimeSource}\n;true;\n//# sourceURL=dance-moves-phone-orientation-2.3.4.js`, { returnByValue: false });
 }
 
 if (dispatchSynthetic) {

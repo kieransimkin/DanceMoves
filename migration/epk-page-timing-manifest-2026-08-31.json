@@ -3,13 +3,51 @@
     "manifest_date":  "2026-08-31",
     "source_pages":  "Z:\\My Songs\\Releases\\EPK Batch 2026\\published-pages.tsv",
     "source_canonical_registry":  "Z:\\My Songs\\Releases\\lyric-timing-canonical-registry.json",
-    "source_known_bpm":  "Z:\\My Songs\\Releases\\WordPress EPK Template\\plugins\\DanceMoves\\migration\\known-bpm.json",
-    "page_count":  47,
+    "source_known_bpm":  "Z:\\My Songs\\Releases\\WordPress EPK Template\\plugins\\DanceMoves-adaptive-staging\\migration\\known-bpm.json",
+    "page_count":  54,
     "explicit_bpm_count":  3,
-    "fallback_bpm_count":  44,
-    "eligible_lyric_timing_count":  12,
-    "cue_timing_count":  1,
+    "fallback_bpm_count":  51,
+    "eligible_lyric_timing_count":  14,
+    "cue_timing_count":  2,
     "pages":  [
+                  {
+                      "title":  "California Screamin\u0027",
+                      "post_id":  839,
+                      "url":  "https://kieransimkin.co.uk/california-screamin/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "not_in_canonical_registry",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "Patriotic Revolution",
+                      "post_id":  760,
+                      "url":  "https://kieransimkin.co.uk/patriotic-revolution/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "canonical_verified_performed_timing_reference_pending_listening_qa",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
                   {
                       "title":  "Light Will Win (Shubh Diwali)",
                       "post_id":  140,
@@ -40,12 +78,12 @@
                       "bpm_evidence":  "Dying for a Diagnosis/submission-pack/00-press-one-sheet.md",
                       "master_duration_milliseconds":  332752.494,
                       "master_sha256":  "DE7E42C06929742074F93C3E48288E5CE0419C97A553BBD8F7DC754D8EE9194F",
-                      "lyric_timing_status":  "canonical_estimated_pending_listening_qa",
+                      "lyric_timing_status":  "canonical_user_edited_locked",
                       "lyric_timing_eligible":  true,
                       "lyric_timing":  {
-                                           "path":  "Dying for a Diagnosis/lyric-timing-2026-08-31/synced-lyrics-estimated.lrc",
-                                           "sha256":  "801232EC68D7AB76B6B82B996E326E2CAC877505C0882CB955D5BC3812AA502C",
-                                           "bytes":  5741
+                                           "path":  "Dying for a Diagnosis/canonical-lyric-timing.lrc",
+                                           "sha256":  "45BEC8D1B72C41DC58B8B1E1EF2FA3C88067C4C49E08B2551F7269A6E2A4A410",
+                                           "bytes":  6951
                                        },
                       "cue_timing":  null,
                       "proposed_action":  [
@@ -84,16 +122,21 @@
                       "bpm_evidence":  null,
                       "master_duration_milliseconds":  null,
                       "master_sha256":  null,
-                      "lyric_timing_status":  "canonical_estimated_pending_listening_qa",
+                      "lyric_timing_status":  "canonical_user_edited_locked",
                       "lyric_timing_eligible":  true,
                       "lyric_timing":  {
-                                           "path":  "Santa Flies Tonight/lyric-timing-2026-08-31/master-improvement-check/synced-lyrics-estimated.lrc",
-                                           "sha256":  "930FCAFF66A71FCA1C4655FCC82E34B6673542B861E9360C68E674D2DF597EE3",
-                                           "bytes":  1993
+                                           "path":  "Santa Flies Tonight/canonical-lyric-timing.lrc",
+                                           "sha256":  "70A39915D76EACB038BAE6A40E556FCD8F9FF80B4A2271DDF7EE1E832303FC69",
+                                           "bytes":  2432
                                        },
-                      "cue_timing":  null,
+                      "cue_timing":  {
+                                         "path":  "Santa Flies Tonight/Santa Flies Tonight - musical cues.lrc",
+                                         "sha256":  "19D8B0B58326C6AFF3389A836D15FA5460DF9A1D9F242378FD1046EE8D31ABBB",
+                                         "bytes":  671
+                                     },
                       "proposed_action":  [
-                                              "upload_or_reuse_lyric_timing"
+                                              "upload_or_reuse_lyric_timing",
+                                              "upload_or_reuse_cue_timing"
                                           ]
                   },
                   {
@@ -342,12 +385,16 @@
                       "bpm_evidence":  null,
                       "master_duration_milliseconds":  null,
                       "master_sha256":  null,
-                      "lyric_timing_status":  "no_canonical_timing_below_threshold",
-                      "lyric_timing_eligible":  false,
-                      "lyric_timing":  null,
+                      "lyric_timing_status":  "canonical_estimated_pending_listening_qa",
+                      "lyric_timing_eligible":  true,
+                      "lyric_timing":  {
+                                           "path":  "Chips and Ketchup/lyric-timing-2026-09-12/combined-master-opening-recovery/synced-lyrics-estimated.lrc",
+                                           "sha256":  "1FF56DFA5CD69FE5676F5F852D66B4F506173BB9D970A2DC905C8387AFA59A12",
+                                           "bytes":  3372
+                                       },
                       "cue_timing":  null,
                       "proposed_action":  [
-
+                                              "upload_or_reuse_lyric_timing"
                                           ]
                   },
                   {
@@ -384,12 +431,16 @@
                       "bpm_evidence":  null,
                       "master_duration_milliseconds":  null,
                       "master_sha256":  null,
-                      "lyric_timing_status":  "not_in_canonical_registry",
-                      "lyric_timing_eligible":  false,
-                      "lyric_timing":  null,
+                      "lyric_timing_status":  "canonical_estimated_pending_listening_qa",
+                      "lyric_timing_eligible":  true,
+                      "lyric_timing":  {
+                                           "path":  "Hit Piece/lyric-timing-2026-09-07/master-alignment/synced-lyrics-estimated.lrc",
+                                           "sha256":  "A2A76E62C17A4AC27E4380416E4F75E0F677D169614C43BF3F9CA3185EE5D1C4",
+                                           "bytes":  5618
+                                       },
                       "cue_timing":  null,
                       "proposed_action":  [
-
+                                              "upload_or_reuse_lyric_timing"
                                           ]
                   },
                   {
@@ -955,6 +1006,101 @@
                       "master_duration_milliseconds":  null,
                       "master_sha256":  null,
                       "lyric_timing_status":  "no_canonical_timing_below_threshold",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "Bum Goblin",
+                      "post_id":  905,
+                      "url":  "https://kieransimkin.co.uk/bum-goblin/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "not_in_canonical_registry",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "Out of Tokens",
+                      "post_id":  912,
+                      "url":  "https://kieransimkin.co.uk/out-of-tokens/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "not_in_canonical_registry",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "Headphones On",
+                      "post_id":  915,
+                      "url":  "https://kieransimkin.co.uk/headphones-on/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "not_in_canonical_registry",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "Singin’ the AI blues",
+                      "post_id":  918,
+                      "url":  "https://kieransimkin.co.uk/singin-the-ai-blues/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "not_in_canonical_registry",
+                      "lyric_timing_eligible":  false,
+                      "lyric_timing":  null,
+                      "cue_timing":  null,
+                      "proposed_action":  [
+
+                                          ]
+                  },
+                  {
+                      "title":  "Excessive Stuffing",
+                      "post_id":  921,
+                      "url":  "https://kieransimkin.co.uk/excessive-stuffing/",
+                      "bpm_property":  null,
+                      "effective_bpm":  120,
+                      "bpm_source":  "fallback",
+                      "bpm_confidence":  "unknown",
+                      "bpm_evidence":  null,
+                      "master_duration_milliseconds":  null,
+                      "master_sha256":  null,
+                      "lyric_timing_status":  "not_in_canonical_registry",
                       "lyric_timing_eligible":  false,
                       "lyric_timing":  null,
                       "cue_timing":  null,

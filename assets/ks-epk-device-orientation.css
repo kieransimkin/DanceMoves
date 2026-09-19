@@ -40,11 +40,10 @@
   transform: perspective(1100px) rotateX(var(--wwm-tilt-x, 0deg)) rotateY(var(--wwm-tilt-y, 0deg)) translate(var(--wwm-shift-x, 0px), var(--wwm-shift-y, 0px)) !important;
 }
 
-/* The newest finite sensor sample commits once per display frame. Transform
-   interpolation remains compositor-friendly; the paint-bound hero background
-   is retained for the later property-audit and adapter-redesign phases. */
+/* JavaScript publishes a fresh target every two BPM ticks; CSS interpolates
+   between targets so sensor delivery does not cause a DOM write every frame. */
 #light-will-win-top[data-ks-orientation="active"] .lww-hero {
-  transition: background-position var(--dance-moves-3t, 93.75ms) cubic-bezier(.15, .8, .2, 1) !important;
+  transition: background-position var(--dance-moves-2t, 62.5ms) cubic-bezier(.15, .8, .2, 1) !important;
   will-change: background-position;
 }
 
@@ -54,8 +53,10 @@
 [data-ks-orientation-adapter="fully-nocturnal"][data-ks-orientation="active"] :is(.fnx-horizon-glow,.fnx-road,.epk-cover-wrap,.epk-cover),
 [data-ks-orientation-adapter="amnesty-honestly"][data-ks-orientation="active"] :is(.epk-cover-wrap,.epk-heading),
 [data-ks-orientation-adapter="walk-with-me"][data-ks-orientation="active"] .wwm-cover-stage,
-[data-ks-orientation-adapter="dmitri-my-talisman"][data-ks-orientation="active"] :is(.chamber,.cover-frame) {
-  transition: transform var(--dance-moves-3t, 93.75ms) cubic-bezier(.15, .8, .2, 1) !important;
+[data-ks-orientation-adapter="dmitri-my-talisman"][data-ks-orientation="active"] :is(.chamber,.cover-frame),
+[data-ks-orientation-adapter="clay-stars"][data-ks-orientation="active"] :is(.epk-cover-wrap,.ks-warm-bloom,.ks-lens-flare,.ks-specular-sweep),
+[data-ks-orientation-adapter="california-screamin"][data-ks-orientation="active"] :is(.cs-cover,.cs-cables,.cs-cover-glow) {
+  transition: transform var(--dance-moves-2t, 62.5ms) cubic-bezier(.15, .8, .2, 1) !important;
   will-change: transform;
 }
 

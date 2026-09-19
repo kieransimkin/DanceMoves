@@ -1,6 +1,6 @@
 # DanceMoves
 
-DanceMoves is Kieran Simkin's WordPress EPK motion runtime. Version 2.0.0 added page-level BPM, lyric-timing and cue-timing properties; a 16-ticks-per-beat musical clock; cue-driven animation resets; named cue and interval handlers; the existing seven device-orientation adapters; and the release-specific Made from the Clay and the Stars effects adapter. Version 2.1.0 moved the neutral shared EPK control and lyric-disclosure transitions onto page-resolved integer tick durations. Version 2.2.0 added catalogue-wide adoption for release-owned CSS animations, transitions, delays and timing custom properties. Version 2.3.0 confines stylesheet conversion to EPK-owned selectors and the timing variables they reference, so a mixed theme or admin stylesheet cannot transfer ownership to unrelated rules; it also carries the separately staged Clay/Stars runtime and harness refinements already present in the workspace. Version 2.3.1 raises the Clay/Stars bounded motion gain to 2x. Version 2.3.2 routes the shared permission-aware orientation runtime into that Clay/Stars adapter so physical device events actually drive its motion API while reduced motion, geometry and all other EPK systems remain unchanged. Version 2.3.3 adds measured, release-scoped adaptive performance tiers for Clay/Stars: healthy devices retain the full treatment, while only sustained low frame rate stops the expensive ambient loops and, if still necessary, removes their filters.
+DanceMoves is Kieran Simkin's WordPress EPK motion runtime. Version 2.0.0 added page-level BPM, lyric-timing and cue-timing properties; a 16-ticks-per-beat musical clock; cue-driven animation resets; named cue and interval handlers; the existing seven device-orientation adapters; and the release-specific Made from the Clay and the Stars effects adapter. Version 2.1.0 moved the neutral shared EPK control and lyric-disclosure transitions onto page-resolved integer tick durations. Version 2.2.0 added catalogue-wide adoption for release-owned CSS animations, transitions, delays and timing custom properties. Version 2.3.0 confines stylesheet conversion to EPK-owned selectors and the timing variables they reference, so a mixed theme or admin stylesheet cannot transfer ownership to unrelated rules; it also carries the separately staged Clay/Stars runtime and harness refinements already present in the workspace. Version 2.3.1 raises the Clay/Stars bounded motion gain to 2x. Version 2.3.2 routes the shared permission-aware orientation runtime into that Clay/Stars adapter so physical device events actually drive its motion API while reduced motion, geometry and all other EPK systems remain unchanged. Version 2.3.3 adds measured, release-scoped adaptive performance tiers for Clay/Stars: healthy devices retain the full treatment, while only sustained low frame rate stops the expensive ambient loops and, if still necessary, removes their filters. Version 2.3.4 rate-limits orientation target writes to a two-tick cadence and lets compositor-friendly CSS transitions interpolate between them; it also adds a scoped California Screamin' adapter without changing that page's creative design.
 
 The WordPress plugin name is **DanceMoves**. The distributable ZIP deliberately retains the internal `kieran-epk-device-orientation` folder and entrypoint name so WordPress upgrades the installed plugin rather than installing a parallel copy.
 
@@ -27,7 +27,7 @@ The implementation follows the agreed numeric rule:
 - exact half-way cases round upward; and
 - `prefers-reduced-motion` remains authoritative.
 
-CSS receives versioned custom properties such as `--dance-moves-16t`. JavaScript uses `DanceMoves.durationMilliseconds(ticks)`. Orientation input keeps only the latest finite, screen-aligned sample and commits it once on the next display frame. Its two-second rolling normalisation and time-based smoothing are functional input processing, not visual effect durations.
+CSS receives versioned custom properties such as `--dance-moves-16t`. JavaScript uses `DanceMoves.durationMilliseconds(ticks)`. Orientation input keeps only the latest finite, screen-aligned sample; the shared scheduler publishes the latest meaningful target at a two-tick cadence and CSS transform transitions interpolate between targets. The first target remains immediate, jitter below the configured delta is suppressed, and teardown cancels any trailing target. Its two-second rolling normalisation is functional input processing, not a visual effect duration.
 
 The catalogue adopter discovers the rendered EPK root, quantizes release-owned stylesheet, inline, computed and generated pseudo-element timing, registers the full release root for cue resets, and repeats the pass after dynamically inserted motion markup. It preserves the one-millisecond view-timeline sentinel used by November Christmas and the 0.01 ms reduced-motion sentinel. Under `prefers-reduced-motion: reduce`, the owned EPK subtree and its pseudo-elements are clamped to one 0.01 ms iteration.
 
@@ -84,6 +84,7 @@ Performance diagnostics are disabled unless the boot configuration explicitly co
 - Page 270: Amnesty, honestly? orientation adapter
 - Page 276: Walk With Me orientation adapter
 - Page 298: Dmitri My Talisman orientation adapter
+- Page 839: California Screamin' orientation adapter
 
 Page 252's visual treatment remains release-specific. DanceMoves reuses its neutral timing and input infrastructure elsewhere but does not transplant its clay, cuneiform, cloud, warm-light or button choreography to other EPKs.
 
@@ -428,3 +429,19 @@ No WordPress upload, timing-media upload, page-meta save or legacy-plugin deacti
 - **Corrective action:** write a fresh capture to a new directory named for the observed live version, add an explicit superseded marker to the old directory, and keep package/hash receipts as the authoritative historical record.
 - **Verification:** `qa/published-2.3.0/viewport-evidence.json` records public 2.3.0 assets at 1440, 900 and 390 pixels; `qa/published-2.2.0/SUPERSEDED.md` blocks accidental reuse of the overwritten files.
 - **Limit:** screenshots are point-in-time rendering evidence; they do not replace immutable package manifests or deployment receipts.
+
+### Version and hash fixtures can fail after an intentional asset change
+
+- **Symptom:** contract tests report an obsolete plugin version or a candidate production-asset hash mismatch immediately after an intentional release edit.
+- **Cause when verified:** the source change was correct, but the strict version-labelled fixture or harness manifest still described the prior bytes.
+- **Corrective action:** inspect the exact diff first, then update only the maintained fixture version and hashes from the staged production files; never relax or remove the hash assertion.
+- **Verification:** the 2.3.4 JavaScript, WordPress, Clay and California contract suites pass with the new source hashes.
+- **Limit:** a matching fixture proves internal consistency, not publication or a match to the live WordPress files.
+
+### A full-page California audit can fail on page-owned legacy animation
+
+- **Symptom:** the California Screamin' shared-harness scaffold reports continuously animated `width` or `background-position` even though the new tilt adapter writes only `--cs-x` and `--cs-y`.
+- **Cause when verified:** the exact published page payload contains an audio-progress width transition and rain background-position keyframes; a shared legacy Light Will Win rule also transitions background position.
+- **Corrective action:** keep the full-page audit as a separate explicit result, verify the 2.3.4 California adapter contract and transform-only consumer path independently, and remediate the page-owned effects in a separately reviewed EPK payload.
+- **Verification:** the adapter contract passes, the 1440/900/390 candidates have one release root and no horizontal overflow, and the loaded 2.3.4 tilt rule transitions only `transform`.
+- **Limit:** the California page is not pre-live performance-approved until the unrelated page-owned findings are fixed and a physical-device trace passes.

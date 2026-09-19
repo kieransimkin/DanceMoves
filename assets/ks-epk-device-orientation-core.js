@@ -259,9 +259,95 @@
     };
   }
 
+  function createTransitionTargetScheduler(options) {
+    if (!options || typeof options.commit !== "function") {
+      throw new TypeError("A transition-target commit callback is required");
+    }
+    const now = typeof options.now === "function" ? options.now : () => 0;
+    const schedule = typeof options.schedule === "function"
+      ? options.schedule
+      : (callback, delay) => setTimeout(callback, delay);
+    const cancel = typeof options.cancel === "function" ? options.cancel : clearTimeout;
+    const intervalMilliseconds = Math.max(0, Number(options.intervalMilliseconds) || 0);
+    const minimumDelta = Math.max(0, Number(options.minimumDelta) || 0);
+    let timer = 0;
+    let pendingTarget = null;
+    let lastTarget = null;
+    let lastCommitTime = null;
+    let running = true;
+    let commits = 0;
+
+    function materiallyDifferent(target) {
+      return !lastTarget || Math.max(
+        Math.abs(target.x - lastTarget.x),
+        Math.abs(target.y - lastTarget.y)
+      ) >= minimumDelta;
+    }
+
+    function deliver(target, commitTime) {
+      if (!running || !materiallyDifferent(target)) return false;
+      lastTarget = { x: target.x, y: target.y };
+      lastCommitTime = commitTime;
+      commits += 1;
+      options.commit(target.x, target.y, {
+        ...(target.detail || {}),
+        targetTimestamp: commitTime,
+        targetCommitCount: commits,
+      });
+      return true;
+    }
+
+    function flush() {
+      timer = 0;
+      if (!running || !pendingTarget) return;
+      const target = pendingTarget;
+      pendingTarget = null;
+      deliver(target, now());
+    }
+
+    function receive(x, y, detail) {
+      if (!running || !Number.isFinite(x) || !Number.isFinite(y)) return false;
+      const target = { x, y, detail };
+      const receivedAt = now();
+      const elapsed = lastCommitTime === null ? Infinity : Math.max(0, receivedAt - lastCommitTime);
+      if (elapsed >= intervalMilliseconds) {
+        if (timer) cancel(timer);
+        timer = 0;
+        pendingTarget = null;
+        return deliver(target, receivedAt);
+      }
+      pendingTarget = target;
+      if (!timer) timer = schedule(flush, Math.max(0, intervalMilliseconds - elapsed));
+      return true;
+    }
+
+    function reset() {
+      if (timer) cancel(timer);
+      timer = 0;
+      pendingTarget = null;
+      lastTarget = null;
+      lastCommitTime = null;
+      commits = 0;
+    }
+
+    function teardown() {
+      reset();
+      running = false;
+    }
+
+    return {
+      receive,
+      reset,
+      teardown,
+      pending: () => Boolean(timer),
+      commitCount: () => commits,
+    };
+  }
+
   return {
     clamp,
     createLatestSampleRafScheduler,
+    createTransitionTargetScheduler,
     createRollingMapper,
     hasMotionData,
     isMobileDevice,

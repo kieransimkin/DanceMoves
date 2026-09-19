@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "pageId": 252,
+  "adapter": "clay-stars",
+  "verifiedAgainst": "DanceMoves 2.3.4 shared orientation path",
+  "writes": [
+    {
+      "properties": ["--ks-rx", "--ks-ry", "--ks-tx", "--ks-ty"],
+      "selector": ".ks-epk.ks-clay-stars-v2 .epk-cover-wrap",
+      "consumer": "transform",
+      "classification": "compositor-candidate",
+      "applicable": true
+    },
+    {
+      "properties": ["--ks-bloom-x", "--ks-bloom-y"],
+      "selector": ".ks-epk.ks-clay-stars-v2 .ks-warm-bloom",
+      "consumer": "transform",
+      "classification": "compositor-candidate",
+      "applicable": true
+    },
+    {
+      "properties": ["--ks-flare-x", "--ks-flare-y"],
+      "selector": ".ks-epk.ks-clay-stars-v2 .ks-lens-flare",
+      "consumer": "transform",
+      "classification": "compositor-candidate",
+      "applicable": true
+    },
+    {
+      "properties": ["--ks-spec-x", "--ks-spec-y"],
+      "selector": ".ks-epk.ks-clay-stars-v2 .ks-specular-sweep",
+      "consumer": "transform",
+      "classification": "compositor-candidate",
+      "applicable": true
+    }
+  ]
+}
