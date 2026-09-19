@@ -27,8 +27,7 @@ for (const asset of [
   assert.match(page, new RegExp(`${asset.replaceAll(".", "\\.")}\\?ver=${escapedVersion}`), `${asset} is cache-versioned to the current plugin`);
 }
 assert.match(plugin, /Plugin Name:\s*DanceMoves/);
-assert.match(plugin, /Version:\s*2\.3\.5/);
-assert.match(plugin, /DANCE_MOVES_VERSION',\s*'2\.3\.5'/);
+assert.equal(plugin.match(/DANCE_MOVES_VERSION',\s*'([^']+)'/)?.[1], pluginVersion, "runtime version matches plugin header");
 assert.match(plugin, /dance-moves-catalogue-timing/);
 assert.match(plugin, /252\s*=>\s*'clay-stars'/);
 assert.match(plugin, /\$orientation_dependencies\[\]\s*=\s*'dance-moves-clay-stars'/);

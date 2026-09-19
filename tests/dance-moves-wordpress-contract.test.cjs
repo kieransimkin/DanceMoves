@@ -10,7 +10,9 @@ const clayCss = fs.readFileSync(path.join(root, "assets/clay-stars-effects.css")
 const clayJs = fs.readFileSync(path.join(root, "assets/clay-stars-effects.js"), "utf8");
 
 assert.match(php, /Plugin Name:\s*DanceMoves/);
-assert.match(php, /Version:\s*2\.3\.3/);
+const declaredVersion = php.match(/Version:\s*([0-9]+(?:\.[0-9]+){2})/)?.[1];
+assert.ok(declaredVersion, "plugin declares a semantic version");
+assert.equal(php.match(/define\('DANCE_MOVES_VERSION',\s*'([^']+)'\)/)?.[1], declaredVersion, "runtime and plugin versions agree");
 assert.match(php, /252\s*=>\s*'clay-stars'/);
 for (const key of [
   "_dance_moves_bpm",
@@ -20,6 +22,15 @@ for (const key of [
 ]) assert.ok(php.includes(key), `${key} is registered`);
 assert.match(php, /\$display_bpm\s*=\s*is_numeric\(\$stored_bpm\)[\s\S]*\(float\) \$stored_bpm >= 20[\s\S]*\(float\) \$stored_bpm <= 400/);
 assert.match(php, /esc_attr\(\$display_bpm\)/);
+// Page BPM must flow from the queried page's saved metadata into the runtime.
+assert.match(php, /function dance_moves_get_page_config\(\$page_id\)\s*\{[\s\S]*?get_post_meta\(\$page_id, DANCE_MOVES_META_BPM, true\)/);
+assert.match(php, /\$source\s*=\s*is_numeric\(\$stored_bpm\)\s*\?\s*'explicit'\s*:\s*'fallback'/);
+assert.match(php, /\$page_id\s*=\s*get_queried_object_id\(\)/);
+assert.match(php, /\$config\s*=\s*dance_moves_get_page_config\(\$page_id\)/);
+assert.match(php, /wp_localize_script\('dance-moves-core', 'danceMovesConfig', \$config\)/);
+assert.match(core, /var rawConfig = window\.danceMovesConfig \|\| \{\}/);
+assert.match(core, /var bpm = effectiveBpm\(rawConfig\.bpm\)/);
+assert.match(core, /root\.dataset\.danceMovesBpm = String\(bpm\)/);
 
 for (const label of ["BPM", "Lyric Timing File", "Cue Timing File"]) {
   assert.ok(php.includes(label), `${label} is present in Edit Page`);

@@ -43,6 +43,11 @@
   var performanceLastFrameAt = null;
   var performanceIntervals = [];
   var performancePoorWindows = 0;
+  var performanceHealthyWindows = 0;
+  var performanceRecoveryWait = 3;
+  var performanceRecoveryBackoff = 3;
+  var performanceProbation = null;
+  var performanceRecoveries = 0;
   var performanceProfile = "full";
   var performanceReason = "initial";
   var performanceWindows = 0;
@@ -50,6 +55,7 @@
   var performanceLastFps = null;
   var performanceLastMedian = null;
   var performanceLastP95 = null;
+  var performanceCadenceFps = null;
 
   var clamp = function (value, minimum, maximum, fallback) {
     var number = Number(value);
@@ -59,14 +65,14 @@
   var performanceSettings = Object.freeze({
     enabled: performanceInput.enabled !== false,
     windowMilliseconds: clamp(performanceInput.windowMilliseconds, 500, 5000, 1600),
-    settleMilliseconds: clamp(performanceInput.settleMilliseconds, 0, 10000, 1200),
-    retryMilliseconds: clamp(performanceInput.retryMilliseconds, 0, 10000, 300),
+    settleMilliseconds: clamp(performanceInput.settleMilliseconds, 0, 10000, 5000),
+    retryMilliseconds: clamp(performanceInput.retryMilliseconds, 0, 10000, 2000),
     recheckMilliseconds: clamp(performanceInput.recheckMilliseconds, 1000, 60000, 10000),
     minimumIntervals: Math.round(clamp(performanceInput.minimumIntervals, 4, 240, 6)),
     maximumIntervalMilliseconds: clamp(performanceInput.maximumIntervalMilliseconds, 100, 1000, 250),
     fullMinimumFps: clamp(performanceInput.fullMinimumFps, 20, 60, 45),
     constrainedMinimumFps: clamp(performanceInput.constrainedMinimumFps, 20, 60, 50),
-    poorWindowsBeforeReduction: Math.round(clamp(performanceInput.poorWindowsBeforeReduction, 2, 5, 2))
+    poorWindowsBeforeReduction: Math.round(clamp(performanceInput.poorWindowsBeforeReduction, 2, 5, 3))
   });
 
   var percentile = function (values, fraction) {
@@ -77,7 +83,9 @@
 
   var setPerformanceProfile = function (profile, reason) {
     if (profile !== "full" && profile !== "constrained" && profile !== "minimal") return false;
-    if (performanceProfile !== profile) performanceReductions += 1;
+    var ranks = { minimal: 0, constrained: 1, full: 2 };
+    if (ranks[profile] < ranks[performanceProfile]) performanceReductions += 1;
+    if (ranks[profile] > ranks[performanceProfile]) performanceRecoveries += 1;
     performanceProfile = profile;
     performanceReason = reason || "measured";
     root.dataset.danceMovesPerformance = profile;
@@ -104,6 +112,7 @@
     performanceWindows += 1;
     if (performanceIntervals.length < performanceSettings.minimumIntervals) {
       performancePoorWindows = 0;
+      performanceHealthyWindows = 0;
       performanceIntervals = [];
       schedulePerformanceWindow(performanceSettings.recheckMilliseconds);
       return;
@@ -114,14 +123,49 @@
     performanceLastMedian = median;
     performanceLastP95 = p95;
     performanceLastFps = median > 0 ? 1000 / median : null;
-    var minimumFps = performanceProfile === "full"
-      ? performanceSettings.fullMinimumFps
-      : performanceSettings.constrainedMinimumFps;
+    // Learn the fastest stable cadence seen in this session. A 30 Hz display
+    // cannot meet fixed 45/55 FPS thresholds. Never recalibrate downward after
+    // degradation: that would mistake sustained missed frames for recovery.
+    if (performanceLastFps >= 28 && p95 <= median * 1.25) {
+      var observedCadence = performanceLastFps < 35 ? 30 : performanceLastFps;
+      performanceCadenceFps = Math.max(performanceCadenceFps || 0, observedCadence);
+    }
+    var cadence = performanceCadenceFps || 60;
+    var minimumFps = cadence * (performanceProfile === "full" ? .75 : .8);
     if (performanceLastFps !== null && performanceLastFps < minimumFps) performancePoorWindows += 1;
     else performancePoorWindows = 0;
+    var healthy = performanceLastFps >= cadence * .9 && p95 <= (1000 / cadence) * 1.5;
+    performanceHealthyWindows = healthy ? performanceHealthyWindows + 1 : 0;
+    if (performanceRecoveryWait > 0) performanceRecoveryWait -= 1;
+
+    if (performanceProbation && performancePoorWindows >= 2) {
+      setPerformanceProfile(performanceProbation, "recovery-probe-failed");
+      performanceProbation = null;
+      performanceRecoveryBackoff = Math.min(24, performanceRecoveryBackoff * 2);
+      performanceRecoveryWait = performanceRecoveryBackoff;
+      performancePoorWindows = performanceHealthyWindows = 0;
+      schedulePerformanceWindow(performanceSettings.recheckMilliseconds);
+      return;
+    }
+    if (performanceProbation && performanceHealthyWindows >= 3) {
+      performanceProbation = null;
+      performanceRecoveryBackoff = 3;
+      performanceRecoveryWait = 3;
+      performanceHealthyWindows = 0;
+      setPerformanceProfile(performanceProfile, "recovery-confirmed");
+    }
+    if (!performanceProbation && performanceProfile !== "full" && performanceRecoveryWait === 0 && performanceHealthyWindows >= 3) {
+      performanceProbation = performanceProfile;
+      setPerformanceProfile(performanceProfile === "minimal" ? "constrained" : "full", "recovery-probe");
+      performancePoorWindows = performanceHealthyWindows = 0;
+      schedulePerformanceWindow(performanceSettings.settleMilliseconds);
+      return;
+    }
 
     if (performancePoorWindows >= performanceSettings.poorWindowsBeforeReduction) {
       performancePoorWindows = 0;
+      performanceHealthyWindows = 0;
+      performanceRecoveryWait = performanceRecoveryBackoff;
       if (performanceProfile === "full") {
         setPerformanceProfile("constrained", "sustained-low-fps");
         schedulePerformanceWindow(performanceSettings.settleMilliseconds);
@@ -129,7 +173,7 @@
       }
       if (performanceProfile === "constrained") {
         setPerformanceProfile("minimal", "low-fps-after-constrained");
-        stopPerformanceMonitor();
+        schedulePerformanceWindow(performanceSettings.recheckMilliseconds);
         return;
       }
     }
@@ -138,7 +182,7 @@
 
   var samplePerformanceFrame = function (timestamp) {
     performanceFrame = 0;
-    if (destroyed || reduce.matches || document.hidden || performanceProfile === "minimal") {
+    if (destroyed || reduce.matches || document.hidden) {
       stopPerformanceMonitor();
       return;
     }
@@ -165,7 +209,7 @@
   };
 
   schedulePerformanceWindow = function (delay) {
-    if (!performanceSettings.enabled || destroyed || reduce.matches || document.hidden || performanceProfile === "minimal") return;
+    if (!performanceSettings.enabled || destroyed || reduce.matches || document.hidden || document.readyState === "loading" || document.readyState === "interactive") return;
     if (performanceFrame || performanceTimer) return;
     performanceTimer = window.setTimeout(function () {
       performanceTimer = 0;
@@ -376,7 +420,10 @@
       setCueState(null);
       resetParticles();
       cancelMotion();
-      if (state === "hidden" || state === "pagehide" || state === "reduced-motion") stopPerformanceMonitor();
+      if (state === "hidden" || state === "pagehide" || state === "reduced-motion") {
+        stopPerformanceMonitor();
+        performancePoorWindows = performanceHealthyWindows = 0;
+      }
     } else if (state === "seeked") {
       setCueState({ name: "seeked", type: "state" });
     } else if (state === "visible" || state === "pageshow") {
@@ -389,6 +436,7 @@
   listen(document, "visibilitychange", function () { lifecycle(document.hidden ? "hidden" : "visible"); }, { passive: true });
   listen(window, "pagehide", function () { lifecycle("pagehide"); }, { passive: true });
   listen(window, "pageshow", function () { lifecycle("pageshow"); }, { passive: true });
+  listen(window, "load", function () { schedulePerformanceWindow(performanceSettings.settleMilliseconds); }, { passive: true });
   listen(window, "orientationchange", resetPointer, { passive: true });
   listen(window, "resize", function () { pointerBounds = null; }, { passive: true });
   listen(reduce, "change", function () { lifecycle(reduce.matches ? "reduced-motion" : "visible"); });
@@ -444,7 +492,12 @@
         poorWindows: performancePoorWindows,
         windows: performanceWindows,
         reductions: performanceReductions,
+        recoveryAttempts: performanceRecoveries,
+        healthyWindows: performanceHealthyWindows,
+        recoveryWaitWindows: performanceRecoveryWait,
+        probationFrom: performanceProbation,
         lastFps: performanceLastFps,
+        observedCadenceFps: performanceCadenceFps,
         lastMedianFrameMilliseconds: performanceLastMedian,
         lastP95FrameMilliseconds: performanceLastP95
       },
