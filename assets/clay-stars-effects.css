@@ -1,7 +1,7 @@
 /* ks-clay-stars-warm-light-v1 */
 .ks-clay-stars-v2 {
-  --ks-master-bpm: 116;
-  --ks-master-beat: var(--dance-moves-beat, .517241379s);
+  --ks-master-bpm: 90;
+  --ks-master-beat: var(--dance-moves-beat, .666666667s);
   --ks-master-intensity: 1;
   --ks-particle-release-duration: var(--dance-moves-32t, 1.034482758s);
 }
@@ -348,7 +348,7 @@
   to { opacity: .96; transform: translate3d(1px, -1px, 0) scale(1.005); }
 }
 
-/* Two-beat wake-up with a simultaneous two-beat rounded-perimeter loop at the 116 BPM master tempo. */
+/* Two-beat wake-up with a simultaneous two-beat rounded-perimeter loop at the confirmed canonical 90 BPM master tempo. */
 @keyframes ks-gold-button-wake {
   0% {
     opacity: .74;

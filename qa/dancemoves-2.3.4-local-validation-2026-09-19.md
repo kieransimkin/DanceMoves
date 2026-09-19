@@ -32,7 +32,7 @@
 
 ### Made from the clay and the stars — page 252
 
-- Verified BPM: 116.
+- Confirmed canonical BPM: 90. The earlier 116-BPM harness value was an obsolete automated estimate; the temporary 89-BPM page value was superseded by Kieran's direct confirmation on 19 September 2026.
 - Canonical master SHA-256: `03F681507F47389AD6E7085C9C0167D74F6AC24A6F2ABC497CA356AEDBE1B838`.
 - Candidate adapter: `clay-stars`.
 - 1440 × 1000, 900 × 1100 and 390 × 844: PASS for one release root, readable layout and zero horizontal overflow.
@@ -52,3 +52,9 @@
 - Physical iPhone Safari 60 Hz and Android Chrome 120 Hz performance evidence: BLOCKED until those device runs occur.
 - California full-page pre-live performance approval: FAIL on existing page-owned audio-progress `width` transition and rain `background-position` keyframes, plus a shared legacy Light Will Win `background-position` transition. The new California tilt path itself is transform-only. These findings remain visible and require a separate EPK payload remediation rather than being suppressed in the adapter test.
 - WordPress installation and signed-out public verification: NOT RUN; requires action-time approval for the exact ZIP.
+
+## Post-deployment correction
+
+- DanceMoves 2.3.4 was installed active and its public assets loaded with `?ver=2.3.4`.
+- The live Clay page emitted the then-current explicit BPM 89, which exposed the stale 116-BPM local fallback and harness record.
+- Kieran then confirmed 90 BPM as canonical. Production fallback bytes were not silently replaced; their correction was moved to the separately versioned 2.3.5 candidate.

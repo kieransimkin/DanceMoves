@@ -55,10 +55,10 @@ for (const helper of ["onNextInterval", "onEveryInterval", "onNextBeat", "onEver
   assert.equal(typeof fallback.api[helper], "function", `${helper} is public`);
 }
 
-const clay = load({ bpm: 116, bpmSource: "explicit", version: "2.3.0" });
-assert.equal(clay.api.bpm, 116);
+const clay = load({ bpm: 90, bpmSource: "explicit", version: "2.3.5" });
+assert.equal(clay.api.bpm, 90);
 assert.equal(clay.api.bpmSource, "explicit");
-assert.ok(Math.abs(clay.api.durationMilliseconds(32) - 1034.4827586) < 0.0001);
+assert.ok(Math.abs(clay.api.durationMilliseconds(32) - 1333.3333333) < 0.0001);
 
 const shared120 = load({ bpm: 120, sharedControlTicks: 8, lyricDisclosureTicks: 6, version: "2.3.0" });
 shared120.listeners.DOMContentLoaded();

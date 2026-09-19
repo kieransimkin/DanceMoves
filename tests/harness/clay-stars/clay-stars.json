@@ -12,9 +12,9 @@
     "productionJs": ["../../../assets/dance-moves-core.js", "../../../assets/clay-stars-effects.js", "../../../assets/ks-epk-device-orientation-core.js", "../../../assets/ks-epk-device-orientation.js"],
     "productionHashes": {
       "../../../assets/dance-moves-core.css": "197E0D51F400A3D875ACB6E12238417FAA3D54853708F72EEB792342F533AD8D",
-      "../../../assets/clay-stars-effects.css": "06624BA68EB248EE6BF1F742F8E87FAF74BAB50727155D69BCB5396795BF9D11",
+      "../../../assets/clay-stars-effects.css": "5F6B0F4EA64B572F3D2057B0910013D79DF63E2861CBBB228996FADFCE5803FF",
       "../../../assets/dance-moves-core.js": "7337D940C85DAFF366A3B41D7D91997772ACA1C22A53713B5C0529925AA9C59C",
-      "../../../assets/clay-stars-effects.js": "F425519DE5CF3EF0FAB898CC486526DDA269DE539D918B209951ED4888DEEFD1",
+      "../../../assets/clay-stars-effects.js": "A6C5CDDB53DBB25C7E5099B990A8C2B3430BEFE5145CAF059196D3EBA4A6EB97",
       "../../../assets/ks-epk-device-orientation.css": "1CB19DA11F6158853D893AF15460FBEABAD4A0D3665505D9857A3137713A8E42",
       "../../../assets/ks-epk-device-orientation-core.js": "97DA95E3062C89CB4BEEB0795A4DB7A8A31887890DB41BB9334A7B256135C73D",
       "../../../assets/ks-epk-device-orientation.js": "538F07DF6606860082DE36744119F7C8DFEA5CF8C8D2FC76C53730F48FB48C86"
@@ -22,8 +22,8 @@
     "inputModes": ["pointer", "touch", "keyboard", "cue"]
   },
   "release": {
-    "bpm": 116,
-    "bpmSource": "verified",
+    "bpm": 90,
+    "bpmSource": "artist-confirmed",
     "masterSha256": "03F681507F47389AD6E7085C9C0167D74F6AC24A6F2ABC497CA356AEDBE1B838",
     "masterDurationMilliseconds": 359523.560091
   },
@@ -47,9 +47,9 @@
       "description": "Scales bounded cover, light and particle response from neutral to the safe review maximum."
     },
     {
-      "id": "production-bpm", "group": "timing", "label": "Verified master BPM", "type": "readonly", "default": 116,
+      "id": "production-bpm", "group": "timing", "label": "Confirmed canonical BPM", "type": "readonly", "default": 90,
       "unit": " BPM", "apply": "readonly", "target": "DanceMoves.bpm", "performanceSensitive": false,
-      "description": "The canonical mastered-audio analysis value; lab overrides never write it back."
+      "description": "The artist-confirmed canonical musical clock; lab overrides never write it back."
     },
     {
       "id": "particle-release-ticks", "group": "timing", "label": "Particle release", "type": "range", "default": 32, "min": 1, "max": 128, "step": 1,

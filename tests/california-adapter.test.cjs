@@ -21,7 +21,7 @@ assert.match(runtime, /function californiaScreamin\(\)/);
 assert.match(runtime, /motion-paused/);
 assert.match(css, /data-ks-orientation-adapter="california-screamin"/);
 assert.equal((candidate.match(/id="cs-epk"/g) || []).length, 1);
-assert.equal((candidate.match(/ks-epk-device-orientation\.js\?ver=2\.3\.4-local/g) || []).length, 1);
+assert.equal((candidate.match(/ks-epk-device-orientation\.js\?ver=2\.3\.5-local/g) || []).length, 1);
 
 for (const [relative, expected] of Object.entries(manifest.effect.productionHashes)) {
   const actual = crypto.createHash("sha256").update(fs.readFileSync(path.resolve(path.dirname(path.join(__dirname, "harness/california-screamin/california-screamin.json")), relative))).digest("hex").toUpperCase();

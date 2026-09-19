@@ -141,7 +141,7 @@ The new suite must replace those two legacy performance expectations with one-pe
 
 | ID | Test | Pass condition | Automation |
 |---|---|---|---|
-| P-010 | Tick formula | For representative BPM values 20, 116, 120 and 400, one tick is exactly `3750 / BPM` milliseconds; 16 ticks equal one beat and 64 equal one 4/4 bar | Required automated |
+| P-010 | Tick formula | For representative BPM values 20, 90, 110, 120 and 400, one tick is exactly `3750 / BPM` milliseconds; 16 ticks equal one beat and 64 equal one 4/4 bar | Required automated |
 | P-011 | Quantisation boundaries | `1.4→1`, `1.5→2`, `16→16`, `17→16`, `24→32`, `108→112`, `396→400`, `552→560`; invalid/negative/non-finite input uses the documented safe behaviour | Required automated |
 | P-012 | BPM provenance | Explicit BPM is used and labelled explicit; blank/invalid BPM uses 120 only as a labelled fallback and never changes an evidence record to “verified” | Required automated |
 | P-013 | CSS/JS duration parity | Every owned animation, transition, delay and cleanup timeout resolves from the same tick count; no visual millisecond/second literal bypasses the clock | Required automated and computed-style browser check |

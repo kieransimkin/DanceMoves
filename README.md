@@ -2,6 +2,8 @@
 
 DanceMoves is Kieran Simkin's WordPress EPK motion runtime. Version 2.0.0 added page-level BPM, lyric-timing and cue-timing properties; a 16-ticks-per-beat musical clock; cue-driven animation resets; named cue and interval handlers; the existing seven device-orientation adapters; and the release-specific Made from the Clay and the Stars effects adapter. Version 2.1.0 moved the neutral shared EPK control and lyric-disclosure transitions onto page-resolved integer tick durations. Version 2.2.0 added catalogue-wide adoption for release-owned CSS animations, transitions, delays and timing custom properties. Version 2.3.0 confines stylesheet conversion to EPK-owned selectors and the timing variables they reference, so a mixed theme or admin stylesheet cannot transfer ownership to unrelated rules; it also carries the separately staged Clay/Stars runtime and harness refinements already present in the workspace. Version 2.3.1 raises the Clay/Stars bounded motion gain to 2x. Version 2.3.2 routes the shared permission-aware orientation runtime into that Clay/Stars adapter so physical device events actually drive its motion API while reduced motion, geometry and all other EPK systems remain unchanged. Version 2.3.3 adds measured, release-scoped adaptive performance tiers for Clay/Stars: healthy devices retain the full treatment, while only sustained low frame rate stops the expensive ambient loops and, if still necessary, removes their filters. Version 2.3.4 rate-limits orientation target writes to a two-tick cadence and lets compositor-friendly CSS transitions interpolate between them; it also adds a scoped California Screamin' adapter without changing that page's creative design.
 
+Version 2.3.5 reconciles the Clay/Stars fallback clock and local harness with the confirmed canonical 90 BPM that the WordPress page supplies.
+
 The WordPress plugin name is **DanceMoves**. The distributable ZIP deliberately retains the internal `kieran-epk-device-orientation` folder and entrypoint name so WordPress upgrades the installed plugin rather than installing a parallel copy.
 
 ## Page properties
@@ -445,3 +447,11 @@ No WordPress upload, timing-media upload, page-meta save or legacy-plugin deacti
 - **Corrective action:** keep the full-page audit as a separate explicit result, verify the 2.3.4 California adapter contract and transform-only consumer path independently, and remediate the page-owned effects in a separately reviewed EPK payload.
 - **Verification:** the adapter contract passes, the 1440/900/390 candidates have one release root and no horizontal overflow, and the loaded 2.3.4 tilt rule transitions only `transform`.
 - **Limit:** the California page is not pre-live performance-approved until the unrelated page-owned findings are fixed and a physical-device trace passes.
+
+### A later artist-confirmed BPM can supersede older values
+
+- **Symptom:** the live WordPress configuration, plugin fallback and harness manifest disagree about a release BPM.
+- **Cause when verified:** Clay/Stars retained the historical moderate-confidence 116-BPM analysis in local fixtures, then used 89 BPM temporarily, before Kieran confirmed 90 BPM as canonical on 19 September 2026. No credible public source for the private release tempo was found.
+- **Corrective action:** treat the latest direct confirmation as authoritative, preserve older values as history, update the page property, fallback clock and active harness to 90 BPM, and publish changed production bytes under a new plugin version rather than replacing an existing version in place.
+- **Verification:** one beat at 90 BPM is 666.666667 ms, one tick is 41.666667 ms, and the corrected 2.3.5 contract suite must pass before packaging.
+- **Limit:** do not retime LRC or CUE files merely because BPM changes; their timestamps are positions in the unchanged master recording.

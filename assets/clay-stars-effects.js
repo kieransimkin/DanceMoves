@@ -187,7 +187,7 @@
   var durationMilliseconds = function (ticks) {
     return motion && typeof motion.durationMilliseconds === "function"
       ? motion.durationMilliseconds(ticks)
-      : ticks * (3750 / 116);
+      : ticks * (3750 / 90);
   };
 
   var setMotionProperty = function (name, value) {

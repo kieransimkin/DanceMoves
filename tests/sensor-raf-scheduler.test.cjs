@@ -220,7 +220,7 @@ function runtimeEnvironment({ permission = false, adapter = "dmitri-my-talisman"
     ksEpkOrientationConfig: {
       adapter,
       pageId: adapter === "clay-stars" ? 252 : adapter === "california-screamin" ? 839 : 298,
-      bpm: adapter === "clay-stars" ? 116 : adapter === "california-screamin" ? 110 : 120,
+      bpm: adapter === "clay-stars" ? 90 : adapter === "california-screamin" ? 110 : 120,
       ticksPerBeat: 16,
       transitionTargetTicks: 2,
     },

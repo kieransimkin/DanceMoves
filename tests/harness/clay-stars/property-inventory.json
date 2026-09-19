@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "pageId": 252,
   "adapter": "clay-stars",
-  "verifiedAgainst": "DanceMoves 2.3.4 shared orientation path",
+  "verifiedAgainst": "DanceMoves 2.3.5 shared orientation path and confirmed canonical 90 BPM",
   "writes": [
     {
       "properties": ["--ks-rx", "--ks-ry", "--ks-tx", "--ks-ty"],
