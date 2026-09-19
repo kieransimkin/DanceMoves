@@ -11,9 +11,9 @@
     "productionCss": ["../../../assets/dance-moves-core.css", "../../../assets/clay-stars-effects.css", "../../../assets/ks-epk-device-orientation.css"],
     "productionJs": ["../../../assets/dance-moves-core.js", "../../../assets/clay-stars-effects.js", "../../../assets/ks-epk-device-orientation-core.js", "../../../assets/ks-epk-device-orientation.js"],
     "productionHashes": {
-      "../../../assets/dance-moves-core.css": "197E0D51F400A3D875ACB6E12238417FAA3D54853708F72EEB792342F533AD8D",
+      "../../../assets/dance-moves-core.css": "C3A7C0828BB4681DE7D7EC6A35A2A369DC464E72504A1987A19D5C0607DC7492",
       "../../../assets/clay-stars-effects.css": "5F6B0F4EA64B572F3D2057B0910013D79DF63E2861CBBB228996FADFCE5803FF",
-      "../../../assets/dance-moves-core.js": "7337D940C85DAFF366A3B41D7D91997772ACA1C22A53713B5C0529925AA9C59C",
+      "../../../assets/dance-moves-core.js": "81D18215487C431D498D8DC3DC86907EFE0E576A03EEAF9ACD3704C92C5A9ACB",
       "../../../assets/clay-stars-effects.js": "D5D27D5CD4ED3F1E8E409BEF7E25BD5F550E23782D68DFA113E0C697E8D51C2A",
       "../../../assets/ks-epk-device-orientation.css": "1CB19DA11F6158853D893AF15460FBEABAD4A0D3665505D9857A3137713A8E42",
       "../../../assets/ks-epk-device-orientation-core.js": "97DA95E3062C89CB4BEEB0795A4DB7A8A31887890DB41BB9334A7B256135C73D",

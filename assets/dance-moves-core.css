@@ -19,6 +19,61 @@ html[data-dance-moves-shared-controls="true"] .ks-epk .epk-download {
   transition-timing-function: ease !important;
 }
 
+/* Opt-in timed lyrics. This is deliberately neutral: adopting EPKs must supply
+   a release-specific treatment derived from their visual-language record. */
+.dance-moves-lyric-popover {
+  --dance-moves-lyric-bg: rgba(20, 20, 24, 0.94);
+  --dance-moves-lyric-border: rgba(255, 255, 255, 0.28);
+  --dance-moves-lyric-color: #fff;
+  position: fixed;
+  z-index: 9998;
+  inset-inline: max(1rem, env(safe-area-inset-left)) max(1rem, env(safe-area-inset-right));
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(0.75rem) scale(0.98);
+  transition: opacity var(--dance-moves-6t) ease, transform var(--dance-moves-6t) ease;
+}
+
+.dance-moves-lyric-popover[data-dance-moves-lyric-state="active"] {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.dance-moves-lyric-popover__text {
+  display: block;
+  max-width: min(44rem, 100%);
+  padding: 0.72rem 1rem;
+  border: 1px solid var(--dance-moves-lyric-border);
+  border-radius: 0.75rem;
+  background: var(--dance-moves-lyric-bg);
+  color: var(--dance-moves-lyric-color);
+  box-shadow: 0 0.6rem 1.8rem rgba(0, 0, 0, 0.32);
+  font: 700 clamp(1rem, 2.4vw, 1.35rem)/1.3 system-ui, sans-serif;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.dance-moves-lyric-popover[data-dance-moves-lyric-pulse="true"] .dance-moves-lyric-popover__text {
+  animation: dance-moves-lyric-arrive var(--dance-moves-6t) ease both;
+}
+
+@keyframes dance-moves-lyric-arrive {
+  from { transform: translateY(0.4rem) scale(0.98); }
+  to { transform: translateY(0) scale(1); }
+}
+
+@media (forced-colors: active) {
+  .dance-moves-lyric-popover__text {
+    border: 2px solid CanvasText;
+    background: Canvas;
+    color: CanvasText;
+    box-shadow: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   [data-dance-moves-start-interval],
   [data-dance-moves-start-interval]::before,
@@ -31,5 +86,12 @@ html[data-dance-moves-shared-controls="true"] .ks-epk .epk-download {
   html[data-dance-moves-shared-controls="true"] .ks-epk .epk-download,
   .ks-epk .ks-epk-lyrics-track summary span[aria-hidden] {
     transition: none !important;
+  }
+
+  .dance-moves-lyric-popover,
+  .dance-moves-lyric-popover__text {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
   }
 }

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: DanceMoves
  * Description: Adds BPM-synchronised motion, lyric and cue timing properties, named cue handlers, and permission-aware orientation control to EPK pages.
- * Version: 2.3.6
+ * Version: 2.4.0
  * Author: Kieran Simkin
  * License: GPL-2.0-or-later
  */
@@ -11,13 +11,14 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('DANCE_MOVES_VERSION', '2.3.6');
+define('DANCE_MOVES_VERSION', '2.4.0');
 define('KS_EPK_ORIENTATION_VERSION', DANCE_MOVES_VERSION);
 define('KS_EPK_MOTION_CAPTURE_TOKEN', 'e4c1d9a77fb446608e796a0f8fd8f576e59d2e67bca54a4d9f7fd06fbef3e1c2');
 
 define('DANCE_MOVES_META_BPM', '_dance_moves_bpm');
 define('DANCE_MOVES_META_LYRIC_TIMING', '_dance_moves_lyric_timing_id');
 define('DANCE_MOVES_META_CUE_TIMING', '_dance_moves_cue_timing_id');
+define('DANCE_MOVES_META_LYRIC_POPUPS', '_dance_moves_lyric_popups_enabled');
 define('DANCE_MOVES_META_MASTER_DURATION', '_dance_moves_master_duration_ms');
 define('DANCE_MOVES_CLAY_STARS_PAGE_ID', 252);
 
@@ -81,6 +82,7 @@ function dance_moves_get_page_config($page_id) {
         'bpmSource' => $source,
         'fallbackBpm' => 120,
         'lyricTimingUrl' => dance_moves_attachment_url(get_post_meta($page_id, DANCE_MOVES_META_LYRIC_TIMING, true)),
+        'lyricPopupsEnabled' => '1' === (string) get_post_meta($page_id, DANCE_MOVES_META_LYRIC_POPUPS, true),
         'cueTimingUrl' => dance_moves_attachment_url(get_post_meta($page_id, DANCE_MOVES_META_CUE_TIMING, true)),
         'masterDurationMilliseconds' => $master_duration,
         'tickDefinition' => 'sixteenth-of-beat',
@@ -404,6 +406,15 @@ function dance_moves_register_page_meta() {
         'show_in_rest' => true,
         'revisions_enabled' => true,
     ));
+    register_post_meta('page', DANCE_MOVES_META_LYRIC_POPUPS, array(
+        'type' => 'boolean',
+        'single' => true,
+        'default' => false,
+        'sanitize_callback' => 'rest_sanitize_boolean',
+        'auth_callback' => 'dance_moves_meta_auth',
+        'show_in_rest' => true,
+        'revisions_enabled' => true,
+    ));
     register_post_meta('page', DANCE_MOVES_META_MASTER_DURATION, array(
         'type' => 'number',
         'single' => true,
@@ -421,6 +432,7 @@ function dance_moves_revision_meta_keys($keys) {
         DANCE_MOVES_META_BPM,
         DANCE_MOVES_META_LYRIC_TIMING,
         DANCE_MOVES_META_CUE_TIMING,
+        DANCE_MOVES_META_LYRIC_POPUPS,
         DANCE_MOVES_META_MASTER_DURATION,
     ))));
 }
@@ -473,6 +485,16 @@ function dance_moves_render_meta_box($post) {
     <?php
     dance_moves_file_field($post->ID, 'Lyric Timing File', 'dance_moves_lyric_timing_id', DANCE_MOVES_META_LYRIC_TIMING, array('lrc'));
     dance_moves_file_field($post->ID, 'Cue Timing File', 'dance_moves_cue_timing_id', DANCE_MOVES_META_CUE_TIMING, array('lrc', 'cue'));
+    $lyric_popups_enabled = '1' === (string) get_post_meta($post->ID, DANCE_MOVES_META_LYRIC_POPUPS, true);
+    ?>
+    <p>
+        <label>
+            <input type="checkbox" name="dance_moves_lyric_popups_enabled" value="1"<?php checked($lyric_popups_enabled); ?>>
+            <strong>Timed lyric pop-ups</strong>
+        </label>
+        <span class="description">Opt in only after the EPK has a song-specific lyric treatment based on its visual-language record. DanceMoves supplies the timing and neutral fallback; the page supplies the art direction.</span>
+    </p>
+    <?php
 }
 
 function dance_moves_admin_assets($hook) {
@@ -609,6 +631,12 @@ function dance_moves_save_page_meta($post_id) {
             continue;
         }
         update_post_meta($post_id, $definition[0], $attachment_id);
+    }
+
+    if (isset($_POST['dance_moves_lyric_popups_enabled'])) {
+        update_post_meta($post_id, DANCE_MOVES_META_LYRIC_POPUPS, '1');
+    } else {
+        delete_post_meta($post_id, DANCE_MOVES_META_LYRIC_POPUPS);
     }
 }
 add_action('save_post_page', 'dance_moves_save_page_meta');

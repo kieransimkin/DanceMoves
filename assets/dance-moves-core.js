@@ -7,8 +7,11 @@
   var TICKS_PER_BEAT = 16;
   var CSS_TICKS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 32, 64, 128, 192, 432, 1584, 2208];
   var handlers = new Map();
+  var lyricHandlers = new Map();
   var animationScopes = [];
   var cueList = [];
+  var lyricList = [];
+  var lyricRenderer = null;
   var boundAudio = new WeakSet();
   var activeAudio = null;
   var pageClockStarted = window.performance && typeof window.performance.now === "function" ? window.performance.now() : Date.now();
@@ -331,6 +334,26 @@
       .sort(function (left, right) { return left.time - right.time; });
   }
 
+  function parseLyricTimingFile(text) {
+    if (typeof text !== "string" || text.indexOf("\uFFFD") !== -1 || text.indexOf("\0") !== -1) return [];
+    var entries = [];
+    text.replace(/\r\n?/g, "\n").split("\n").forEach(function (line) {
+      var stamps = Array.from(line.matchAll(/\[(\d{1,3}):(\d{2})(?:[\.:](\d{1,3}))?\]/g));
+      if (!stamps.length) return;
+      var textValue = line.replace(/\[(\d{1,3}):(\d{2})(?:[\.:](\d{1,3}))?\]/g, "").trim();
+      stamps.forEach(function (stamp) {
+        entries.push({
+          time: parseTimestamp(stamp[1], stamp[2], stamp[3]),
+          text: textValue,
+          normalisedText: normaliseCueName(textValue)
+        });
+      });
+    });
+    return entries
+      .filter(function (entry) { return Number.isFinite(entry.time) && entry.time >= 0; })
+      .sort(function (left, right) { return left.time - right.time; });
+  }
+
   function setTimingProperties() {
     var style = document.documentElement.style;
     var sharedControlTicks = Number(rawConfig.sharedControlTicks) || 0;
@@ -429,6 +452,84 @@
       group.delete(handler);
       if (!group.size) handlers.delete(key);
     };
+  }
+
+  function onLyric(handler, metadata) {
+    if (typeof handler !== "function") throw new TypeError("DanceMoves lyric handler must be a function.");
+    lyricHandlers.set(handler, {
+      callback: handler,
+      id: diagnosticHandlerId(metadata, "lyric")
+    });
+    return function () { lyricHandlers.delete(handler); };
+  }
+
+  function dispatchLyric(entry, audio, index) {
+    var detail = {
+      pageId: Number(rawConfig.pageId) || 0,
+      time: entry ? entry.time : 0,
+      text: entry ? entry.text : "",
+      normalisedText: entry ? entry.normalisedText : "",
+      index: Number.isFinite(index) ? index : -1,
+      audio: audio || null
+    };
+    Array.from(lyricHandlers.values()).forEach(function (registered) {
+      try {
+        if (diagnosticsSink) {
+          runDiagnosticSpan("lyric-handler", {
+            handlerId: registered.id,
+            lyricIndex: detail.index,
+            lyricTime: detail.time
+          }, function () { return registered.callback(detail); });
+        } else {
+          registered.callback(detail);
+        }
+      } catch (error) {
+        if (window.console && typeof window.console.error === "function") window.console.error("DanceMoves lyric handler failed", error);
+      }
+    });
+    document.dispatchEvent(new CustomEvent("dance-moves-lyric", { bubbles: true, detail: detail }));
+    return detail;
+  }
+
+  function lyricAtOrBefore(time) {
+    var low = 0;
+    var high = lyricList.length;
+    while (low < high) {
+      var middle = Math.floor((low + high) / 2);
+      if (lyricList[middle].time <= time + 0.001) low = middle + 1;
+      else high = middle;
+    }
+    return low - 1;
+  }
+
+  function createLyricRenderer() {
+    if (!rawConfig.lyricPopupsEnabled || lyricRenderer || !document.body) return lyricRenderer;
+    var container = document.createElement("div");
+    var textNode = document.createElement("span");
+    container.className = "dance-moves-lyric-popover";
+    container.setAttribute("aria-hidden", "true");
+    container.dataset.danceMovesLyricState = "idle";
+    textNode.className = "dance-moves-lyric-popover__text";
+    container.appendChild(textNode);
+    document.body.appendChild(container);
+    lyricRenderer = {
+      element: container,
+      text: textNode,
+      index: -2,
+      update: function (detail, playing) {
+        if (detail.index !== this.index) {
+          this.index = detail.index;
+          this.element.dataset.danceMovesLyricIndex = String(detail.index);
+          this.text.textContent = detail.text;
+          delete this.element.dataset.danceMovesLyricPulse;
+          void this.element.offsetWidth;
+          this.element.dataset.danceMovesLyricPulse = "true";
+        }
+        this.element.dataset.danceMovesLyricState = playing && detail.text ? "active" : "idle";
+      },
+      hide: function () { this.element.dataset.danceMovesLyricState = "idle"; }
+    };
+    return lyricRenderer;
   }
 
   function callHandlers(key, detail) {
@@ -534,7 +635,7 @@
     if (boundAudio.has(audio) || !matchesMasterDuration(audio)) return;
     boundAudio.add(audio);
     audio.dataset.danceMovesTiming = "master-length";
-    var state = { next: firstCueAfter(audio.currentTime || 0), last: audio.currentTime || 0, seeking: false, frame: 0 };
+    var state = { next: firstCueAfter(audio.currentTime || 0), lyric: -2, last: audio.currentTime || 0, seeking: false, frame: 0 };
 
     function stopFrame() {
       if (state.frame) window.cancelAnimationFrame(state.frame);
@@ -550,6 +651,13 @@
       try {
         now = positiveNumber(audio.currentTime);
         if (now + 0.001 < state.last) state.next = firstCueAfter(now);
+        var lyricIndex = lyricAtOrBefore(now);
+        if (lyricIndex !== state.lyric) {
+          state.lyric = lyricIndex;
+          var lyricDetail = dispatchLyric(lyricIndex >= 0 ? lyricList[lyricIndex] : null, audio, lyricIndex);
+          var renderer = createLyricRenderer();
+          if (renderer) renderer.update(lyricDetail, true);
+        }
         while (state.next < cueList.length && cueList[state.next].time <= now + 0.001) {
           var cue = cueList[state.next];
           if (cue.time > state.last + 0.001) {
@@ -574,19 +682,21 @@
       activeAudio = audio;
       state.last = positiveNumber(audio.currentTime);
       state.next = firstCueAfter(state.last);
+      state.lyric = -2;
       setOwnedPlaybackRate(audio.playbackRate);
       state.frame = window.requestAnimationFrame(tick);
     }
 
     audio.addEventListener("play", start);
     audio.addEventListener("playing", start);
-    audio.addEventListener("pause", function () { stopFrame(); if (activeAudio === audio) activeAudio = null; });
-    audio.addEventListener("ended", function () { stopFrame(); if (activeAudio === audio) activeAudio = null; state.last = 0; state.next = 0; });
+    audio.addEventListener("pause", function () { stopFrame(); if (activeAudio === audio) activeAudio = null; if (lyricRenderer) lyricRenderer.hide(); });
+    audio.addEventListener("ended", function () { stopFrame(); if (activeAudio === audio) activeAudio = null; state.last = 0; state.next = 0; state.lyric = -2; if (lyricRenderer) lyricRenderer.hide(); });
     audio.addEventListener("seeking", function () { state.seeking = true; stopFrame(); });
     audio.addEventListener("seeked", function () {
       state.seeking = false;
       state.last = positiveNumber(audio.currentTime);
       state.next = firstCueAfter(state.last);
+      state.lyric = -2;
       if (!audio.paused && !audio.ended) start();
     });
     audio.addEventListener("ratechange", function () { setOwnedPlaybackRate(audio.playbackRate); });
@@ -629,6 +739,25 @@
       });
   }
 
+  function loadLyricFile() {
+    var url = String(rawConfig.lyricTimingUrl || "");
+    if (!url) return Promise.resolve([]);
+    return window.fetch(url, { credentials: "same-origin", cache: "no-cache" })
+      .then(function (response) {
+        if (!response.ok) throw new Error("Lyric timing request returned " + response.status);
+        return response.text();
+      })
+      .then(function (text) {
+        lyricList = parseLyricTimingFile(text);
+        return lyricList;
+      })
+      .catch(function (error) {
+        document.documentElement.dataset.danceMovesLyricStatus = "unavailable";
+        if (window.console && typeof window.console.warn === "function") window.console.warn("DanceMoves lyric file unavailable", error);
+        return [];
+      });
+  }
+
   function initialise() {
     setTimingProperties();
     var root = document.querySelector(".ks-epk");
@@ -646,9 +775,12 @@
       if (!Number.isFinite(interval) || interval < 1) return;
       deferStart(target, interval, { clock: target.getAttribute("data-dance-moves-start-clock") === "audio" ? "audio" : "page" });
     });
-    loadCueFile().then(function () {
+    Promise.all([loadCueFile(), loadLyricFile()]).then(function () {
       document.documentElement.dataset.danceMovesCueCount = String(cueList.length);
       document.documentElement.dataset.danceMovesCueStatus = cueList.length ? "ready" : "none";
+      document.documentElement.dataset.danceMovesLyricCount = String(lyricList.length);
+      document.documentElement.dataset.danceMovesLyricStatus = lyricList.length ? "ready" : "none";
+      if (rawConfig.lyricPopupsEnabled && lyricList.length) createLyricRenderer();
       discoverAudio();
     });
   }
@@ -671,8 +803,10 @@
     onNextBar: onNextBar,
     onEveryBar: onEveryBar,
     parseTimingFile: parseTimingFile,
+    parseLyricTimingFile: parseLyricTimingFile,
     normaliseCueName: normaliseCueName,
     onCue: onCue,
+    onLyric: onLyric,
     fireCue: fireCue,
     registerAnimationScope: registerAnimationScope,
     resetRunningAnimations: resetRunningAnimations,

@@ -51,7 +51,7 @@ assert.equal(fallback.api.nextIntervalTick(16, 3), 16);
 assert.equal(fallback.api.nextIntervalTick(16, 16), 16);
 assert.equal(fallback.api.nextIntervalTick(16, 16, true), 32);
 assert.equal(fallback.api.nextIntervalTick(64, 65), 128);
-for (const helper of ["onNextInterval", "onEveryInterval", "onNextBeat", "onEveryBeat", "onNextBar", "onEveryBar"]) {
+for (const helper of ["onNextInterval", "onEveryInterval", "onNextBeat", "onEveryBeat", "onNextBar", "onEveryBar", "onLyric"]) {
   assert.equal(typeof fallback.api[helper], "function", `${helper} is public`);
 }
 
@@ -93,6 +93,17 @@ assert.equal(cues[1].name, "CHORUS 1");
 assert.equal(cues[2].normalisedName, "FINAL LINE");
 assert.deepEqual(Array.from(clay.api.parseTimingFile("[00:00.00]A\n[00:01.00]B"), cue => cue.time), [0, 1]);
 assert.equal(clay.api.parseTimingFile("bad\uFFFDfile").length, 0);
+
+const lyrics = clay.api.parseLyricTimingFile([
+  "[ti:Test]",
+  "[00:00.00]First line",
+  "[00:01.25]",
+  "[00:02.50]Second line"
+].join("\n"));
+assert.equal(lyrics.length, 3);
+assert.deepEqual(Array.from(lyrics, item => item.text), ["First line", "", "Second line"]);
+assert.deepEqual(Array.from(lyrics, item => item.time), [0, 1.25, 2.5]);
+assert.equal(clay.api.parseLyricTimingFile("bad\uFFFDfile").length, 0);
 
 let played = 0;
 const target = {

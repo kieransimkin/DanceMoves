@@ -1,5 +1,16 @@
 # DanceMoves test and EPK publication gates
 
+## Version 2.4.0 timed-lyric acceptance
+
+- The WordPress option is off by default and persists in revisions.
+- No lyric layer is created without both an enabled option and a valid selected LRC.
+- Strict UTF-8 LRC text is handled only as data and inserted with `textContent`.
+- Playback shows the lyric at or immediately before the current master time; blank cues clear it.
+- Pause and end hide the layer; resume and seek re-index without replaying skipped lyrics.
+- `onLyric()` and `dance-moves-lyric` expose the same current-line detail without another parser or clock.
+- The generic stylesheet has reduced-motion and forced-colours fallbacks.
+- Each adopting EPK has a separate visual-language-derived treatment and passes desktop, tablet, narrow mobile, long-line, readable-lyrics, player-clearance and no-horizontal-overflow checks before the option is enabled.
+
 ## Potential problems
 
 ### Windows execution policy can block the validator before any test runs

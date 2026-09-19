@@ -1,5 +1,7 @@
 # DanceMoves
 
+Version 2.4.0 adds opt-in, playback-synchronised lyric pop-ups. DanceMoves parses the selected canonical LRC as inert text, follows the same master-length audio and animation-frame clock as cue timing, clears on blank cues, re-indexes after seeks, hides on pause/end, and exposes `onLyric()` plus a bubbling `dance-moves-lyric` event. The shared component is intentionally visually neutral. Every adopting EPK must add a distinct treatment derived from that song's documented visual language; enabling the checkbox without that release-specific design review is not an approved EPK workflow.
+
 Version 2.3.6 makes automatic performance fallback recoverable. Sampling waits for load plus a five-second settling period, requires sustained poor windows, and continues in the minimal tier. Healthy windows trial one higher tier; failed trials revert with increasing cooldown. Hidden tabs and reduced motion suspend sampling. These are capability checks, so their delays do not alter the musical clock. Current adaptive tiers apply to Clay/Stars; every future adapter must follow the same recovery rule.
 
 Thresholds are relative to the fastest stable frame cadence observed in the session, including 30 Hz displays. The reference can rise but cannot fall during overload. Frame cadence alone cannot prove physical display refresh; diagnostics expose the observation. Kieran confirmed the desktop monitor operates at 30 FPS on 19 September 2026, explaining the former fixed-threshold false positive.
@@ -7,6 +9,14 @@ Thresholds are relative to the fastest stable frame cadence observed in the sess
 ## Potential problems: fallback never recovers
 
 In 2.3.5, a startup downgrade to minimal stopped the sampler permanently while CSS suppressed ambient loops. Version 2.3.6 retains spaced recovery checks, validates each higher tier under load, and backs off after failure. Regression tests cover loading, sustained overload, minimal-to-full recovery, failed trials, visibility, reduced motion and teardown. See MDN requestAnimationFrame and Chrome background-tabs guidance (checked 19 September 2026); background throttling must not count as device incapacity. Physical-device performance remains separate from synthetic contracts.
+
+### Node's test runner cannot spawn isolated workers in a restricted Windows host
+
+- **Symptom:** `node --test "tests/*.test.cjs"` marks every file failed before assertions run and reports `Error: spawn EPERM` from `node:internal/test_runner/runner`.
+- **Cause when verified:** Node's test runner uses a separate child process for each test file by default; the managed host denied those child-process spawns. Node's official Test Runner documentation (checked 20 September 2026) confirms process isolation is the default and that isolation can be disabled.
+- **Corrective action:** use `node --test --test-isolation=none "tests/*.test.cjs"` when the installed Node version supports it, then run `tools/validate.ps1 -Mode Unit`, whose sequential direct-file execution does not require the test runner to spawn workers.
+- **Verification:** single-process execution reached real assertions, and the full unit validator subsequently ran every JavaScript/PHP contract, transform check, UTF-8 check and shared harness to completion.
+- **Limit:** single-process test files can share state. The release gate therefore remains the repository's sequential unit validator plus the focused timed-lyric playback test, not the initial `spawn EPERM` result.
 
 DanceMoves is Kieran Simkin's WordPress EPK motion runtime. Version 2.0.0 added page-level BPM, lyric-timing and cue-timing properties; a 16-ticks-per-beat musical clock; cue-driven animation resets; named cue and interval handlers; the existing seven device-orientation adapters; and the release-specific Made from the Clay and the Stars effects adapter. Version 2.1.0 moved the neutral shared EPK control and lyric-disclosure transitions onto page-resolved integer tick durations. Version 2.2.0 added catalogue-wide adoption for release-owned CSS animations, transitions, delays and timing custom properties. Version 2.3.0 confines stylesheet conversion to EPK-owned selectors and the timing variables they reference, so a mixed theme or admin stylesheet cannot transfer ownership to unrelated rules; it also carries the separately staged Clay/Stars runtime and harness refinements already present in the workspace. Version 2.3.1 raises the Clay/Stars bounded motion gain to 2x. Version 2.3.2 routes the shared permission-aware orientation runtime into that Clay/Stars adapter so physical device events actually drive its motion API while reduced motion, geometry and all other EPK systems remain unchanged. Version 2.3.3 adds measured, release-scoped adaptive performance tiers for Clay/Stars: healthy devices retain the full treatment, while only sustained low frame rate stops the expensive ambient loops and, if still necessary, removes their filters. Version 2.3.4 rate-limits orientation target writes to a two-tick cadence and lets compositor-friendly CSS transitions interpolate between them; it also adds a scoped California Screamin' adapter without changing that page's creative design.
 
@@ -21,6 +31,7 @@ Edit Page contains an **EPK Timing** meta box with:
 - **BPM**: explicit finite value from 20 to 400. Blank means unknown and the public runtime uses 120 BPM without claiming that 120 is known.
 - **Lyric Timing File**: a WordPress Media Library `.lrc` attachment.
 - **Cue Timing File**: a WordPress Media Library `.lrc` or `.cue` attachment.
+- **Timed lyric pop-ups**: off by default. Enable only when a canonical lyric LRC is selected and the EPK has an approved release-specific lyric treatment.
 
 The plugin stores attachment IDs and resolves their current WordPress URLs at render time. A hidden, revision-aware master-duration value in milliseconds supports safe matching of public audio that has the same programme length as the canonical master.
 
@@ -67,6 +78,32 @@ const unsubscribe = window.DanceMoves.onCue("CHORUS 1", detail => {
 ```
 
 `"*"` subscribes to all cues. The runtime also dispatches bubbling `dance-moves-cue` and backwards-compatible `kieran-epk-cue` custom events. Local harnesses can route a data-only cue through the same production path with `DanceMoves.fireCue({ name, type, time })`.
+
+## Timed lyric pop-ups and visual-language workflow
+
+When enabled, DanceMoves creates one non-interactive, `aria-hidden` lyric layer and writes lyric text with `textContent`; timing-file text is never interpreted as markup. The full readable lyric section remains the accessible source, so rapid sung lines are not repeatedly announced by assistive technology. Blank LRC cues clear the layer. Reduced-motion mode keeps the words but removes entrance and exit motion; forced-colours mode supplies a high-contrast fallback.
+
+Page adapters can respond to the same lyric state without running a second parser or clock:
+
+```js
+const removeLyrics = DanceMoves.onLyric(detail => {
+  document.querySelector('.ks-epk')?.toggleAttribute(
+    'data-hook-line',
+    detail.normalisedText === 'HAVE SOME TAT'
+  );
+}, { id: 'release:lyric-treatment' });
+```
+
+An EPK may override the neutral component through `.dance-moves-lyric-popover` and `.dance-moves-lyric-popover__text`, their public state attributes, and CSS custom properties. Adoption is a design task, not a switch-only task. Before enabling it for any release:
+
+1. read the release's current visual-language record and inspect its artwork, typography, texture, palette, motifs and motion rules;
+2. state what is observed, inferred, proposed and adopted;
+3. design a unique lyric container, typography, entrance/replacement motion and any restrained cue-specific emphasis that belong to that song rather than copying another EPK;
+4. use DanceMoves ticks or `onLyric()` only—never add a second LRC parser, timer or audio clock;
+5. preserve real text, the complete readable lyrics, mobile safe areas, player/control clearance, `prefers-reduced-motion`, forced colours and a static fallback; and
+6. stage and test ordinary lines, blank clears, repeated hooks, pause, resume, seek, end, narrow screens and long lines before action-time approval.
+
+The release-local visual-language file and EPK change record must name the treatment, explain why it fits the song, record the fallback, and give a measurable acceptance test. If the visual evidence does not support a distinctive treatment yet, leave the checkbox off.
 
 EPK code can attach one-shot or repeating handlers to the active master-length song clock:
 

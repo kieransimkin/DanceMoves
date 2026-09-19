@@ -18,6 +18,7 @@ for (const key of [
   "_dance_moves_bpm",
   "_dance_moves_lyric_timing_id",
   "_dance_moves_cue_timing_id",
+  "_dance_moves_lyric_popups_enabled",
   "_dance_moves_master_duration_ms"
 ]) assert.ok(php.includes(key), `${key} is registered`);
 assert.match(php, /\$display_bpm\s*=\s*is_numeric\(\$stored_bpm\)[\s\S]*\(float\) \$stored_bpm >= 20[\s\S]*\(float\) \$stored_bpm <= 400/);
@@ -32,7 +33,7 @@ assert.match(core, /var rawConfig = window\.danceMovesConfig \|\| \{\}/);
 assert.match(core, /var bpm = effectiveBpm\(rawConfig\.bpm\)/);
 assert.match(core, /root\.dataset\.danceMovesBpm = String\(bpm\)/);
 
-for (const label of ["BPM", "Lyric Timing File", "Cue Timing File"]) {
+for (const label of ["BPM", "Lyric Timing File", "Cue Timing File", "Timed lyric pop-ups"]) {
   assert.ok(php.includes(label), `${label} is present in Edit Page`);
 }
 assert.match(php, /wp_nonce_field\('dance_moves_save_epk_timing'/);
@@ -55,6 +56,15 @@ assert.match(core, /resetRunningAnimations/);
 assert.match(core, /animation\.currentTime = 0/);
 assert.match(core, /window\.DanceMoves = api/);
 assert.match(core, /onCue: onCue/);
+assert.match(core, /onLyric: onLyric/);
+assert.match(core, /parseLyricTimingFile: parseLyricTimingFile/);
+assert.match(core, /dance-moves-lyric/);
+assert.match(core, /this\.text\.textContent = detail\.text/);
+assert.doesNotMatch(core, /textNode\.innerHTML\s*=/);
+assert.match(php, /'lyricPopupsEnabled'\s*=>\s*'1'\s*===/);
+assert.match(coreCss, /dance-moves-lyric-popover/);
+assert.match(coreCss, /prefers-reduced-motion:\s*reduce/);
+assert.match(coreCss, /forced-colors:\s*active/);
 assert.match(core, /fireCue: fireCue/);
 assert.match(core, /setDiagnosticsSink: setDiagnosticsSink/);
 assert.match(core, /rawConfig\.diagnostics === true/);
