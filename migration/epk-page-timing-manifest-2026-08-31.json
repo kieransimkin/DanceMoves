@@ -3,11 +3,11 @@
     "manifest_date":  "2026-08-31",
     "source_pages":  "Z:\\My Songs\\Releases\\EPK Batch 2026\\published-pages.tsv",
     "source_canonical_registry":  "Z:\\My Songs\\Releases\\lyric-timing-canonical-registry.json",
-    "source_known_bpm":  "Z:\\My Songs\\Releases\\WordPress EPK Template\\plugins\\DanceMoves-adaptive-staging\\migration\\known-bpm.json",
+    "source_known_bpm":  "Z:\\My Songs\\Releases\\WordPress EPK Template\\plugins\\DanceMoves-lyric-staging\\migration\\known-bpm.json",
     "page_count":  54,
     "explicit_bpm_count":  3,
     "fallback_bpm_count":  51,
-    "eligible_lyric_timing_count":  14,
+    "eligible_lyric_timing_count":  16,
     "cue_timing_count":  2,
     "pages":  [
                   {
@@ -59,12 +59,16 @@
                       "bpm_evidence":  null,
                       "master_duration_milliseconds":  null,
                       "master_sha256":  null,
-                      "lyric_timing_status":  "no_canonical_timing_below_threshold",
-                      "lyric_timing_eligible":  false,
-                      "lyric_timing":  null,
+                      "lyric_timing_status":  "canonical_estimated_pending_listening_qa",
+                      "lyric_timing_eligible":  true,
+                      "lyric_timing":  {
+                                           "path":  "Light Will Win/lyric-timing-2026-09-20/combined-user-corrected-opening/synced-lyrics-estimated.lrc",
+                                           "sha256":  "2D444A2936FD49C9290C7F8CACEFD4F46D1B58F7CFDF7B785A8A51D5C0911B11",
+                                           "bytes":  2586
+                                       },
                       "cue_timing":  null,
                       "proposed_action":  [
-
+                                              "upload_or_reuse_lyric_timing"
                                           ]
                   },
                   {
@@ -126,8 +130,8 @@
                       "lyric_timing_eligible":  true,
                       "lyric_timing":  {
                                            "path":  "Santa Flies Tonight/canonical-lyric-timing.lrc",
-                                           "sha256":  "70A39915D76EACB038BAE6A40E556FCD8F9FF80B4A2271DDF7EE1E832303FC69",
-                                           "bytes":  2432
+                                           "sha256":  "37FFF623355863C8F3AF8F73CB5BE506BC14F9FF00BD1958B542FDF453CF01E0",
+                                           "bytes":  2406
                                        },
                       "cue_timing":  {
                                          "path":  "Santa Flies Tonight/Santa Flies Tonight - musical cues.lrc",
@@ -150,12 +154,16 @@
                       "bpm_evidence":  null,
                       "master_duration_milliseconds":  null,
                       "master_sha256":  null,
-                      "lyric_timing_status":  "no_canonical_timing_below_threshold",
-                      "lyric_timing_eligible":  false,
-                      "lyric_timing":  null,
+                      "lyric_timing_status":  "canonical_estimated_pending_listening_qa",
+                      "lyric_timing_eligible":  true,
+                      "lyric_timing":  {
+                                           "path":  "Christmas Tat/lyric-timing-2026-09-19/combined-section-recovery/synced-lyrics-estimated.lrc",
+                                           "sha256":  "43C3679A49BCB558C334E1CF8B459C147E41102291B01538BC088F5ED69767E0",
+                                           "bytes":  2975
+                                       },
                       "cue_timing":  null,
                       "proposed_action":  [
-
+                                              "upload_or_reuse_lyric_timing"
                                           ]
                   },
                   {
@@ -362,12 +370,12 @@
                       "bpm_evidence":  null,
                       "master_duration_milliseconds":  null,
                       "master_sha256":  null,
-                      "lyric_timing_status":  "canonical_estimated_pending_listening_qa",
+                      "lyric_timing_status":  "canonical_user_edited_locked",
                       "lyric_timing_eligible":  true,
                       "lyric_timing":  {
-                                           "path":  "Arcadians/lyric-timing-2026-08-26/synced-lyrics-estimated.lrc",
-                                           "sha256":  "48E1803929825F5DC69CADBE6B3A05CE0EF5F92CCBC2569C264C0E0794EF38E7",
-                                           "bytes":  2053
+                                           "path":  "Arcadians/canonical-lyric-timing.lrc",
+                                           "sha256":  "92B46ABC4CAF1CAA8EDDF7C306A9E767F8D0BBEFED3B39D38E4B4F96981E9DE7",
+                                           "bytes":  2542
                                        },
                       "cue_timing":  null,
                       "proposed_action":  [

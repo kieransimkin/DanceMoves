@@ -48,7 +48,7 @@ function element(tagName) {
   };
   const window = {
     danceMovesConfig: {
-      version: "2.4.0",
+      version: "2.4.1",
       bpm: 148,
       bpmSource: "explicit",
       masterDurationMilliseconds: 10000,
@@ -83,6 +83,10 @@ function element(tagName) {
   frames.shift()();
   assert.equal(popover.children[0].textContent, "First line");
   assert.equal(popover.dataset.danceMovesLyricState, "active");
+  const firstEvent = documentEvents.find(event => event.type === "dance-moves-lyric" && event.detail.text === "First line");
+  assert.equal(firstEvent.detail.nextTime, 1);
+  assert.equal(firstEvent.detail.nextText, "", "the immediate blank cue remains observable");
+  assert.equal(firstEvent.detail.nextIndex, 1);
 
   audio.currentTime = 1.1;
   frames.shift()();
@@ -92,7 +96,10 @@ function element(tagName) {
   audio.currentTime = 2.1;
   frames.shift()();
   assert.equal(popover.children[0].textContent, "Second line");
-  assert.ok(documentEvents.some(event => event.type === "dance-moves-lyric" && event.detail.text === "Second line"));
+  const lastEvent = documentEvents.find(event => event.type === "dance-moves-lyric" && event.detail.text === "Second line");
+  assert.equal(lastEvent.detail.nextTime, null);
+  assert.equal(lastEvent.detail.nextText, "");
+  assert.equal(lastEvent.detail.nextIndex, -1);
 
   audio.paused = true;
   audioListeners.pause();

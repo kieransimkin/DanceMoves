@@ -50,6 +50,9 @@ function Invoke-UnitValidation {
     & php (Join-Path $repoRoot 'tests\validate-clay-legacy-collision.php')
     if ($LASTEXITCODE -ne 0) { throw 'Clay/Stars legacy-plugin collision validation failed.' }
 
+    & php (Join-Path $repoRoot 'tests\validate-epk-download-paths.php')
+    if ($LASTEXITCODE -ne 0) { throw 'EPK download-path validation failed.' }
+
     & python -X utf8 (Join-Path $PSScriptRoot 'validate-effect-harness.py') (Join-Path $repoRoot 'tests\harness\plugin-core') --mode scaffold
     if ($LASTEXITCODE -ne 0) { throw 'DanceMoves core harness validation failed.' }
 

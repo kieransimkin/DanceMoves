@@ -1,6 +1,8 @@
 # DanceMoves
 
-Version 2.4.0 adds opt-in, playback-synchronised lyric pop-ups. DanceMoves parses the selected canonical LRC as inert text, follows the same master-length audio and animation-frame clock as cue timing, clears on blank cues, re-indexes after seeks, hides on pause/end, and exposes `onLyric()` plus a bubbling `dance-moves-lyric` event. The shared component is intentionally visually neutral. Every adopting EPK must add a distinct treatment derived from that song's documented visual language; enabling the checkbox without that release-specific design review is not an approved EPK workflow.
+Version 2.5.0 gives every explicit WordPress-hosted MP3 download link on an EPK a signed download-only URL. That endpoint returns `Content-Disposition: attachment` while retaining the correct `audio/mpeg` media type. Player and source URLs are not rewritten, so the same MP3 remains seekable and playable in the page. Direct media URLs also remain inline. The content transformation uses WordPress's HTML Tag Processor and changes only same-site upload links whose anchor already has a `download` attribute.
+
+Version 2.4.2 preserves exact cue landings: seeking to within 50 milliseconds of a cue arms that one cue and dispatches it once when playback starts (or immediately when seeking during playback), while ordinary scrubbing still suppresses skipped cues. Version 2.4.1 extended each playback-synchronised lyric event with the immediate next LRC entry and its exact timestamp, allowing release adapters to choreograph a preview against the existing audio clock without reparsing the LRC or creating a second timer. Version 2.4.0 added opt-in lyric pop-ups. DanceMoves parses the selected canonical LRC as inert text, follows the same master-length audio and animation-frame clock as cue timing, clears on blank cues, re-indexes after seeks, hides on pause/end, and exposes `onLyric()` plus a bubbling `dance-moves-lyric` event. The shared component is intentionally visually neutral. Every adopting EPK must add a distinct treatment derived from that song's documented visual language; enabling the checkbox without that release-specific design review is not an approved EPK workflow.
 
 Version 2.3.6 makes automatic performance fallback recoverable. Sampling waits for load plus a five-second settling period, requires sustained poor windows, and continues in the minimal tier. Healthy windows trial one higher tier; failed trials revert with increasing cooldown. Hidden tabs and reduced motion suspend sampling. These are capability checks, so their delays do not alter the musical clock. Current adaptive tiers apply to Clay/Stars; every future adapter must follow the same recovery rule.
 
@@ -65,7 +67,7 @@ Without `data-dance-moves-start-clock="audio"`, declarative starts use the page 
 
 ## Cue behavior and page API
 
-The runtime fetches the page's cue file, finds every `<audio>` whose duration matches the canonical programme, and follows each active player independently. Seeking re-indexes the cue cursor without replaying skipped cues.
+The runtime fetches the page's cue file, finds every `<audio>` whose duration matches the canonical programme, and follows each active player independently. Ordinary seeking re-indexes the cue cursor without replaying skipped cues. An exact cue landing within 50 milliseconds arms only that cue: paused players dispatch it once on the next playback start, while players already running dispatch it as soon as the seek completes.
 
 When a cue occurs during playback, DanceMoves resets every currently running DanceMoves-owned CSS/Web Animation to its first frame and immediately continues it. It does not reset WordPress, browser, player-control or third-party animations.
 
@@ -93,6 +95,8 @@ const removeLyrics = DanceMoves.onLyric(detail => {
   );
 }, { id: 'release:lyric-treatment' });
 ```
+
+Each detail also exposes `nextTime`, `nextText`, `nextNormalisedText` and `nextIndex` for the immediate next LRC entry. A blank next entry is deliberately preserved because its timestamp is a real lyric-clear boundary. The final entry reports `nextTime: null`, an empty next text and `nextIndex: -1`. Release adapters may use these fields with `detail.audio.currentTime` for seek-, pause- and playback-rate-safe choreography; they must not fetch or parse the LRC again.
 
 An EPK may override the neutral component through `.dance-moves-lyric-popover` and `.dance-moves-lyric-popover__text`, their public state attributes, and CSS custom properties. Adoption is a design task, not a switch-only task. Before enabling it for any release:
 
@@ -157,6 +161,8 @@ The validator checks PHP and JavaScript syntax, unit/contract tests, strict UTF-
 
 No WordPress upload, timing-media upload, page-meta save or legacy-plugin deactivation should occur until the exact ZIP and migration manifest have action-time approval. Public verification must cover signed-out desktop, tablet and mobile rendering, Unicode, reduced motion, audio/chapter controls, cue resets, named handlers and all original seven orientation adapters.
 
+For the EPK download route, verify one rendered MP3 download anchor from each materially different markup pattern, require a signed DanceMoves URL, and capture its response headers. The download response must be HTTP 200 with `Content-Type: audio/mpeg`, `Content-Disposition: attachment` and the expected byte count. Independently reload at least one on-page player and require its direct media request to remain HTTP 206/200 `audio/mpeg` with no forced-attachment header. A successful WordPress plugin notice does not prove either behaviour.
+
 ## Rollback
 
 - Shared-runtime regression: reinstall the preserved 1.2.4 ZIP.
@@ -164,6 +170,22 @@ No WordPress upload, timing-media upload, page-meta save or legacy-plugin deacti
 - Metadata problem: restore the Page meta revision or clear the attachment ID. Do not delete shared Media Library files without first auditing references.
 
 ## Potential problems
+
+### A global MP3 attachment header breaks on-page playback
+
+- **Symptom:** direct MP3 links download correctly after a server-wide header change, but the same URLs can no longer be relied on by the EPK audio players.
+- **Cause verified:** `Content-Disposition: attachment` expresses download behaviour for the HTTP response, whereas `audio/mpeg` is the correct media type used by the player. Applying the attachment disposition to every `.mp3` response conflates the download and playback routes.
+- **Corrective action:** version 2.5.0 leaves direct upload URLs unchanged and rewrites only explicit `<a download>` links to a signed WordPress endpoint. That endpoint validates a same-site uploads-relative MP3 path and signature, then sends `Content-Disposition: attachment`; `<audio>` and `<source>` URLs retain the ordinary media response.
+- **Verification:** the local contract checks same-origin and traversal rejection, signed URL generation, anchor-only transformation, attachment headers and player-source non-interference. Deployment still requires independent signed-out network checks of both routes.
+- **Limit:** links without a `download` attribute are deliberately not changed. Large files are streamed through PHP on the download route, so host timeout and throughput should be checked with a representative full-size MP3 after deployment.
+
+### Seeking exactly to a cue suppresses its entrance effect
+
+- **Symptom:** uninterrupted playback dispatches a cue, but selecting a chapter at that cue timestamp and then pressing Play omits its entrance effect.
+- **Cause verified:** the former seek handler moved the cursor to the first cue strictly after the landing time, so an exact landing was neither a forward crossing nor an eligible queued cue.
+- **Corrective action:** version 2.4.2 arms a canonical cue within 50 milliseconds of the seek landing, dispatches it once on the next playback start when paused (or immediately when already playing), and leaves ordinary seek suppression unchanged. Release adapters consume the shared cue event rather than parsing timings independently.
+- **Verification:** `tests/exact-cue-seek.test.cjs` covers paused landing, play/playing duplicate suppression, mid-section scrubbing and an in-playback landing. The complete Unit validator also verifies all existing cue, lyric, catalogue, harness, orientation and WordPress contracts.
+- **Limit:** this repairs shared cue delivery; an older page-specific visual that does not consume `DanceMoves.onCue()` or `dance-moves-cue` still requires a one-time adapter migration.
 
 ### A secondary Windows worktree can change unchanged asset bytes
 
@@ -500,3 +522,11 @@ No WordPress upload, timing-media upload, page-meta save or legacy-plugin deacti
 - **Corrective action:** treat the latest direct confirmation as authoritative, preserve older values as history, update the page property, fallback clock and active harness to 90 BPM, and publish changed production bytes under a new plugin version rather than replacing an existing version in place.
 - **Verification:** one beat at 90 BPM is 666.666667 ms, one tick is 41.666667 ms, and the corrected 2.3.5 contract suite must pass before packaging.
 - **Limit:** do not retime LRC or CUE files merely because BPM changes; their timestamps are positions in the unchanged master recording.
+
+### A next-lyric preview can drift too slowly across long cue intervals
+
+- **Symptom:** the next lyric is visible for most of the preceding line and crawls from the bottom of the viewport towards centre.
+- **Cause when verified:** its travel progress was calculated across the entire interval between consecutive LRC cues rather than a bounded choreography window.
+- **Corrective action:** keep the immediate next cue hidden until `nextTime - 32 ticks`, then derive its position solely from the canonical audio clock so it reaches centre at the exact LRC timestamp. Trigger any arrival accent from the lyric event at that timestamp rather than from an independent timer.
+- **Verification:** at 148 BPM, 32 ticks equals approximately 0.811 seconds; the next ticket remains hidden before that window, rises during the window, and the one-shot arrival shower is created at the centred ticket when the cue becomes current. Seeking, pausing and playback-rate changes continue to use `audio.currentTime`.
+- **Limit:** blank cues remain blank, reduced motion uses a static lower preview and no particle shower, and the page-owned styling must still be tested at its actual mobile and desktop breakpoints.

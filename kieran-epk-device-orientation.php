@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: DanceMoves
- * Description: Adds BPM-synchronised motion, lyric and cue timing properties, named cue handlers, and permission-aware orientation control to EPK pages.
- * Version: 2.4.0
+ * Description: Adds BPM-synchronised motion, lyric and cue timing properties, reliable EPK downloads, named cue handlers, and permission-aware orientation control to EPK pages.
+ * Version: 2.5.0
  * Author: Kieran Simkin
  * License: GPL-2.0-or-later
  */
@@ -11,7 +11,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('DANCE_MOVES_VERSION', '2.4.0');
+define('DANCE_MOVES_VERSION', '2.5.0');
 define('KS_EPK_ORIENTATION_VERSION', DANCE_MOVES_VERSION);
 define('KS_EPK_MOTION_CAPTURE_TOKEN', 'e4c1d9a77fb446608e796a0f8fd8f576e59d2e67bca54a4d9f7fd06fbef3e1c2');
 
@@ -21,6 +21,203 @@ define('DANCE_MOVES_META_CUE_TIMING', '_dance_moves_cue_timing_id');
 define('DANCE_MOVES_META_LYRIC_POPUPS', '_dance_moves_lyric_popups_enabled');
 define('DANCE_MOVES_META_MASTER_DURATION', '_dance_moves_master_duration_ms');
 define('DANCE_MOVES_CLAY_STARS_PAGE_ID', 252);
+
+define('DANCE_MOVES_DOWNLOAD_QUERY_VAR', 'dance_moves_download');
+define('DANCE_MOVES_DOWNLOAD_SIGNATURE_QUERY_VAR', 'dance_moves_download_signature');
+
+function dance_moves_epk_download_normalize_relative_path($relative_path) {
+    if (!is_string($relative_path)) {
+        return '';
+    }
+
+    $relative_path = rawurldecode(trim(str_replace('\\', '/', $relative_path)));
+    if (
+        '' === $relative_path ||
+        str_starts_with($relative_path, '/') ||
+        str_contains($relative_path, ':') ||
+        preg_match('/[\x00-\x1F\x7F]/', $relative_path) ||
+        !preg_match('/\.mp3$/i', $relative_path)
+    ) {
+        return '';
+    }
+
+    $segments = explode('/', $relative_path);
+    foreach ($segments as $segment) {
+        if ('' === $segment || '.' === $segment || '..' === $segment) {
+            return '';
+        }
+    }
+
+    return implode('/', $segments);
+}
+
+function dance_moves_epk_download_relative_path_from_url($url) {
+    if (!is_string($url) || '' === trim($url)) {
+        return '';
+    }
+
+    $uploads = wp_get_upload_dir();
+    if (!empty($uploads['error']) || empty($uploads['baseurl'])) {
+        return '';
+    }
+
+    $url_parts = wp_parse_url(html_entity_decode($url, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+    $base_parts = wp_parse_url($uploads['baseurl']);
+    if (!is_array($url_parts) || !is_array($base_parts) || empty($url_parts['path']) || empty($base_parts['path'])) {
+        return '';
+    }
+
+    if (!empty($url_parts['host']) && strtolower($url_parts['host']) !== strtolower($base_parts['host'] ?? '')) {
+        return '';
+    }
+    if (!empty($url_parts['scheme']) && strtolower($url_parts['scheme']) !== strtolower($base_parts['scheme'] ?? '')) {
+        return '';
+    }
+    if (isset($url_parts['port']) && (int) $url_parts['port'] !== (int) ($base_parts['port'] ?? 0)) {
+        return '';
+    }
+
+    $base_path = rtrim(rawurldecode($base_parts['path']), '/');
+    $url_path = rawurldecode($url_parts['path']);
+    if (!str_starts_with($url_path, $base_path . '/')) {
+        return '';
+    }
+
+    return dance_moves_epk_download_normalize_relative_path(substr($url_path, strlen($base_path) + 1));
+}
+
+function dance_moves_epk_download_signature($relative_path) {
+    return hash_hmac('sha256', $relative_path, wp_salt('auth'));
+}
+
+function dance_moves_epk_download_url($relative_path) {
+    $relative_path = dance_moves_epk_download_normalize_relative_path($relative_path);
+    if ('' === $relative_path) {
+        return '';
+    }
+
+    return add_query_arg(
+        array(
+            DANCE_MOVES_DOWNLOAD_QUERY_VAR => $relative_path,
+            DANCE_MOVES_DOWNLOAD_SIGNATURE_QUERY_VAR => dance_moves_epk_download_signature($relative_path),
+        ),
+        home_url('/')
+    );
+}
+
+function dance_moves_epk_download_query_vars($query_vars) {
+    $query_vars[] = DANCE_MOVES_DOWNLOAD_QUERY_VAR;
+    $query_vars[] = DANCE_MOVES_DOWNLOAD_SIGNATURE_QUERY_VAR;
+    return array_values(array_unique($query_vars));
+}
+add_filter('query_vars', 'dance_moves_epk_download_query_vars');
+
+function dance_moves_epk_download_filter_content($content) {
+    if (
+        is_admin() ||
+        !is_singular('page') ||
+        !in_the_loop() ||
+        !is_main_query() ||
+        !class_exists('WP_HTML_Tag_Processor')
+    ) {
+        return $content;
+    }
+
+    $processor = new WP_HTML_Tag_Processor($content);
+    $changed = false;
+
+    while ($processor->next_tag('A')) {
+        if (null === $processor->get_attribute('download')) {
+            continue;
+        }
+
+        $relative_path = dance_moves_epk_download_relative_path_from_url($processor->get_attribute('href'));
+        if ('' === $relative_path) {
+            continue;
+        }
+
+        $download_url = dance_moves_epk_download_url($relative_path);
+        if ('' !== $download_url) {
+            $processor->set_attribute('href', $download_url);
+            $changed = true;
+        }
+    }
+
+    return $changed ? $processor->get_updated_html() : $content;
+}
+add_filter('the_content', 'dance_moves_epk_download_filter_content', 30);
+
+function dance_moves_epk_download_not_found() {
+    status_header(404);
+    nocache_headers();
+    exit;
+}
+
+function dance_moves_epk_download_serve() {
+    $relative_path = dance_moves_epk_download_normalize_relative_path(
+        (string) get_query_var(DANCE_MOVES_DOWNLOAD_QUERY_VAR, '')
+    );
+    if ('' === $relative_path) {
+        return;
+    }
+
+    $signature = (string) get_query_var(DANCE_MOVES_DOWNLOAD_SIGNATURE_QUERY_VAR, '');
+    if ('' === $signature || !hash_equals(dance_moves_epk_download_signature($relative_path), $signature)) {
+        dance_moves_epk_download_not_found();
+    }
+
+    $uploads = wp_get_upload_dir();
+    $base_directory = !empty($uploads['basedir']) ? realpath($uploads['basedir']) : false;
+    $file_path = false !== $base_directory
+        ? realpath($base_directory . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $relative_path))
+        : false;
+    $base_prefix = false !== $base_directory ? rtrim($base_directory, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR : '';
+
+    if (
+        false === $file_path ||
+        '' === $base_prefix ||
+        !str_starts_with($file_path, $base_prefix) ||
+        !is_file($file_path) ||
+        !is_readable($file_path) ||
+        'mp3' !== strtolower(pathinfo($file_path, PATHINFO_EXTENSION))
+    ) {
+        dance_moves_epk_download_not_found();
+    }
+
+    $method = isset($_SERVER['REQUEST_METHOD']) ? strtoupper(sanitize_text_field(wp_unslash($_SERVER['REQUEST_METHOD']))) : 'GET';
+    if (!in_array($method, array('GET', 'HEAD'), true)) {
+        status_header(405);
+        header('Allow: GET, HEAD');
+        nocache_headers();
+        exit;
+    }
+
+    $filename = wp_basename($file_path);
+    $fallback_filename = sanitize_file_name(remove_accents($filename));
+    if ('' === $fallback_filename) {
+        $fallback_filename = 'epk-audio.mp3';
+    }
+    $fallback_filename = addcslashes($fallback_filename, "\\\"");
+
+    while (ob_get_level() > 0) {
+        ob_end_clean();
+    }
+
+    status_header(200);
+    header('Content-Description: File Transfer');
+    header('Content-Type: audio/mpeg');
+    header('Content-Disposition: attachment; filename="' . $fallback_filename . '"; filename*=UTF-8\'\'' . rawurlencode($filename));
+    header('Content-Length: ' . (string) filesize($file_path));
+    header('Cache-Control: private, no-store, max-age=0');
+    header('X-Content-Type-Options: nosniff');
+    header('X-Robots-Tag: noindex, nofollow');
+
+    if ('HEAD' !== $method) {
+        readfile($file_path);
+    }
+    exit;
+}
+add_action('template_redirect', 'dance_moves_epk_download_serve', 0);
 
 function dance_moves_orientation_adapters() {
     return array(

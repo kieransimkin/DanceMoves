@@ -464,12 +464,18 @@
   }
 
   function dispatchLyric(entry, audio, index) {
+    var nextIndex = Number.isFinite(index) && index + 1 < lyricList.length ? index + 1 : -1;
+    var nextEntry = nextIndex >= 0 ? lyricList[nextIndex] : null;
     var detail = {
       pageId: Number(rawConfig.pageId) || 0,
       time: entry ? entry.time : 0,
       text: entry ? entry.text : "",
       normalisedText: entry ? entry.normalisedText : "",
       index: Number.isFinite(index) ? index : -1,
+      nextTime: nextEntry ? nextEntry.time : null,
+      nextText: nextEntry ? nextEntry.text : "",
+      nextNormalisedText: nextEntry ? nextEntry.normalisedText : "",
+      nextIndex: nextIndex,
       audio: audio || null
     };
     Array.from(lyricHandlers.values()).forEach(function (registered) {
@@ -625,6 +631,13 @@
     return low;
   }
 
+  function cueAtLanding(time) {
+    var tolerance = 0.05;
+    var index = firstCueAfter(time - tolerance - 0.001);
+    if (index >= cueList.length) return null;
+    return Math.abs(cueList[index].time - time) <= tolerance ? cueList[index] : null;
+  }
+
   function matchesMasterDuration(audio) {
     var duration = positiveNumber(audio.duration);
     if (!duration || !referenceDurationSeconds) return false;
@@ -635,7 +648,14 @@
     if (boundAudio.has(audio) || !matchesMasterDuration(audio)) return;
     boundAudio.add(audio);
     audio.dataset.danceMovesTiming = "master-length";
-    var state = { next: firstCueAfter(audio.currentTime || 0), lyric: -2, last: audio.currentTime || 0, seeking: false, frame: 0 };
+    var state = {
+      next: firstCueAfter(audio.currentTime || 0),
+      lyric: -2,
+      last: audio.currentTime || 0,
+      seeking: false,
+      frame: 0,
+      pendingCue: cueAtLanding(audio.currentTime || 0)
+    };
 
     function stopFrame() {
       if (state.frame) window.cancelAnimationFrame(state.frame);
@@ -683,6 +703,10 @@
       state.last = positiveNumber(audio.currentTime);
       state.next = firstCueAfter(state.last);
       state.lyric = -2;
+      if (state.pendingCue) {
+        dispatchCue(state.pendingCue, audio);
+        state.pendingCue = null;
+      }
       setOwnedPlaybackRate(audio.playbackRate);
       state.frame = window.requestAnimationFrame(tick);
     }
@@ -690,13 +714,14 @@
     audio.addEventListener("play", start);
     audio.addEventListener("playing", start);
     audio.addEventListener("pause", function () { stopFrame(); if (activeAudio === audio) activeAudio = null; if (lyricRenderer) lyricRenderer.hide(); });
-    audio.addEventListener("ended", function () { stopFrame(); if (activeAudio === audio) activeAudio = null; state.last = 0; state.next = 0; state.lyric = -2; if (lyricRenderer) lyricRenderer.hide(); });
-    audio.addEventListener("seeking", function () { state.seeking = true; stopFrame(); });
+    audio.addEventListener("ended", function () { stopFrame(); if (activeAudio === audio) activeAudio = null; state.last = 0; state.next = 0; state.lyric = -2; state.pendingCue = cueAtLanding(0); if (lyricRenderer) lyricRenderer.hide(); });
+    audio.addEventListener("seeking", function () { state.seeking = true; state.pendingCue = null; stopFrame(); });
     audio.addEventListener("seeked", function () {
       state.seeking = false;
       state.last = positiveNumber(audio.currentTime);
       state.next = firstCueAfter(state.last);
       state.lyric = -2;
+      state.pendingCue = cueAtLanding(state.last);
       if (!audio.paused && !audio.ended) start();
     });
     audio.addEventListener("ratechange", function () { setOwnedPlaybackRate(audio.playbackRate); });
