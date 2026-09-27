@@ -32,11 +32,13 @@
   var running = false;
   var visible = true;
   var observer = null;
+  var resizeObserver = null;
+  var bounds = { width: hero.clientWidth, height: hero.clientHeight };
   var seed = 2601890;
 
   function random() { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; }
   function clamp(value, low, high) { return Math.max(low, Math.min(high, value)); }
-  function enter(plane, state) { plane.state = state; plane.stateTime = 0; }
+  function enter(plane, state) { plane.state = state; plane.stateTime = 0; plane.node.dataset.flightState = state; }
   function makePlane(index) {
     var depth = index % 3;
     var profile = profiles[depth];
@@ -46,6 +48,7 @@
     var row = Math.floor(sprite / 6);
     node.className = 'paper-dreams-flight__plane';
     node.dataset.depth = String(depth);
+    node.dataset.flightState = 'glide';
     node.style.setProperty('--sprite-x', (col * 20) + '%');
     node.style.setProperty('--sprite-y', (row * 33.333333) + '%');
     node.style.setProperty('--plane-size', (92 * profile.scale) + 'px');
@@ -70,7 +73,7 @@
       if (next === 'glide') plane.cycle = plane.age + 1.2 + random()*.9;
     }
   }
-  function step(plane, dt, time) {
+  function step(plane, dt, time, width, height) {
     plane.age += dt; plane.stateTime += dt; advanceState(plane);
     var target = targets[plane.state];
     var response = plane.state === 'stall' ? 5 : (plane.state === 'climb' || plane.state === 'swoop' ? 1.9 : 3.2);
@@ -91,17 +94,18 @@
     }
     var x=.5+(plane.x-.5)*plane.profile.parallax + Math.sin(time*.21+plane.depth*1.7)*(plane.profile.parallax-.9)*.055;
     var y=.5+(plane.y-.5)*(.76+.18*plane.profile.parallax) + Math.cos(time*.16+plane.depth)*(plane.profile.parallax-.9)*.035;
-    var width=hero.clientWidth, height=hero.clientHeight;
     var angle=-plane.pitch+plane.roll*.28;
     var squeeze=1-.22*Math.min(1,Math.abs(plane.roll)/42);
-    plane.node.style.transform='translate3d('+(x*width).toFixed(2)+'px,'+(y*height).toFixed(2)+'px,0) rotate('+angle.toFixed(2)+'deg) scaleX('+squeeze.toFixed(3)+')';
+    var px=Math.round(x*width*10)/10, py=Math.round(y*height*10)/10;
+    plane.node.style.transform='translate3d('+px+'px,'+py+'px,0) rotate('+(Math.round(angle*10)/10)+'deg) scaleX('+(Math.round(squeeze*1000)/1000)+')';
   }
   function tick(now) {
     if (!running) return;
     var dt=last ? clamp((now-last)/1000,0,.05) : 1/60; last=now;
     var bpm=Number(config.bpm||120);
     var seconds=(motion && typeof motion.currentTick==='function' ? motion.currentTick({clock:'page'}) : now*bpm/60000*16)*60/(bpm*16);
-    for (var i=0;i<planes.length;i+=1) if (!compact.matches || i<Number(config.compactPlaneCount||5)) step(planes[i],dt,seconds);
+    var width=bounds.width, height=bounds.height;
+    for (var i=0;i<planes.length;i+=1) if (!compact.matches || i<Number(config.compactPlaneCount||5)) step(planes[i],dt,seconds,width,height);
     frame=window.requestAnimationFrame(tick);
   }
   function reconcile() {
@@ -116,11 +120,15 @@
     observer=new IntersectionObserver(function(entries){visible=Boolean(entries[0]&&entries[0].isIntersecting);reconcile();},{rootMargin:'120px'});
     observer.observe(hero);
   }
+  if ('ResizeObserver' in window) {
+    resizeObserver=new ResizeObserver(function(entries){var rect=entries[0]&&entries[0].contentRect;if(rect){bounds.width=rect.width;bounds.height=rect.height;}});
+    resizeObserver.observe(hero);
+  }
   reconcile();
 
   window.DanceMovesPaperDreams={
     root:stage,
-    snapshot:function(){return {version:'2.6.2',planes:planes.length,active:running,quality:stage.dataset.quality,bpm:Number(config.bpm||120),bounds:'hero',states:planes.map(function(p){return p.state;})};},
-    teardown:function(){running=false;if(frame)window.cancelAnimationFrame(frame);if(observer)observer.disconnect();reduce.removeEventListener('change',reconcile);compact.removeEventListener('change',reconcile);document.removeEventListener('visibilitychange',reconcile);stage.remove();}
+    snapshot:function(){return {version:'2.6.3',planes:planes.length,active:running,quality:stage.dataset.quality,bpm:Number(config.bpm||120),bounds:'hero',states:planes.map(function(p){return p.state;})};},
+    teardown:function(){running=false;if(frame)window.cancelAnimationFrame(frame);if(observer)observer.disconnect();if(resizeObserver)resizeObserver.disconnect();reduce.removeEventListener('change',reconcile);compact.removeEventListener('change',reconcile);document.removeEventListener('visibilitychange',reconcile);stage.remove();}
   };
 }(window, document));

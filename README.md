@@ -1,6 +1,6 @@
 # DanceMoves
 
-## Paper Dreams flight adapter (2.6.2)
+## Paper Dreams flight adapter (2.6.3)
 
 The paper-plane renderer is a reusable page-configured DanceMoves effect. It is enabled by the `_dance_moves_effect` page property value `paper-planes`, reads tempo only from the page's `_dance_moves_bpm` property, and contains no release title, slug, page ID or hard-coded song BPM. The EPK Timing sidebar exposes both properties. Pages without the effect property do not load the plane assets.
 
@@ -26,6 +26,14 @@ Thresholds are relative to the fastest stable frame cadence observed in the sess
 ## Potential problems: fallback never recovers
 
 In 2.3.5, a startup downgrade to minimal stopped the sampler permanently while CSS suppressed ambient loops. Version 2.3.6 retains spaced recovery checks, validates each higher tier under load, and backs off after failure. Regression tests cover loading, sustained overload, minimal-to-full recovery, failed trials, visibility, reduced motion and teardown. See MDN requestAnimationFrame and Chrome background-tabs guidance (checked 19 September 2026); background throttling must not count as device incapacity. Physical-device performance remains separate from synthetic contracts.
+
+### Paper planes run at half cadence and lose the Shorts motion blur
+
+- **Symptom:** DanceMoves 2.6.2 showed 12 planes but a foreground browser trace on the live Paper Dreams EPK measured a 66.8 ms median frame interval and 133.3 ms p95 (about 15 FPS), versus a 33.3 ms median and 33.5 ms p95 after the effect was torn down. The port also lacked the velocity-aligned shutter echoes used by the offline Shorts renderer.
+- **Cause when verified:** the plane loop interleaved a transform write with `hero.clientWidth` and `hero.clientHeight` reads for every plane, forcing repeated geometry work. Moving `filter:drop-shadow()`, distant-plane blur and `mix-blend-mode` increased full-stack compositing cost. The Shorts blur had been rendered offline and was never represented in the browser adapter.
+- **Corrective action:** DanceMoves 2.6.3 caches hero bounds through `ResizeObserver`, passes one width/height pair through the transform-only frame loop, removes moving filters and blending, and recreates the motion language with two sprite-local pseudo-element shutter echoes. Ordinary flight uses bounded 20 px and 42 px echoes; swoop, drop and recovery states strengthen them to 32 px and 66 px. No echo covers the hero or viewport.
+- **Verification:** the local full-stack preview retained 12 planes and the stronger two-echo treatment while a 240-frame foreground trace measured 33.3 ms median and 33.5 ms p95, matching the measured 30 Hz reference cadence. Unit contracts verify cached bounds, the absence of moving filters/blending, local trail states and teardown. This is a synthetic browser comparison, not physical-device proof; the live signed-out page and Kieran's attended view remain the final perceptual checks after publication.
+- **Reuse limit:** keep the echo count and extent bounded to each sprite. Do not restore CSS blur filters, blend modes or full-frame beat overlays to make the trail stronger; first tune local echo opacity, spacing and stretch, then remeasure the combined live page.
 
 ### Node's test runner cannot spawn isolated workers in a restricted Windows host
 
