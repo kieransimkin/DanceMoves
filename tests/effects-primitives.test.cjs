@@ -1,0 +1,35 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const vm = require('node:vm');
+
+const root = path.resolve(__dirname, '..');
+const js = fs.readFileSync(path.join(root, 'assets', 'dance-moves-effects.js'), 'utf8');
+const php = fs.readFileSync(path.join(root, 'kieran-epk-device-orientation.php'), 'utf8');
+
+new vm.Script(js, { filename: 'dance-moves-effects.js' });
+for (const primitive of ['pointer', 'playbackPulse', 'cueClass', 'quality']) {
+  assert.match(js, new RegExp('(?:function ' + primitive + '\\b|' + primitive + ': ' + primitive + '\\b)'));
+}
+assert.match(js, /dance-moves-effects-ready/);
+assert.match(js, /ResizeObserver/);
+assert.match(js, /--dance-moves-x/);
+assert.match(js, /--dance-moves-y/);
+assert.match(js, /motion\.durationMilliseconds\(ticks\)/);
+assert.match(js, /audio\.currentTime, 0\) \/ rate/);
+assert.match(js, /motion\.onCue\(cue, fire/);
+assert.match(js, /sustained-low-fps/);
+assert.match(js, /sustained-recovery/);
+assert.match(js, /preference-restored/);
+assert.match(js, /prefers-reduced-motion: reduce/);
+assert.match(js, /forced-colors: active/);
+assert.doesNotMatch(js, /style\.(?:top|right|bottom|left|width|height)\s*=/);
+assert.doesNotMatch(js, /(?:backgroundColor|filter|mixBlendMode)\s*=/);
+assert.doesNotMatch(js, /paper-dreams|arcadians|amnesty|santa|clay-stars/i);
+assert.doesNotMatch(js, /\b(?:86|100|116|145)\b/);
+assert.match(php, /'dance-moves-effects'/);
+assert.match(php, /dance-moves-effects\.js/);
+assert.match(php, /array\('dance-moves-core', 'dance-moves-effects'\)/);
+assert.match(php, /Version: 2\.7\.0/);
+
+console.log('DanceMoves reusable effect primitive contracts passed.');

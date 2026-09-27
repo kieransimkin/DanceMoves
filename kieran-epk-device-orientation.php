@@ -2,7 +2,7 @@
 /**
  * Plugin Name: DanceMoves
  * Description: Adds BPM-synchronised motion, lyric and cue timing properties, reliable EPK downloads, named cue handlers, and permission-aware orientation control to EPK pages.
- * Version: 2.6.3
+ * Version: 2.7.0
  * Author: Kieran Simkin
  * License: GPL-2.0-or-later
  */
@@ -11,7 +11,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('DANCE_MOVES_VERSION', '2.6.3');
+define('DANCE_MOVES_VERSION', '2.7.0');
 define('KS_EPK_ORIENTATION_VERSION', DANCE_MOVES_VERSION);
 define('KS_EPK_MOTION_CAPTURE_TOKEN', 'e4c1d9a77fb446608e796a0f8fd8f576e59d2e67bca54a4d9f7fd06fbef3e1c2');
 
@@ -319,9 +319,17 @@ function ks_epk_orientation_enqueue_runtime() {
     wp_localize_script('dance-moves-core', 'danceMovesConfig', $config);
 
     wp_enqueue_script(
+        'dance-moves-effects',
+        $base_url . 'dance-moves-effects.js',
+        array('dance-moves-core'),
+        DANCE_MOVES_VERSION,
+        true
+    );
+
+    wp_enqueue_script(
         'dance-moves-catalogue-timing',
         $base_url . 'dance-moves-catalogue-timing.js',
-        array('dance-moves-core'),
+        array('dance-moves-core', 'dance-moves-effects'),
         DANCE_MOVES_VERSION,
         true
     );

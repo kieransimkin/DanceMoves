@@ -1,5 +1,31 @@
 # DanceMoves
 
+## Reusable effect primitives (2.7.0)
+
+DanceMoves 2.7.0 moves four repeated motion mechanisms out of individual EPK payloads and into `assets/dance-moves-effects.js`. The shared code owns input acquisition, requestAnimationFrame scheduling, cached geometry, audio phase, cue subscription, visibility and motion-preference lifecycle, and recoverable quality measurement. EPK pages keep only scoped CSS and optional appearance/render callbacks.
+
+| Motion type | Shared API | Replaces repeated page code | Page-owned surface |
+| --- | --- | --- | --- |
+| Bounded pointer/parallax | `DanceMovesEffects.pointer()` | pointer normalisation, cached bounds, one-write-per-frame scheduling, leave/orientation/visibility reset | CSS consuming `--dance-moves-x` / `--dance-moves-y`, or a `render({x,y})` callback |
+| Audio-phase pulse | `DanceMovesEffects.playbackPulse()` | play/pause/rate/seek listeners, BPM-derived duration and phase correction | a playing class plus CSS using the configured duration/delay properties, or a render callback |
+| Cue-local finite state | `DanceMovesEffects.cueClass()` | named DanceMoves cue subscription, bounded lifetime, retrigger and accessibility teardown | a class-styled subject or one finite render callback; never a full-frame repetitive colour layer |
+| Recoverable quality tier | `DanceMovesEffects.quality()` | visibility-safe sampling, sustained downgrade, continued recovery checks and hysteresis | CSS keyed from `data-dance-moves-quality`, plus an optional tier-change callback |
+
+The runtime is page and release agnostic. It contains no release names, slugs, page IDs, song tempos, cue names, colours, images or drawing styles. It dispatches `dance-moves-effects-ready` after the API is installed so page-owned inline code can mount adapters even when WordPress prints the plugin in the footer.
+
+```js
+function mountEffects() {
+  var effects = window.DanceMovesEffects;
+  effects.pointer({ id: "release:hero-depth", root: ".ks-epk", bounds: ".epk-hero" });
+  effects.playbackPulse({ id: "release:player-pulse", root: ".ks-epk", audio: "audio", ticks: 32, className: "is-playing" });
+  effects.cueClass({ id: "release:chorus-glow", root: ".ks-epk", cue: "CHORUS 1", className: "is-chorus", durationTicks: 64 });
+}
+if (window.DanceMovesEffects) mountEffects();
+else document.addEventListener("dance-moves-effects-ready", mountEffects, { once: true });
+```
+
+Each mount returns `snapshot()` and `teardown()` methods and is deduplicated by stable ID. `DanceMovesEffects.snapshot()` exposes current instances for a harness without retaining or transmitting frame samples. Pages should prefer CSS-only consumers; use callbacks only when the look genuinely needs custom drawing or DOM state.
+
 ## Paper Dreams flight adapter (2.6.3)
 
 The paper-plane renderer is a reusable page-configured DanceMoves effect. It is enabled by the `_dance_moves_effect` page property value `paper-planes`, reads tempo only from the page's `_dance_moves_bpm` property, and contains no release title, slug, page ID or hard-coded song BPM. The EPK Timing sidebar exposes both properties. Pages without the effect property do not load the plane assets.
