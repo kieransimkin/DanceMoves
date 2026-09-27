@@ -1,7 +1,7 @@
 (function (window, document) {
   "use strict";
 
-  var root = document.querySelector('.ks-epk[data-release="paper-dreams-from-the-sky"]');
+  var root = document.querySelector('.ks-epk');
   var hero = root && root.querySelector('.epk-hero');
   if (!root || !hero || window.DanceMovesPaperDreams) return;
 
@@ -99,7 +99,8 @@
   function tick(now) {
     if (!running) return;
     var dt=last ? clamp((now-last)/1000,0,.05) : 1/60; last=now;
-    var seconds=(motion && typeof motion.currentTick==='function' ? motion.currentTick({clock:'page'}) : now*100/60000*16)*60/(100*16);
+    var bpm=Number(config.bpm||120);
+    var seconds=(motion && typeof motion.currentTick==='function' ? motion.currentTick({clock:'page'}) : now*bpm/60000*16)*60/(bpm*16);
     for (var i=0;i<planes.length;i+=1) if (!compact.matches || i<Number(config.compactPlaneCount||5)) step(planes[i],dt,seconds);
     frame=window.requestAnimationFrame(tick);
   }
@@ -119,7 +120,7 @@
 
   window.DanceMovesPaperDreams={
     root:stage,
-    snapshot:function(){return {version:'2.6.0',planes:planes.length,active:running,quality:stage.dataset.quality,bpm:100,bounds:'hero',states:planes.map(function(p){return p.state;})};},
+    snapshot:function(){return {version:'2.6.1',planes:planes.length,active:running,quality:stage.dataset.quality,bpm:Number(config.bpm||120),bounds:'hero',states:planes.map(function(p){return p.state;})};},
     teardown:function(){running=false;if(frame)window.cancelAnimationFrame(frame);if(observer)observer.disconnect();reduce.removeEventListener('change',reconcile);compact.removeEventListener('change',reconcile);document.removeEventListener('visibilitychange',reconcile);stage.remove();}
   };
 }(window, document));

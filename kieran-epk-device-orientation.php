@@ -2,7 +2,7 @@
 /**
  * Plugin Name: DanceMoves
  * Description: Adds BPM-synchronised motion, lyric and cue timing properties, reliable EPK downloads, named cue handlers, and permission-aware orientation control to EPK pages.
- * Version: 2.6.0
+ * Version: 2.6.1
  * Author: Kieran Simkin
  * License: GPL-2.0-or-later
  */
@@ -11,7 +11,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('DANCE_MOVES_VERSION', '2.6.0');
+define('DANCE_MOVES_VERSION', '2.6.1');
 define('KS_EPK_ORIENTATION_VERSION', DANCE_MOVES_VERSION);
 define('KS_EPK_MOTION_CAPTURE_TOKEN', 'e4c1d9a77fb446608e796a0f8fd8f576e59d2e67bca54a4d9f7fd06fbef3e1c2');
 
@@ -20,8 +20,8 @@ define('DANCE_MOVES_META_LYRIC_TIMING', '_dance_moves_lyric_timing_id');
 define('DANCE_MOVES_META_CUE_TIMING', '_dance_moves_cue_timing_id');
 define('DANCE_MOVES_META_LYRIC_POPUPS', '_dance_moves_lyric_popups_enabled');
 define('DANCE_MOVES_META_MASTER_DURATION', '_dance_moves_master_duration_ms');
+define('DANCE_MOVES_META_EFFECT', '_dance_moves_effect');
 define('DANCE_MOVES_CLAY_STARS_PAGE_ID', 252);
-define('DANCE_MOVES_PAPER_DREAMS_PAGE_ID', 256);
 
 define('DANCE_MOVES_DOWNLOAD_QUERY_VAR', 'dance_moves_download');
 define('DANCE_MOVES_DOWNLOAD_SIGNATURE_QUERY_VAR', 'dance_moves_download_signature');
@@ -265,10 +265,6 @@ function dance_moves_get_page_config($page_id) {
     $stored_bpm = get_post_meta($page_id, DANCE_MOVES_META_BPM, true);
     $bpm = is_numeric($stored_bpm) ? (float) $stored_bpm : 120.0;
     $source = is_numeric($stored_bpm) ? 'explicit' : 'fallback';
-    if (!is_numeric($stored_bpm) && DANCE_MOVES_PAPER_DREAMS_PAGE_ID === (int) $page_id) {
-        $bpm = 100.0;
-        $source = 'explicit';
-    }
     if (!is_finite($bpm) || $bpm < 20 || $bpm > 400) {
         $bpm = 120.0;
         $source = 'fallback';
@@ -292,6 +288,7 @@ function dance_moves_get_page_config($page_id) {
         'longDurationQuantumTicks' => 16,
         'sharedControlTicks' => in_array((int) $page_id, dance_moves_shared_control_pages(), true) ? 8 : 0,
         'lyricDisclosureTicks' => dance_moves_lyric_disclosure_ticks($page_id),
+        'effect' => dance_moves_sanitize_effect(get_post_meta($page_id, DANCE_MOVES_META_EFFECT, true)),
     );
 }
 
@@ -345,7 +342,7 @@ function ks_epk_orientation_enqueue_runtime() {
         );
     }
 
-    if (DANCE_MOVES_PAPER_DREAMS_PAGE_ID === (int) $page_id) {
+    if ('paper-planes' === $config['effect']) {
         wp_enqueue_style(
             'dance-moves-paper-dreams',
             $base_url . 'paper-dreams-flight.css',
@@ -363,11 +360,11 @@ function ks_epk_orientation_enqueue_runtime() {
             'dance-moves-paper-dreams',
             'danceMovesPaperDreamsConfig',
             array(
-                'pageId' => $page_id,
+                'effect' => $config['effect'],
                 'atlasUrl' => $base_url . 'paper-dreams-plane-atlas.png',
                 'planeCount' => 12,
                 'compactPlaneCount' => 5,
-                'bpm' => 100,
+                'bpm' => $config['bpm'],
                 'effectBounds' => 'hero',
             )
         );
@@ -604,6 +601,11 @@ function dance_moves_sanitize_duration($value) {
     return is_finite($number) && $number > 0 && $number <= DAY_IN_SECONDS * 1000 ? round($number, 3) : 0;
 }
 
+function dance_moves_sanitize_effect($value) {
+    $value = sanitize_key((string) $value);
+    return in_array($value, array('', 'paper-planes'), true) ? $value : '';
+}
+
 function dance_moves_meta_auth($allowed, $meta_key, $post_id) {
     return current_user_can('edit_post', $post_id);
 }
@@ -654,6 +656,15 @@ function dance_moves_register_page_meta() {
         'show_in_rest' => false,
         'revisions_enabled' => true,
     ));
+    register_post_meta('page', DANCE_MOVES_META_EFFECT, array(
+        'type' => 'string',
+        'single' => true,
+        'default' => '',
+        'sanitize_callback' => 'dance_moves_sanitize_effect',
+        'auth_callback' => 'dance_moves_meta_auth',
+        'show_in_rest' => true,
+        'revisions_enabled' => true,
+    ));
 }
 add_action('init', 'dance_moves_register_page_meta');
 
@@ -664,6 +675,7 @@ function dance_moves_revision_meta_keys($keys) {
         DANCE_MOVES_META_CUE_TIMING,
         DANCE_MOVES_META_LYRIC_POPUPS,
         DANCE_MOVES_META_MASTER_DURATION,
+        DANCE_MOVES_META_EFFECT,
     ))));
 }
 add_filter('wp_post_revision_meta_keys', 'dance_moves_revision_meta_keys');
@@ -716,6 +728,7 @@ function dance_moves_render_meta_box($post) {
     dance_moves_file_field($post->ID, 'Lyric Timing File', 'dance_moves_lyric_timing_id', DANCE_MOVES_META_LYRIC_TIMING, array('lrc'));
     dance_moves_file_field($post->ID, 'Cue Timing File', 'dance_moves_cue_timing_id', DANCE_MOVES_META_CUE_TIMING, array('lrc', 'cue'));
     $lyric_popups_enabled = '1' === (string) get_post_meta($post->ID, DANCE_MOVES_META_LYRIC_POPUPS, true);
+    $effect = dance_moves_sanitize_effect(get_post_meta($post->ID, DANCE_MOVES_META_EFFECT, true));
     ?>
     <p>
         <label>
@@ -723,6 +736,14 @@ function dance_moves_render_meta_box($post) {
             <strong>Timed lyric pop-ups</strong>
         </label>
         <span class="description">Opt in only after the EPK has a song-specific lyric treatment based on its visual-language record. DanceMoves supplies the timing and neutral fallback; the page supplies the art direction.</span>
+    </p>
+    <p>
+        <label for="dance_moves_effect"><strong>Ambient effect</strong></label>
+        <select class="widefat" id="dance_moves_effect" name="dance_moves_effect">
+            <option value=""<?php selected($effect, ''); ?>>None</option>
+            <option value="paper-planes"<?php selected($effect, 'paper-planes'); ?>>Paper planes</option>
+        </select>
+        <span class="description">Page property only. The effect uses this page's BPM and does not identify a release by ID or title.</span>
     </p>
     <?php
 }
@@ -867,6 +888,13 @@ function dance_moves_save_page_meta($post_id) {
         update_post_meta($post_id, DANCE_MOVES_META_LYRIC_POPUPS, '1');
     } else {
         delete_post_meta($post_id, DANCE_MOVES_META_LYRIC_POPUPS);
+    }
+
+    $effect = isset($_POST['dance_moves_effect']) ? dance_moves_sanitize_effect(wp_unslash($_POST['dance_moves_effect'])) : '';
+    if ('' === $effect) {
+        delete_post_meta($post_id, DANCE_MOVES_META_EFFECT);
+    } else {
+        update_post_meta($post_id, DANCE_MOVES_META_EFFECT, $effect);
     }
 }
 add_action('save_post_page', 'dance_moves_save_page_meta');

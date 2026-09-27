@@ -1,6 +1,8 @@
 # DanceMoves
 
-## Paper Dreams flight adapter (2.6.0)
+## Paper Dreams flight adapter (2.6.1)
+
+The paper-plane renderer is a reusable page-configured DanceMoves effect. It is enabled by the `_dance_moves_effect` page property value `paper-planes`, reads tempo only from the page's `_dance_moves_bpm` property, and contains no release title, slug, page ID or hard-coded song BPM. The EPK Timing sidebar exposes both properties. Pages without the effect property do not load the plane assets.
 
 Page 256 receives a release-scoped hero renderer derived from the verified short-form flight model. Twelve atlas-backed planes cross three depth layers through glide, climb, mush, stall, nose-drop, recovery and swoop states. The adapter uses the shared DanceMoves clock at the artist-confirmed 100 BPM, but keeps the physical interpolation continuous rather than forcing a wobble on every beat.
 
@@ -600,3 +602,11 @@ For the EPK download route, verify one rendered MP3 download anchor from each ma
 - **Corrective action:** keep the immediate next cue hidden until `nextTime - 32 ticks`, then derive its position solely from the canonical audio clock so it reaches centre at the exact LRC timestamp. Trigger any arrival accent from the lyric event at that timestamp rather than from an independent timer.
 - **Verification:** at 148 BPM, 32 ticks equals approximately 0.811 seconds; the next ticket remains hidden before that window, rises during the window, and the one-shot arrival shower is created at the centred ticket when the cue becomes current. Seeking, pausing and playback-rate changes continue to use `audio.currentTime`.
 - **Limit:** blank cues remain blank, reduced motion uses a static lower preview and no particle shower, and the page-owned styling must still be tested at its actual mobile and desktop breakpoints.
+
+### A release-specific BPM shortcut can override the page property
+
+- **Symptom:** a newly enabled effect animates, but the live root reports an old or fallback BPM and its timing does not match the canonical song tempo.
+- **Cause when verified:** an early paper-plane adapter used a page ID and hard-coded BPM in plugin code instead of treating WordPress page metadata as authoritative.
+- **Corrective action:** remove release titles, slugs, page IDs and song tempos from the plugin; expose a generic `paper-planes` effect property; load it only when that page property is selected; and read BPM solely from the existing DanceMoves BPM page property.
+- **Verification:** the page-configured flight contract rejects the former release selector and page-ID constant, requires the effect meta key and page-derived BPM, and the complete Unit and Package validation passes for 2.6.1.
+- **Limit:** the corrected package does not repair page metadata automatically. Each target page must have its BPM and effect properties explicitly saved and read back before publication is considered complete.
