@@ -1,11 +1,16 @@
 [CmdletBinding()]
 param(
-    [string]$OutputDirectory
+    [string]$OutputDirectory,
+    [string]$ReleasesRoot
 )
 
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
-$releasesRoot = (Resolve-Path (Join-Path $repoRoot '..\..\..')).Path
+$releasesRoot = if ($ReleasesRoot) {
+    (Resolve-Path -LiteralPath $ReleasesRoot).Path
+} else {
+    (Resolve-Path (Join-Path $repoRoot '..\..\..')).Path
+}
 if (-not $OutputDirectory) {
     $OutputDirectory = Join-Path $repoRoot 'migration'
 }

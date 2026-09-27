@@ -3,7 +3,9 @@ param(
     [ValidateSet('Unit', 'Package', 'All')]
     [string]$Mode = 'Unit',
 
-    [switch]$IncludeFailureFixture
+    [switch]$IncludeFailureFixture,
+
+    [string]$ReleasesRoot
 )
 
 $ErrorActionPreference = 'Stop'
@@ -99,7 +101,11 @@ function Invoke-UnitValidation {
 }
 
 function Invoke-PackageValidation {
-    & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'build-migration-manifest.ps1') | Write-Output
+    $manifestArguments = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', (Join-Path $PSScriptRoot 'build-migration-manifest.ps1'))
+    if ($ReleasesRoot) {
+        $manifestArguments += @('-ReleasesRoot', $ReleasesRoot)
+    }
+    & powershell @manifestArguments | Write-Output
     if ($LASTEXITCODE -ne 0) { throw 'Migration manifest build failed.' }
 
     & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'package.ps1') | Write-Output
