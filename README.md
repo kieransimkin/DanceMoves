@@ -1,6 +1,6 @@
 # DanceMoves
 
-## Paper Dreams flight adapter (2.6.1)
+## Paper Dreams flight adapter (2.6.2)
 
 The paper-plane renderer is a reusable page-configured DanceMoves effect. It is enabled by the `_dance_moves_effect` page property value `paper-planes`, reads tempo only from the page's `_dance_moves_bpm` property, and contains no release title, slug, page ID or hard-coded song BPM. The EPK Timing sidebar exposes both properties. Pages without the effect property do not load the plane assets.
 
@@ -610,3 +610,11 @@ For the EPK download route, verify one rendered MP3 download anchor from each ma
 - **Corrective action:** remove release titles, slugs, page IDs and song tempos from the plugin; expose a generic `paper-planes` effect property; load it only when that page property is selected; and read BPM solely from the existing DanceMoves BPM page property.
 - **Verification:** the page-configured flight contract rejects the former release selector and page-ID constant, requires the effect meta key and page-derived BPM, and the complete Unit and Package validation passes for 2.6.1.
 - **Limit:** the corrected package does not repair page metadata automatically. Each target page must have its BPM and effect properties explicitly saved and read back before publication is considered complete.
+
+### A running hero effect can be invisible behind opaque artwork
+
+- **Symptom (28 September 2026):** the public page created and animated all 12 paper-plane nodes with valid atlas backgrounds, but no new planes were visible over the full-screen hero artwork.
+- **Cause:** the flight stage used `z-index: 0`, while the opaque cover wrapper and heading were positioned siblings at `z-index: 1`. Browser geometry proved the nodes were moving inside the hero but painted behind the cover. This matches the CSS stacking model: within one stacking context, a positioned sibling with the larger `z-index` paints above the lower one ([MDN stacking context](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Positioned_layout/Stacking_context), checked 28 September 2026).
+- **Corrective action:** place the cover at layer 1, the pointer-transparent flight stage at layer 2, and the heading/actions at layer 3. Keep the hero isolated and clipped so the effect cannot cover navigation or escape its declared bounds.
+- **Verification:** the local 2.6.2 preview visibly renders generated planes over the artwork while the title remains above them; computed layers are cover 1, flight 2 and heading 3; the complete Unit and Package suite passes.
+- **Limit:** local visual proof does not establish the public fix. Upload the exact approved package, then verify the live computed layers and a rendered top-of-page screenshot before reporting completion.

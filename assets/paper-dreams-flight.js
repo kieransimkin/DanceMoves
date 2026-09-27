@@ -120,7 +120,7 @@
 
   window.DanceMovesPaperDreams={
     root:stage,
-    snapshot:function(){return {version:'2.6.1',planes:planes.length,active:running,quality:stage.dataset.quality,bpm:Number(config.bpm||120),bounds:'hero',states:planes.map(function(p){return p.state;})};},
+    snapshot:function(){return {version:'2.6.2',planes:planes.length,active:running,quality:stage.dataset.quality,bpm:Number(config.bpm||120),bounds:'hero',states:planes.map(function(p){return p.state;})};},
     teardown:function(){running=false;if(frame)window.cancelAnimationFrame(frame);if(observer)observer.disconnect();reduce.removeEventListener('change',reconcile);compact.removeEventListener('change',reconcile);document.removeEventListener('visibilitychange',reconcile);stage.remove();}
   };
 }(window, document));

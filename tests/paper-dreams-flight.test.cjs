@@ -19,5 +19,8 @@ assert.doesNotMatch(js,/style\.(?:top|left|width|height)\s*=/);
 assert.match(css,/prefers-reduced-motion:reduce/);
 assert.match(css,/forced-colors:active/);
 assert.doesNotMatch(css,/position:fixed/);
+assert.match(css,/\.paper-dreams-flight\{[^}]*z-index:2/);
+assert.match(css,/\.paper-dreams-flight~\.epk-cover-wrap\{z-index:1/);
+assert.match(css,/\.paper-dreams-flight~\.epk-heading\{z-index:3/);
 assert.doesNotMatch(css,/(?:brightness|background-color|opacity).*animation/i);
 console.log('Page-configured bounded paper-plane flight contracts passed.');
