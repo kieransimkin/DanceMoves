@@ -1,0 +1,12 @@
+.ks-epk[data-release="paper-dreams-from-the-sky"] .epk-hero{position:relative;isolation:isolate;overflow:hidden}
+.paper-dreams-flight{position:absolute;z-index:0;inset:0;overflow:hidden;pointer-events:none;contain:strict;clip-path:inset(0)}
+.paper-dreams-flight~*{position:relative;z-index:1}
+.paper-dreams-flight__plane{position:absolute;left:0;top:0;width:var(--plane-size,110px);aspect-ratio:1.5;background-image:var(--paper-dreams-atlas);background-size:600% 400%;background-position:var(--sprite-x) var(--sprite-y);background-repeat:no-repeat;opacity:var(--plane-opacity,.82);transform-origin:50% 50%;will-change:transform;filter:drop-shadow(0 8px 9px rgba(4,3,18,.28))}
+.paper-dreams-flight__plane[data-depth="0"]{filter:blur(.7px);mix-blend-mode:screen}
+.paper-dreams-flight__plane[data-depth="2"]{filter:drop-shadow(0 12px 14px rgba(4,3,18,.38))}
+.paper-dreams-flight[data-quality="compact"] .paper-dreams-flight__plane:nth-child(n+6){display:none}
+.paper-dreams-flight[data-quality="static"] .paper-dreams-flight__plane{display:none;will-change:auto}
+.paper-dreams-flight[data-quality="static"] .paper-dreams-flight__plane:nth-child(-n+3){display:block;transform:var(--static-transform);opacity:.55}
+@media(max-width:760px){.paper-dreams-flight__plane{width:var(--plane-size-compact,76px)}.paper-dreams-flight{inset:72px 0 0}}
+@media(prefers-reduced-motion:reduce){.paper-dreams-flight__plane{display:none!important;will-change:auto!important}.ks-epk .epk-story-plane{animation:none!important}}
+@media(forced-colors:active){.paper-dreams-flight{display:none}}

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: DanceMoves
  * Description: Adds BPM-synchronised motion, lyric and cue timing properties, reliable EPK downloads, named cue handlers, and permission-aware orientation control to EPK pages.
- * Version: 2.5.1
+ * Version: 2.6.0
  * Author: Kieran Simkin
  * License: GPL-2.0-or-later
  */
@@ -11,7 +11,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('DANCE_MOVES_VERSION', '2.5.1');
+define('DANCE_MOVES_VERSION', '2.6.0');
 define('KS_EPK_ORIENTATION_VERSION', DANCE_MOVES_VERSION);
 define('KS_EPK_MOTION_CAPTURE_TOKEN', 'e4c1d9a77fb446608e796a0f8fd8f576e59d2e67bca54a4d9f7fd06fbef3e1c2');
 
@@ -21,6 +21,7 @@ define('DANCE_MOVES_META_CUE_TIMING', '_dance_moves_cue_timing_id');
 define('DANCE_MOVES_META_LYRIC_POPUPS', '_dance_moves_lyric_popups_enabled');
 define('DANCE_MOVES_META_MASTER_DURATION', '_dance_moves_master_duration_ms');
 define('DANCE_MOVES_CLAY_STARS_PAGE_ID', 252);
+define('DANCE_MOVES_PAPER_DREAMS_PAGE_ID', 256);
 
 define('DANCE_MOVES_DOWNLOAD_QUERY_VAR', 'dance_moves_download');
 define('DANCE_MOVES_DOWNLOAD_SIGNATURE_QUERY_VAR', 'dance_moves_download_signature');
@@ -264,6 +265,10 @@ function dance_moves_get_page_config($page_id) {
     $stored_bpm = get_post_meta($page_id, DANCE_MOVES_META_BPM, true);
     $bpm = is_numeric($stored_bpm) ? (float) $stored_bpm : 120.0;
     $source = is_numeric($stored_bpm) ? 'explicit' : 'fallback';
+    if (!is_numeric($stored_bpm) && DANCE_MOVES_PAPER_DREAMS_PAGE_ID === (int) $page_id) {
+        $bpm = 100.0;
+        $source = 'explicit';
+    }
     if (!is_finite($bpm) || $bpm < 20 || $bpm > 400) {
         $bpm = 120.0;
         $source = 'fallback';
@@ -337,6 +342,34 @@ function ks_epk_orientation_enqueue_runtime() {
             array('dance-moves-core'),
             DANCE_MOVES_VERSION,
             true
+        );
+    }
+
+    if (DANCE_MOVES_PAPER_DREAMS_PAGE_ID === (int) $page_id) {
+        wp_enqueue_style(
+            'dance-moves-paper-dreams',
+            $base_url . 'paper-dreams-flight.css',
+            array('dance-moves-core'),
+            DANCE_MOVES_VERSION
+        );
+        wp_enqueue_script(
+            'dance-moves-paper-dreams',
+            $base_url . 'paper-dreams-flight.js',
+            array('dance-moves-core'),
+            DANCE_MOVES_VERSION,
+            true
+        );
+        wp_localize_script(
+            'dance-moves-paper-dreams',
+            'danceMovesPaperDreamsConfig',
+            array(
+                'pageId' => $page_id,
+                'atlasUrl' => $base_url . 'paper-dreams-plane-atlas.png',
+                'planeCount' => 12,
+                'compactPlaneCount' => 5,
+                'bpm' => 100,
+                'effectBounds' => 'hero',
+            )
         );
     }
 

@@ -1,5 +1,18 @@
 # DanceMoves
 
+## Paper Dreams flight adapter (2.6.0)
+
+Page 256 receives a release-scoped hero renderer derived from the verified short-form flight model. Twelve atlas-backed planes cross three depth layers through glide, climb, mush, stall, nose-drop, recovery and swoop states. The adapter uses the shared DanceMoves clock at the artist-confirmed 100 BPM, but keeps the physical interpolation continuous rather than forcing a wobble on every beat.
+
+The painted bounds are the existing hero only. The renderer writes transforms on at most 12 pooled DOM nodes (five on compact or slow-update devices), caps decoration without changing content, pauses when hidden or offscreen, and creates no full-frame audio-timed colour layer. Reduced-motion creates no animation loop; forced-colours hides the decoration. Roll belongs only to manoeuvres, avoiding the earlier permanent oscillating wobble.
+
+### Paper Dreams performance acceptance
+
+- Desktop cap: 12 planes; compact/slow-update cap: 5; three relative-depth profiles.
+- Hot path: transform-only writes; no geometry mutation, per-frame allocation, canvas clear, moving blur field or full-viewport repaint.
+- Bounds: `.epk-hero`, never the page or viewport; all controls and copy remain above the decorative layer.
+- Required checks: full/compact/static state, hidden and offscreen pause, reduced motion, forced colours, overflow, hero readability, stall-to-drop continuity and the shared performance acceptance target below.
+
 Version 2.5.0 gives every explicit WordPress-hosted MP3 download link on an EPK a signed download-only URL. That endpoint returns `Content-Disposition: attachment` while retaining the correct `audio/mpeg` media type. Player and source URLs are not rewritten, so the same MP3 remains seekable and playable in the page. Direct media URLs also remain inline. The content transformation uses WordPress's HTML Tag Processor and changes only same-site upload links whose anchor already has a `download` attribute.
 
 Version 2.4.2 preserves exact cue landings: seeking to within 50 milliseconds of a cue arms that one cue and dispatches it once when playback starts (or immediately when seeking during playback), while ordinary scrubbing still suppresses skipped cues. Version 2.4.1 extended each playback-synchronised lyric event with the immediate next LRC entry and its exact timestamp, allowing release adapters to choreograph a preview against the existing audio clock without reparsing the LRC or creating a second timer. Version 2.4.0 added opt-in lyric pop-ups. DanceMoves parses the selected canonical LRC as inert text, follows the same master-length audio and animation-frame clock as cue timing, clears on blank cues, re-indexes after seeks, hides on pause/end, and exposes `onLyric()` plus a bubbling `dance-moves-lyric` event. The shared component is intentionally visually neutral. Every adopting EPK must add a distinct treatment derived from that song's documented visual language; enabling the checkbox without that release-specific design review is not an approved EPK workflow.
