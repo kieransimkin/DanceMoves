@@ -466,6 +466,17 @@
   function dispatchLyric(entry, audio, index) {
     var nextIndex = Number.isFinite(index) && index + 1 < lyricList.length ? index + 1 : -1;
     var nextEntry = nextIndex >= 0 ? lyricList[nextIndex] : null;
+    var nextVisibleIndex = -1;
+    var nextVisibleEntry = null;
+    if (Number.isFinite(index)) {
+      for (var cursor = index + 1; cursor < lyricList.length; cursor += 1) {
+        if (String(lyricList[cursor].text || "").trim()) {
+          nextVisibleIndex = cursor;
+          nextVisibleEntry = lyricList[cursor];
+          break;
+        }
+      }
+    }
     var detail = {
       pageId: Number(rawConfig.pageId) || 0,
       time: entry ? entry.time : 0,
@@ -476,6 +487,10 @@
       nextText: nextEntry ? nextEntry.text : "",
       nextNormalisedText: nextEntry ? nextEntry.normalisedText : "",
       nextIndex: nextIndex,
+      nextVisibleTime: nextVisibleEntry ? nextVisibleEntry.time : null,
+      nextVisibleText: nextVisibleEntry ? nextVisibleEntry.text : "",
+      nextVisibleNormalisedText: nextVisibleEntry ? nextVisibleEntry.normalisedText : "",
+      nextVisibleIndex: nextVisibleIndex,
       audio: audio || null
     };
     Array.from(lyricHandlers.values()).forEach(function (registered) {

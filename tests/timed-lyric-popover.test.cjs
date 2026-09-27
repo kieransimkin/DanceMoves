@@ -48,7 +48,7 @@ function element(tagName) {
   };
   const window = {
     danceMovesConfig: {
-      version: "2.4.1",
+      version: "2.5.1",
       bpm: 148,
       bpmSource: "explicit",
       masterDurationMilliseconds: 10000,
@@ -57,7 +57,7 @@ function element(tagName) {
     },
     console,
     performance: { now: () => 0 },
-    fetch: async () => ({ ok: true, text: async () => "[00:00.00]First line\n[00:01.00]\n[00:02.00]Second line" }),
+    fetch: async () => ({ ok: true, text: async () => "[00:00.00]First line\n[00:01.00]\n[00:01.00]Second line" }),
     requestAnimationFrame(callback) { frames.push(callback); return frames.length; },
     cancelAnimationFrame() {},
     setTimeout,
@@ -87,19 +87,20 @@ function element(tagName) {
   assert.equal(firstEvent.detail.nextTime, 1);
   assert.equal(firstEvent.detail.nextText, "", "the immediate blank cue remains observable");
   assert.equal(firstEvent.detail.nextIndex, 1);
+  assert.equal(firstEvent.detail.nextVisibleTime, 1, "the next visible lyric may share a blank cue timestamp");
+  assert.equal(firstEvent.detail.nextVisibleText, "Second line");
+  assert.equal(firstEvent.detail.nextVisibleIndex, 2);
 
   audio.currentTime = 1.1;
-  frames.shift()();
-  assert.equal(popover.children[0].textContent, "");
-  assert.equal(popover.dataset.danceMovesLyricState, "idle", "blank canonical cue clears the pop-up");
-
-  audio.currentTime = 2.1;
   frames.shift()();
   assert.equal(popover.children[0].textContent, "Second line");
   const lastEvent = documentEvents.find(event => event.type === "dance-moves-lyric" && event.detail.text === "Second line");
   assert.equal(lastEvent.detail.nextTime, null);
   assert.equal(lastEvent.detail.nextText, "");
   assert.equal(lastEvent.detail.nextIndex, -1);
+  assert.equal(lastEvent.detail.nextVisibleTime, null);
+  assert.equal(lastEvent.detail.nextVisibleText, "");
+  assert.equal(lastEvent.detail.nextVisibleIndex, -1);
 
   audio.paused = true;
   audioListeners.pause();
