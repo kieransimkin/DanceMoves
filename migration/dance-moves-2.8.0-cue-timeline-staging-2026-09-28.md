@@ -53,5 +53,8 @@ The controlled in-app browser process crashed when its native media scrubber was
 ## Repository state
 
 - Local source commit message: `Add shared cue timeline transport recovery`; use the tagged `v2.8.0` commit as the durable identity after publication.
-- The private GitHub push and matching `v2.8.0` release remain pending an explicit approval to transmit the proprietary source commit and the exact ZIP/manifest to `kieransimkin/DanceMoves`.
+- Private branch commit: `4cb6a71f60459b5579be87d7e55ac8b1426c578e`.
+- GitHub release: `https://github.com/kieransimkin/DanceMoves/releases/tag/v2.8.0`.
+- The release is published, non-draft and non-prerelease. GitHub reports the ZIP uploaded with SHA-256 `599d6e377f142d8b56dfb735df96122993fb8ce1015fe582533f21e408f30e48`, matching the installed and local package.
+- GitHub reports the manifest uploaded with SHA-256 `efa0a8285dab97c48bad020a498fe339eecd36671b13201ad2edfc4c51a93bd3`.
 - Unrelated historical untracked `DanceMoves-2.6.3` package files were deliberately left outside the commit.
