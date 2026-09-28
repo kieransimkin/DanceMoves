@@ -139,6 +139,77 @@
     }));
   }
 
+  function cueTimeline(options) {
+    options = options || {};
+    var state = commonState(options, "cue-timeline");
+    var audio = element(options.audio, state.root.querySelector("audio"));
+    if (!audio) throw new Error("DanceMovesEffects cueTimeline requires an audio element");
+    var cues = (Array.isArray(options.cues) ? options.cues : []).map(function (cue, index) {
+      var time = finite(cue && cue.time, NaN);
+      if (!Number.isFinite(time) || time < 0) throw new TypeError("DanceMovesEffects cueTimeline cue time must be a non-negative number");
+      return Object.freeze({ id: String(cue.id || ("cue-" + index)), time: time, end: Number.isFinite(Number(cue.end)) ? Number(cue.end) : null, data: cue.data });
+    }).sort(function (a, b) { return a.time - b.time; });
+    var tolerance = Math.max(0, finite(options.seekLandingTolerance, .05));
+    var maxCrossingGap = Math.max(.05, finite(options.maxCrossingGap, 1.25));
+    var fired = new Set(), frame = 0, previous = finite(audio.currentTime, 0), status = "idle", generation = 0, previousWall = 0;
+    function blocked() { return document.hidden || state.reduced.matches || state.forced.matches; }
+    function activeAt(time) { return cues.filter(function (cue) { return cue.end !== null && time >= cue.time && time < cue.end; }); }
+    function publish(reason, extra) {
+      var time = finite(audio.currentTime, 0);
+      state.root.dataset.danceMovesCueTimeline = reason;
+      if (typeof options.render === "function") options.render({ root: state.root, audio: audio, time: time, previousTime: previous, reason: reason, playing: !audio.paused && !audio.ended && !blocked(), active: activeAt(time), generation: generation, detail: extra || null });
+    }
+    function fire(cue, reason) {
+      if (fired.has(cue.id) || blocked()) return;
+      fired.add(cue.id);
+      if (typeof options.onCue === "function") options.onCue({ root: state.root, audio: audio, cue: cue, time: finite(audio.currentTime, cue.time), reason: reason, generation: generation });
+    }
+    function rebuild(time, reason, allowLanding) {
+      time = Math.max(0, finite(time, 0));
+      generation += 1; fired.clear();
+      cues.forEach(function (cue) { if (cue.time < time - tolerance) fired.add(cue.id); });
+      if (allowLanding) cues.forEach(function (cue) { if (Math.abs(cue.time - time) <= tolerance) fire(cue, "seek-landing"); });
+      previous = time; publish(reason || "restore");
+    }
+    function stop(reason) {
+      if (frame) window.cancelAnimationFrame(frame); frame = 0; status = reason || "paused"; publish(status);
+    }
+    function tick(wallNow) {
+      frame = 0;
+      if (audio.paused || audio.ended || blocked()) return stop(audio.ended ? "ended" : blocked() ? "inactive" : "paused");
+      var now = Math.max(0, finite(audio.currentTime, previous));
+      var delta = now - previous;
+      if (delta < -.001 || delta > maxCrossingGap) rebuild(now, "discontinuity", false);
+      else cues.forEach(function (cue) { if (previous < cue.time && now >= cue.time) fire(cue, "crossing"); });
+      var wallDelta = previousWall ? Math.min(.25, Math.max(0, (finite(wallNow, previousWall) - previousWall) / 1000)) : 0;
+      previousWall = finite(wallNow, previousWall);
+      previous = now; status = "playing"; publish("frame", { deltaSeconds: wallDelta }); frame = window.requestAnimationFrame(tick);
+    }
+    function start(reason) {
+      if (frame || audio.paused || audio.ended || blocked()) return publish(blocked() ? "inactive" : audio.ended ? "ended" : "paused");
+      previous = Math.max(0, finite(audio.currentTime, 0)); previousWall = 0; status = reason || "playing"; publish(status); frame = window.requestAnimationFrame(tick);
+    }
+    function onSeeking() { stop("seeking"); }
+    function onSeeked() { rebuild(audio.currentTime, "seeked", options.fireOnSeekLanding === true && !audio.paused); if (!audio.paused) start("resume-after-seek"); }
+    listen(audio, "play", function () { start("play"); }, undefined, state.removers);
+    listen(audio, "playing", function () { start("playing"); }, undefined, state.removers);
+    listen(audio, "pause", function () { stop("paused"); }, undefined, state.removers);
+    listen(audio, "seeking", onSeeking, undefined, state.removers);
+    listen(audio, "seeked", onSeeked, undefined, state.removers);
+    listen(audio, "ratechange", function () { rebuild(audio.currentTime, "ratechange", false); }, undefined, state.removers);
+    listen(audio, "loadedmetadata", function () { rebuild(audio.currentTime, "metadata", false); }, undefined, state.removers);
+    listen(audio, "ended", function () { stop("ended"); }, undefined, state.removers);
+    listen(document, "visibilitychange", function () { if (document.hidden) stop("hidden"); else { rebuild(audio.currentTime, "visible", false); start("resume-after-visible"); } }, { passive: true }, state.removers);
+    listen(state.reduced, "change", function () { rebuild(audio.currentTime, state.reduced.matches ? "reduced-motion" : "motion-restored", false); if (!state.reduced.matches) start("resume-after-motion"); }, undefined, state.removers);
+    listen(state.forced, "change", function () { rebuild(audio.currentTime, state.forced.matches ? "forced-colours" : "colours-restored", false); if (!state.forced.matches) start("resume-after-colours"); }, undefined, state.removers);
+    rebuild(previous, "initial", false); if (!audio.paused) start("initial-playing");
+    return register(state.id, Object.freeze({
+      id: state.id, type: "cue-timeline", restore: function (reason) { rebuild(audio.currentTime, reason || "manual-restore", false); }, start: start, stop: stop,
+      snapshot: function () { return { id: state.id, type: "cue-timeline", status: status, time: finite(audio.currentTime, 0), previousTime: previous, generation: generation, fired: Array.from(fired), active: activeAt(finite(audio.currentTime, 0)).map(function (cue) { return cue.id; }) }; },
+      teardown: function () { stop("teardown"); state.removers.splice(0).forEach(function (remove) { remove(); }); instances.delete(state.id); }
+    }));
+  }
+
   function quality(options) {
     options = options || {};
     var state = commonState(options, "quality");
@@ -201,7 +272,7 @@
   }
 
   window.DanceMovesEffects = Object.freeze({
-    version: String(motion.version || ""), pointer: pointer, playbackPulse: playbackPulse, cueClass: cueClass, quality: quality,
+    version: String(motion.version || ""), pointer: pointer, playbackPulse: playbackPulse, cueClass: cueClass, cueTimeline: cueTimeline, quality: quality,
     get: function (id) { return instances.get(String(id)) || null; },
     snapshot: function () { return Array.from(instances.values()).map(function (instance) { return instance.snapshot(); }); },
     teardown: function (id) { var instance = instances.get(String(id)); if (instance) instance.teardown(); },

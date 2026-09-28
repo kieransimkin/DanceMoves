@@ -316,6 +316,7 @@ The package may be proposed for deployment only when:
 | E-030 | Action-time approval | Immediately before mutation, approval identifies the exact page ID/URL, payload hash, plugin ZIP hash, metadata values and intended legacy-plugin state |
 | E-031 | Single controlled save | The approved package/page/meta changes are applied once; any HTML/JSON 500 or write-to-disk error stops further mutation until capacity is remediated and persistence is checked |
 | E-032 | Persisted source | Reloaded editor/REST source and metadata hash-match the approved candidate; expected asset versions and one release sentinel are present |
+| E-032A | Public parse sweep | With browser exception capture armed before navigation, every published EPK in the canonical catalogue loads the approved plugin asset version with no new `SyntaxError`, uncaught exception, required-asset load failure, `&#038;&#038;` or `&amp;&amp;` corruption; cue-enabled pages expose both DanceMoves cue-ready/count markers and their release-adapter initialization marker |
 | E-033 | Signed-out public QA | A fresh signed-out response repeats E-010 through E-020 at 1440, 900 and 390 px; physical phone tilt is repeated if applicable |
 | E-034 | Feature parity after save | Public counts, destinations and behaviours match the pre-save parity checklist; a save acknowledgement alone is not evidence of correct rendering |
 | E-035 | Rollback readiness | Previous revision/plugin ZIP can be restored without deleting shared media; rollback trigger and responsible action are recorded |
@@ -334,6 +335,7 @@ An EPK must not be made live, or must be rolled back, if any of these are true:
 - the property inventory finds a continuous layout/paint animation or an unresolved expensive compositing risk;
 - reduced-motion, keyboard, focus, forced-colour or Unicode integrity fails;
 - WordPress capacity is below the safe write threshold or transport integrity is unknown;
+- the pre-upload PHP/JavaScript syntax gate was not run for the exact package, or the post-upload catalogue parse sweep has any failure;
 - legacy and DanceMoves effects can double-load;
 - the persisted signed-out result differs from the approved hashes or staged rendering; or
 - exact action-time approval is absent.

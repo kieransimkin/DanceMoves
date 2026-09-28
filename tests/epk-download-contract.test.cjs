@@ -4,8 +4,8 @@ const path = require("node:path");
 
 const php = fs.readFileSync(path.join(__dirname, "..", "kieran-epk-device-orientation.php"), "utf8");
 
-assert.match(php, /Version:\s*2\.7\.0/);
-assert.match(php, /define\('DANCE_MOVES_VERSION',\s*'2\.7\.0'\)/);
+assert.match(php, /Version:\s*2\.8\.0/);
+assert.match(php, /define\('DANCE_MOVES_VERSION',\s*'2\.8\.0'\)/);
 assert.match(php, /new WP_HTML_Tag_Processor\(\$content\)/);
 assert.match(php, /while \(\$processor->next_tag\('A'\)\)/);
 assert.match(php, /null === \$processor->get_attribute\('download'\)/);

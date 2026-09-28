@@ -1,8 +1,10 @@
 # DanceMoves
 
-## Reusable effect primitives (2.7.0)
+## Reusable effect primitives (2.8.0)
 
-DanceMoves 2.7.0 moves four repeated motion mechanisms out of individual EPK payloads and into `assets/dance-moves-effects.js`. The shared code owns input acquisition, requestAnimationFrame scheduling, cached geometry, audio phase, cue subscription, visibility and motion-preference lifecycle, and recoverable quality measurement. EPK pages keep only scoped CSS and optional appearance/render callbacks.
+DanceMoves 2.8.0 keeps repeated motion and playback mechanisms out of individual EPK payloads. The shared code owns input acquisition, requestAnimationFrame scheduling, cached geometry, audio phase, cue subscription, cue deduplication, crossing detection, seeking, pause/resume, current-time restoration, visibility and motion-preference lifecycle, and recoverable quality measurement. EPK pages keep only declarative cue data, scoped CSS and optional appearance/render callbacks.
+
+`DanceMovesEffects.cueTimeline()` is the reusable playback state machine. Supply an audio element, sorted or unsorted cue objects and page-specific `onCue`/`render` callbacks. The primitive rebuilds state from `audio.currentTime` after seeks and visibility or preference changes, does not replay skipped cues, prevents duplicate cue firing within one traversal, and resumes from the actual playback position without maintaining a page-local clock.
 
 | Motion type | Shared API | Replaces repeated page code | Page-owned surface |
 | --- | --- | --- | --- |

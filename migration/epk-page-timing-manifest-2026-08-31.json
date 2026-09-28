@@ -7,7 +7,7 @@
     "page_count":  54,
     "explicit_bpm_count":  3,
     "fallback_bpm_count":  51,
-    "eligible_lyric_timing_count":  16,
+    "eligible_lyric_timing_count":  21,
     "cue_timing_count":  2,
     "pages":  [
                   {
@@ -21,12 +21,16 @@
                       "bpm_evidence":  null,
                       "master_duration_milliseconds":  null,
                       "master_sha256":  null,
-                      "lyric_timing_status":  "not_in_canonical_registry",
-                      "lyric_timing_eligible":  false,
-                      "lyric_timing":  null,
+                      "lyric_timing_status":  "canonical_estimated_pending_listening_qa",
+                      "lyric_timing_eligible":  true,
+                      "lyric_timing":  {
+                                           "path":  "California Screamin\u0027/lyric-timing-2026-09-28/master-repetition-safe/synced-lyrics-estimated.lrc",
+                                           "sha256":  "099C48CAC22853FBA52811E55F984EE0302B7F2BDAAC147E1A574D2863A65C56",
+                                           "bytes":  2886
+                                       },
                       "cue_timing":  null,
                       "proposed_action":  [
-
+                                              "upload_or_reuse_lyric_timing"
                                           ]
                   },
                   {
@@ -1032,12 +1036,16 @@
                       "bpm_evidence":  null,
                       "master_duration_milliseconds":  null,
                       "master_sha256":  null,
-                      "lyric_timing_status":  "not_in_canonical_registry",
-                      "lyric_timing_eligible":  false,
-                      "lyric_timing":  null,
+                      "lyric_timing_status":  "canonical_estimated_pending_listening_qa",
+                      "lyric_timing_eligible":  true,
+                      "lyric_timing":  {
+                                           "path":  "Bum Goblin/lyric-timing-2026-09-28/master-repetition-safe/synced-lyrics-estimated.lrc",
+                                           "sha256":  "A37D0AB997B1ECBAAA75EC72227ED662505B02DA5DA21C3247341ADA57DBFBA4",
+                                           "bytes":  2564
+                                       },
                       "cue_timing":  null,
                       "proposed_action":  [
-
+                                              "upload_or_reuse_lyric_timing"
                                           ]
                   },
                   {
@@ -1051,12 +1059,16 @@
                       "bpm_evidence":  null,
                       "master_duration_milliseconds":  null,
                       "master_sha256":  null,
-                      "lyric_timing_status":  "not_in_canonical_registry",
-                      "lyric_timing_eligible":  false,
-                      "lyric_timing":  null,
+                      "lyric_timing_status":  "canonical_estimated_pending_listening_qa",
+                      "lyric_timing_eligible":  true,
+                      "lyric_timing":  {
+                                           "path":  "Out of Tokens/lyric-timing-2026-09-28/master-repetition-safe/synced-lyrics-estimated.lrc",
+                                           "sha256":  "D5E2541A08091CC3C3EDF9681D64BB21DEE469C8D9AC95017CDC82D50B6C543C",
+                                           "bytes":  2242
+                                       },
                       "cue_timing":  null,
                       "proposed_action":  [
-
+                                              "upload_or_reuse_lyric_timing"
                                           ]
                   },
                   {
@@ -1070,12 +1082,16 @@
                       "bpm_evidence":  null,
                       "master_duration_milliseconds":  null,
                       "master_sha256":  null,
-                      "lyric_timing_status":  "not_in_canonical_registry",
-                      "lyric_timing_eligible":  false,
-                      "lyric_timing":  null,
+                      "lyric_timing_status":  "canonical_estimated_pending_listening_qa",
+                      "lyric_timing_eligible":  true,
+                      "lyric_timing":  {
+                                           "path":  "Headphones On/lyric-timing-2026-09-28/master-repetition-safe/synced-lyrics-estimated.lrc",
+                                           "sha256":  "3BB07598689B4AF038EFBCD50A70363826686EEFEFD5B6E27EFFB74230910B91",
+                                           "bytes":  2379
+                                       },
                       "cue_timing":  null,
                       "proposed_action":  [
-
+                                              "upload_or_reuse_lyric_timing"
                                           ]
                   },
                   {
@@ -1108,12 +1124,16 @@
                       "bpm_evidence":  null,
                       "master_duration_milliseconds":  null,
                       "master_sha256":  null,
-                      "lyric_timing_status":  "not_in_canonical_registry",
-                      "lyric_timing_eligible":  false,
-                      "lyric_timing":  null,
+                      "lyric_timing_status":  "canonical_estimated_pending_listening_qa",
+                      "lyric_timing_eligible":  true,
+                      "lyric_timing":  {
+                                           "path":  "Excessive Stuffing/lyric-timing-2026-09-28/master-repetition-safe/synced-lyrics-estimated.lrc",
+                                           "sha256":  "D38EF46A2CDC6848D7ED2421812B952A2371E46C12BE1067413412492B160852",
+                                           "bytes":  3030
+                                       },
                       "cue_timing":  null,
                       "proposed_action":  [
-
+                                              "upload_or_reuse_lyric_timing"
                                           ]
                   }
               ]
