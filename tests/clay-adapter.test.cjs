@@ -439,15 +439,18 @@ for (const selector of ["epk-actions > p:empty", "ks-clay-stars-chapters > br", 
   assert.ok(productionCss.includes(selector), `P-039 scoped WordPress formatting selector missing: ${selector}`);
 }
 
-const candidate = fs.readFileSync(path.join(repoRoot, "qa", "clay-stars-harness-candidate.html"), "utf8");
+const { readUnitCandidate, versionFor } = require("../tools/prepare-test-harnesses.cjs");
+const candidate = readUnitCandidate(repoRoot, "clay-stars");
+const localVersion = versionFor(repoRoot) + "-local";
+assert.match(candidate, /name="dance-moves-fixture" content="unit-only"/);
 assert.match(candidate, /<title>Made from the clay and the stars \(Anunnaki\)/, "candidate retains the canonical release identity");
 assert.equal((candidate.match(/class="[^"]*ks-clay-stars-v2[^"]*"/g) || []).length, 1, "candidate has one release root");
 assert.equal((candidate.match(/<audio\b/g) || []).length, 1, "candidate retains the canonical player");
 assert.equal((candidate.match(/<button[^>]+data-time=/g) || []).length, 5, "candidate retains all chapter controls");
 assert.ok(candidate.indexOf("harness-probe.js") < candidate.indexOf("dance-moves-core.js"), "probe loads before production core");
 assert.ok(candidate.indexOf("clay-stars-effects.js") < candidate.indexOf("effect-under-test-adapter.js"), "thin adapter loads after the production Clay runtime");
-assert.equal((candidate.match(/dance-moves-core\.js\?ver=2\.3\.5-local/g) || []).length, 1, "candidate loads one local 2.3.5 core");
-assert.equal((candidate.match(/clay-stars-effects\.js\?ver=2\.3\.5-local/g) || []).length, 1, "candidate loads one local 2.3.5 Clay adapter");
+assert.equal(candidate.split(`dance-moves-core.js?ver=${localVersion}`).length - 1, 1, "candidate loads one current local core");
+assert.equal(candidate.split(`clay-stars-effects.js?ver=${localVersion}`).length - 1, 1, "candidate loads one current local Clay adapter");
 assert.equal((candidate.match(/class="ks-warm-bloom"/g) || []).length, 1, "P-032 candidate has one warm bloom");
 assert.equal((candidate.match(/class="ks-lens-flare"/g) || []).length, 1, "P-032 candidate has one lens flare");
 assert.equal((candidate.match(/class="ks-specular-sweep"/g) || []).length, 1, "P-032 candidate has one specular sweep");

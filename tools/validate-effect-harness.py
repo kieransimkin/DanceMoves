@@ -288,12 +288,15 @@ def scan_javascript(path: Path, root: Path, policy: dict, report: Report) -> Non
     scan_javascript_text(path.read_text(encoding="utf-8"), relative, policy, report)
 
 
-def validate_harness(root: Path, mode: str, manifest_file: Path | None = None, shared_root: Path | None = None) -> Report:
+def validate_harness(root: Path, mode: str, manifest_file: Path | None = None, shared_root: Path | None = None, candidate_file: Path | None = None) -> Report:
     manifest_path = manifest_file or (root / "effect-harness.manifest.json")
     asset_root = manifest_path.parent
     common_root = shared_root or root
     shared_manifest = manifest_file is not None
     report = Report(asset_root, mode)
+    if candidate_file is not None and mode != "scaffold":
+        report.add("FAIL", "CANDIDATE_OVERRIDE", "A candidate override is allowed only for scaffold/unit checks, never pre-live approval")
+        return report
     if not root.is_dir():
         report.add("FAIL", "ROOT", "Harness directory does not exist")
         return report
@@ -344,12 +347,15 @@ def validate_harness(root: Path, mode: str, manifest_file: Path | None = None, s
     for path in [asset_root / "effect-under-test-adapter.js", *[resolve_asset(asset_root, item) for item in js_assets]]:
         if path.is_file():
             scan_javascript(path, asset_root, policy, report)
-    candidate_name = manifest.get("effect", {}).get("candidate", "candidate.html")
+    candidate_name = str(candidate_file) if candidate_file is not None else manifest.get("effect", {}).get("candidate", "candidate.html")
     candidate = resolve_asset(asset_root, candidate_name)
     if not candidate.is_file():
         report.add("FAIL", "REQUIRED_FILE", f"Required candidate missing: {candidate_name}", str(candidate_name))
     if candidate.is_file():
         candidate_text = candidate.read_text(encoding="utf-8")
+        if re.search(r'<meta\s+name=["\']dance-moves-fixture["\']\s+content=["\']unit-only["\']\s*/?>', candidate_text, re.I):
+            report.add("FAIL" if mode == "prelive" else "WARN", "UNIT_FIXTURE",
+                       "Unit-only input: this is not full-page, browser, playback or physical-device acceptance", str(candidate))
         for index, match in enumerate(re.finditer(r"<style\b[^>]*>(.*?)</style>", candidate_text, re.I | re.S), 1):
             scan_css_text(match.group(1), f"candidate.html#inline-style-{index}", policy, report)
         for index, match in enumerate(re.finditer(r"<script\b(?![^>]*\bsrc\s*=)[^>]*>(.*?)</script>", candidate_text, re.I | re.S), 1):
@@ -377,12 +383,16 @@ def main() -> int:
     parser.add_argument("--json-out", type=Path)
     parser.add_argument("--manifest-file", type=Path, help="Validate an effect manifest that reuses a shared harness core")
     parser.add_argument("--shared-root", type=Path, help="Shared live-lab/runtime directory used with --manifest-file")
+    parser.add_argument("--candidate-file", type=Path, help="Explicit offline unit candidate; scaffold mode only. Does not alter the pre-live manifest.")
     args = parser.parse_args()
+    if args.candidate_file and args.mode != "scaffold":
+        parser.error("--candidate-file cannot be used in prelive mode")
     report = validate_harness(
         args.harness.resolve(),
         args.mode,
         args.manifest_file.resolve() if args.manifest_file else None,
         args.shared_root.resolve() if args.shared_root else None,
+        args.candidate_file.resolve() if args.candidate_file else None,
     )
     result = report.result()
     output = json.dumps(result, indent=2, ensure_ascii=False)

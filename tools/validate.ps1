@@ -41,6 +41,10 @@ function Invoke-UnitValidation {
         throw "Deliberate failure fixture unexpectedly passed: $failureFixture"
     }
 
+    # Prepare ignored unit HTML from tracked inputs before any test reads it.
+    & node (Join-Path $PSScriptRoot 'prepare-test-harnesses.cjs')
+    if ($LASTEXITCODE -ne 0) { throw 'Offline unit harness preparation failed.' }
+
     Get-ChildItem -LiteralPath (Join-Path $repoRoot 'tests') -File -Filter '*.test.cjs' | Sort-Object Name | ForEach-Object {
         & node $_.FullName
         if ($LASTEXITCODE -ne 0) { throw "Test failed: $($_.Name)" }
@@ -62,17 +66,26 @@ function Invoke-UnitValidation {
     if ($LASTEXITCODE -ne 0) { throw 'DanceMoves core harness validation failed.' }
 
     $clayHarness = Join-Path $repoRoot 'tests\harness\clay-stars'
-    $clayHarnessOutput = & python -X utf8 (Join-Path $PSScriptRoot 'validate-effect-harness.py') $clayHarness --mode scaffold --manifest-file (Join-Path $clayHarness 'clay-stars.json') --shared-root (Join-Path $repoRoot 'tests\harness\plugin-core')
-    if ($LASTEXITCODE -ne 0) { throw 'Clay/Stars shared harness validation failed.' }
-    Write-Output 'Clay/Stars shared harness validation passed.'
+    $clayUnitCandidate = Join-Path $repoRoot 'qa\clay-stars-unit-candidate.html'
+    $clayHarnessOutput = & python -X utf8 (Join-Path $PSScriptRoot 'validate-effect-harness.py') $clayHarness --mode scaffold --manifest-file (Join-Path $clayHarness 'clay-stars.json') --shared-root (Join-Path $repoRoot 'tests\harness\plugin-core') --candidate-file $clayUnitCandidate
+    if ($LASTEXITCODE -ne 0) {
+        $clayHarnessOutput | Write-Output
+        throw 'Clay/Stars unit harness validation failed.'
+    }
+    Write-Output 'Clay/Stars unit scaffold passed; pre-live acceptance is separate.'
 
     $californiaHarness = Join-Path $repoRoot 'tests\harness\california-screamin'
-    $californiaHarnessOutput = & python -X utf8 (Join-Path $PSScriptRoot 'validate-effect-harness.py') $californiaHarness --mode scaffold --manifest-file (Join-Path $californiaHarness 'california-screamin.json') --shared-root (Join-Path $repoRoot 'tests\harness\plugin-core')
+    $californiaUnitCandidate = Join-Path $repoRoot 'qa\california-screamin-unit-candidate.html'
+    $californiaHarnessOutput = & python -X utf8 (Join-Path $PSScriptRoot 'validate-effect-harness.py') $californiaHarness --mode scaffold --manifest-file (Join-Path $californiaHarness 'california-screamin.json') --shared-root (Join-Path $repoRoot 'tests\harness\plugin-core') --candidate-file $californiaUnitCandidate
     if ($LASTEXITCODE -ne 0) {
-        Write-Warning 'California Screamin full-page audit retains known page-owned width/background-position blockers. Review the separate audit output; adapter contracts remain release-gating.'
+        $californiaHarnessOutput | Write-Output
+        throw 'California Screamin unit harness validation failed.'
     } else {
-        Write-Output 'California Screamin shared harness validation passed.'
+        Write-Output 'California Screamin unit scaffold passed (synthetic DOM; not full-page QA).'
     }
+
+    & python -X utf8 (Join-Path $repoRoot 'tests\test-harness-candidate-selection.py')
+    if ($LASTEXITCODE -ne 0) { throw 'Unit/pre-live harness separation checks failed.' }
 
     $strictUtf8 = New-Object System.Text.UTF8Encoding($false, $true)
     $textExtensions = @('.php', '.js', '.cjs', '.mjs', '.css', '.md', '.html', '.json', '.tsv', '.ps1', '.lrc')

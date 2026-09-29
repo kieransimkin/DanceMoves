@@ -78,12 +78,25 @@ Perform attended Arcadians playback and the real-device/public-page gates in
 `TEST-PLAN.md` and `RUDIMENTS-API.md` for the changed systems. A static coverage
 pass, a simulated request or a native lookup-table test is not a substitute.
 
-Some existing gates rely on canonical release/QA fixtures outside a clean Git
-checkout. Build only the named fixtures with the documented preview builders and
-the verified canonical source. A missing fixture is a **blocked test**, not a
-reason to delete assertions or substitute another EPK. Do not run
-`tools/stage-central-effects-migrations.js` as a generic release command: it
-contains fixed local workspace paths and performs staging transformations.
+Unit validation now automatically runs `tools/prepare-test-harnesses.cjs` before
+the Node tests. It builds two ignored `qa/*-unit-candidate.html` files offline:
+California uses a clearly labelled synthetic adapter DOM; Clay uses the existing
+hash-pinned `qa/prelive/clay-stars/canonical-live-2.3.2.html` snapshot. Their script
+versions come from the current plugin header. Direct adapter-test invocations
+prepare their own input too. Neither the private `Z:` drive nor a network fetch
+is required for these unit inputs.
+
+These are **unit inputs, not release-acceptance evidence**. The original full-page
+manifest paths are unchanged and pre-live mode rejects the unit-only marker and
+`--candidate-file` overrides. Continue to use verified full EPK payloads and
+attended browser/device evidence for release acceptance. Do not run the old
+California preview builder against an invented `Z:` directory or treat an offline
+unit pass as a full-page performance pass. A missing tracked Clay snapshot or
+changed snapshot hash is still a hard failure; restore the original from Git,
+never repin it automatically. See [validation setup](docs/validation-setup.md).
+
+Do not run `tools/stage-central-effects-migrations.js` as a generic release
+command: it contains fixed local workspace paths and staging transformations.
 
 ## 3. Package the exact approved bytes
 

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>California Screamin' - synthetic adapter unit fixture</title>
+  <style>
+    .cs-epk { --cs-x: 0; --cs-y: 0; max-width: 50rem; margin: auto; }
+    .cs-cover-stage { position: relative; overflow: hidden; min-height: 16rem; }
+    .cs-cover { transform: translate(calc(var(--cs-x) * 8px), calc(var(--cs-y) * 6px)); }
+    .cs-cables, .cs-cover-glow { transform: translate(calc(var(--cs-x) * 4px), calc(var(--cs-y) * 3px)); }
+    @media (prefers-reduced-motion: reduce) {
+      .cs-cover, .cs-cables, .cs-cover-glow { transform: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Synthetic DOM contract ONLY: not the published artwork, audio or full EPK. -->
+  <section id="cs-epk" class="ks-epk cs-epk" data-release="california-screamin">
+    <h1>California Screamin' - adapter test</h1>
+    <p>Offline structural fixture. A pass does not certify the live California page.</p>
+    <div class="cs-cover-stage">
+      <div class="cs-cover">Cover subject</div>
+      <div class="cs-cables" aria-hidden="true">Cable subject</div>
+      <div class="cs-cover-glow" aria-hidden="true">Light subject</div>
+    </div>
+    <audio id="cs-audio" controls preload="none"></audio>
+    <button id="cs-motion-toggle" type="button">Motion test control</button>
+    <button id="cs-let-out" type="button">Effect test control</button>
+  </section>
+</body>
+</html>
