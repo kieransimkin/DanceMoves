@@ -1,0 +1,476 @@
+{
+  "schema": "dance-moves-examples/v1",
+  "pluginVersion": "2.9.0",
+  "pluginCommit": "c4252556774f38cad6d75b1a52de7917d2c65af0",
+  "media": "media/manifest.json",
+  "features": [
+    {
+      "id": "arcadians",
+      "title": "Arcadians: ancient to future",
+      "kind": "Real-page-inspired",
+      "summary": "Pointer, four-beat playback pulse, quality tiers and a ten-section journey.",
+      "instructions": "Follow the live Arcadians page\u2019s structure; this is a teaching adaptation, not a saved production page.",
+      "pageId": 260,
+      "meta": {
+        "_dance_moves_bpm": 145,
+        "_dance_moves_lyric_timing_id": 9001,
+        "_dance_moves_cue_timing_id": 9002,
+        "_dance_moves_lyric_popups_enabled": false,
+        "_dance_moves_master_duration_ms": 273604.558,
+        "_dance_moves_effect": ""
+      },
+      "code": "demos/arcadians.mjs",
+      "page": "arcadians.html",
+      "diagnostics": false,
+      "extraAssets": []
+    },
+    {
+      "id": "metadata",
+      "title": "Page metadata and revisions",
+      "kind": "Supplementary",
+      "summary": "Set BPM, timing attachments, lyric opt-in and ambient effect.",
+      "instructions": "The sidebar is a local simulator. IDs 9001/9002 are fixtures, never real WordPress attachment IDs.",
+      "pageId": 9101,
+      "meta": {
+        "_dance_moves_bpm": 145,
+        "_dance_moves_lyric_timing_id": 9001,
+        "_dance_moves_cue_timing_id": 9002,
+        "_dance_moves_lyric_popups_enabled": false,
+        "_dance_moves_master_duration_ms": 273604.558,
+        "_dance_moves_effect": ""
+      },
+      "code": "demos/metadata.mjs",
+      "page": "metadata.html",
+      "diagnostics": false,
+      "extraAssets": []
+    },
+    {
+      "id": "clock",
+      "title": "Musical clock and CSS timing",
+      "kind": "Supplementary",
+      "summary": "Inspect ticks, pips, beats, bars, duration quantisation and clock selection.",
+      "instructions": "Watch the page clock before playback, then compare the explicit audio clock.",
+      "pageId": 9102,
+      "meta": {
+        "_dance_moves_bpm": 145,
+        "_dance_moves_lyric_timing_id": 0,
+        "_dance_moves_cue_timing_id": 0,
+        "_dance_moves_lyric_popups_enabled": false,
+        "_dance_moves_master_duration_ms": 273604.558,
+        "_dance_moves_effect": ""
+      },
+      "code": "demos/clock.mjs",
+      "page": "clock.html",
+      "diagnostics": false,
+      "extraAssets": []
+    },
+    {
+      "id": "scheduling",
+      "title": "Starts, beats and interval handlers",
+      "kind": "Supplementary",
+      "summary": "One-shot and repeating scheduling; deferred CSS starts; cancellation.",
+      "instructions": "Start audio, register a beat/bar callback, cancel it, then try a deferred entrance.",
+      "pageId": 9103,
+      "meta": {
+        "_dance_moves_bpm": 145,
+        "_dance_moves_lyric_timing_id": 0,
+        "_dance_moves_cue_timing_id": 0,
+        "_dance_moves_lyric_popups_enabled": false,
+        "_dance_moves_master_duration_ms": 273604.558,
+        "_dance_moves_effect": ""
+      },
+      "code": "demos/scheduling.mjs",
+      "page": "scheduling.html",
+      "diagnostics": false,
+      "extraAssets": []
+    },
+    {
+      "id": "cues",
+      "title": "Named cues, events and animation ownership",
+      "kind": "Supplementary",
+      "summary": "File parsers, normalised names, manual cues, exact seek landings and owned animation resets.",
+      "instructions": "Seek to Drop 1 while paused, then play. Compare owned animation with the theme\u2019s unowned spinner.",
+      "pageId": 9104,
+      "meta": {
+        "_dance_moves_bpm": 145,
+        "_dance_moves_lyric_timing_id": 0,
+        "_dance_moves_cue_timing_id": 9002,
+        "_dance_moves_lyric_popups_enabled": false,
+        "_dance_moves_master_duration_ms": 273604.558,
+        "_dance_moves_effect": ""
+      },
+      "code": "demos/cues.mjs",
+      "page": "cues.html",
+      "diagnostics": false,
+      "extraAssets": []
+    },
+    {
+      "id": "lyrics",
+      "title": "Canonical lyrics and look-ahead",
+      "kind": "Supplementary",
+      "summary": "Built-in popover, custom onLyric listener, immediate-next and next-visible lyric values.",
+      "instructions": "Seek to 2.89, 7.76 and 7.81 seconds to inspect sung, blank-clear and next-line states.",
+      "pageId": 9105,
+      "meta": {
+        "_dance_moves_bpm": 145,
+        "_dance_moves_lyric_timing_id": 9001,
+        "_dance_moves_cue_timing_id": 0,
+        "_dance_moves_lyric_popups_enabled": true,
+        "_dance_moves_master_duration_ms": 273604.558,
+        "_dance_moves_effect": ""
+      },
+      "code": "demos/lyrics.mjs",
+      "page": "lyrics.html",
+      "diagnostics": false,
+      "extraAssets": []
+    },
+    {
+      "id": "audio",
+      "title": "Master-length audio discovery",
+      "kind": "Supplementary",
+      "summary": "Bind two copies of the master; derive a short Arcadians excerpt and show why it is excluded.",
+      "instructions": "The eight-second excerpt is cut from the same MP3 in your browser, not a different demonstration song.",
+      "pageId": 9106,
+      "meta": {
+        "_dance_moves_bpm": 145,
+        "_dance_moves_lyric_timing_id": 0,
+        "_dance_moves_cue_timing_id": 0,
+        "_dance_moves_lyric_popups_enabled": false,
+        "_dance_moves_master_duration_ms": 273604.558,
+        "_dance_moves_effect": ""
+      },
+      "code": "demos/audio.mjs",
+      "page": "audio.html",
+      "diagnostics": false,
+      "extraAssets": []
+    },
+    {
+      "id": "pointer",
+      "title": "Bounded pointer and parallax",
+      "kind": "Supplementary",
+      "summary": "Cached bounds, clamped input, custom render, reset and teardown.",
+      "instructions": "Move over the stage or use the manual controls. Manual set is not physical sensor evidence.",
+      "pageId": 9107,
+      "meta": {
+        "_dance_moves_bpm": 145,
+        "_dance_moves_lyric_timing_id": 0,
+        "_dance_moves_cue_timing_id": 0,
+        "_dance_moves_lyric_popups_enabled": false,
+        "_dance_moves_master_duration_ms": 273604.558,
+        "_dance_moves_effect": ""
+      },
+      "code": "demos/pointer.mjs",
+      "page": "pointer.html",
+      "diagnostics": false,
+      "extraAssets": []
+    },
+    {
+      "id": "pulse",
+      "title": "Audio-phase pulse",
+      "kind": "Supplementary",
+      "summary": "Duration/delay CSS variables, playback-rate changes, seeking and pause.",
+      "instructions": "Play, change rate, seek to a chapter, pause and inspect the CSS phase.",
+      "pageId": 9108,
+      "meta": {
+        "_dance_moves_bpm": 145,
+        "_dance_moves_lyric_timing_id": 0,
+        "_dance_moves_cue_timing_id": 0,
+        "_dance_moves_lyric_popups_enabled": false,
+        "_dance_moves_master_duration_ms": 273604.558,
+        "_dance_moves_effect": ""
+      },
+      "code": "demos/pulse.mjs",
+      "page": "pulse.html",
+      "diagnostics": false,
+      "extraAssets": []
+    },
+    {
+      "id": "cue-class",
+      "title": "Finite cue-triggered class",
+      "kind": "Supplementary",
+      "summary": "Cue subscription, retriggering, bounded wall-clock lifetime, fire and clear.",
+      "instructions": "Fire DROP 1. This finite class is not an audio-restored interval; its timer does not freeze on pause.",
+      "pageId": 9109,
+      "meta": {
+        "_dance_moves_bpm": 145,
+        "_dance_moves_lyric_timing_id": 0,
+        "_dance_moves_cue_timing_id": 9002,
+        "_dance_moves_lyric_popups_enabled": false,
+        "_dance_moves_master_duration_ms": 273604.558,
+        "_dance_moves_effect": ""
+      },
+      "code": "demos/cue-class.mjs",
+      "page": "cue-class.html",
+      "diagnostics": false,
+      "extraAssets": []
+    },
+    {
+      "id": "timeline",
+      "title": "Restorable cue timeline",
+      "kind": "Supplementary",
+      "summary": "Crossing detection, no replay of skipped cues, active interval reconstruction and restore.",
+      "instructions": "Seek into a Drop, backwards into a Verse, pause, resume, and use manual restore.",
+      "pageId": 9110,
+      "meta": {
+        "_dance_moves_bpm": 145,
+        "_dance_moves_lyric_timing_id": 0,
+        "_dance_moves_cue_timing_id": 0,
+        "_dance_moves_lyric_popups_enabled": false,
+        "_dance_moves_master_duration_ms": 273604.558,
+        "_dance_moves_effect": ""
+      },
+      "code": "demos/timeline.mjs",
+      "page": "timeline.html",
+      "diagnostics": false,
+      "extraAssets": []
+    },
+    {
+      "id": "quality",
+      "title": "Recoverable quality tiers",
+      "kind": "Supplementary",
+      "summary": "Measured quality, manual tier selection, registry get/snapshot/teardown.",
+      "instructions": "Manual tier buttons demonstrate styling only; they do not fabricate low-frame-rate evidence.",
+      "pageId": 9111,
+      "meta": {
+        "_dance_moves_bpm": 145,
+        "_dance_moves_lyric_timing_id": 0,
+        "_dance_moves_cue_timing_id": 0,
+        "_dance_moves_lyric_popups_enabled": false,
+        "_dance_moves_master_duration_ms": 273604.558,
+        "_dance_moves_effect": ""
+      },
+      "code": "demos/quality.mjs",
+      "page": "quality.html",
+      "diagnostics": false,
+      "extraAssets": []
+    },
+    {
+      "id": "catalogue",
+      "title": "CSS catalogue adoption",
+      "kind": "Supplementary",
+      "summary": "Animation/transition timing conversion, dynamic markup and ownership scope.",
+      "instructions": "Insert a timed element, reapply conversion and inspect its computed duration.",
+      "pageId": 9112,
+      "meta": {
+        "_dance_moves_bpm": 145,
+        "_dance_moves_lyric_timing_id": 0,
+        "_dance_moves_cue_timing_id": 0,
+        "_dance_moves_lyric_popups_enabled": false,
+        "_dance_moves_master_duration_ms": 273604.558,
+        "_dance_moves_effect": ""
+      },
+      "code": "demos/catalogue.mjs",
+      "page": "catalogue.html",
+      "diagnostics": false,
+      "extraAssets": []
+    },
+    {
+      "id": "orientation",
+      "title": "All nine orientation mappings",
+      "kind": "Supplementary",
+      "summary": "Production orientation wrapper plus synthetic desktop inputs and native phone permission UI.",
+      "instructions": "Choose each adapter in the selector. Synthetic slider input is explicitly untrusted; use a real phone for genuine events.",
+      "pageId": 9113,
+      "meta": {
+        "_dance_moves_bpm": 145,
+        "_dance_moves_lyric_timing_id": 0,
+        "_dance_moves_cue_timing_id": 0,
+        "_dance_moves_lyric_popups_enabled": false,
+        "_dance_moves_master_duration_ms": 273604.558,
+        "_dance_moves_effect": ""
+      },
+      "code": "demos/orientation.mjs",
+      "page": "orientation.html",
+      "diagnostics": false,
+      "extraAssets": [
+        "orientation"
+      ]
+    },
+    {
+      "id": "orientation-math",
+      "title": "Orientation helpers and schedulers",
+      "kind": "Supplementary",
+      "summary": "Screen alignment, normalisation, rolling mapper, frame scheduler and target scheduler.",
+      "instructions": "Helper-level controls show the numbers and bounded commits without requesting sensor permissions.",
+      "pageId": 9114,
+      "meta": {
+        "_dance_moves_bpm": 145,
+        "_dance_moves_lyric_timing_id": 0,
+        "_dance_moves_cue_timing_id": 0,
+        "_dance_moves_lyric_popups_enabled": false,
+        "_dance_moves_master_duration_ms": 273604.558,
+        "_dance_moves_effect": ""
+      },
+      "code": "demos/orientation-math.mjs",
+      "page": "orientation-math.html",
+      "diagnostics": false,
+      "extraAssets": [
+        "orientation"
+      ]
+    },
+    {
+      "id": "clay",
+      "title": "Clay adapter with Arcadians audio",
+      "kind": "Supplementary",
+      "summary": "Clay motion/settings, cues, lifecycle, snapshots and automatic clay_background rudiment.",
+      "instructions": "A compact educational Clay-shaped fixture uses Arcadians at 145 BPM. It does not reproduce or change the Clay release page.",
+      "pageId": 252,
+      "meta": {
+        "_dance_moves_bpm": 145,
+        "_dance_moves_lyric_timing_id": 0,
+        "_dance_moves_cue_timing_id": 9002,
+        "_dance_moves_lyric_popups_enabled": false,
+        "_dance_moves_master_duration_ms": 273604.558,
+        "_dance_moves_effect": ""
+      },
+      "code": "demos/clay.mjs",
+      "page": "clay.html",
+      "diagnostics": false,
+      "extraAssets": [
+        "clay"
+      ]
+    },
+    {
+      "id": "planes",
+      "title": "Paper-plane ambient effect",
+      "kind": "Supplementary",
+      "summary": "Page-selected paper planes, compact mode, offscreen pause, snapshots and teardown.",
+      "instructions": "Effect metadata is paper-planes. The supplied plane atlas is from DanceMoves, not a fabricated copy.",
+      "pageId": 9116,
+      "meta": {
+        "_dance_moves_bpm": 145,
+        "_dance_moves_lyric_timing_id": 0,
+        "_dance_moves_cue_timing_id": 0,
+        "_dance_moves_lyric_popups_enabled": false,
+        "_dance_moves_master_duration_ms": 273604.558,
+        "_dance_moves_effect": "paper-planes"
+      },
+      "code": "demos/planes.mjs",
+      "page": "planes.html",
+      "diagnostics": false,
+      "extraAssets": [
+        "planes"
+      ]
+    },
+    {
+      "id": "rudiments",
+      "title": "All 15 native rudiments",
+      "kind": "Supplementary",
+      "summary": "Catalogue, descriptions, native sampling, pips/ticks conversion and CSS renderer.",
+      "instructions": "Select every pattern; inspect exact integer samples; pause, disable, reset and destroy the controller.",
+      "pageId": 9117,
+      "meta": {
+        "_dance_moves_bpm": 145,
+        "_dance_moves_lyric_timing_id": 0,
+        "_dance_moves_cue_timing_id": 9002,
+        "_dance_moves_lyric_popups_enabled": false,
+        "_dance_moves_master_duration_ms": 273604.558,
+        "_dance_moves_effect": ""
+      },
+      "code": "demos/rudiments.mjs",
+      "page": "rudiments.html",
+      "diagnostics": false,
+      "extraAssets": []
+    },
+    {
+      "id": "rudiment-canvas",
+      "title": "Rudiment custom renderer and clocks",
+      "kind": "Supplementary",
+      "summary": "Canvas callback, signed rate/phase, page/audio/auto clocks, cue reset and 3D output.",
+      "instructions": "Switch clocks while stopped and remount. Rendering uses upstream offsets, never local motion formulas.",
+      "pageId": 9118,
+      "meta": {
+        "_dance_moves_bpm": 145,
+        "_dance_moves_lyric_timing_id": 0,
+        "_dance_moves_cue_timing_id": 9002,
+        "_dance_moves_lyric_popups_enabled": false,
+        "_dance_moves_master_duration_ms": 273604.558,
+        "_dance_moves_effect": ""
+      },
+      "code": "demos/rudiment-canvas.mjs",
+      "page": "rudiment-canvas.html",
+      "diagnostics": false,
+      "extraAssets": []
+    },
+    {
+      "id": "diagnostics",
+      "title": "Bounded diagnostics and events",
+      "kind": "Supplementary",
+      "summary": "Opt-in diagnostics sink, handler IDs, diagnostic snapshots and sink removal.",
+      "instructions": "Diagnostics is a code-only boot option, not a page metadata key. Records are bounded and stay local.",
+      "pageId": 9119,
+      "meta": {
+        "_dance_moves_bpm": 145,
+        "_dance_moves_lyric_timing_id": 9001,
+        "_dance_moves_cue_timing_id": 9002,
+        "_dance_moves_lyric_popups_enabled": false,
+        "_dance_moves_master_duration_ms": 273604.558,
+        "_dance_moves_effect": ""
+      },
+      "code": "demos/diagnostics.mjs",
+      "page": "diagnostics.html",
+      "diagnostics": true,
+      "extraAssets": []
+    },
+    {
+      "id": "accessibility",
+      "title": "Accessibility and lifecycle",
+      "kind": "Supplementary",
+      "summary": "Reduced-motion/forced-colour checks, explicit disable, pause/resume, offscreen and teardown.",
+      "instructions": "Use browser accessibility emulation or OS settings; tab away and return. A manual disable is not media-query emulation.",
+      "pageId": 9120,
+      "meta": {
+        "_dance_moves_bpm": 145,
+        "_dance_moves_lyric_timing_id": 0,
+        "_dance_moves_cue_timing_id": 0,
+        "_dance_moves_lyric_popups_enabled": false,
+        "_dance_moves_master_duration_ms": 273604.558,
+        "_dance_moves_effect": ""
+      },
+      "code": "demos/accessibility.mjs",
+      "page": "accessibility.html",
+      "diagnostics": false,
+      "extraAssets": []
+    },
+    {
+      "id": "downloads",
+      "title": "MP3 download versus playback",
+      "kind": "Supplementary",
+      "summary": "Signed GET/HEAD download simulation and normal byte-range audio playback.",
+      "instructions": "Local-only route models the plugin response. It neither uses WordPress salts nor contacts the live site.",
+      "pageId": 9121,
+      "meta": {
+        "_dance_moves_bpm": 145,
+        "_dance_moves_lyric_timing_id": 0,
+        "_dance_moves_cue_timing_id": 0,
+        "_dance_moves_lyric_popups_enabled": false,
+        "_dance_moves_master_duration_ms": 273604.558,
+        "_dance_moves_effect": ""
+      },
+      "code": "demos/downloads.mjs",
+      "page": "downloads.html",
+      "diagnostics": false,
+      "extraAssets": []
+    },
+    {
+      "id": "capture",
+      "title": "Motion capture REST contract",
+      "kind": "Supplementary",
+      "summary": "Synthetic capture JSON, bounded local endpoint and validation error examples.",
+      "instructions": "No real sensor data is collected or uploaded here. This is not the production capture endpoint.",
+      "pageId": 9122,
+      "meta": {
+        "_dance_moves_bpm": 145,
+        "_dance_moves_lyric_timing_id": 0,
+        "_dance_moves_cue_timing_id": 0,
+        "_dance_moves_lyric_popups_enabled": false,
+        "_dance_moves_master_duration_ms": 273604.558,
+        "_dance_moves_effect": ""
+      },
+      "code": "demos/capture.mjs",
+      "page": "capture.html",
+      "diagnostics": false,
+      "extraAssets": []
+    }
+  ]
+}

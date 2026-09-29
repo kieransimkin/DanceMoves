@@ -1,12 +1,514 @@
 # DanceMoves
 
-## Current release and complete reference
+## Current source and published releases
 
-**DanceMoves 2.8.0** — release tag `v2.8.0`, source commit
-`4cb6a71f60459b5579be87d7e55ac8b1426c578e` (28 September 2026).
-The default `main` branch remained at 2.4.0 when checked on 29 September 2026;
-use the release or `timed-lyrics-staging-2026-09-20` for this documentation.
-That staging revision adds publication evidence only, not a different runtime.
+**Source: DanceMoves 2.9.0** (rudiments integration applied on `main`).
+The latest published release checked for this documentation is **2.8.0**;
+source version, Git tag, GitHub release and deployed WordPress version are separate.
+This examples patch is based on `c4252556774f38cad6d75b1a52de7917d2c65af0`.
+The earlier 2.8.0 reference remains linked below; the 2.9.0 additions have their
+own [rudiment API reference](RUDIMENTS-API.md) and examples here.
+
+<!-- BEGIN WORDPRESS EXAMPLES -->
+## WordPress examples: Arcadians and complete feature coverage
+
+These examples target the **2.9.0 source** on `main` at
+`c4252556774f38cad6d75b1a52de7917d2c65af0`, including the applied rudiments
+integration. The last published release checked for this change was 2.8.0.
+No production PHP/JavaScript is changed by this examples patch.
+
+The [live Arcadians EPK](https://kieransimkin.co.uk/arcadians/) supplies the
+145 BPM, ten-chapter journey and visual premise. The checked-in Arcadians
+migration source uses `pointer`, a 64-tick `playbackPulse`, and recoverable
+`quality`. The **Real-page-inspired** demo adapts that pattern; it is not an
+export or a claim to have verified the live page’s raw JavaScript. Every other
+page is marked **Supplementary** and uses the same song to demonstrate features
+not established by that live-page inspection.
+
+### Run the simulated WordPress gallery
+
+From a complete checkout (not the WordPress ZIP), run:
+
+```sh
+python tools/prepare-wordpress-examples.py
+python tools/serve-wordpress-examples.py
+```
+
+Open `http://127.0.0.1:8765/examples/wordpress/`. For an existing StemLab checkout,
+use `python tools/prepare-wordpress-examples.py --stemlab-root ../stemlab` instead
+of downloading. Both paths verify the exact MP3 and cover SHA-256 hashes. The
+96-tag canonical LRC is included byte-for-byte, including its BOM/CRLF; the
+section JSON and CUE are derived from the artist-authored reference sections.
+No replacement tone, song or fabricated model analysis is used if assets are missing.
+
+The simulated theme, local metadata editor, revision history and HTTP endpoints
+are **development fixtures**, not WordPress itself. The actual checked-out
+DanceMoves scripts and native WASM power the examples. Each example shows its
+stored metadata, emitted boot configuration, source, transport and bounded log.
+State changes are in memory only; no request can publish or alter the live site.
+The server binds only to loopback and never ships in the plugin ZIP.
+
+### Set up a real WordPress Page
+
+Activate DanceMoves, create a draft Page, add the supplied [HTML block](examples/wordpress/wordpress/arcadians-markup.html),
+and replace its audio/artwork URLs with your own Media Library URLs. Copy the
+[child-theme enqueue recipe](examples/wordpress/wordpress/enqueue-example.php),
+[JavaScript](examples/wordpress/wordpress/arcadians-example.js) and
+[CSS](examples/wordpress/wordpress/arcadians-example.css) as explained in the
+[detailed WordPress guide](docs/wordpress-examples.md). **Do not paste PHP into
+a Page or rely on inline JavaScript surviving WordPress filtering.**
+
+The examples below use `root` for the Page’s `.ks-epk`, `audio` for its real
+`<audio>`, `art`/`subject` for an owned decorative element, and `show`/`inspect`/
+`entrance`/`drawNativeOffset` for your own callbacks. These snippets describe API
+calls; complete executable implementations and controls are linked per demo.
+Top-level `await` snippets belong in an async function or a JavaScript module.
+
+### Every stored metadata key
+
+| Key | Editor / default | Arcadians example | Important boundary |
+| --- | --- | --- | --- |
+| `_dance_moves_bpm` | BPM; blank/invalid resolves to 120 fallback | `145` | Finite 20–400, up to three decimal places; not detected automatically. |
+| `_dance_moves_lyric_timing_id` | Lyric Timing File; unset/0 | Real Media Library ID of canonical LRC | Store an attachment ID, not a URL; simulated ID 9001 must never be copied to a site. |
+| `_dance_moves_cue_timing_id` | Cue Timing File; unset/0 | Real ID of `sections.cue` or another valid LRC-style cue file | Simulated ID 9002 is not a WordPress ID. `.cue` uses bracket timestamps, not CD cuesheet syntax. |
+| `_dance_moves_lyric_popups_enabled` | Timed lyric pop-ups; false | `true` only for the lyric demo | Opt in after styling review; does not disable `onLyric()` parsing/subscriptions when false. |
+| `_dance_moves_master_duration_ms` | Hidden advanced field; 0/discovery | `273604.558` | Milliseconds of canonical master, not BPM or sample count. Not REST-visible. |
+| `_dance_moves_effect` | Ambient effect; empty string | `"paper-planes"` only in the plane demo | Empty means none. `"none"` is not a stored option. No generic rudiment/orientation selector exists. |
+
+The simulated editor displays all six keys for **each** demo. It validates the
+five editable keys, preserves previous values on invalid saves, keeps ten local
+revisions, and reloads scripts after a save. Its attachment map is deliberately
+small; it is not a Media Library or authentication implementation.
+
+For real advanced setup, copy [page-settings.example.json](examples/wordpress/wordpress/page-settings.example.json),
+replace the Page/attachment IDs, and run the validating helper on staging:
+
+```sh
+wp eval-file examples/wordpress/wordpress/configure-page.php page-settings.json --user=YOUR_ADMIN_LOGIN
+```
+
+This updates only supplied keys, validates timing attachments before writing,
+prints read-back configuration, and never changes Page content or publication.
+Direct WP-CLI/REST ID writes do **not** run the editor’s full timing-file validation;
+use the helper or save through the EPK Timing box. See the guide for editor,
+WP-CLI, REST, revision and clearing examples.
+
+### Coverage map
+
+| Demo | Source | Metadata / special setup |
+| --- | --- | --- |
+| [Arcadians: ancient to future](examples/wordpress/arcadians.html) | [Real-page-inspired / runnable module](examples/wordpress/demos/arcadians.mjs) | 145 BPM; lyric attachment, cue attachment |
+| [Page metadata and revisions](examples/wordpress/metadata.html) | [Supplementary / runnable module](examples/wordpress/demos/metadata.mjs) | 145 BPM; lyric attachment, cue attachment |
+| [Musical clock and CSS timing](examples/wordpress/clock.html) | [Supplementary / runnable module](examples/wordpress/demos/clock.mjs) | 145 BPM; no extra metadata |
+| [Starts, beats and interval handlers](examples/wordpress/scheduling.html) | [Supplementary / runnable module](examples/wordpress/demos/scheduling.mjs) | 145 BPM; no extra metadata |
+| [Named cues, events and animation ownership](examples/wordpress/cues.html) | [Supplementary / runnable module](examples/wordpress/demos/cues.mjs) | 145 BPM; cue attachment |
+| [Canonical lyrics and look-ahead](examples/wordpress/lyrics.html) | [Supplementary / runnable module](examples/wordpress/demos/lyrics.mjs) | 145 BPM; lyric attachment, lyric opt-in |
+| [Master-length audio discovery](examples/wordpress/audio.html) | [Supplementary / runnable module](examples/wordpress/demos/audio.mjs) | 145 BPM; no extra metadata |
+| [Bounded pointer and parallax](examples/wordpress/pointer.html) | [Supplementary / runnable module](examples/wordpress/demos/pointer.mjs) | 145 BPM; no extra metadata |
+| [Audio-phase pulse](examples/wordpress/pulse.html) | [Supplementary / runnable module](examples/wordpress/demos/pulse.mjs) | 145 BPM; no extra metadata |
+| [Finite cue-triggered class](examples/wordpress/cue-class.html) | [Supplementary / runnable module](examples/wordpress/demos/cue-class.mjs) | 145 BPM; cue attachment |
+| [Restorable cue timeline](examples/wordpress/timeline.html) | [Supplementary / runnable module](examples/wordpress/demos/timeline.mjs) | 145 BPM; no extra metadata |
+| [Recoverable quality tiers](examples/wordpress/quality.html) | [Supplementary / runnable module](examples/wordpress/demos/quality.mjs) | 145 BPM; no extra metadata |
+| [CSS catalogue adoption](examples/wordpress/catalogue.html) | [Supplementary / runnable module](examples/wordpress/demos/catalogue.mjs) | 145 BPM; no extra metadata |
+| [All nine orientation mappings](examples/wordpress/orientation.html) | [Supplementary / runnable module](examples/wordpress/demos/orientation.mjs) | 145 BPM; choose all nine mapped fixtures |
+| [Orientation helpers and schedulers](examples/wordpress/orientation-math.html) | [Supplementary / runnable module](examples/wordpress/demos/orientation-math.mjs) | 145 BPM; no extra metadata |
+| [Clay adapter with Arcadians audio](examples/wordpress/clay.html) | [Supplementary / runnable module](examples/wordpress/demos/clay.mjs) | 145 BPM; cue attachment, Clay-shaped mapped fixture |
+| [Paper-plane ambient effect](examples/wordpress/planes.html) | [Supplementary / runnable module](examples/wordpress/demos/planes.mjs) | 145 BPM; effect=paper-planes |
+| [All 15 native rudiments](examples/wordpress/rudiments.html) | [Supplementary / runnable module](examples/wordpress/demos/rudiments.mjs) | 145 BPM; cue attachment |
+| [Rudiment custom renderer and clocks](examples/wordpress/rudiment-canvas.html) | [Supplementary / runnable module](examples/wordpress/demos/rudiment-canvas.mjs) | 145 BPM; cue attachment |
+| [Bounded diagnostics and events](examples/wordpress/diagnostics.html) | [Supplementary / runnable module](examples/wordpress/demos/diagnostics.mjs) | 145 BPM; lyric attachment, cue attachment, diagnostics boot flag, not metadata |
+| [Accessibility and lifecycle](examples/wordpress/accessibility.html) | [Supplementary / runnable module](examples/wordpress/demos/accessibility.mjs) | 145 BPM; no extra metadata |
+| [MP3 download versus playback](examples/wordpress/downloads.html) | [Supplementary / runnable module](examples/wordpress/demos/downloads.mjs) | 145 BPM; local HTTP simulation |
+| [Motion capture REST contract](examples/wordpress/capture.html) | [Supplementary / runnable module](examples/wordpress/demos/capture.mjs) | 145 BPM; local HTTP simulation |
+
+### Feature-by-feature WordPress recipes
+
+#### 1. Arcadians: ancient to future
+
+Pointer, four-beat playback pulse, quality tiers and a ten-section journey. Follow the live Arcadians page’s structure; this is a teaching adaptation, not a saved production page.
+
+```js
+const pointer = DanceMovesEffects.pointer({id:'arc:depth', root, bounds:art, target:art});
+const pulse = DanceMovesEffects.playbackPulse({id:'arc:pulse', root, audio,
+  ticks:64, className:'is-playing', propertyPrefix:'--arc-pulse'});
+const quality = DanceMovesEffects.quality({id:'arc:quality', root,
+  tiers:['full','reduced','minimal'], sampleMilliseconds:1500});
+// Page-owned CSS consumes --dance-moves-x/y, --arc-pulse-duration/delay and quality attributes.
+```
+
+[Run the example](examples/wordpress/arcadians.html) · [Read its complete source](examples/wordpress/demos/arcadians.mjs).
+
+#### 2. Page metadata and revisions
+
+Set BPM, timing attachments, lyric opt-in and ambient effect. The sidebar is a local simulator. IDs 9001/9002 are fixtures, never real WordPress attachment IDs.
+
+```js
+// Server-side metadata supplies the runtime configuration; do not replace it in page JS.
+console.log(DanceMoves.bpm, DanceMoves.bpmSource);
+// Audio URLs belong in <audio>/<source>; attachments below are real Media Library IDs.
+// _dance_moves_effect = "paper-planes" selects planes; "" selects no ambient adapter.
+```
+
+[Run the example](examples/wordpress/metadata.html) · [Read its complete source](examples/wordpress/demos/metadata.mjs).
+
+#### 3. Musical clock and CSS timing
+
+Inspect ticks, pips, beats, bars, duration quantisation and clock selection. Watch the page clock before playback, then compare the explicit audio clock.
+
+```js
+const tickMs = DanceMoves.durationMilliseconds(1);
+const beatMs = DanceMoves.durationMilliseconds(16);
+const barMs = DanceMoves.durationMilliseconds(64); // Four beats, not a meter detector.
+const quantised = DanceMoves.quantizeTicks(24); // 32 (long durations round to whole beats).
+const boundary = DanceMoves.nextIntervalTick(16, 17, true);
+const pageTicks = DanceMoves.currentTick({clock:'page'});
+const audioTicks = audio.currentTime * DanceMoves.bpm * 16 / 60; // Frozen while paused.
+```
+
+[Run the example](examples/wordpress/clock.html) · [Read its complete source](examples/wordpress/demos/clock.mjs).
+
+#### 4. Starts, beats and interval handlers
+
+One-shot and repeating scheduling; deferred CSS starts; cancellation. Start audio, register a beat/bar callback, cancel it, then try a deferred entrance.
+
+```js
+const cancelStart = DanceMoves.scheduleAtInterval(16, show, {clock:'page', id:'arc:start'});
+const cancelEntrance = DanceMoves.deferStart(art, 64, {clock:'audio', audio, id:'arc:entrance'});
+const nextBeat = DanceMoves.onNextBeat(show, {id:'arc:next-beat'});
+const everyBeat = DanceMoves.onEveryBeat(show, {id:'arc:beat'});
+const nextBar = DanceMoves.onNextBar(show, {id:'arc:next-bar'});
+const everyBar = DanceMoves.onEveryBar(show, {id:'arc:bar'});
+const nextThree = DanceMoves.onNextInterval(show, 48, {id:'arc:next-three'});
+const everyThree = DanceMoves.onEveryInterval(show, 48, {id:'arc:three'});
+// Call each returned remover during teardown. Define show(detail) for your appearance.
+```
+
+[Run the example](examples/wordpress/scheduling.html) · [Read its complete source](examples/wordpress/demos/scheduling.mjs).
+
+#### 5. Named cues, events and animation ownership
+
+File parsers, normalised names, manual cues, exact seek landings and owned animation resets. Seek to Drop 1 while paused, then play. Compare owned animation with the theme’s unowned spinner.
+
+```js
+const remove = DanceMoves.onCue('DROP 1', detail => show(detail), {id:'arc:drop'});
+const removeAll = DanceMoves.onCue('*', detail => inspect(detail), {id:'arc:all'});
+const removeScope = DanceMoves.registerAnimationScope(root, ['.my-local-effect']);
+DanceMoves.fireCue({name:'DROP 1', type:'SECTION', time:104.01}); // Explicit/manual path.
+DanceMoves.resetRunningAnimations(audio);
+DanceMoves.parseTimingFile('[01:44.01][SECTION: DROP 1]');
+DanceMoves.normaliseCueName('Drop-1!');
+// Also: document events dance-moves-cue / kieran-epk-cue; KieranEpkMotion is the core alias.
+```
+
+[Run the example](examples/wordpress/cues.html) · [Read its complete source](examples/wordpress/demos/cues.mjs).
+
+#### 6. Canonical lyrics and look-ahead
+
+Built-in popover, custom onLyric listener, immediate-next and next-visible lyric values. Seek to 2.89, 7.76 and 7.81 seconds to inspect sung, blank-clear and next-line states.
+
+```js
+const remove = DanceMoves.onLyric(detail => {
+  currentLine.textContent = detail.text; // Blank is a real clear boundary.
+  nextLine.textContent = detail.nextVisibleText;
+  inspect({nextTime:detail.nextTime, nextVisibleTime:detail.nextVisibleTime});
+}, {id:'arc:lyrics'});
+// Hide YOUR custom layer on pause/end; core does not publish an empty event then.
+DanceMoves.parseLyricTimingFile('[00:02.89]No crown, no concrete\n[00:07.76]');
+// Built-in popover needs canonical LRC + _dance_moves_lyric_popups_enabled=true.
+```
+
+[Run the example](examples/wordpress/lyrics.html) · [Read its complete source](examples/wordpress/demos/lyrics.mjs).
+
+#### 7. Master-length audio discovery
+
+Bind two copies of the master; derive a short Arcadians excerpt and show why it is excluded. The eight-second excerpt is cut from the same MP3 in your browser, not a different demonstration song.
+
+```js
+root.append(newAudioElement); // Real <audio> with the same programme length.
+newAudioElement.addEventListener('loadedmetadata', () => DanceMoves.discoverAudio());
+// data-dance-moves-timing="master-length" identifies an eligible bound player.
+// Tolerance is max(0.25 seconds, duration/100000); short excerpts must not match.
+// Master duration is 273604.558 milliseconds for the reference Arcadians master.
+```
+
+[Run the example](examples/wordpress/audio.html) · [Read its complete source](examples/wordpress/demos/audio.mjs).
+
+#### 8. Bounded pointer and parallax
+
+Cached bounds, clamped input, custom render, reset and teardown. Move over the stage or use the manual controls. Manual set is not physical sensor evidence.
+
+```js
+const pointer = DanceMovesEffects.pointer({id:'arc:pointer', root, target:art, bounds:art,
+  render:({x,y}) => inspect({x,y})});
+pointer.reset('manual');
+inspect(pointer.snapshot());
+// pointer.set(x,y) is an immediate manual override; enforce accessibility yourself.
+pointer.teardown(); // Discard the handle; remount after position-only layout changes.
+```
+
+[Run the example](examples/wordpress/pointer.html) · [Read its complete source](examples/wordpress/demos/pointer.mjs).
+
+#### 9. Audio-phase pulse
+
+Duration/delay CSS variables, playback-rate changes, seeking and pause. Play, change rate, seek to a chapter, pause and inspect the CSS phase.
+
+```js
+const pulse = DanceMovesEffects.playbackPulse({id:'arc:pulse', root, audio,
+  ticks:64, className:'is-playing', propertyPrefix:'--arc-pulse'});
+// CSS: animation: myPulse var(--arc-pulse-duration) ease var(--arc-pulse-delay) infinite;
+pulse.sync(); inspect(pulse.snapshot());
+pulse.teardown(); // No autonomous audio timer is needed.
+```
+
+[Run the example](examples/wordpress/pulse.html) · [Read its complete source](examples/wordpress/demos/pulse.mjs).
+
+#### 10. Finite cue-triggered class
+
+Cue subscription, retriggering, bounded wall-clock lifetime, fire and clear. Fire DROP 1. This finite class is not an audio-restored interval; its timer does not freeze on pause.
+
+```js
+const accent = DanceMovesEffects.cueClass({id:'arc:accent', root, cue:'DROP 1',
+  className:'my-drop-accent', durationTicks:64});
+accent.fire({name:'DROP 1'}); // Manual demonstration; normally the core cue bus fires it.
+accent.clear('manual'); inspect(accent.snapshot());
+accent.teardown(); // Lifetime is wall-clock based, not paused/restored with audio.
+```
+
+[Run the example](examples/wordpress/cue-class.html) · [Read its complete source](examples/wordpress/demos/cue-class.mjs).
+
+#### 11. Restorable cue timeline
+
+Crossing detection, no replay of skipped cues, active interval reconstruction and restore. Seek into a Drop, backwards into a Verse, pause, resume, and use manual restore.
+
+```js
+const timeline = DanceMovesEffects.cueTimeline({id:'arc:sections', root, audio,
+  cues:[{id:'drop-1',time:104.01,end:133.94,data:{era:'future'}}],
+  onCue:event => entrance(event.cue),
+  render:state => root.classList.toggle('in-drop', state.playing && state.active.length > 0)});
+timeline.restore(); inspect(timeline.snapshot());
+// stop()/start() control this timeline, not the audio; teardown() disposes it.
+// Optional fireOnSeekLanding applies during playback, unlike core paused cue arming.
+```
+
+[Run the example](examples/wordpress/timeline.html) · [Read its complete source](examples/wordpress/demos/timeline.mjs).
+
+#### 12. Recoverable quality tiers
+
+Measured quality, manual tier selection, registry get/snapshot/teardown. Manual tier buttons demonstrate styling only; they do not fabricate low-frame-rate evidence.
+
+```js
+const quality = DanceMovesEffects.quality({id:'arc:quality', root,
+  tiers:['full','constrained','minimal'], render:state => inspect(state)});
+quality.setTier(2, 'manual-preview'); // Styling demonstration, NOT a measured FPS result.
+inspect(DanceMovesEffects.get('arc:quality').snapshot());
+inspect(DanceMovesEffects.snapshot());
+DanceMovesEffects.teardown('arc:quality');
+// teardownAll() is appropriate only when you own every registered effect.
+```
+
+[Run the example](examples/wordpress/quality.html) · [Read its complete source](examples/wordpress/demos/quality.mjs).
+
+#### 13. CSS catalogue adoption
+
+Animation/transition timing conversion, dynamic markup and ownership scope. Insert a timed element, reapply conversion and inspect its computed duration.
+
+```js
+const snapshot = DanceMoves.applyCatalogueTiming();
+inspect(DanceMoves.catalogueTimingSnapshot());
+inspect(DanceMovesCatalogueTiming.apply());
+inspect(DanceMovesCatalogueTiming.snapshot());
+// removeCatalogueAnimationScope() removes wildcard cue-reset ownership only;
+// it does NOT undo converted CSS, disconnect observers or remove other scopes.
+```
+
+[Run the example](examples/wordpress/catalogue.html) · [Read its complete source](examples/wordpress/demos/catalogue.mjs).
+
+#### 14. All nine orientation mappings
+
+Production orientation wrapper plus synthetic desktop inputs and native phone permission UI. Choose each adapter in the selector. Synthetic slider input is explicitly untrusted; use a real phone for genuine events.
+
+```js
+// Production assets are loaded only for the built-in Page-ID map and required DOM.
+// New Pages cannot choose an orientation adapter through a metadata string.
+// On an eligible phone the plugin supplies the permission button automatically.
+// Diagnostic-only handle (when present):
+inspect(window.__ksEpkOrientationRuntime?.snapshot());
+// Desktop synthetic slider tests run only in the localhost example harness.
+```
+
+[Run the example](examples/wordpress/orientation.html) · [Read its complete source](examples/wordpress/demos/orientation.mjs).
+
+#### 15. Orientation helpers and schedulers
+
+Screen alignment, normalisation, rolling mapper, frame scheduler and target scheduler. Helper-level controls show the numbers and bounded commits without requesting sensor permissions.
+
+```js
+const core = KSEpkOrientationCore;
+const mapper = core.createRollingMapper(2000, 1.5);
+const aligned = core.screenAligned({beta:10,gamma:5}, 90);
+inspect(mapper.push(aligned, performance.now()));
+const scheduler = core.createLatestSampleRafScheduler({
+  requestFrame:requestAnimationFrame.bind(window), cancelFrame:cancelAnimationFrame.bind(window),
+  now:performance.now.bind(performance), mapper, commit:(x,y,detail)=>inspect({x,y,detail})});
+scheduler.receive({beta:10,gamma:5},0,performance.now());
+scheduler.teardown(); // The demo also exercises every scalar and target-scheduler helper.
+```
+
+[Run the example](examples/wordpress/orientation-math.html) · [Read its complete source](examples/wordpress/demos/orientation-math.mjs).
+
+#### 16. Clay adapter with Arcadians audio
+
+Clay motion/settings, cues, lifecycle, snapshots and automatic clay_background rudiment. A compact educational Clay-shaped fixture uses Arcadians at 145 BPM. It does not reproduce or change the Clay release page.
+
+```js
+// Only on the existing Clay-shaped/mapped page. Do not attach a second owner.
+DanceMovesClayStars.setParameters({enabled:true,masterIntensity:1,particleReleaseTicks:32});
+DanceMovesClayStars.setMotion({x:0.25,y:-0.25});
+DanceMovesClayStars.setMotionTarget({x:0,y:0});
+DanceMovesClayStars.setCueState({name:'DROP 1',type:'SECTION'});
+DanceMovesClayStars.lifecycle('seeking');
+inspect(DanceMovesClayStars.snapshot());
+inspect(DanceMovesClayRudiment.snapshot());
+// reset() restores visuals; teardown() disposes. Native background is mounted automatically.
+```
+
+[Run the example](examples/wordpress/clay.html) · [Read its complete source](examples/wordpress/demos/clay.mjs).
+
+#### 17. Paper-plane ambient effect
+
+Page-selected paper planes, compact mode, offscreen pause, snapshots and teardown. Effect metadata is paper-planes. The supplied plane atlas is from DanceMoves, not a fabricated copy.
+
+```js
+// Editor: Ambient effect → Paper planes. Requires .ks-epk containing .epk-hero.
+// CSS for your generic hero: position:relative; isolation:isolate; overflow:hidden;
+inspect(window.DanceMovesPaperDreams?.snapshot());
+// DanceMovesPaperDreams.teardown() removes the layer. Reload to remount.
+// Counts, atlas URL and effect bounds are code configuration, not separate page metadata.
+```
+
+[Run the example](examples/wordpress/planes.html) · [Read its complete source](examples/wordpress/demos/planes.mjs).
+
+#### 18. All 15 native rudiments
+
+Catalogue, descriptions, native sampling, pips/ticks conversion and CSS renderer. Select every pattern; inspect exact integer samples; pause, disable, reset and destroy the controller.
+
+```js
+const r = DanceMoves.rudiments; await r.ready();
+inspect(r.catalogue()); inspect(r.describe('clay_background'));
+inspect(r.sample('clay_background', -1)); // Exact wrapped integer pip.
+inspect(r.pipsFromTicks(1)); inspect(r.pipsFromSeconds(1, DanceMoves.bpm));
+const animation = r.animate({id:'arc:rudiment',root,target:subject,rudiment:'clay_background',
+  clock:'audio',audio,rate:0.5,amplitude:{x:14,y:10,z:0}});
+await animation.ready;
+// CSS uses --dance-moves-rudiment-x/y/z. pause(), resume(), setEnabled(), reset(), refresh().
+inspect(r.get('arc:rudiment').snapshot()); inspect(r.snapshot());
+animation.destroy(); // teardown() is an alias; destroyAll() requires ownership of all instances.
+```
+
+[Run the example](examples/wordpress/rudiments.html) · [Read its complete source](examples/wordpress/demos/rudiments.mjs).
+
+#### 19. Rudiment custom renderer and clocks
+
+Canvas callback, signed rate/phase, page/audio/auto clocks, cue reset and 3D output. Switch clocks while stopped and remount. Rendering uses upstream offsets, never local motion formulas.
+
+```js
+const r = DanceMovesRudiments; await r.ready();
+const animation = r.animate({id:'arc:canvas',root,target:canvas,rudiment:'helix',
+  clock:'audio',audio,rate:-1,phasePips:64,css:false,resetOnCue:'DROP 1',
+  render:frame => drawNativeOffset(frame.offset)});
+await animation.ready;
+// Define drawNativeOffset({x,y,z}); no movement formulas or second clock belong there.
+// The demo compares page/audio/auto clocks, signed rate/phase and CSS-free drawing.
+```
+
+[Run the example](examples/wordpress/rudiment-canvas.html) · [Read its complete source](examples/wordpress/demos/rudiment-canvas.mjs).
+
+#### 20. Bounded diagnostics and events
+
+Opt-in diagnostics sink, handler IDs, diagnostic snapshots and sink removal. Diagnostics is a code-only boot option, not a page metadata key. Records are bounded and stay local.
+
+```js
+// Development only: add danceMovesConfig.diagnostics=true BEFORE core script execution.
+const records=[];
+DanceMoves.setDiagnosticsSink(record=>{records.push(record);if(records.length>50)records.shift();});
+inspect(DanceMoves.diagnosticsEnabled());
+// Give every cue/lyric/interval handler a stable {id:'release:effect'}.
+DanceMoves.setDiagnosticsSink(null); // Detach. No production metadata key turns it on.
+```
+
+[Run the example](examples/wordpress/diagnostics.html) · [Read its complete source](examples/wordpress/demos/diagnostics.mjs).
+
+#### 21. Accessibility and lifecycle
+
+Reduced-motion/forced-colour checks, explicit disable, pause/resume, offscreen and teardown. Use browser accessibility emulation or OS settings; tab away and return. A manual disable is not media-query emulation.
+
+```js
+const r = DanceMovesRudiments; await r.ready();
+const handle = r.animate({id:'arc:accessible',root,target:subject,rudiment:'sway',
+  clock:'auto',audio,amplitude:30,offscreen:true});
+await handle.ready;
+handle.setEnabled(false); handle.setEnabled(true);
+// Reduced motion/forced colours and visibility are real browser state, not demo booleans.
+inspect(handle.snapshot()); handle.destroy();
+```
+
+[Run the example](examples/wordpress/accessibility.html) · [Read its complete source](examples/wordpress/demos/accessibility.mjs).
+
+#### 22. MP3 download versus playback
+
+Signed GET/HEAD download simulation and normal byte-range audio playback. Local-only route models the plugin response. It neither uses WordPress salts nor contacts the live site.
+
+```html
+<!-- Real Page HTML: only the explicit download anchor is rewritten by PHP. -->
+<a href="/wp-content/uploads/YOUR-ARCADIANS.mp3" download>Download MP3</a>
+<audio controls src="/wp-content/uploads/YOUR-ARCADIANS.mp3"></audio>
+<!-- Do not reuse the signed download URL as the player source. -->
+```
+
+[Run the example](examples/wordpress/downloads.html) · [Read its complete source](examples/wordpress/demos/downloads.mjs).
+
+#### 23. Motion capture REST contract
+
+Synthetic capture JSON, bounded local endpoint and validation error examples. No real sensor data is collected or uploaded here. This is not the production capture endpoint.
+
+```js
+// Contract preview only: do NOT post synthetic fixtures to the live site.
+const example = {schema:'ks-epk-motion-recording/v1', samples:[{t:0,beta:10,gamma:5,isTrusted:false}]};
+inspect(example);
+// The local simulator uses /examples/wordpress/api/capture, never /wp-json/… .
+// For actual captures, follow docs/api/wordpress.md and the private sensor harness.
+// The existing source token is not strong authentication; never embed it in public examples.
+```
+
+[Run the example](examples/wordpress/capture.html) · [Read its complete source](examples/wordpress/demos/capture.mjs).
+
+### Release a new DanceMoves version
+
+The source is at 2.9.0 but that does not publish a GitHub release or deploy
+WordPress. Follow [RELEASING.md](RELEASING.md) to validate the exact commit, build
+`dist/DanceMoves-<version>.zip` and its manifest, tag that commit, create a draft
+GitHub release with those artifacts, verify downloads, and explicitly publish it.
+Upload the **packaged plugin ZIP**, not GitHub’s automatically generated source
+archive. WordPress deployment and per-page metadata changes are separate actions.
+
+### Example validation
+
+```sh
+node tests/wordpress-examples.test.cjs
+python tests/test-wordpress-examples.py
+php tests/wordpress-examples-configure.test.php
+python tests/test-wordpress-examples-browser.py
+```
+
+The Node check is static, Python checks local HTTP/preparation, and the PHP
+check uses WordPress stubs. The browser runner needs Playwright and a working
+Chromium installation. Browser, WordPress and physical
+sensor checks are different evidence. Never interpret synthetic slider input,
+manual quality selection or a simulator’s response as a real-device or live-site
+pass. The machine-readable [coverage contract](examples/wordpress/coverage.json)
+maps every feature to a runnable page, metadata, source and acceptance test.
+
+<!-- END WORDPRESS EXAMPLES -->
 
 DanceMoves is Kieran Simkin's WordPress motion/timing plugin in the wider
 DanceFlow workflow. Start with the [documentation index](docs/README.md) and

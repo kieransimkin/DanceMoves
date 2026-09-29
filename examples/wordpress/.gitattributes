@@ -1,0 +1,2 @@
+# Canonical artist-authored timing is hash-pinned; preserve BOM and CRLF exactly.
+media/canonical-lyric-timing.lrc binary

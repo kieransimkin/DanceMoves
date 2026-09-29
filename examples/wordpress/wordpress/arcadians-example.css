@@ -1,0 +1,7 @@
+.ks-epk[data-release="arcadians-demo"] .epk-hero{position:relative;isolation:isolate;overflow:hidden}
+.ks-epk[data-release="arcadians-demo"] .example-art{max-width:360px;transform:translate3d(calc(var(--dance-moves-x,0)*8px),calc(var(--dance-moves-y,0)*6px),0)}
+.ks-epk[data-release="arcadians-demo"] .example-orbit{display:block;width:24px;height:24px;border-radius:50%;background:currentColor;translate:var(--dance-moves-rudiment-x,0px) var(--dance-moves-rudiment-y,0px)}
+.ks-epk[data-release="arcadians-demo"].is-playing .example-orbit{animation:my-arcadians-pulse var(--dance-moves-pulse-duration) ease var(--dance-moves-pulse-delay) infinite}
+@keyframes my-arcadians-pulse{0%,100%{scale:1}50%{scale:1.06}}
+@media(prefers-reduced-motion:reduce){.ks-epk[data-release="arcadians-demo"] .example-art,.ks-epk[data-release="arcadians-demo"] .example-orbit{animation:none!important;transform:none!important;translate:none!important}}
+@media(forced-colors:active){.ks-epk[data-release="arcadians-demo"] .example-orbit{display:none}}

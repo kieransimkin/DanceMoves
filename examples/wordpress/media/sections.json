@@ -1,0 +1,92 @@
+[
+  {
+    "id": "intro",
+    "time": 0,
+    "end": 57.46,
+    "data": {
+      "label": "Intro",
+      "era": "ancient"
+    }
+  },
+  {
+    "id": "verse-1",
+    "time": 57.46,
+    "end": 70.82,
+    "data": {
+      "label": "Verse 1",
+      "era": "ancient"
+    }
+  },
+  {
+    "id": "pre-chorus",
+    "time": 70.82,
+    "end": 85,
+    "data": {
+      "label": "Pre-Chorus",
+      "era": "ancient"
+    }
+  },
+  {
+    "id": "build-1",
+    "time": 85,
+    "end": 104.01,
+    "data": {
+      "label": "Build 1",
+      "era": "future"
+    }
+  },
+  {
+    "id": "drop-1",
+    "time": 104.01,
+    "end": 133.94,
+    "data": {
+      "label": "Drop 1",
+      "era": "future"
+    }
+  },
+  {
+    "id": "post-drop",
+    "time": 133.94,
+    "end": 154.44,
+    "data": {
+      "label": "Post-Drop",
+      "era": "future"
+    }
+  },
+  {
+    "id": "verse-2",
+    "time": 154.44,
+    "end": 167.75,
+    "data": {
+      "label": "Verse 2",
+      "era": "ancient"
+    }
+  },
+  {
+    "id": "build-2",
+    "time": 167.75,
+    "end": 187.54,
+    "data": {
+      "label": "Build 2",
+      "era": "future"
+    }
+  },
+  {
+    "id": "final-drop",
+    "time": 187.54,
+    "end": 222.1,
+    "data": {
+      "label": "Final Drop",
+      "era": "future"
+    }
+  },
+  {
+    "id": "outro",
+    "time": 222.1,
+    "end": 273.604558,
+    "data": {
+      "label": "Outro",
+      "era": "future"
+    }
+  }
+]

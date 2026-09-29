@@ -1,0 +1,881 @@
+{
+  "schema": "dance-moves-examples-coverage/v1",
+  "baseline": "c4252556774f38cad6d75b1a52de7917d2c65af0",
+  "scope": "Every user-facing feature and exported method family; internal PHP helpers remain in the full reference. Static occurrence checks are not runtime coverage.",
+  "metadataKeys": [
+    "_dance_moves_bpm",
+    "_dance_moves_lyric_timing_id",
+    "_dance_moves_cue_timing_id",
+    "_dance_moves_lyric_popups_enabled",
+    "_dance_moves_master_duration_ms",
+    "_dance_moves_effect"
+  ],
+  "orientationAdapters": [
+    "dying-for-a-diagnosis",
+    "light-will-win",
+    "presents-and-chocolate",
+    "clay-stars",
+    "fully-nocturnal",
+    "amnesty-honestly",
+    "walk-with-me",
+    "dmitri-my-talisman",
+    "california-screamin"
+  ],
+  "rudiments": [
+    "bounce",
+    "sway",
+    "circle",
+    "figure_eight",
+    "step_touch",
+    "box_step",
+    "helix",
+    "clay_background",
+    "single_stroke_roll",
+    "double_stroke_roll",
+    "multiple_bounce_roll",
+    "single_paradiddle",
+    "flam",
+    "drag",
+    "five_stroke_roll"
+  ],
+  "apiExamples": [
+    {
+      "api": "DanceMoves.quantizeTicks",
+      "feature": "clock",
+      "token": "quantizeTicks("
+    },
+    {
+      "api": "DanceMoves.durationMilliseconds",
+      "feature": "clock",
+      "token": "durationMilliseconds("
+    },
+    {
+      "api": "DanceMoves.currentTick",
+      "feature": "clock",
+      "token": "currentTick("
+    },
+    {
+      "api": "DanceMoves.nextIntervalTick",
+      "feature": "clock",
+      "token": "nextIntervalTick("
+    },
+    {
+      "api": "DanceMoves.scheduleAtInterval",
+      "feature": "scheduling",
+      "token": "scheduleAtInterval("
+    },
+    {
+      "api": "DanceMoves.deferStart",
+      "feature": "scheduling",
+      "token": "deferStart("
+    },
+    {
+      "api": "DanceMoves.onNextInterval",
+      "feature": "scheduling",
+      "token": "onNextInterval("
+    },
+    {
+      "api": "DanceMoves.onEveryInterval",
+      "feature": "scheduling",
+      "token": "onEveryInterval("
+    },
+    {
+      "api": "DanceMoves.onNextBeat",
+      "feature": "scheduling",
+      "token": "onNextBeat("
+    },
+    {
+      "api": "DanceMoves.onEveryBeat",
+      "feature": "scheduling",
+      "token": "onEveryBeat("
+    },
+    {
+      "api": "DanceMoves.onNextBar",
+      "feature": "scheduling",
+      "token": "onNextBar("
+    },
+    {
+      "api": "DanceMoves.onEveryBar",
+      "feature": "scheduling",
+      "token": "onEveryBar("
+    },
+    {
+      "api": "DanceMoves.parseTimingFile",
+      "feature": "cues",
+      "token": "parseTimingFile("
+    },
+    {
+      "api": "DanceMoves.parseLyricTimingFile",
+      "feature": "cues",
+      "token": "parseLyricTimingFile("
+    },
+    {
+      "api": "DanceMoves.normaliseCueName",
+      "feature": "cues",
+      "token": "normaliseCueName("
+    },
+    {
+      "api": "DanceMoves.onCue",
+      "feature": "cues",
+      "token": "onCue("
+    },
+    {
+      "api": "DanceMoves.fireCue",
+      "feature": "cues",
+      "token": "fireCue("
+    },
+    {
+      "api": "DanceMoves.registerAnimationScope",
+      "feature": "cues",
+      "token": "registerAnimationScope("
+    },
+    {
+      "api": "DanceMoves.resetRunningAnimations",
+      "feature": "cues",
+      "token": "resetRunningAnimations("
+    },
+    {
+      "api": "DanceMoves.onLyric",
+      "feature": "lyrics",
+      "token": "onLyric("
+    },
+    {
+      "api": "DanceMoves.discoverAudio",
+      "feature": "audio",
+      "token": "discoverAudio("
+    },
+    {
+      "api": "DanceMoves.setDiagnosticsSink",
+      "feature": "diagnostics",
+      "token": "setDiagnosticsSink("
+    },
+    {
+      "api": "DanceMoves.diagnosticsEnabled",
+      "feature": "diagnostics",
+      "token": "diagnosticsEnabled("
+    },
+    {
+      "api": "DanceMovesEffects.pointer",
+      "feature": "pointer",
+      "token": "pointer("
+    },
+    {
+      "api": "DanceMovesEffects.playbackPulse",
+      "feature": "pulse",
+      "token": "playbackPulse("
+    },
+    {
+      "api": "DanceMovesEffects.cueClass",
+      "feature": "cue-class",
+      "token": "cueClass("
+    },
+    {
+      "api": "DanceMovesEffects.cueTimeline",
+      "feature": "timeline",
+      "token": "cueTimeline("
+    },
+    {
+      "api": "DanceMovesEffects.quality",
+      "feature": "quality",
+      "token": "quality("
+    },
+    {
+      "api": "DanceMovesEffects.get",
+      "feature": "quality",
+      "token": "get("
+    },
+    {
+      "api": "DanceMovesEffects.snapshot",
+      "feature": "quality",
+      "token": "snapshot("
+    },
+    {
+      "api": "DanceMovesEffects.teardown",
+      "feature": "quality",
+      "token": "teardown("
+    },
+    {
+      "api": "DanceMovesEffects.teardownAll",
+      "feature": "quality",
+      "token": "teardownAll("
+    },
+    {
+      "api": "DanceMoves.rudiments.ready",
+      "feature": "rudiments",
+      "token": "ready("
+    },
+    {
+      "api": "DanceMoves.rudiments.catalogue",
+      "feature": "rudiments",
+      "token": "catalogue("
+    },
+    {
+      "api": "DanceMoves.rudiments.describe",
+      "feature": "rudiments",
+      "token": "describe("
+    },
+    {
+      "api": "DanceMoves.rudiments.sample",
+      "feature": "rudiments",
+      "token": "sample("
+    },
+    {
+      "api": "DanceMoves.rudiments.pipsFromTicks",
+      "feature": "rudiments",
+      "token": "pipsFromTicks("
+    },
+    {
+      "api": "DanceMoves.rudiments.pipsFromSeconds",
+      "feature": "rudiments",
+      "token": "pipsFromSeconds("
+    },
+    {
+      "api": "DanceMoves.rudiments.animate",
+      "feature": "rudiments",
+      "token": "animate("
+    },
+    {
+      "api": "DanceMoves.rudiments.get",
+      "feature": "rudiments",
+      "token": "get("
+    },
+    {
+      "api": "DanceMoves.rudiments.snapshot",
+      "feature": "rudiments",
+      "token": "snapshot("
+    },
+    {
+      "api": "DanceMoves.rudiments.destroyAll",
+      "feature": "rudiments",
+      "token": "destroyAll("
+    },
+    {
+      "api": "RudimentController.pause",
+      "feature": "rudiments",
+      "token": "pause("
+    },
+    {
+      "api": "RudimentController.resume",
+      "feature": "rudiments",
+      "token": "resume("
+    },
+    {
+      "api": "RudimentController.setEnabled",
+      "feature": "rudiments",
+      "token": "setEnabled("
+    },
+    {
+      "api": "RudimentController.reset",
+      "feature": "rudiments",
+      "token": "reset("
+    },
+    {
+      "api": "RudimentController.refresh",
+      "feature": "rudiments",
+      "token": "refresh("
+    },
+    {
+      "api": "RudimentController.snapshot",
+      "feature": "rudiments",
+      "token": "snapshot("
+    },
+    {
+      "api": "RudimentController.destroy",
+      "feature": "rudiments",
+      "token": "destroy("
+    },
+    {
+      "api": "RudimentController.teardown",
+      "feature": "rudiments",
+      "token": "teardown("
+    },
+    {
+      "api": "KSEpkOrientationCore.clamp",
+      "feature": "orientation-math",
+      "token": "clamp("
+    },
+    {
+      "api": "KSEpkOrientationCore.hasMotionData",
+      "feature": "orientation-math",
+      "token": "hasMotionData("
+    },
+    {
+      "api": "KSEpkOrientationCore.isMobileDevice",
+      "feature": "orientation-math",
+      "token": "isMobileDevice("
+    },
+    {
+      "api": "KSEpkOrientationCore.sensorSupported",
+      "feature": "orientation-math",
+      "token": "sensorSupported("
+    },
+    {
+      "api": "KSEpkOrientationCore.permissionRequired",
+      "feature": "orientation-math",
+      "token": "permissionRequired("
+    },
+    {
+      "api": "KSEpkOrientationCore.screenAngle",
+      "feature": "orientation-math",
+      "token": "screenAngle("
+    },
+    {
+      "api": "KSEpkOrientationCore.screenAligned",
+      "feature": "orientation-math",
+      "token": "screenAligned("
+    },
+    {
+      "api": "KSEpkOrientationCore.normalise",
+      "feature": "orientation-math",
+      "token": "normalise("
+    },
+    {
+      "api": "KSEpkOrientationCore.mapPointToWindow",
+      "feature": "orientation-math",
+      "token": "mapPointToWindow("
+    },
+    {
+      "api": "KSEpkOrientationCore.smooth",
+      "feature": "orientation-math",
+      "token": "smooth("
+    },
+    {
+      "api": "KSEpkOrientationCore.smoothTimeBased",
+      "feature": "orientation-math",
+      "token": "smoothTimeBased("
+    },
+    {
+      "api": "KSEpkOrientationCore.createRollingMapper",
+      "feature": "orientation-math",
+      "token": "createRollingMapper("
+    },
+    {
+      "api": "KSEpkOrientationCore.createLatestSampleRafScheduler",
+      "feature": "orientation-math",
+      "token": "createLatestSampleRafScheduler("
+    },
+    {
+      "api": "KSEpkOrientationCore.createTransitionTargetScheduler",
+      "feature": "orientation-math",
+      "token": "createTransitionTargetScheduler("
+    },
+    {
+      "api": "DanceMovesClayStars.setParameters",
+      "feature": "clay",
+      "token": "setParameters("
+    },
+    {
+      "api": "DanceMovesClayStars.setMotion",
+      "feature": "clay",
+      "token": "setMotion("
+    },
+    {
+      "api": "DanceMovesClayStars.setMotionTarget",
+      "feature": "clay",
+      "token": "setMotionTarget("
+    },
+    {
+      "api": "DanceMovesClayStars.setCueState",
+      "feature": "clay",
+      "token": "setCueState("
+    },
+    {
+      "api": "DanceMovesClayStars.lifecycle",
+      "feature": "clay",
+      "token": "lifecycle("
+    },
+    {
+      "api": "DanceMovesClayStars.reset",
+      "feature": "clay",
+      "token": "reset("
+    },
+    {
+      "api": "DanceMovesClayStars.snapshot",
+      "feature": "clay",
+      "token": "snapshot("
+    },
+    {
+      "api": "DanceMovesClayStars.teardown",
+      "feature": "clay",
+      "token": "teardown("
+    },
+    {
+      "api": "DanceMoves.applyCatalogueTiming",
+      "feature": "catalogue",
+      "token": "applyCatalogueTiming("
+    },
+    {
+      "api": "DanceMoves.catalogueTimingSnapshot",
+      "feature": "catalogue",
+      "token": "catalogueTimingSnapshot("
+    },
+    {
+      "api": "DanceMoves.removeCatalogueAnimationScope",
+      "feature": "catalogue",
+      "token": "removeCatalogueAnimationScope("
+    },
+    {
+      "api": "DanceMovesCatalogueTiming.apply",
+      "feature": "catalogue",
+      "token": "apply("
+    },
+    {
+      "api": "DanceMovesCatalogueTiming.snapshot",
+      "feature": "catalogue",
+      "token": "snapshot("
+    },
+    {
+      "api": "DanceMovesPaperDreams.snapshot",
+      "feature": "planes",
+      "token": "snapshot("
+    },
+    {
+      "api": "DanceMovesPaperDreams.teardown",
+      "feature": "planes",
+      "token": "teardown("
+    },
+    {
+      "api": "DanceMovesClayRudiment.snapshot",
+      "feature": "clay",
+      "token": "snapshot("
+    },
+    {
+      "api": "DanceMovesClayRudiment.teardown",
+      "feature": "clay",
+      "token": "teardown("
+    },
+    {
+      "api": "PointerController.set",
+      "feature": "pointer",
+      "token": "set("
+    },
+    {
+      "api": "PointerController.reset",
+      "feature": "pointer",
+      "token": "reset("
+    },
+    {
+      "api": "PointerController.snapshot",
+      "feature": "pointer",
+      "token": "snapshot("
+    },
+    {
+      "api": "PointerController.teardown",
+      "feature": "pointer",
+      "token": "teardown("
+    },
+    {
+      "api": "PulseController.sync",
+      "feature": "pulse",
+      "token": "sync("
+    },
+    {
+      "api": "PulseController.snapshot",
+      "feature": "pulse",
+      "token": "snapshot("
+    },
+    {
+      "api": "PulseController.teardown",
+      "feature": "pulse",
+      "token": "teardown("
+    },
+    {
+      "api": "CueClassController.fire",
+      "feature": "cue-class",
+      "token": "fire("
+    },
+    {
+      "api": "CueClassController.clear",
+      "feature": "cue-class",
+      "token": "clear("
+    },
+    {
+      "api": "CueClassController.snapshot",
+      "feature": "cue-class",
+      "token": "snapshot("
+    },
+    {
+      "api": "CueClassController.teardown",
+      "feature": "cue-class",
+      "token": "teardown("
+    },
+    {
+      "api": "TimelineController.restore",
+      "feature": "timeline",
+      "token": "restore("
+    },
+    {
+      "api": "TimelineController.start",
+      "feature": "timeline",
+      "token": "start("
+    },
+    {
+      "api": "TimelineController.stop",
+      "feature": "timeline",
+      "token": "stop("
+    },
+    {
+      "api": "TimelineController.snapshot",
+      "feature": "timeline",
+      "token": "snapshot("
+    },
+    {
+      "api": "TimelineController.teardown",
+      "feature": "timeline",
+      "token": "teardown("
+    },
+    {
+      "api": "QualityController.setTier",
+      "feature": "quality",
+      "token": "setTier("
+    },
+    {
+      "api": "QualityController.snapshot",
+      "feature": "quality",
+      "token": "snapshot("
+    },
+    {
+      "api": "QualityController.teardown",
+      "feature": "quality",
+      "token": "teardown("
+    },
+    {
+      "api": "OrientationRuntime.reset",
+      "feature": "orientation",
+      "token": "reset("
+    },
+    {
+      "api": "OrientationRuntime.snapshot",
+      "feature": "orientation",
+      "token": "snapshot("
+    },
+    {
+      "api": "OrientationRuntime.teardown",
+      "feature": "orientation",
+      "token": "teardown("
+    },
+    {
+      "api": "Mapper.push",
+      "feature": "orientation-math",
+      "token": "push("
+    },
+    {
+      "api": "Mapper.pushBatch",
+      "feature": "orientation-math",
+      "token": "pushBatch("
+    },
+    {
+      "api": "Mapper.reset",
+      "feature": "orientation-math",
+      "token": "reset("
+    },
+    {
+      "api": "Mapper.size",
+      "feature": "orientation-math",
+      "token": "size("
+    },
+    {
+      "api": "Scheduler.receive",
+      "feature": "orientation-math",
+      "token": "receive("
+    },
+    {
+      "api": "Scheduler.reset",
+      "feature": "orientation-math",
+      "token": "reset("
+    },
+    {
+      "api": "Scheduler.teardown",
+      "feature": "orientation-math",
+      "token": "teardown("
+    },
+    {
+      "api": "Scheduler.pending",
+      "feature": "orientation-math",
+      "token": "pending("
+    },
+    {
+      "api": "Scheduler.commitCount",
+      "feature": "orientation-math",
+      "token": "commitCount("
+    }
+  ],
+  "features": [
+    {
+      "id": "arcadians",
+      "page": "arcadians.html",
+      "source": "demos/arcadians.mjs",
+      "metadata": "features.json#arcadians",
+      "provenance": "Real-page-inspired",
+      "acceptance": [
+        "At 110 seconds: Drop 1 / future",
+        "Pointer and four-beat pulse remain bounded",
+        "Inspect all three shared instances"
+      ]
+    },
+    {
+      "id": "metadata",
+      "page": "metadata.html",
+      "source": "demos/metadata.mjs",
+      "metadata": "features.json#metadata",
+      "provenance": "Supplementary",
+      "acceptance": [
+        "Invalid BPM preserves prior values",
+        "Save changes config after reload",
+        "Revision restore and reset work without a database"
+      ]
+    },
+    {
+      "id": "clock",
+      "page": "clock.html",
+      "source": "demos/clock.mjs",
+      "metadata": "features.json#clock",
+      "provenance": "Supplementary",
+      "acceptance": [
+        "One beat is 60000/145 milliseconds",
+        "One tick is one sixteenth beat",
+        "Paused core audio clock fallback is clearly distinguished"
+      ]
+    },
+    {
+      "id": "scheduling",
+      "page": "scheduling.html",
+      "source": "demos/scheduling.mjs",
+      "metadata": "features.json#scheduling",
+      "provenance": "Supplementary",
+      "acceptance": [
+        "Each registration fires only on its documented clock",
+        "Cancel removes callbacks",
+        "Both initial declarative and dynamic deferred starts work"
+      ]
+    },
+    {
+      "id": "cues",
+      "page": "cues.html",
+      "source": "demos/cues.mjs",
+      "metadata": "features.json#cues",
+      "provenance": "Supplementary",
+      "acceptance": [
+        "DROP 1 normalises consistently",
+        "Paused exact landing arms a single core cue",
+        "Owned animation resets; theme spinner does not"
+      ]
+    },
+    {
+      "id": "lyrics",
+      "page": "lyrics.html",
+      "source": "demos/lyrics.mjs",
+      "metadata": "features.json#lyrics",
+      "provenance": "Supplementary",
+      "acceptance": [
+        "96 tags including 48 blank clears",
+        "7.76 seconds is a clear boundary",
+        "Look-ahead preserves immediate blank and next visible line"
+      ]
+    },
+    {
+      "id": "audio",
+      "page": "audio.html",
+      "source": "demos/audio.mjs",
+      "metadata": "features.json#audio",
+      "provenance": "Supplementary",
+      "acceptance": [
+        "Both full-track players bind",
+        "Eight-second same-song excerpt is excluded",
+        "Dynamic metadata/discovery works"
+      ]
+    },
+    {
+      "id": "pointer",
+      "page": "pointer.html",
+      "source": "demos/pointer.mjs",
+      "metadata": "features.json#pointer",
+      "provenance": "Supplementary",
+      "acceptance": [
+        "Bounds clamp axes",
+        "Leave/reset returns neutral",
+        "Manual set honours the demo accessibility check"
+      ]
+    },
+    {
+      "id": "pulse",
+      "page": "pulse.html",
+      "source": "demos/pulse.mjs",
+      "metadata": "features.json#pulse",
+      "provenance": "Supplementary",
+      "acceptance": [
+        "Pause removes playing class",
+        "Rate changes recompute duration",
+        "Seek resets phase"
+      ]
+    },
+    {
+      "id": "cue-class",
+      "page": "cue-class.html",
+      "source": "demos/cue-class.mjs",
+      "metadata": "features.json#cue-class",
+      "provenance": "Supplementary",
+      "acceptance": [
+        "Retrigger replaces pending lifetime",
+        "Clear removes class",
+        "Pause does not pretend to freeze a wall-clock lifetime"
+      ]
+    },
+    {
+      "id": "timeline",
+      "page": "timeline.html",
+      "source": "demos/timeline.mjs",
+      "metadata": "features.json#timeline",
+      "provenance": "Supplementary",
+      "acceptance": [
+        "Seek to 110 restores Drop 1 active interval without replaying skipped entrances",
+        "Backward seek starts a fresh traversal",
+        "Manual restore and teardown work"
+      ]
+    },
+    {
+      "id": "quality",
+      "page": "quality.html",
+      "source": "demos/quality.mjs",
+      "metadata": "features.json#quality",
+      "provenance": "Supplementary",
+      "acceptance": [
+        "Manual set is labelled not measured",
+        "Snapshot includes tier and reference",
+        "Teardown removes registry entries"
+      ]
+    },
+    {
+      "id": "catalogue",
+      "page": "catalogue.html",
+      "source": "demos/catalogue.mjs",
+      "metadata": "features.json#catalogue",
+      "provenance": "Supplementary",
+      "acceptance": [
+        "Dynamic authored duration is quantised",
+        "Aliases expose same adopter",
+        "Scope removal does not claim full undo"
+      ]
+    },
+    {
+      "id": "orientation",
+      "page": "orientation.html",
+      "source": "demos/orientation.mjs",
+      "metadata": "features.json#orientation",
+      "provenance": "Supplementary",
+      "acceptance": [
+        "Each of nine mappings mounts with its required fixture",
+        "Synthetic readings remain isTrusted=false",
+        "Native phone permission remains a separate check"
+      ]
+    },
+    {
+      "id": "orientation-math",
+      "page": "orientation-math.html",
+      "source": "demos/orientation-math.mjs",
+      "metadata": "features.json#orientation-math",
+      "provenance": "Supplementary",
+      "acceptance": [
+        "All fourteen helpers have example calls",
+        "Rolling mapper resets",
+        "Both schedulers expose bounded commit counters"
+      ]
+    },
+    {
+      "id": "clay",
+      "page": "clay.html",
+      "source": "demos/clay.mjs",
+      "metadata": "features.json#clay",
+      "provenance": "Supplementary",
+      "acceptance": [
+        "Actual Clay adapter and automatic native integration are loaded",
+        "Arcadians tempo yields an eight-beat half-speed background",
+        "Disable/teardown stops owned decoration"
+      ]
+    },
+    {
+      "id": "planes",
+      "page": "planes.html",
+      "source": "demos/planes.mjs",
+      "metadata": "features.json#planes",
+      "provenance": "Supplementary",
+      "acceptance": [
+        "Only effect=paper-planes loads the plane runtime",
+        "The real atlas and hero bounds are used",
+        "Compact/accessibility and teardown behave correctly"
+      ]
+    },
+    {
+      "id": "rudiments",
+      "page": "rudiments.html",
+      "source": "demos/rudiments.mjs",
+      "metadata": "features.json#rudiments",
+      "provenance": "Supplementary",
+      "acceptance": [
+        "All fifteen catalogue entries are selectable",
+        "Exact integer and negative samples work",
+        "All controller lifecycle methods are reachable"
+      ]
+    },
+    {
+      "id": "rudiment-canvas",
+      "page": "rudiment-canvas.html",
+      "source": "demos/rudiment-canvas.mjs",
+      "metadata": "features.json#rudiment-canvas",
+      "provenance": "Supplementary",
+      "acceptance": [
+        "Helix uses native x/y/z without movement formulas",
+        "Signed phase/rate and all three clocks are selectable",
+        "Cue reset and teardown work"
+      ]
+    },
+    {
+      "id": "diagnostics",
+      "page": "diagnostics.html",
+      "source": "demos/diagnostics.mjs",
+      "metadata": "features.json#diagnostics",
+      "provenance": "Supplementary",
+      "acceptance": [
+        "Boot-only opt-in permits bounded sink",
+        "Handlers have stable IDs",
+        "Detach leaves no collector"
+      ]
+    },
+    {
+      "id": "accessibility",
+      "page": "accessibility.html",
+      "source": "demos/accessibility.mjs",
+      "metadata": "features.json#accessibility",
+      "provenance": "Supplementary",
+      "acceptance": [
+        "Actual media preferences override decoration",
+        "Offscreen and hidden state suspend",
+        "Manual enable does not override reduced motion"
+      ]
+    },
+    {
+      "id": "downloads",
+      "page": "downloads.html",
+      "source": "demos/downloads.mjs",
+      "metadata": "features.json#downloads",
+      "provenance": "Supplementary",
+      "acceptance": [
+        "GET/HEAD attachment headers differ from direct playback",
+        "Direct media accepts valid byte ranges",
+        "Invalid local signature is rejected"
+      ]
+    },
+    {
+      "id": "capture",
+      "page": "capture.html",
+      "source": "demos/capture.mjs",
+      "metadata": "features.json#capture",
+      "provenance": "Supplementary",
+      "acceptance": [
+        "Only explicitly synthetic finite samples accepted",
+        "No token or live endpoint used",
+        "No capture data persisted"
+      ]
+    }
+  ]
+}

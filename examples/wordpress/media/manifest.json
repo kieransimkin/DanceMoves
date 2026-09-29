@@ -1,0 +1,43 @@
+{
+  "schema": "dance-moves-demo-media/v1",
+  "title": "Arcadians",
+  "artist": "Kieran Simkin",
+  "bpm": 145,
+  "masterDurationMilliseconds": 273604.558,
+  "sourceCommit": "77c3c0c8115830a5fd26cd56bd59500c26f3ba86",
+  "epk": "https://kieransimkin.co.uk/arcadians/",
+  "assets": [
+    {
+      "name": "arcadians.mp3",
+      "url": "https://raw.githubusercontent.com/kieransimkin/stemlab/77c3c0c8115830a5fd26cd56bd59500c26f3ba86/examples/arcadians/Arcadians%20-%20320kbps.mp3",
+      "sha256": "5a3d17d8b5b27d62a6bb9fa1f654c403db0341da826d650cc282dfa5758ee6de",
+      "gitBlob": "6ebb71999eed9356c170c6e21c8f6ad0f6b84c5b",
+      "bytes": 11708403,
+      "sourcePath": "examples/arcadians/Arcadians - 320kbps.mp3"
+    },
+    {
+      "name": "cover.jpg",
+      "url": "https://raw.githubusercontent.com/kieransimkin/stemlab/77c3c0c8115830a5fd26cd56bd59500c26f3ba86/examples/arcadians/cover.jpg",
+      "sha256": "8bfeff939c1ffcba7529614263e05d4f1bb59a46e6c13501dbf12349edb047ee",
+      "gitBlob": "5628b093281c989733ab2597dc00fe2341a16f9a",
+      "bytes": 745386,
+      "sourcePath": "examples/arcadians/cover.jpg"
+    }
+  ],
+  "canonicalLrc": {
+    "sourcePath": "examples/arcadians/canonical-lyric-timing.lrc",
+    "sha256": "92b46abc4caf1caa8eddf7c306a9e767f8d0bbefed3b39d38e4b4f96981e9de7",
+    "bytes": 2542,
+    "note": "Exact StemLab bytes including BOM and CRLF. Placeholder title/author/language headers are present upstream; cue text/timestamps remain untouched."
+  },
+  "sections": {
+    "sourcePath": "examples/arcadians/reference.json",
+    "gitBlob": "c9adbb8b0f1ebda55cba60031e89c7678e92188f",
+    "derivedFiles": [
+      "sections.json",
+      "sections.cue"
+    ],
+    "note": "Artist-authored reference section boundaries. CUE labels are a demo translation, not a claimed downloaded production CUE attachment."
+  },
+  "licenceNote": "Song and artwork by Kieran Simkin. Requested here for his DanceFlow demonstration. Do not assume the StemLab code licence grants unrelated redistribution rights to music or artwork."
+}
