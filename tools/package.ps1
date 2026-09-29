@@ -9,6 +9,8 @@ if ($entrypoint -notmatch 'Version:\s*([0-9]+(?:\.[0-9]+){2})') {
     throw 'Unable to establish the DanceMoves version from the plugin entrypoint.'
 }
 $version = $Matches[1]
+& node (Join-Path $PSScriptRoot 'verify-rudiments.cjs')
+if ($LASTEXITCODE -ne 0) { throw 'DanceRudiments native bundle verification failed.' }
 $slug = 'kieran-epk-device-orientation'
 $zip = Join-Path $dist ("DanceMoves-{0}.zip" -f $version)
 $manifestPath = Join-Path $dist ("DanceMoves-{0}-manifest.json" -f $version)
@@ -20,7 +22,11 @@ New-Item -ItemType Directory -Path $packageRoot -Force | Out-Null
 
 $include = @(
     'kieran-epk-device-orientation.php',
+    'dance-moves-rudiments.php',
     'README.md',
+    'RUDIMENTS-API.md',
+    'RUDIMENTS-API.d.ts',
+    'vendor',
     'assets'
 )
 foreach ($item in $include) {

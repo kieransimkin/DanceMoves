@@ -1,0 +1,38 @@
+/* Translation is native; these are the unchanged non-positional Clay accents.
+   Only a successful native mount replaces ks-particle-dance. The old CSS is
+   still the fallback when WASM or individual CSS transforms are unavailable. */
+.ks-clay-stars-v2[data-dance-moves-rudiment-clay="active"][data-dance-moves-performance="full"] .epk-atmosphere::after {
+  animation: ks-clay-rudiment-treatment var(--dance-moves-128t) linear infinite both !important;
+  animation-play-state: paused !important;
+  translate: var(--ks-clay-rudiment-x, 0px) var(--ks-clay-rudiment-y, 0px);
+  transition: none !important;
+  will-change: translate, transform, opacity;
+}
+.ks-clay-stars-v2[data-dance-moves-rudiment-clay="suspended"] .epk-atmosphere::after {
+  animation: none !important;
+  translate: none !important;
+  will-change: auto;
+}
+@keyframes ks-clay-rudiment-treatment {
+  0%, 100% { transform: rotate(0deg) scale(1); opacity: calc(.38 * var(--ks-master-intensity)); }
+  9% { transform: rotate(.02deg) scale(1.001); opacity: calc(.44 * var(--ks-master-intensity)); }
+  13% { transform: rotate(.18deg) scale(1.007); opacity: calc(.60 * var(--ks-master-intensity)); }
+  19% { transform: rotate(.04deg) scale(1.003); opacity: calc(.48 * var(--ks-master-intensity)); }
+  34% { transform: rotate(-.04deg) scale(1); opacity: calc(.43 * var(--ks-master-intensity)); }
+  39% { transform: rotate(-.20deg) scale(1.008); opacity: calc(.62 * var(--ks-master-intensity)); }
+  46% { transform: rotate(-.05deg) scale(1.002); opacity: calc(.49 * var(--ks-master-intensity)); }
+  60% { transform: rotate(0deg) scale(.999); opacity: calc(.42 * var(--ks-master-intensity)); }
+  66% { transform: rotate(.17deg) scale(1.007); opacity: calc(.60 * var(--ks-master-intensity)); }
+  73% { transform: rotate(.04deg) scale(1.002); opacity: calc(.48 * var(--ks-master-intensity)); }
+  84% { transform: rotate(-.02deg) scale(1); opacity: calc(.43 * var(--ks-master-intensity)); }
+  89% { transform: rotate(-.15deg) scale(1.006); opacity: calc(.57 * var(--ks-master-intensity)); }
+  95% { transform: rotate(-.03deg) scale(1.001); opacity: calc(.45 * var(--ks-master-intensity)); }
+}
+@media (prefers-reduced-motion: reduce), (forced-colors: active) {
+  .ks-clay-stars-v2[data-dance-moves-rudiment-clay] .epk-atmosphere::after {
+    animation: none !important;
+    translate: none !important;
+    transform: none !important;
+    will-change: auto !important;
+  }
+}

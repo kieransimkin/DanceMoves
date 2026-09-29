@@ -29,6 +29,31 @@ WordPress ZIP. Packaged readers can visit the [source repository](https://github
 and select the documentation-bearing branch. This documentation change does not
 rebuild release ZIPs, alter PHP/JavaScript, or change the WordPress upgrade slug.
 
+## Rudiment animation integration (2.9.0 candidate)
+
+DanceMoves now exposes `DanceMoves.rudiments` (also `DanceMovesRudiments`) for the
+pinned DanceRudiments 0.1.3 position catalogue. The bundled native WebAssembly
+backend is generated from every integer sample of the upstream C++ functions;
+there is no JavaScript motion-formula mirror or runtime CDN dependency.
+
+The integration converts 16 DanceMoves ticks per beat to 64 DanceRudiments pips
+per beat. Controllers share one animation-frame scheduler and provide explicit
+page/audio clocks, pause/seek handling, cue resets, accessibility and visibility
+suspension, CSS-variable or callback rendering, snapshots and teardown.
+
+The existing Clay/Stars page automatically uses `clay_background` for its
+atmosphere translation. Half-speed sampling preserves the original eight-beat
+cycle; the existing rotation, scale and opacity treatment shares the new phase.
+The original CSS remains the capability-failure fallback. No page-content edit
+is required, and the legacy-plugin coexistence guard remains authoritative.
+
+See [the complete rudiment API reference](RUDIMENTS-API.md),
+[TypeScript declarations](RUDIMENTS-API.d.ts) and the
+[pinned source record](vendor/dancerudiments/UPSTREAM.json).
+Run `node tools/verify-rudiments.cjs` and the new tests before packaging. This
+version is a candidate: native and lifecycle contracts do not substitute for
+signed-out WordPress, real-browser and physical-device acceptance.
+
 ## Reusable effect primitives (2.8.0)
 
 DanceMoves 2.8.0 keeps repeated motion and playback mechanisms out of individual EPK payloads. The shared code owns input acquisition, requestAnimationFrame scheduling, cached geometry, audio phase, cue subscription, cue deduplication, crossing detection, seeking, pause/resume, current-time restoration, visibility and motion-preference lifecycle, and recoverable quality measurement. EPK pages keep only declarative cue data, scoped CSS and optional appearance/render callbacks.
