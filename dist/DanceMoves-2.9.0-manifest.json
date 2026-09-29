@@ -1,0 +1,155 @@
+﻿{
+    "schema":  "dance-moves-package/v1",
+    "plugin_name":  "DanceMoves",
+    "version":  "2.9.0",
+    "wordpress_upgrade_slug":  "kieran-epk-device-orientation",
+    "zip":  "DanceMoves-2.9.0.zip",
+    "zip_bytes":  1104632,
+    "zip_sha256":  "A70FA211CE48FA25414B1F37F313497FC08A009951EB7AA0EB91F8F745C57148",
+    "entry_count":  28,
+    "root_entrypoint":  "kieran-epk-device-orientation/kieran-epk-device-orientation.php",
+    "root_entrypoint_present":  true,
+    "forward_slash_entries":  true,
+    "files":  [
+                  {
+                      "path":  "kieran-epk-device-orientation/assets/clay-stars-effects.css",
+                      "bytes":  24363,
+                      "sha256":  "5F6B0F4EA64B572F3D2057B0910013D79DF63E2861CBBB228996FADFCE5803FF"
+                  },
+                  {
+                      "path":  "kieran-epk-device-orientation/assets/clay-stars-effects.js",
+                      "bytes":  22656,
+                      "sha256":  "D5D27D5CD4ED3F1E8E409BEF7E25BD5F550E23782D68DFA113E0C697E8D51C2A"
+                  },
+                  {
+                      "path":  "kieran-epk-device-orientation/assets/clay-stars-rudiments.css",
+                      "bytes":  2425,
+                      "sha256":  "1B904718D432A7702AA612387799B2EC89C0BE565124EAD53FE74E649A9B9760"
+                  },
+                  {
+                      "path":  "kieran-epk-device-orientation/assets/clay-stars-rudiments.js",
+                      "bytes":  4129,
+                      "sha256":  "5734238117906A727C65AE2E6CC2086B8B43F46F22392C097E5B203BBF73D6C8"
+                  },
+                  {
+                      "path":  "kieran-epk-device-orientation/assets/dance-moves-admin.js",
+                      "bytes":  1704,
+                      "sha256":  "889D2642EFC2F60F10058D371EC38BA0CC4DEF9AC7C7D7C1C23943F452210CB6"
+                  },
+                  {
+                      "path":  "kieran-epk-device-orientation/assets/dance-moves-catalogue-timing.js",
+                      "bytes":  12987,
+                      "sha256":  "E2CBBE1729BF52D69C060C8999D157B45BCBDA96D7EE9FE93131FD86F45525BE"
+                  },
+                  {
+                      "path":  "kieran-epk-device-orientation/assets/dance-moves-core.css",
+                      "bytes":  3475,
+                      "sha256":  "C3A7C0828BB4681DE7D7EC6A35A2A369DC464E72504A1987A19D5C0607DC7492"
+                  },
+                  {
+                      "path":  "kieran-epk-device-orientation/assets/dance-moves-core.js",
+                      "bytes":  34684,
+                      "sha256":  "38335D15435A61524EB1B9E3CD2A68D0B49DBB143D5F5997959B2CD3DC94A29C"
+                  },
+                  {
+                      "path":  "kieran-epk-device-orientation/assets/dance-moves-effects.js",
+                      "bytes":  19570,
+                      "sha256":  "838C07570DD02B72ACF9CEE3A9E7BB8E6E205946ED50A76BD692B6819D020F5A"
+                  },
+                  {
+                      "path":  "kieran-epk-device-orientation/assets/dance-moves-rudiments.js",
+                      "bytes":  18117,
+                      "sha256":  "B97E5D2148A3B2ED45F70F4DD3E7687BF190CBBFBA1C348D1E3410EC0142B078"
+                  },
+                  {
+                      "path":  "kieran-epk-device-orientation/assets/ks-epk-device-orientation.css",
+                      "bytes":  3743,
+                      "sha256":  "1CB19DA11F6158853D893AF15460FBEABAD4A0D3665505D9857A3137713A8E42"
+                  },
+                  {
+                      "path":  "kieran-epk-device-orientation/assets/ks-epk-device-orientation.js",
+                      "bytes":  18863,
+                      "sha256":  "538F07DF6606860082DE36744119F7C8DFEA5CF8C8D2FC76C53730F48FB48C86"
+                  },
+                  {
+                      "path":  "kieran-epk-device-orientation/assets/ks-epk-device-orientation-core.js",
+                      "bytes":  11981,
+                      "sha256":  "97DA95E3062C89CB4BEEB0795A4DB7A8A31887890DB41BB9334A7B256135C73D"
+                  },
+                  {
+                      "path":  "kieran-epk-device-orientation/assets/paper-dreams-flight.css",
+                      "bytes":  2492,
+                      "sha256":  "350F6C8F825CE1BD7EB227009C725BFD83552D625844A067ED4D1514EBAAF520"
+                  },
+                  {
+                      "path":  "kieran-epk-device-orientation/assets/paper-dreams-flight.js",
+                      "bytes":  7384,
+                      "sha256":  "6DCC86FCC7E3C750272171A86BD72FC17FB63001844BBC5DB501D22D7E62C676"
+                  },
+                  {
+                      "path":  "kieran-epk-device-orientation/assets/paper-dreams-plane-atlas.png",
+                      "bytes":  989622,
+                      "sha256":  "72A04CFEFA5A2DAF46034FFF5166FBA01E9A6918A595257AEBA53413B74687FA"
+                  },
+                  {
+                      "path":  "kieran-epk-device-orientation/assets/vendor/dancerudiments/build-manifest.json",
+                      "bytes":  1021,
+                      "sha256":  "D08FCD81A5599CC50D7ED2E8517F031A2C7329DBFCD232491A4A2113C6BA44BD"
+                  },
+                  {
+                      "path":  "kieran-epk-device-orientation/assets/vendor/dancerudiments/dancerudiments-native.js",
+                      "bytes":  61853,
+                      "sha256":  "E57BFDB456C871D398F700CE5229E18B3E57DF036C41FB6AC079E30F9D5A42BF"
+                  },
+                  {
+                      "path":  "kieran-epk-device-orientation/assets/vendor/dancerudiments/LICENSE",
+                      "bytes":  1091,
+                      "sha256":  "4821889E3CB8A0F14F5560FE3F3EA937F2DA2F988DC8C45EBCC46E4302EADBBF"
+                  },
+                  {
+                      "path":  "kieran-epk-device-orientation/dance-moves-rudiments.php",
+                      "bytes":  1446,
+                      "sha256":  "9B163E6F38B0613B849091C6ECC02A3341963F5019A1A3DC03803135ACDB72F5"
+                  },
+                  {
+                      "path":  "kieran-epk-device-orientation/kieran-epk-device-orientation.php",
+                      "bytes":  36671,
+                      "sha256":  "55AF951BB464B3D07A14BCB71CE536AB9105AFC05B27F83A12EDEC611BB307EF"
+                  },
+                  {
+                      "path":  "kieran-epk-device-orientation/README.md",
+                      "bytes":  72134,
+                      "sha256":  "B934FB7C8F0F55E54FC2054C00DC70F258C4AA5C57B51D92D28548216B7CA62C"
+                  },
+                  {
+                      "path":  "kieran-epk-device-orientation/RUDIMENTS-API.d.ts",
+                      "bytes":  4908,
+                      "sha256":  "BCD1177F9DC4E9207A4F271FCF379DF71F9FD3CE95F65CC422776E2B4E5D7B8E"
+                  },
+                  {
+                      "path":  "kieran-epk-device-orientation/RUDIMENTS-API.md",
+                      "bytes":  35947,
+                      "sha256":  "DF01405CBF7CD260A384F8505F1B5ABCC910CC8FB09DFB1DD3429F1AAA4BC695"
+                  },
+                  {
+                      "path":  "kieran-epk-device-orientation/vendor/dancerudiments/include/dancerudiments/dance_rudiments.hpp",
+                      "bytes":  1781,
+                      "sha256":  "C90D5F5C4F80CE6DAEA3301866A7E5D9609701ADB50B3F2527D93D4A8B2A3CA4"
+                  },
+                  {
+                      "path":  "kieran-epk-device-orientation/vendor/dancerudiments/LICENSE",
+                      "bytes":  1091,
+                      "sha256":  "4821889E3CB8A0F14F5560FE3F3EA937F2DA2F988DC8C45EBCC46E4302EADBBF"
+                  },
+                  {
+                      "path":  "kieran-epk-device-orientation/vendor/dancerudiments/src/dance_rudiments.cpp",
+                      "bytes":  8307,
+                      "sha256":  "738DC4FD43ACECF1247BC1DBA45E1A178FAD8A6319BFBD6CC74FEB14B707DA8D"
+                  },
+                  {
+                      "path":  "kieran-epk-device-orientation/vendor/dancerudiments/UPSTREAM.json",
+                      "bytes":  413,
+                      "sha256":  "E867DE26BF786CC01DAE4A55E142C5F665ECACC5544C7C46A1237B718DDB85E4"
+                  }
+              ]
+}
