@@ -1,0 +1,94 @@
+diff --git a/tests/harness-preparation.test.cjs b/tests/harness-preparation.test.cjs
+--- a/tests/harness-preparation.test.cjs
++++ b/tests/harness-preparation.test.cjs
+@@ -117,10 +117,87 @@
+   });
+   check('unknown harness is rejected', () => assert.throws(() => prep.readUnitCandidate(temp, '../unknown'), /Unknown harness/));
+ } finally { fs.rmSync(temp, { recursive: true, force: true }); }
+-check('PowerShell prepares inputs before starting the test loop', () => {
++// The PowerShell command delegates to the cross-platform Node coordinator.
++// Execute that coordinator with inert child processes and a virtual test list:
++// this verifies ordering without recursively running the suite or writing files.
++const coordinator = fs.readFileSync(path.join(repo, 'tools/test-legacy.cjs'), 'utf8');
++function coordinatorPlan(source, failPreparation = false) {
++  const calls = [];
++  const fakeFs = {
++    readdirSync(directory, options) {
++      if (directory === repo && options?.withFileTypes) return [];
++      if (directory === 'tests') return ['b.test.cjs', 'README.md', 'a.test.cjs'];
++      throw new Error(`Unexpected coordinator directory: ${directory}`);
++    }
++  };
++  const childProcess = {
++    spawnSync(command, args, options) {
++      calls.push({ command, args: [...args], cwd: options.cwd });
++      return { status: failPreparation && args[0] === 'tools/prepare-test-harnesses.cjs' ? 1 : 0 };
++    }
++  };
++  let error = null;
++  try {
++    vm.runInNewContext(source, {
++      __dirname: path.join(repo, 'tools'),
++      process: { execPath: process.execPath, chdir(directory) { assert.equal(directory, repo); } },
++      console: { log() {} },
++      TextDecoder,
++      require(name) {
++        if (name === 'node:fs') return fakeFs;
++        if (name === 'node:path') return path;
++        if (name === 'node:child_process') return childProcess;
++        throw new Error(`Unexpected coordinator import: ${name}`);
++      }
++    }, { filename: 'test-legacy.cjs', timeout: 1000 });
++  } catch (caught) { error = caught; }
++  return { calls, error };
++}
++function assertPreparationOrder(plan) {
++  assert.ifError(plan.error);
++  const prepares = plan.calls.filter(call => call.args[0] === 'tools/prepare-test-harnesses.cjs');
++  assert.equal(prepares.length, 1, 'prepare exactly once');
++  const tests = plan.calls.filter(call => /^tests\/.*\.test\.cjs$/.test(call.args[0]));
++  assert.deepEqual(tests.map(call => call.args[0]), ['tests/a.test.cjs', 'tests/b.test.cjs']);
++  for (const call of tests) {
++    assert.ok(plan.calls.indexOf(prepares[0]) < plan.calls.indexOf(call), 'prepare before every adapter test');
++  }
++}
++check('PowerShell and npm delegate to the canonical Node coordinator', () => {
+   const s = fs.readFileSync(path.join(repo, 'tools/validate.ps1'), 'utf8');
+-  assert.ok(s.indexOf('prepare-test-harnesses.cjs') < s.indexOf("-Filter '*.test.cjs'"));
+-  assert.match(s, /--candidate-file \$clayUnitCandidate/); assert.match(s, /--candidate-file \$californiaUnitCandidate/);
++  assert.match(s, /& npm run test:legacy\s+if \(\$LASTEXITCODE -ne 0\) \{ throw /);
++  const pkg = JSON.parse(fs.readFileSync(path.join(repo, 'package.json'), 'utf8'));
++  assert.equal(pkg.scripts['test:legacy'], 'node tools/test-legacy.cjs');
++});
++check('Node coordinator prepares inputs before every sorted test invocation', () => {
++  assertPreparationOrder(coordinatorPlan(coordinator));
++});
++check('failed preparation stops the coordinator before any adapter test', () => {
++  const plan = coordinatorPlan(coordinator, true);
++  assert.ok(plan.error && /Validation failed.*prepare-test-harnesses\.cjs/.test(plan.error.message));
++  assert.equal(plan.calls.filter(call => /^tests\//.test(call.args[0])).length, 0);
++});
++check('each scaffold audit receives its corresponding unit-only candidate', () => {
++  const plan = coordinatorPlan(coordinator);
++  assert.ifError(plan.error);
++  for (const name of ['clay-stars', 'california-screamin']) {
++    const audits = plan.calls.filter(call => call.args.includes(`tests/harness/${name}`));
++    assert.equal(audits.length, 1);
++    const args = audits[0].args;
++    assert.equal(args[args.indexOf('--candidate-file') + 1], `qa/${name}-unit-candidate.html`);
++    assert.equal(args[args.indexOf('--mode') + 1], 'scaffold');
++    assert.equal(args[args.indexOf('--manifest-file') + 1], `tests/harness/${name}/${name}.json`);
++    assert.equal(args[args.indexOf('--shared-root') + 1], 'tests/harness/plugin-core');
++  }
++});
++check('ordering assertion rejects removed or late preparation', () => {
++  const preparation = "run(process.execPath,['tools/prepare-test-harnesses.cjs']);";
++  assert.equal(coordinator.split(preparation).length, 2, 'one actual preparation call to mutate');
++  const missing = coordinator.replace(preparation, '');
++  assert.throws(() => assertPreparationOrder(coordinatorPlan(missing)), /prepare exactly once/);
++  assert.throws(() => assertPreparationOrder(coordinatorPlan(missing + '\n' + preparation)), /prepare before/);
++});
++check('fixture preparation retains its offline contract', () => {
+   assert.doesNotMatch(fs.readFileSync(path.join(repo, 'tools/prepare-test-harnesses.cjs'), 'utf8'), /Z:\\|https?:\/\//);
+ });
+ console.log(`${checks} harness preparation regression groups passed. No browser/physical-device result is implied.`);
