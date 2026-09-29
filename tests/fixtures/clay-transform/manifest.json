@@ -1,0 +1,9 @@
+{
+  "schema": "dance-moves-clay-transform-fixtures/v1",
+  "scope": "synthetic-unit-only",
+  "hashPolicy": "SHA-256 of UTF-8 bytes with CRLF converted to LF; no other normalization",
+  "files": {
+    "base.html": "4eeaa5468c7d544e06adc37d48c995a3921b164512417912b45d1402e76ed1d8",
+    "expected.html": "f3b8b4201c48c16e1369a89c3c97ce51ab34570a2cbccce7986e6030e485e089"
+  }
+}

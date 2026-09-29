@@ -44,6 +44,11 @@
       "id": "production-bpm", "group": "timing", "label": "Verified master BPM", "type": "readonly", "default": 110,
       "unit": " BPM", "apply": "readonly", "target": "DanceMoves.bpm", "performanceSensitive": false,
       "description": "The artist-confirmed page BPM; lab controls never write it back."
+    },
+    {
+      "id": "orientation-target-ticks", "group": "effect", "label": "Orientation target cadence", "type": "readonly", "default": 2,
+      "unit": " ticks", "apply": "readonly", "target": "ksEpkOrientationConfig.transitionTargetTicks", "performanceSensitive": false,
+      "description": "The shared orientation runtime publishes targets at the configured two-tick cadence. This read-only reference does not add an effect setting or change production motion."
     }
   ],
   "cues": [],

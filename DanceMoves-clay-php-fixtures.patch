@@ -1,0 +1,732 @@
+diff --git a/docs/clay-transform-validation.md b/docs/clay-transform-validation.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..f5a6dd42a6500324e5410a8bd833c79859156b68
+--- /dev/null
++++ b/docs/clay-transform-validation.md
+@@ -0,0 +1,84 @@
++# Clay/Stars transform validation on a clean checkout
++
++## Offline Unit checks
++
++From any normal DanceMoves clone, run:
++
++```powershell
++powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\validate.ps1 -Mode Unit
++if ($LASTEXITCODE -ne 0) { throw "Unit validation failed; do not release" }
++```
++
++`tests/validate-clay-transform.php` and `tests/validate-clay-legacy-collision.php`
++now read [checked-in fixtures](../tests/fixtures/clay-transform/README.md), rather
++than climbing three directories above the repository to infer a private
++`Made from the clay and the stars` release folder. Both scripts load the actual
++`kieran-epk-device-orientation.php` entrypoint and use mock WordPress context
++functions. No production code or site data is changed.
++
++The transform contract compares against a separately authored expected HTML file,
++checks exact content preservation and idempotence, and exercises page, admin,
++loop and query guards. The collision contract runs in its own PHP process with
++the legacy plugin marker defined and checks that it blocks both insertions and
++legacy-script removal. Missing or changed fixture files fail explicitly.
++
++Both scripts are already called by the existing Unit coordinator.
++`tests/clay-transform-fixtures.test.cjs` is automatically discovered with the
++other `.test.cjs` tests. It relocates the minimal test inputs into a temporary
++checkout, runs from an unrelated current directory, tests CRLF and disabled PHP
++assertions, and deliberately breaks fixtures and production behavior to check
++that failures are still detected. Temporary mutations never touch the checkout.
++
++Focused commands:
++
++```powershell
++php .\tests\validate-clay-transform.php
++if ($LASTEXITCODE -ne 0) { throw "Clay content transform failed" }
++php .\tests\validate-clay-legacy-collision.php
++if ($LASTEXITCODE -ne 0) { throw "Clay legacy coexistence failed" }
++node .\tests\clay-transform-fixtures.test.cjs
++if ($LASTEXITCODE -ne 0) { throw "PHP fixture regression checks failed" }
++```
++
++## Separate approved release-payload comparison
++
++The old comparison against an approved full-page payload is retained as an
++explicit additional mode, not silently skipped or claimed by synthetic tests:
++
++```powershell
++php .\tests\validate-clay-transform.php --base "C:\release-evidence\clay-base.html" --candidate "C:\release-evidence\clay-approved.html"
++if ($LASTEXITCODE -ne 0) { throw "Supplied approved-payload comparison failed" }
++```
++
++Replace the two paths with your actual reviewed local files. Both options are
++required. A missing file, unreadable file, unknown option, invalid UTF-8, or a
++network URL fails. The checked-in synthetic unit fixtures are rejected in this
++mode. The script does not establish who approved a supplied file; provenance and
++approval remain the release owner's responsibility.
++
++This mode first runs the offline contracts, then transforms the supplied base and
++compares its bytes against the supplied candidate after removing only the former
++`ks-clay-stars-warm-light-style` block (and its immediate line ending) and the
++superseded `ks-clay-stars-v2-script` block. It also checks idempotence. Unlike the
++checked-in fixture loader, this comparison does not normalize release-file line
++endings; use a matching source/candidate pair. No expected output is generated or
++rewritten. Exit 0 means all requested checks passed, 1 means a contract mismatch,
++and 2 means invalid input or an execution/setup error.
++
++## What a pass does not establish
++
++Offline transform checks are not a browser render, real WordPress hook execution,
++media playback, physical-device performance test or publication receipt. Keep the
++existing pre-live harness and signed-out post-deployment checks. Package mode's
++release-evidence requirements are separate and are not changed by this fix.
++
++## California scaffold parameter groups
++
++The later California scaffold check also requires `master`, `timing` and `effect`
++parameter groups. Its manifest previously contained only the first two. It now
++includes a read-only **Orientation target cadence** reference in the `effect`
++group, matching the production `ksEpkOrientationConfig.transitionTargetTicks`
++value (two ticks). This does not introduce an adjustable motion parameter or
++change the runtime. A focused Node contract checks the reference against the PHP
++configuration. Production asset hashes and the full-page acceptance rules remain
++unchanged.
+diff --git a/tests/california-harness-parameters.test.cjs b/tests/california-harness-parameters.test.cjs
+new file mode 100644
+index 0000000000000000000000000000000000000000..17513ffa9d52449fdad647862df201dbc3b14251
+--- /dev/null
++++ b/tests/california-harness-parameters.test.cjs
+@@ -0,0 +1,21 @@
++'use strict';
++const assert = require('node:assert/strict');
++const fs = require('node:fs');
++const path = require('node:path');
++const root = path.resolve(__dirname, '..');
++const manifest = JSON.parse(fs.readFileSync(path.join(__dirname, 'harness/california-screamin/california-screamin.json'), 'utf8'));
++const php = fs.readFileSync(path.join(root, 'kieran-epk-device-orientation.php'), 'utf8');
++const parameters = manifest.parameters;
++assert.deepEqual(new Set(parameters.map(item => item.group)), new Set(['master', 'timing', 'effect']), 'California must satisfy all required harness groups');
++assert.equal(new Set(parameters.map(item => item.id)).size, parameters.length, 'parameter IDs are unique');
++const cadence = parameters.find(item => item.id === 'orientation-target-ticks');
++assert.ok(cadence, 'a real effect reference is present, not an empty placeholder group');
++assert.equal(cadence.type, 'readonly');
++assert.equal(cadence.apply, 'readonly');
++assert.equal(cadence.target, 'ksEpkOrientationConfig.transitionTargetTicks');
++const configured = php.match(/'transitionTargetTicks'\s*=>\s*(\d+)\s*,/);
++assert.ok(configured, 'production orientation configuration declares its target cadence');
++assert.equal(cadence.default, Number(configured[1]), 'the displayed cadence must match production');
++assert.equal(parameters.find(item => item.id === 'effect-enabled').group, 'master');
++assert.equal(parameters.find(item => item.id === 'production-bpm').default, manifest.release.bpm);
++console.log('PASS California harness parameter groups and production cadence (10 checks).');
+diff --git a/tests/clay-transform-fixtures.test.cjs b/tests/clay-transform-fixtures.test.cjs
+new file mode 100644
+index 0000000000000000000000000000000000000000..7ecaaadb2908c84cc22e0614596c7f6e1114d70d
+--- /dev/null
++++ b/tests/clay-transform-fixtures.test.cjs
+@@ -0,0 +1,182 @@
++'use strict';
++// Exercises the real PHP entrypoint in a minimal relocated checkout. No WordPress,
++// private release tree, generated qa/ candidate, media downloads or PHP extensions.
++const assert = require('node:assert/strict');
++const fs = require('node:fs');
++const os = require('node:os');
++const path = require('node:path');
++const { spawnSync } = require('node:child_process');
++const repo = path.resolve(__dirname, '..');
++const php = process.env.PHP_BINARY || 'php';
++const files = [
++  'kieran-epk-device-orientation.php', 'dance-moves-rudiments.php',
++  'tests/validate-clay-transform.php', 'tests/validate-clay-legacy-collision.php',
++  'tests/helpers/clay-transform-fixture.php',
++  'tests/fixtures/clay-transform/base.html',
++  'tests/fixtures/clay-transform/expected.html',
++  'tests/fixtures/clay-transform/manifest.json',
++];
++const baseFiles = new Map(files.map(file => [file, fs.readFileSync(path.join(repo, file))]));
++const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'dancemoves-clay-php-'));
++const checkout = path.join(temporary, 'checkout with spaces');
++const elsewhere = path.join(temporary, 'unrelated cwd');
++fs.mkdirSync(elsewhere);
++let checks = 0;
++function prepare() {
++  fs.rmSync(checkout, { recursive: true, force: true });
++  for (const [file, bytes] of baseFiles) {
++    const output = path.join(checkout, file);
++    fs.mkdirSync(path.dirname(output), { recursive: true });
++    fs.writeFileSync(output, bytes);
++  }
++}
++function read(file) { return fs.readFileSync(path.join(checkout, file), 'utf8'); }
++function write(file, text) { fs.writeFileSync(path.join(checkout, file), text); }
++function replace(file, from, to) {
++  const original = read(file);
++  assert.ok(original.includes(from), `Mutation target missing: ${file}`);
++  write(file, original.replace(from, to));
++}
++function execute(script, args = [], ini = []) {
++  const result = spawnSync(php, [...ini, path.join(checkout, 'tests', script), ...args], {
++    cwd: elsewhere, encoding: 'utf8', timeout: 20000, maxBuffer: 1024 * 1024,
++  });
++  if (result.error) throw new Error(`Cannot run PHP contract (${php}): ${result.error.message}`);
++  return { status: result.status, output: result.stdout + result.stderr };
++}
++function passed(result, label) {
++  assert.equal(result.status, 0, `${label}\n${result.output}`);
++  assert.match(result.output, /unit validation: PASS \(\d+ checks\)/, label);
++  assert.doesNotMatch(result.output, /(?:Warning|Fatal error|=FAIL)/, label);
++}
++function failed(result, pattern) {
++  assert.notEqual(result.status, 0, `False pass:\n${result.output}`);
++  assert.match(result.output, pattern);
++}
++function test(name, callback) {
++  prepare(); callback(); checks++; console.log(`PASS ${name}`);
++}
++const transform = 'validate-clay-transform.php';
++const legacy = 'validate-clay-legacy-collision.php';
++const base = 'tests/fixtures/clay-transform/base.html';
++const expected = 'tests/fixtures/clay-transform/expected.html';
++const manifest = 'tests/fixtures/clay-transform/manifest.json';
++const plugin = 'kieran-epk-device-orientation.php';
++function changeFilter(from, to) {
++  const source = read(plugin);
++  const start = source.indexOf('function dance_moves_clay_stars_filter_content(');
++  assert.ok(start > 0);
++  const filter = source.slice(start);
++  assert.ok(filter.includes(from), `Filter mutation target missing: ${from}`);
++  write(plugin, source.slice(0, start) + filter.replace(from, to));
++}
++try {
++  test('transform loads the full plugin from an unrelated working directory', () => passed(execute(transform), 'transform'));
++  test('legacy collision loads the full plugin without a release workspace', () => passed(execute(legacy), 'legacy'));
++  test('both PHP commands leave every input unchanged and create no QA files', () => {
++    passed(execute(transform), 'transform'); passed(execute(legacy), 'legacy');
++    for (const [file, bytes] of baseFiles) assert.deepEqual(fs.readFileSync(path.join(checkout, file)), bytes, file);
++    assert.equal(fs.existsSync(path.join(checkout, 'qa')), false);
++  });
++  for (const script of [transform, legacy]) {
++    test(`${script} runs with zend.assertions disabled`, () => passed(execute(script, [], ['-d', 'zend.assertions=-1']), script));
++    test(`${script} accepts CRLF checkout copies`, () => {
++      for (const [file, bytes] of baseFiles) write(file, bytes.toString('utf8').replace(/\r\n/g, '\n').replace(/\n/g, '\r\n'));
++      passed(execute(script), script);
++    });
++    test(`${script} rejects a missing base fixture rather than skipping`, () => {
++      fs.unlinkSync(path.join(checkout, base));
++      failed(execute(script), /missing or unreadable/);
++    });
++    test(`${script} rejects a missing expected fixture rather than regenerating it`, () => {
++      fs.unlinkSync(path.join(checkout, expected));
++      failed(execute(script), /missing or unreadable/);
++    });
++  }
++  for (const file of [base, expected]) {
++    test(`changed ${path.basename(file)} still fails the pinned hash`, () => {
++      write(file, read(file) + '<p>Unreviewed edit</p>\n');
++      failed(execute(transform), /fixture hash mismatch/);
++    });
++  }
++  for (const [label, bytes] of [
++    ['UTF-8 BOM', Buffer.from([0xef, 0xbb, 0xbf])],
++    ['invalid UTF-8', Buffer.from([0xff])], ['null byte', Buffer.from([0])],
++    ['replacement character', Buffer.from([0xef, 0xbf, 0xbd])],
++  ]) {
++    test(`${label} is not silently normalized`, () => {
++      write(base, Buffer.concat([bytes, baseFiles.get(base)]));
++      failed(execute(transform), /fixture hash mismatch|strict UTF-8/);
++    });
++  }
++  test('invalid manifest fails explicitly', () => {
++    write(manifest, '{'); failed(execute(transform), /validation error/);
++  });
++  test('manifest cannot claim synthetic fixtures are live evidence', () => {
++    replace(manifest, 'synthetic-unit-only', 'approved-live'); failed(execute(transform), /Invalid Clay fixture manifest/);
++  });
++  test('missing pinned digest fails explicitly', () => {
++    const value = JSON.parse(read(manifest)); delete value.files['base.html'];
++    write(manifest, JSON.stringify(value)); failed(execute(transform), /Invalid Clay fixture manifest/);
++  });
++  test('an incorrect re-pinned golden file still fails comparison with production', () => {
++    const crypto = require('node:crypto');
++    replace(expected, 'class="ks-lens-flare"', 'class="incorrect-layer"');
++    const value = JSON.parse(read(manifest));
++    value.files['expected.html'] = crypto.createHash('sha256').update(read(expected)).digest('hex');
++    write(manifest, JSON.stringify(value));
++    failed(execute(transform), /transform_matches_independent_expected_fixture=FAIL/);
++  });
++  for (const [label, from, to] of [
++    ['layer insertion', 'class="ks-lens-flare"', 'class="incorrect-layer"'],
++    ['script removal', '.*?</script>#s', 'DOES_NOT_MATCH</script>#s'],
++    ['page guard', '!dance_moves_clay_stars_is_target() || ', ''],
++    ['admin guard', 'is_admin() || ', ''],
++    ['loop guard', '!in_the_loop() || ', ''],
++    ['main-query guard', ' || !is_main_query()', ''],
++  ]) {
++    test(`broken ${label} is rejected, even without PHP assertions`, () => {
++      changeFilter(from, to); failed(execute(transform, [], ['-d', 'zend.assertions=-1']), /=FAIL/);
++    });
++  }
++  test('broken legacy coexistence guard is rejected', () => {
++    changeFilter("defined('KS_CLAY_STARS_EFFECTS_VERSION') || ", '');
++    failed(execute(legacy), /legacy_plugin_suppresses_shared_transform=FAIL/);
++  });
++  test('removed WordPress content-filter registration is rejected', () => {
++    changeFilter("add_filter('the_content', 'dance_moves_clay_stars_filter_content', 20);", '');
++    failed(execute(transform), /content_filter_registered_at_priority_20=FAIL/);
++  });
++  test('one supplied release path is an error, not a skipped comparison', () => {
++    failed(execute(transform, ['--base', path.join(checkout, base)]), /Both --base and --candidate/);
++  });
++  test('misspelled release option is rejected', () => {
++    failed(execute(transform, ['--canddate', 'missing.html']), /Usage:/);
++  });
++  test('missing supplied release files fail explicitly', () => {
++    failed(execute(transform, ['--base', 'absent.html', '--candidate', 'absent-too.html']), /missing or unreadable/);
++  });
++  test('network paths cannot become external test dependencies', () => {
++    failed(execute(transform, ['--base', 'https://example.invalid/base.html', '--candidate', 'x.html']), /Required local/);
++  });
++  test('unit fixtures cannot be labelled supplied approved release evidence', () => {
++    failed(execute(transform, ['--base', path.join(checkout, base), '--candidate', path.join(checkout, expected)]), /must not be the synthetic unit fixtures/);
++  });
++  test('explicit extra comparison succeeds or fails on supplied bytes, never regeneration', () => {
++    // Synthetic CLI regression data ONLY; this does not verify a real approved page.
++    const header = /<!-- Synthetic DanceMoves unit fixture[^\n]*\n/;
++    const a = path.join(temporary, 'supplied-base.html');
++    const b = path.join(temporary, 'supplied-expected.html');
++    fs.writeFileSync(a, read(base).replace(header, ''));
++    fs.writeFileSync(b, read(expected).replace(header, ''));
++    const args = ['--base', a, '--candidate', b];
++    const result = execute(transform, args);
++    passed(result, 'supplied pair');
++    assert.match(result.output, /transform_matches_supplied_approved_candidate_dom=PASS/);
++    fs.appendFileSync(b, '<p>Mismatch</p>\n');
++    failed(execute(transform, args), /transform_matches_supplied_approved_candidate_dom=FAIL/);
++  });
++  console.log(`Clay/Stars relocatable PHP fixture regressions passed (${checks} groups).`);
++} finally {
++  fs.rmSync(temporary, { recursive: true, force: true });
++}
+diff --git a/tests/fixtures/clay-transform/README.md b/tests/fixtures/clay-transform/README.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..f7d6174a9d124e31af94ade13429d48ab7653c63
+--- /dev/null
++++ b/tests/fixtures/clay-transform/README.md
+@@ -0,0 +1,37 @@
++# Clay/Stars PHP transform fixtures
++
++These are **synthetic unit-test inputs**, not a captured WordPress page, an approved
++release payload, or evidence that a live site renders correctly.
++
++`base.html` exercises the legacy content shape: one atmosphere, one cover, one
++player, five chapter controls, links, readable text, a superseded motion script,
++and an unrelated script. `expected.html` is a separately authored golden output:
++three decorative cover spans, one cloud field, and only the superseded script
++removed. It is not generated by the production filter during a test run.
++
++`manifest.json` pins both files' SHA-256 digests. The loader accepts CRLF checkouts
++only by mapping CRLF back to LF; all other bytes are preserved. Missing files,
++changed text, invalid UTF-8, null/replacement bytes, and added BOM bytes fail.
++Review changes to both HTML and the manifest together; never refresh the golden
++output or hashes just to make a failing test green.
++
++The PHP tests load the actual plugin entrypoint with a small WordPress context
++stub. They run without WordPress, media downloads, generated `qa/` pages or any
++external release directory. All checks use explicit booleans and exit codes,
++not PHP `assert()` settings.
++
++Run from the repository root:
++
++```sh
++php tests/validate-clay-transform.php
++php tests/validate-clay-legacy-collision.php
++node tests/clay-transform-fixtures.test.cjs
++```
++
++The regular `tools/validate.ps1 -Mode Unit` already discovers the new Node test
++and runs both PHP tests; no preparation command or validator bypass is required.
++The Node test needs the same `php` executable on PATH as the Unit coordinator.
++It can also use `PHP_BINARY` when invoked directly.
++
++For the separate, explicit release-payload comparison and acceptance boundaries,
++see [Clay transform validation](../../../docs/clay-transform-validation.md).
+diff --git a/tests/fixtures/clay-transform/base.html b/tests/fixtures/clay-transform/base.html
+new file mode 100644
+index 0000000000000000000000000000000000000000..a5341b98f50de8014bc9c1211a7eba6f8b58a2a3
+--- /dev/null
++++ b/tests/fixtures/clay-transform/base.html
+@@ -0,0 +1,24 @@
++<!-- Synthetic DanceMoves unit fixture; not a captured or approved WordPress page. -->
++<section class="ks-epk ks-clay-stars-v2" data-release="clay-transform-fixture">
++  <div class="epk-atmosphere" aria-hidden="true"></div>
++  <div class="epk-cover-wrap"><img src="/fixtures/clay-cover.jpg" alt="Clay and stars test artwork"></div>
++  <h1>Made from the clay and the stars (Anunnaki)</h1>
++  <p>𒀭 · café · “Clay &amp; Stars” — readable text stays unchanged.</p>
++  <div class="ks-clay-stars-player">
++    <audio id="ks-clay-stars-audio" controls preload="metadata"><source src="/fixtures/master.mp3" type="audio/mpeg"></audio>
++    <div class="ks-clay-stars-chapters">
++      <button type="button" data-ks-clay-stars-chapter data-time="0">Intro</button>
++      <button type="button" data-ks-clay-stars-chapter data-time="60.84">Chorus</button>
++      <button type="button" data-ks-clay-stars-chapter data-time="197.29">Breakdown</button>
++      <button type="button" data-ks-clay-stars-chapter data-time="272.43">Bridge</button>
++      <button type="button" data-ks-clay-stars-chapter data-time="341.04">Coda</button>
++    </div>
++  </div>
++  <div class="epk-actions"><a class="epk-download" href="/fixtures/master.mp3" download>Download MP3</a><a class="epk-button" href="#lyrics">Read lyrics</a></div>
++  <details id="lyrics"><summary>Lyrics</summary><p>Static readable lyric content.</p></details>
++<script id="ks-clay-stars-v2-script">
++// Superseded page-owned motion must be removed without executing this code.
++window.clayLegacyFixture = true;
++</script>
++<script id="unrelated-page-script">/* An unrelated script must be preserved. */</script>
++</section>
+diff --git a/tests/fixtures/clay-transform/expected.html b/tests/fixtures/clay-transform/expected.html
+new file mode 100644
+index 0000000000000000000000000000000000000000..f21e92d33508552f7e673054e528b4a67a4adf84
+--- /dev/null
++++ b/tests/fixtures/clay-transform/expected.html
+@@ -0,0 +1,22 @@
++<!-- Synthetic DanceMoves unit fixture; not a captured or approved WordPress page. -->
++<section class="ks-epk ks-clay-stars-v2" data-release="clay-transform-fixture">
++  <div class="epk-atmosphere" aria-hidden="true"></div>
++  <span class="ks-cloud-field" aria-hidden="true"></span>
++  <div class="epk-cover-wrap"><span class="ks-warm-bloom" aria-hidden="true"></span><span class="ks-lens-flare" aria-hidden="true"></span><span class="ks-specular-sweep" aria-hidden="true"></span><img src="/fixtures/clay-cover.jpg" alt="Clay and stars test artwork"></div>
++  <h1>Made from the clay and the stars (Anunnaki)</h1>
++  <p>𒀭 · café · “Clay &amp; Stars” — readable text stays unchanged.</p>
++  <div class="ks-clay-stars-player">
++    <audio id="ks-clay-stars-audio" controls preload="metadata"><source src="/fixtures/master.mp3" type="audio/mpeg"></audio>
++    <div class="ks-clay-stars-chapters">
++      <button type="button" data-ks-clay-stars-chapter data-time="0">Intro</button>
++      <button type="button" data-ks-clay-stars-chapter data-time="60.84">Chorus</button>
++      <button type="button" data-ks-clay-stars-chapter data-time="197.29">Breakdown</button>
++      <button type="button" data-ks-clay-stars-chapter data-time="272.43">Bridge</button>
++      <button type="button" data-ks-clay-stars-chapter data-time="341.04">Coda</button>
++    </div>
++  </div>
++  <div class="epk-actions"><a class="epk-download" href="/fixtures/master.mp3" download>Download MP3</a><a class="epk-button" href="#lyrics">Read lyrics</a></div>
++  <details id="lyrics"><summary>Lyrics</summary><p>Static readable lyric content.</p></details>
++
++<script id="unrelated-page-script">/* An unrelated script must be preserved. */</script>
++</section>
+diff --git a/tests/fixtures/clay-transform/manifest.json b/tests/fixtures/clay-transform/manifest.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..6dc0133b1d0578f96d4af8497a51fbceaf84c9cb
+--- /dev/null
++++ b/tests/fixtures/clay-transform/manifest.json
+@@ -0,0 +1,9 @@
++{
++  "schema": "dance-moves-clay-transform-fixtures/v1",
++  "scope": "synthetic-unit-only",
++  "hashPolicy": "SHA-256 of UTF-8 bytes with CRLF converted to LF; no other normalization",
++  "files": {
++    "base.html": "4eeaa5468c7d544e06adc37d48c995a3921b164512417912b45d1402e76ed1d8",
++    "expected.html": "f3b8b4201c48c16e1369a89c3c97ce51ab34570a2cbccce7986e6030e485e089"
++  }
++}
+diff --git a/tests/harness/california-screamin/california-screamin.json b/tests/harness/california-screamin/california-screamin.json
+index 2b9bef004e015ba2421c59cb0d23a4042260ab4a..6d265c8f2791040aa0e596f2a4ab5996f471bb0f 100644
+--- a/tests/harness/california-screamin/california-screamin.json
++++ b/tests/harness/california-screamin/california-screamin.json
+@@ -44,6 +44,11 @@
+       "id": "production-bpm", "group": "timing", "label": "Verified master BPM", "type": "readonly", "default": 110,
+       "unit": " BPM", "apply": "readonly", "target": "DanceMoves.bpm", "performanceSensitive": false,
+       "description": "The artist-confirmed page BPM; lab controls never write it back."
++    },
++    {
++      "id": "orientation-target-ticks", "group": "effect", "label": "Orientation target cadence", "type": "readonly", "default": 2,
++      "unit": " ticks", "apply": "readonly", "target": "ksEpkOrientationConfig.transitionTargetTicks", "performanceSensitive": false,
++      "description": "The shared orientation runtime publishes targets at the configured two-tick cadence. This read-only reference does not add an effect setting or change production motion."
+     }
+   ],
+   "cues": [],
+diff --git a/tests/helpers/clay-transform-fixture.php b/tests/helpers/clay-transform-fixture.php
+new file mode 100644
+index 0000000000000000000000000000000000000000..6aa551a03e897c94862badf008ce22c3f07acead
+--- /dev/null
++++ b/tests/helpers/clay-transform-fixture.php
+@@ -0,0 +1,83 @@
++<?php
++declare(strict_types=1);
++
++// CLI-only WordPress test context. The production filter is required by each test,
++// never reimplemented here. PHP assert() is deliberately not used by this helper.
++if (PHP_SAPI !== 'cli') {
++    throw new RuntimeException('Clay transform fixtures must only run from the CLI.');
++}
++define('ABSPATH', dirname(__DIR__));
++
++$dm_clay_context = array();
++$dm_clay_checks = array();
++$dm_clay_filters = array();
++
++set_error_handler(static function (int $severity, string $message, string $file, int $line): bool {
++    throw new ErrorException($message, 0, $severity, $file, $line);
++});
++set_exception_handler(static function (Throwable $error): void {
++    fwrite(STDERR, 'Clay/Stars validation error: ' . $error->getMessage() . "\n");
++    exit(2);
++});
++
++function dm_clay_context(array $overrides = array()): void {
++    $GLOBALS['dm_clay_context'] = array_replace(array(
++        'page_id' => 252, 'admin' => false, 'in_loop' => true, 'main_query' => true,
++    ), $overrides);
++}
++function is_page($id = 0): bool { return (int) $id === $GLOBALS['dm_clay_context']['page_id']; }
++function is_admin(): bool { return $GLOBALS['dm_clay_context']['admin']; }
++function in_the_loop(): bool { return $GLOBALS['dm_clay_context']['in_loop']; }
++function is_main_query(): bool { return $GLOBALS['dm_clay_context']['main_query']; }
++function add_action(...$args): void {}
++function add_filter(...$args): void { $GLOBALS['dm_clay_filters'][] = $args; }
++
++dm_clay_context();
++
++function dm_clay_read_text(string $path): string {
++    // Explicit local paths only: no remote fetch or traversal up a release tree.
++    if (strpos($path, '://') !== false || !is_file($path) || !is_readable($path)) {
++        throw new RuntimeException('Required local HTML/fixture file is missing or unreadable: ' . $path);
++    }
++    $size = filesize($path);
++    if ($size === false || $size > 1048576) {
++        throw new RuntimeException('Fixture exceeds 1 MiB: ' . $path);
++    }
++    $text = file_get_contents($path);
++    if (!is_string($text) || !preg_match('//u', $text) || strpos($text, "\0") !== false || strpos($text, "\xEF\xBF\xBD") !== false) {
++        throw new RuntimeException('Fixture must be strict UTF-8 without null/replacement bytes: ' . $path);
++    }
++    return $text;
++}
++
++function dm_clay_fixture(string $name): string {
++    if (!in_array($name, array('base.html', 'expected.html'), true)) {
++        throw new InvalidArgumentException('Unknown Clay fixture: ' . $name);
++    }
++    $directory = dirname(__DIR__) . '/fixtures/clay-transform';
++    $manifest = json_decode(dm_clay_read_text($directory . '/manifest.json'), true, 512, JSON_THROW_ON_ERROR);
++    $expected = $manifest['files'][$name] ?? null;
++    if (($manifest['schema'] ?? '') !== 'dance-moves-clay-transform-fixtures/v1' ||
++        ($manifest['scope'] ?? '') !== 'synthetic-unit-only' ||
++        !is_string($expected) || !preg_match('/^[a-f0-9]{64}$/D', $expected)) {
++        throw new RuntimeException('Invalid Clay fixture manifest. Restore the checked-in fixtures.');
++    }
++    // Accommodate Windows checkout line endings, but never trim, strip a BOM,
++    // replace Unicode, or accept a newly computed expectation automatically.
++    $text = str_replace("\r\n", "\n", dm_clay_read_text($directory . '/' . $name));
++    if (!hash_equals($expected, hash('sha256', $text))) {
++        throw new RuntimeException('Clay fixture hash mismatch: ' . $name . '; restore or review the fixture, do not bypass this check.');
++    }
++    return $text;
++}
++
++function dm_clay_check(string $name, bool $passed): void {
++    $GLOBALS['dm_clay_checks'][$name] = $passed;
++    printf("%s=%s\n", $name, $passed ? 'PASS' : 'FAIL');
++}
++
++function dm_clay_finish(string $label): void {
++    $failed = in_array(false, $GLOBALS['dm_clay_checks'], true);
++    printf("%s: %s (%d checks).\n", $label, $failed ? 'FAIL' : 'PASS', count($GLOBALS['dm_clay_checks']));
++    exit($failed ? 1 : 0);
++}
+diff --git a/tests/validate-clay-legacy-collision.php b/tests/validate-clay-legacy-collision.php
+index 86bb50b5de7488074cd4e2a038814ae12c2a4f49..4a5ff71f3f9c95176a073d803c8d9e4bf1d13b43 100644
+--- a/tests/validate-clay-legacy-collision.php
++++ b/tests/validate-clay-legacy-collision.php
+@@ -1,33 +1,20 @@
+ <?php
+ declare(strict_types=1);
+ 
+-define('ABSPATH', __DIR__);
++require __DIR__ . '/helpers/clay-transform-fixture.php';
+ define('KS_CLAY_STARS_EFFECTS_VERSION', '1.0.1');
+ 
+-function is_page($id = 0): bool { return 252 === (int) $id; }
+-function is_admin(): bool { return false; }
+-function in_the_loop(): bool { return true; }
+-function is_main_query(): bool { return true; }
+-function add_action(...$args): void {}
+-function add_filter(...$args): void {}
+-
+-$repo = dirname(__DIR__);
+-$releases = dirname($repo, 3);
+-$base = file_get_contents($releases . '/Made from the clay and the stars/wordpress-public-player-2026-08-31/candidate-wordpress-transport-script-fix.html');
+-if (false === $base) {
+-    fwrite(STDERR, "Unable to read the canonical Clay EPK source.\n");
+-    exit(2);
+-}
+-
+-require $repo . '/kieran-epk-device-orientation.php';
++$base = dm_clay_fixture('base.html');
++$expected = dm_clay_fixture('expected.html');
++require dirname(__DIR__) . '/kieran-epk-device-orientation.php';
+ $result = dance_moves_clay_stars_filter_content($base);
+-$checks = array(
+-    'legacy_plugin_suppresses_shared_transform' => hash_equals(hash('sha256', $base), hash('sha256', $result)),
+-    'legacy_plugin_marker_retained' => defined('KS_CLAY_STARS_EFFECTS_VERSION') && '1.0.1' === KS_CLAY_STARS_EFFECTS_VERSION,
+-    'shared_layers_not_inserted' => 0 === substr_count($result, 'class="ks-warm-bloom"'),
+-);
+ 
+-foreach ($checks as $name => $passed) {
+-    printf("%s=%s\n", $name, $passed ? 'PASS' : 'FAIL');
++dm_clay_check('legacy_plugin_suppresses_shared_transform', $result === $base);
++dm_clay_check('legacy_plugin_marker_retained', defined('KS_CLAY_STARS_EFFECTS_VERSION') && KS_CLAY_STARS_EFFECTS_VERSION === '1.0.1');
++foreach (array('ks-warm-bloom', 'ks-lens-flare', 'ks-specular-sweep', 'ks-cloud-field') as $class) {
++    dm_clay_check($class . '_not_inserted', strpos($result, 'class="' . $class . '"') === false);
+ }
+-exit(in_array(false, $checks, true) ? 1 : 0);
++dm_clay_check('legacy_inline_motion_is_retained', strpos($result, 'id="ks-clay-stars-v2-script"') !== false);
++dm_clay_check('legacy_guard_also_preserves_existing_layers', dance_moves_clay_stars_filter_content($expected) === $expected);
++dm_clay_check('legacy_guard_is_idempotent', dance_moves_clay_stars_filter_content($result) === $result);
++dm_clay_finish('Clay/Stars legacy-plugin collision unit validation');
+diff --git a/tests/validate-clay-transform.php b/tests/validate-clay-transform.php
+index 4edcf3385ba25be43a658ba13c09dbf50341b563..168b04ae26b17c35ee8cc913aa9cbad579b6fc69 100644
+--- a/tests/validate-clay-transform.php
++++ b/tests/validate-clay-transform.php
+@@ -1,59 +1,100 @@
+ <?php
+ declare(strict_types=1);
+ 
+-define('ABSPATH', __DIR__);
+-
+-$current_page_id = 252;
+-function is_page($id = 0): bool { global $current_page_id; return (int) $id === $current_page_id; }
+-function is_admin(): bool { return false; }
+-function in_the_loop(): bool { return true; }
+-function is_main_query(): bool { return true; }
+-function add_action(...$args): void {}
+-function add_filter(...$args): void {}
+-
+-$repo = dirname(__DIR__);
+-$releases = dirname($repo, 3);
+-$release = $releases . '/Made from the clay and the stars';
+-$effects = $release . '/wordpress-warm-light-effects-2026-08-31';
+-$base = file_get_contents($release . '/wordpress-public-player-2026-08-31/candidate-wordpress-transport-script-fix.html');
+-$candidate = file_get_contents($effects . '/candidate-wordpress-transport.html');
+-
+-if (false === $base || false === $candidate) {
+-    fwrite(STDERR, "Unable to read local EPK sources.\n");
+-    exit(2);
++require __DIR__ . '/helpers/clay-transform-fixture.php';
++
++// The default Unit gate has no dependency on external release folders. The old
++// approved-payload comparison remains available as an explicit additional check.
++$options = array();
++for ($i = 1; $i < $argc; $i += 2) {
++    $key = $argv[$i];
++    if (!in_array($key, array('--base', '--candidate'), true) || !isset($argv[$i + 1]) || isset($options[$key])) {
++        throw new InvalidArgumentException('Usage: php tests/validate-clay-transform.php [--base INPUT.html --candidate APPROVED.html]');
++    }
++    $options[$key] = $argv[$i + 1];
++}
++if (count($options) !== 0 && count($options) !== 2) {
++    throw new InvalidArgumentException('Both --base and --candidate are required for the approved-payload comparison.');
+ }
+ 
+-require $repo . '/kieran-epk-device-orientation.php';
++$base = dm_clay_fixture('base.html');
++$expected = dm_clay_fixture('expected.html');
++require dirname(__DIR__) . '/kieran-epk-device-orientation.php';
++
+ $transformed = dance_moves_clay_stars_filter_content($base);
+-$transformed_twice = dance_moves_clay_stars_filter_content($transformed);
+-$current_page_id = 999;
+-$untargeted = dance_moves_clay_stars_filter_content($base);
+-$current_page_id = 252;
+-$candidate_without_assets = preg_replace(
+-    array(
+-        '#<style id="ks-clay-stars-warm-light-style">.*?</style>\n#s',
++dm_clay_check('transform_matches_independent_expected_fixture', $transformed === $expected);
++dm_clay_check('transform_is_idempotent', dance_moves_clay_stars_filter_content($transformed) === $transformed);
++dm_clay_check('existing_complete_layers_are_unchanged', dance_moves_clay_stars_filter_content($expected) === $expected);
++dm_clay_check('content_filter_registered_at_priority_20', in_array(
++    array('the_content', 'dance_moves_clay_stars_filter_content', 20), $dm_clay_filters, true
++));
++
++foreach (array('ks-warm-bloom', 'ks-lens-flare', 'ks-specular-sweep', 'ks-cloud-field') as $class) {
++    dm_clay_check($class . '_inserted_once', substr_count($transformed, 'class="' . $class . '"') === 1);
++    dm_clay_check($class . '_is_decorative', substr_count($transformed, 'class="' . $class . '" aria-hidden="true"') === 1);
++}
++dm_clay_check('superseded_inline_motion_removed', strpos($transformed, 'id="ks-clay-stars-v2-script"') === false);
++dm_clay_check('unrelated_inline_script_preserved', strpos($transformed, '<script id="unrelated-page-script">/* An unrelated script must be preserved. */</script>') !== false);
++dm_clay_check('href_count_preserved', substr_count($base, 'href=') === substr_count($transformed, 'href='));
++dm_clay_check('audio_count_preserved', substr_count($base, '<audio') === 1 && substr_count($transformed, '<audio') === 1);
++dm_clay_check('chapter_count_preserved', substr_count($base, 'data-ks-clay-stars-chapter') === 5 && substr_count($transformed, 'data-ks-clay-stars-chapter') === 5);
++foreach (array(
++    'player_markup_preserved' => '#<audio\b.*?</audio>#s',
++    'chapter_markup_preserved' => '#<button\b[^>]*data-ks-clay-stars-chapter[^>]*>.*?</button>#s',
++    'links_preserved' => '#<a\b.*?</a>#s',
++    'readable_lyrics_preserved' => '#<details\b.*?</details>#s',
++    'unicode_copy_preserved' => '#<p>𒀭.*?</p>#s',
++) as $name => $pattern) {
++    preg_match_all($pattern, $base, $before);
++    preg_match_all($pattern, $transformed, $after);
++    dm_clay_check($name, count($before[0]) > 0 && $before[0] === $after[0]);
++}
++
++foreach (array(
++    'unknown_page_is_untouched' => array('page_id' => 999),
++    'admin_content_is_untouched' => array('admin' => true),
++    'outside_loop_is_untouched' => array('in_loop' => false),
++    'secondary_query_is_untouched' => array('main_query' => false),
++) as $name => $context) {
++    dm_clay_context($context);
++    dm_clay_check($name, dance_moves_clay_stars_filter_content($base) === $base);
++}
++dm_clay_context();
++$unrelated = str_replace('ks-clay-stars-v2', 'other-release', $base);
++dm_clay_check('unrelated_markup_is_untouched', dance_moves_clay_stars_filter_content($unrelated) === $unrelated);
++dm_clay_check('empty_content_is_untouched', dance_moves_clay_stars_filter_content('') === '');
++
++// Each group can already exist independently of the other. Both paths must
++// converge on the independently authored expected HTML without duplicates.
++$cover_layers = '<span class="ks-warm-bloom" aria-hidden="true"></span><span class="ks-lens-flare" aria-hidden="true"></span><span class="ks-specular-sweep" aria-hidden="true"></span>';
++$cloud_layer = '<span class="ks-cloud-field" aria-hidden="true"></span>';
++$cover_only = str_replace('<div class="epk-cover-wrap">', '<div class="epk-cover-wrap">' . $cover_layers, $base);
++$cloud_only = str_replace('<div class="epk-atmosphere" aria-hidden="true"></div>', '<div class="epk-atmosphere" aria-hidden="true"></div>' . "\n  " . $cloud_layer, $base);
++dm_clay_check('existing_cover_layers_not_duplicated', dance_moves_clay_stars_filter_content($cover_only) === $expected);
++dm_clay_check('existing_cloud_layer_not_duplicated', dance_moves_clay_stars_filter_content($cloud_only) === $expected);
++$second_cover = $base . "\n<div class=\"epk-cover-wrap\">second cover</div>\n";
++dm_clay_check('only_first_cover_is_transformed', dance_moves_clay_stars_filter_content($second_cover) === $expected . "\n<div class=\"epk-cover-wrap\">second cover</div>\n");
++$second_atmosphere = $base . "\n<div class=\"epk-atmosphere\" aria-hidden=\"true\"></div>\n";
++dm_clay_check('only_first_atmosphere_is_transformed', dance_moves_clay_stars_filter_content($second_atmosphere) === $expected . "\n<div class=\"epk-atmosphere\" aria-hidden=\"true\"></div>\n");
++
++if ($options) {
++    // Caller supplies the approved inputs; never discover private paths, fetch a
++    // live page, generate the expected side, or report this as live verification.
++    $release_base = dm_clay_read_text($options['--base']);
++    $candidate = dm_clay_read_text($options['--candidate']);
++    $has_root = strpos($release_base, 'ks-clay-stars-v2') !== false && strpos($candidate, 'ks-clay-stars-v2') !== false;
++    if (!$has_root || strpos($release_base . $candidate, 'Synthetic DanceMoves unit fixture') !== false) {
++        throw new InvalidArgumentException('Approved-payload inputs must identify Clay/Stars and must not be the synthetic unit fixtures.');
++    }
++    $candidate_without_assets = preg_replace(array(
++        '#<style id="ks-clay-stars-warm-light-style">.*?</style>\r?\n#s',
+         '#<script id="ks-clay-stars-v2-script">.*?</script>#s',
+-    ),
+-    '',
+-    $candidate
+-);
+-
+-$checks = array(
+-    'transform_matches_approved_candidate_dom' => is_string($candidate_without_assets) && hash_equals(hash('sha256', $candidate_without_assets), hash('sha256', $transformed)),
+-    'transform_is_idempotent' => hash_equals(hash('sha256', $transformed), hash('sha256', $transformed_twice)),
+-    'unknown_page_is_untouched' => hash_equals(hash('sha256', $base), hash('sha256', $untargeted)),
+-    'warm_bloom_count' => 1 === substr_count($transformed, 'class="ks-warm-bloom"'),
+-    'lens_flare_count' => 1 === substr_count($transformed, 'class="ks-lens-flare"'),
+-    'specular_sweep_count' => 1 === substr_count($transformed, 'class="ks-specular-sweep"'),
+-    'cloud_field_count' => 1 === substr_count($transformed, 'class="ks-cloud-field"'),
+-    'superseded_inline_motion_removed' => 0 === substr_count($transformed, 'id="ks-clay-stars-v2-script"'),
+-    'href_count_preserved' => substr_count($base, 'href=') === substr_count($transformed, 'href='),
+-    'audio_count_preserved' => substr_count($base, '<audio') === substr_count($transformed, '<audio'),
+-    'chapter_count_preserved' => substr_count($base, 'data-ks-clay-stars-chapter') === substr_count($transformed, 'data-ks-clay-stars-chapter'),
+-);
+-
+-foreach ($checks as $name => $passed) {
+-    printf("%s=%s\n", $name, $passed ? 'PASS' : 'FAIL');
++    ), '', $candidate);
++    $release_result = dance_moves_clay_stars_filter_content($release_base);
++    dm_clay_check('transform_matches_supplied_approved_candidate_dom', is_string($candidate_without_assets) && $release_result === $candidate_without_assets);
++    dm_clay_check('supplied_release_transform_is_idempotent', dance_moves_clay_stars_filter_content($release_result) === $release_result);
++    printf("supplied_release_transformed_sha256=%s\n", hash('sha256', $release_result));
+ }
+-printf("transformed_sha256=%s\n", hash('sha256', $transformed));
+-exit(in_array(false, $checks, true) ? 1 : 0);
++
++printf("fixture_transformed_sha256=%s\n", hash('sha256', $transformed));
++dm_clay_finish('Clay/Stars content-transform unit validation');
