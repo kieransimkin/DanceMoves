@@ -1,0 +1,446 @@
+{
+  "schema": "dance-moves-documentation-surface/v1",
+  "repository": "kieransimkin/DanceMoves",
+  "commit": "4cb6a71f60459b5579be87d7e55ac8b1426c578e",
+  "version": "2.8.0",
+  "reviewed_on": "2026-09-29",
+  "inventory_method": "Manual comparison with the pinned source exports and PHP declarations; symbol-presence validation is not runtime coverage.",
+  "source_blobs": {
+    "kieran-epk-device-orientation.php": "b374690a0c141aa1f870bf1084a0a0b34c25abe5",
+    "assets/dance-moves-core.js": "3d975c7a3b380f9c99a62f7deade14df4b746929",
+    "assets/dance-moves-core.css": "41412934b55a72cb9c63c545225f2b8fc83c6666",
+    "assets/dance-moves-catalogue-timing.js": "4053b796757d4019ffd07c28b6b742ba06f698ed",
+    "assets/ks-epk-device-orientation-core.js": "044820e5f6c18a486bdaddef4be998969678151c",
+    "assets/ks-epk-device-orientation.js": "e67c315857159e9650528f8b2d6964dc87895ee4",
+    "assets/ks-epk-device-orientation.css": "e5b782af88688cb0d84d30e08bf6ff2b3dfa3487",
+    "assets/clay-stars-effects.js": "ea1f81849e4c3cfbb0bb2b29b75028cb38c2de81",
+    "assets/clay-stars-effects.css": "0a64cce0c9df9c6faf3ac8018714eeaff351bed1",
+    "assets/dance-moves-admin.js": "120829bdb68c1e483e7f6135dee5edd6ae92ad17",
+    "README.md": "5b58348ff8f1a2b7ace30c3e8cae389dc7061c62",
+    "TEST-PLAN.md": "1e9c1d90b30739c4f4a7afbbe850cd9e6655c424",
+    "HARNESS-IMPLEMENTATION-PLAN.md": "e86861d72a10d4405d048bf4aa0871f580aa2e20",
+    "tools/validate.ps1": "1acff207140db9645985848be042922ebeaf36fc",
+    "tools/package.ps1": "2a50f602780364c66bb67ec728bde1256398ed00",
+    "assets/dance-moves-effects.js": "26f1d97651cf2118d30d33b8024aae77f6a536e1",
+    "assets/paper-dreams-flight.js": "7ee6d934a90ff10b639420cd75cf359005818fb7",
+    "assets/paper-dreams-flight.css": "d3d046bbfb6be12adfda271239d717004a2774fc",
+    "assets/paper-dreams-plane-atlas.png": "fba59168a8ea0ab78355d7bdbeaf67167b0af16e",
+    "tests/cue-timeline.test.cjs": "f7f660926f972b05951937cd39203c63c61ebb2c",
+    "tests/timed-lyric-popover.test.cjs": "f2f11df60584376ba859e4b847e5f4745a2cc7a4",
+    "tests/exact-cue-seek.test.cjs": "56c1b20ad595f463d6ae23ae6778ec3ef66ced96",
+    "tests/effects-primitives.test.cjs": "b441339f883fe89fb6759d5989fb38b2f50e7ff8",
+    "tests/epk-download-contract.test.cjs": "ab11c3f3e92b8992468e1e83b783d366bce47d9e",
+    "tests/validate-epk-download-paths.php": "2e54f195d153fa587d72fcee8f0a6a7f410e1e09",
+    "tests/paper-dreams-flight.test.cjs": "549284d08ab0fc0db089cf91154659fc9b221900"
+  },
+  "javascript": {
+    "DanceMoves": {
+      "source": "assets/dance-moves-core.js",
+      "reference": "javascript.md",
+      "aliases": [
+        "KieranEpkMotion"
+      ],
+      "properties": [
+        "version",
+        "bpm",
+        "bpmSource",
+        "ticksPerBeat"
+      ],
+      "methods": [
+        "quantizeTicks",
+        "durationMilliseconds",
+        "currentTick",
+        "nextIntervalTick",
+        "scheduleAtInterval",
+        "deferStart",
+        "onNextInterval",
+        "onEveryInterval",
+        "onNextBeat",
+        "onEveryBeat",
+        "onNextBar",
+        "onEveryBar",
+        "parseTimingFile",
+        "parseLyricTimingFile",
+        "normaliseCueName",
+        "onCue",
+        "onLyric",
+        "fireCue",
+        "registerAnimationScope",
+        "resetRunningAnimations",
+        "discoverAudio",
+        "setDiagnosticsSink",
+        "diagnosticsEnabled"
+      ]
+    },
+    "DanceMoves_catalogue_additions": {
+      "source": "assets/dance-moves-catalogue-timing.js",
+      "reference": "adapters.md",
+      "conditional": true,
+      "methods": [
+        "applyCatalogueTiming",
+        "catalogueTimingSnapshot",
+        "removeCatalogueAnimationScope"
+      ]
+    },
+    "DanceMovesCatalogueTiming": {
+      "source": "assets/dance-moves-catalogue-timing.js",
+      "reference": "adapters.md",
+      "conditional": true,
+      "methods": [
+        "apply",
+        "snapshot"
+      ],
+      "aliases": {
+        "apply": "DanceMoves.applyCatalogueTiming",
+        "snapshot": "DanceMoves.catalogueTimingSnapshot"
+      }
+    },
+    "KSEpkOrientationCore": {
+      "source": "assets/ks-epk-device-orientation-core.js",
+      "reference": "adapters.md",
+      "methods": [
+        "clamp",
+        "createLatestSampleRafScheduler",
+        "createTransitionTargetScheduler",
+        "createRollingMapper",
+        "hasMotionData",
+        "isMobileDevice",
+        "mapPointToWindow",
+        "normalise",
+        "permissionRequired",
+        "screenAligned",
+        "screenAngle",
+        "sensorSupported",
+        "smooth",
+        "smoothTimeBased"
+      ],
+      "commonjs_export": true,
+      "factory_methods": {
+        "createRollingMapper": [
+          "push",
+          "pushBatch",
+          "reset",
+          "size"
+        ],
+        "createLatestSampleRafScheduler": [
+          "receive",
+          "reset",
+          "teardown",
+          "pending",
+          "commitCount"
+        ],
+        "createTransitionTargetScheduler": [
+          "receive",
+          "reset",
+          "teardown",
+          "pending",
+          "commitCount"
+        ]
+      }
+    },
+    "__ksEpkOrientationRuntime": {
+      "source": "assets/ks-epk-device-orientation.js",
+      "reference": "adapters.md",
+      "conditional": true,
+      "stability": "internal diagnostic handle",
+      "methods": [
+        "reset",
+        "teardown",
+        "snapshot"
+      ]
+    },
+    "DanceMovesClayStars": {
+      "source": "assets/clay-stars-effects.js",
+      "reference": "adapters.md",
+      "conditional": true,
+      "properties": [
+        "root",
+        "defaults"
+      ],
+      "methods": [
+        "setParameters",
+        "setMotion",
+        "setMotionTarget",
+        "setCueState",
+        "lifecycle",
+        "reset",
+        "snapshot",
+        "teardown"
+      ]
+    },
+    "DanceMovesEffects": {
+      "source": "assets/dance-moves-effects.js",
+      "reference": "effects.md",
+      "properties": [
+        "version"
+      ],
+      "methods": [
+        "pointer",
+        "playbackPulse",
+        "cueClass",
+        "cueTimeline",
+        "quality",
+        "get",
+        "snapshot",
+        "teardown",
+        "teardownAll"
+      ],
+      "factory_methods": {
+        "pointer": [
+          "set",
+          "reset",
+          "snapshot",
+          "teardown"
+        ],
+        "playbackPulse": [
+          "sync",
+          "snapshot",
+          "teardown"
+        ],
+        "cueClass": [
+          "fire",
+          "clear",
+          "snapshot",
+          "teardown"
+        ],
+        "cueTimeline": [
+          "restore",
+          "start",
+          "stop",
+          "snapshot",
+          "teardown"
+        ],
+        "quality": [
+          "setTier",
+          "snapshot",
+          "teardown"
+        ]
+      }
+    },
+    "DanceMovesPaperDreams": {
+      "source": "assets/paper-dreams-flight.js",
+      "reference": "paper-planes.md",
+      "conditional": true,
+      "properties": [
+        "root"
+      ],
+      "methods": [
+        "snapshot",
+        "teardown"
+      ],
+      "snapshot_version": "2.6.3"
+    }
+  },
+  "php": {
+    "source": "kieran-epk-device-orientation.php",
+    "reference": "wordpress.md",
+    "functions": [
+      "dance_moves_orientation_adapters",
+      "dance_moves_shared_control_pages",
+      "dance_moves_lyric_disclosure_ticks",
+      "dance_moves_attachment_url",
+      "dance_moves_get_page_config",
+      "ks_epk_orientation_enqueue_runtime",
+      "ks_epk_motion_register_capture_type",
+      "ks_epk_motion_capture_permission",
+      "ks_epk_motion_finite_number",
+      "ks_epk_motion_store_capture",
+      "ks_epk_motion_register_rest_route",
+      "dance_moves_sanitize_bpm",
+      "dance_moves_sanitize_attachment_id",
+      "dance_moves_sanitize_duration",
+      "dance_moves_meta_auth",
+      "dance_moves_register_page_meta",
+      "dance_moves_revision_meta_keys",
+      "dance_moves_add_meta_box",
+      "dance_moves_file_field",
+      "dance_moves_render_meta_box",
+      "dance_moves_admin_assets",
+      "dance_moves_timing_upload_mimes",
+      "dance_moves_timing_filetype",
+      "dance_moves_validate_timing_attachment",
+      "dance_moves_queue_admin_error",
+      "dance_moves_admin_notice",
+      "dance_moves_save_page_meta",
+      "dance_moves_clay_stars_is_target",
+      "dance_moves_clay_stars_filter_content",
+      "dance_moves_epk_download_normalize_relative_path",
+      "dance_moves_epk_download_relative_path_from_url",
+      "dance_moves_epk_download_signature",
+      "dance_moves_epk_download_url",
+      "dance_moves_epk_download_query_vars",
+      "dance_moves_epk_download_filter_content",
+      "dance_moves_epk_download_not_found",
+      "dance_moves_epk_download_serve",
+      "dance_moves_sanitize_effect"
+    ],
+    "constants": [
+      "DANCE_MOVES_VERSION",
+      "KS_EPK_ORIENTATION_VERSION",
+      "KS_EPK_MOTION_CAPTURE_TOKEN",
+      "DANCE_MOVES_META_BPM",
+      "DANCE_MOVES_META_LYRIC_TIMING",
+      "DANCE_MOVES_META_CUE_TIMING",
+      "DANCE_MOVES_META_LYRIC_POPUPS",
+      "DANCE_MOVES_META_MASTER_DURATION",
+      "DANCE_MOVES_CLAY_STARS_PAGE_ID",
+      "DANCE_MOVES_META_EFFECT",
+      "DANCE_MOVES_DOWNLOAD_QUERY_VAR",
+      "DANCE_MOVES_DOWNLOAD_SIGNATURE_QUERY_VAR"
+    ],
+    "references": [
+      "wordpress.md",
+      "downloads.md"
+    ]
+  },
+  "events": {
+    "dance-moves-start": {
+      "target": "deferred element",
+      "detail": "BoundaryDetail"
+    },
+    "dance-moves-cue": {
+      "target": "document",
+      "detail": "CueDetail"
+    },
+    "kieran-epk-cue": {
+      "target": "document",
+      "detail": "CueDetail"
+    },
+    "dance-moves-lyric": {
+      "target": "document",
+      "detail": "LyricDetail"
+    },
+    "dance-moves-effects-ready": {
+      "target": "document",
+      "detail": "{api: DanceMovesEffects, version: string}",
+      "bubbles": false
+    }
+  },
+  "boot_objects": [
+    "danceMovesConfig",
+    "ksEpkOrientationConfig",
+    "danceMovesClayPerformanceConfig",
+    "danceMovesPaperDreamsConfig"
+  ],
+  "meta_keys": [
+    "_dance_moves_bpm",
+    "_dance_moves_lyric_timing_id",
+    "_dance_moves_cue_timing_id",
+    "_dance_moves_lyric_popups_enabled",
+    "_dance_moves_master_duration_ms",
+    "_dance_moves_effect"
+  ],
+  "custom_rest_routes": [
+    {
+      "method": "POST",
+      "namespace": "ks-epk-motion/v1",
+      "path": "/capture",
+      "schema": "ks-epk-motion-recording/v1",
+      "reference": "wordpress.md"
+    }
+  ],
+  "orientation_pages": {
+    "130": "dying-for-a-diagnosis",
+    "140": "light-will-win",
+    "243": "presents-and-chocolate",
+    "252": "clay-stars",
+    "268": "fully-nocturnal",
+    "270": "amnesty-honestly",
+    "276": "walk-with-me",
+    "298": "dmitri-my-talisman",
+    "839": "california-screamin"
+  },
+  "css_ticks": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    32,
+    64,
+    128,
+    192,
+    432,
+    1584,
+    2208
+  ],
+  "reference_scope_note": "Release artwork CSS/keyframe internals and test-only harness functions are not promoted to shared production APIs.",
+  "release_tag": "v2.8.0",
+  "compatible_staging": {
+    "branch": "timed-lyrics-staging-2026-09-20",
+    "commit": "c95f24f326a5f5334e4fe63c1e705ec13b1d59d6",
+    "delta": "publication evidence only; production source and README unchanged"
+  },
+  "http_endpoints": [
+    {
+      "kind": "WordPress front-end query endpoint",
+      "methods": [
+        "GET",
+        "HEAD"
+      ],
+      "path": "home_url(/)",
+      "query_vars": [
+        "dance_moves_download",
+        "dance_moves_download_signature"
+      ],
+      "reference": "downloads.md",
+      "is_rest_route": false
+    }
+  ],
+  "lyric_detail_fields": [
+    "pageId",
+    "time",
+    "text",
+    "normalisedText",
+    "index",
+    "nextTime",
+    "nextText",
+    "nextNormalisedText",
+    "nextIndex",
+    "nextVisibleTime",
+    "nextVisibleText",
+    "nextVisibleNormalisedText",
+    "nextVisibleIndex",
+    "audio"
+  ],
+  "effect_option_fields": [
+    "root",
+    "id",
+    "render",
+    "bounds",
+    "target",
+    "finePointer",
+    "audio",
+    "ticks",
+    "className",
+    "propertyPrefix",
+    "cue",
+    "durationTicks",
+    "cues",
+    "onCue",
+    "seekLandingTolerance",
+    "fireOnSeekLanding",
+    "maxCrossingGap",
+    "tiers",
+    "initial",
+    "sampleMilliseconds",
+    "poorWindows",
+    "healthyWindows",
+    "downgradeRatio",
+    "recoveryRatio",
+    "downgradeCooldownMilliseconds",
+    "recoveryCooldownMilliseconds"
+  ],
+  "runtime_validation_note": "The complete original README, shared-effects file and shipped cue-timeline test were materialized and Git-blob-hash checked locally. The focused cue-timeline test passed. Full repository, browser, WordPress and physical-device gates were not run by this documentation patch."
+}
