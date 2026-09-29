@@ -10,3 +10,9 @@
 *.tsv text eol=lf
 *.lrc text eol=lf
 qa/prelive/clay-stars/canonical-live-2.3.2.html -whitespace
+
+# Native source and both MIT licence copies must retain the upstream LF form.
+*.cpp text eol=lf
+*.hpp text eol=lf
+vendor/dancerudiments/LICENSE text eol=lf
+assets/vendor/dancerudiments/LICENSE text eol=lf

@@ -1,0 +1,231 @@
+diff --git a/tests/effects-primitives.test.cjs b/tests/effects-primitives.test.cjs
+index 04c07d8a2d3c4f5da9d1e478090ef8ac907ec025..0f3afc9a01ecd6c29ec11a6ed9f84379ed436456 100644
+--- a/tests/effects-primitives.test.cjs
++++ b/tests/effects-primitives.test.cjs
+@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
+ const fs = require('node:fs');
+ const path = require('node:path');
+ const vm = require('node:vm');
++const { assertPluginVersion } = require('./helpers/plugin-version.cjs');
+ 
+ const root = path.resolve(__dirname, '..');
+ const js = fs.readFileSync(path.join(root, 'assets', 'dance-moves-effects.js'), 'utf8');
+@@ -33,6 +34,6 @@ assert.doesNotMatch(js, /\b(?:86|100|116|145)\b/);
+ assert.match(php, /'dance-moves-effects'/);
+ assert.match(php, /dance-moves-effects\.js/);
+ assert.match(php, /array\('dance-moves-core', 'dance-moves-effects'\)/);
+-assert.match(php, /Version: 2\.9\.0/);
++assertPluginVersion(php);
+ 
+ console.log('DanceMoves reusable effect primitive contracts passed.');
+diff --git a/tests/epk-download-contract.test.cjs b/tests/epk-download-contract.test.cjs
+index ab11c3f3e92b8992468e1e83b783d366bce47d9e..99bb0dd216f11380f9d526b604a783db484b8850 100644
+--- a/tests/epk-download-contract.test.cjs
++++ b/tests/epk-download-contract.test.cjs
+@@ -1,11 +1,12 @@
+ const assert = require("node:assert/strict");
+ const fs = require("node:fs");
+ const path = require("node:path");
++const { assertPluginVersion } = require("./helpers/plugin-version.cjs");
+ 
+ const php = fs.readFileSync(path.join(__dirname, "..", "kieran-epk-device-orientation.php"), "utf8");
+ 
+-assert.match(php, /Version:\s*2\.8\.0/);
+-assert.match(php, /define\('DANCE_MOVES_VERSION',\s*'2\.8\.0'\)/);
++// Version agreement is required; the download feature is not tied to one release.
++assertPluginVersion(php);
+ assert.match(php, /new WP_HTML_Tag_Processor\(\$content\)/);
+ assert.match(php, /while \(\$processor->next_tag\('A'\)\)/);
+ assert.match(php, /null === \$processor->get_attribute\('download'\)/);
+diff --git a/tests/helpers/plugin-version.cjs b/tests/helpers/plugin-version.cjs
+new file mode 100644
+index 0000000000000000000000000000000000000000..d4478c7e938f30759ed84c03eb92b3c9f9b69631
+--- /dev/null
++++ b/tests/helpers/plugin-version.cjs
+@@ -0,0 +1,44 @@
++"use strict";
++
++const assert = require("node:assert/strict");
++
++// The repository uses a numeric MAJOR.MINOR.PATCH WordPress plugin version.
++// This is a source-contract check, not a general-purpose PHP parser.
++const VERSION = /^(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)$/;
++
++/**
++ * Validate the entrypoint's real plugin header and literal runtime constant.
++ * Return the agreed version without pinning feature tests to a past release.
++ * Invalid declarations fail with bounded messages, never the entire PHP source.
++ * @param {string} source Complete contents of kieran-epk-device-orientation.php.
++ * @returns {string} The matching numeric MAJOR.MINOR.PATCH version.
++ */
++function assertPluginVersion(source) {
++  if (typeof source !== "string") throw new TypeError("Plugin source must be a string");
++  const text = source.replace(/^\uFEFF/, "").replace(/\r\n?/g, "\n");
++  const header = text.match(/^\s*<\?php\s*\/\*\*([\s\S]*?)\*\//);
++  assert.ok(header, "Entrypoint must start with a PHP plugin header comment");
++
++  const names = Array.from(header[1].matchAll(/^[ \t]*\*[ \t]*Plugin Name:[ \t]*([^\n]*)$/gm));
++  assert.equal(names.length, 1, "Plugin header must declare exactly one Plugin Name");
++  assert.equal(names[0][1].trim(), "DanceMoves", "Plugin identity must remain DanceMoves");
++
++  const versions = Array.from(header[1].matchAll(/^[ \t]*\*[ \t]*Version:[ \t]*([^\n]*)$/gm));
++  assert.equal(versions.length, 1, "Plugin header must declare exactly one Version");
++  const version = versions[0][1].trim();
++  assert.ok(VERSION.test(version), "Plugin Version must be numeric MAJOR.MINOR.PATCH");
++
++  const declarations = Array.from(text.slice(header[0].length).matchAll(
++    /^[ \t]*define\s*\(\s*(['"])DANCE_MOVES_VERSION\1\s*,\s*([^;]*);/gm
++  ));
++  assert.equal(declarations.length, 1, "Entrypoint must define DANCE_MOVES_VERSION exactly once");
++  const literal = declarations[0][2].match(/^(['"])([^'"\n]*)\1\s*\)\s*$/);
++  assert.ok(literal, "DANCE_MOVES_VERSION must be a literal quoted version");
++  const runtimeVersion = literal[2];
++  assert.ok(VERSION.test(runtimeVersion), "DANCE_MOVES_VERSION must be numeric MAJOR.MINOR.PATCH");
++  assert.equal(runtimeVersion, version,
++    "DANCE_MOVES_VERSION must match the WordPress plugin header Version");
++  return version;
++}
++
++module.exports = Object.freeze({ assertPluginVersion });
+diff --git a/tests/plugin-version.test.cjs b/tests/plugin-version.test.cjs
+new file mode 100644
+index 0000000000000000000000000000000000000000..45cececf0c3b694bea16561b7a3f9e8520e18497
+--- /dev/null
++++ b/tests/plugin-version.test.cjs
+@@ -0,0 +1,136 @@
++"use strict";
++
++const assert = require("node:assert/strict");
++const fs = require("node:fs");
++const path = require("node:path");
++const vm = require("node:vm");
++const { createRequire } = require("node:module");
++const { assertPluginVersion } = require("./helpers/plugin-version.cjs");
++
++const root = path.resolve(__dirname, "..");
++const phpPath = path.join(root, "kieran-epk-device-orientation.php");
++const php = fs.readFileSync(phpPath, "utf8");
++let checks = 0;
++function check(name, callback) {
++  callback();
++  checks += 1;
++  console.log(`PASS ${name}`);
++}
++function fixture(header = "7.12.3", runtime = header) {
++  return `<?php\n/**\n * Plugin Name: DanceMoves\n * Version: ${header}\n */\ndefine('DANCE_MOVES_VERSION', '${runtime}');\n`;
++}
++function rejects(source, message) {
++  assert.throws(() => assertPluginVersion(source), { code: "ERR_ASSERTION", message });
++}
++
++check("actual entrypoint header and runtime constant agree", () => assertPluginVersion(php));
++for (const version of ["2.8.0", "2.9.0", "2.10.0", "3.0.0", "12.34.567"]) {
++  check(`consistent ${version} is accepted without a hard-coded release pin`, () => {
++    assert.equal(assertPluginVersion(fixture(version)), version);
++  });
++}
++check("header/runtime mismatch is still rejected", () => {
++  rejects(fixture("2.9.0", "2.8.0"), /must match the WordPress plugin header/);
++});
++check("missing header version cannot pass by comparing two undefined values", () => {
++  rejects(fixture().replace(/ \* Version:[^\n]*\n/, ""), /exactly one Version/);
++});
++check("missing runtime constant is rejected", () => {
++  rejects(fixture().replace(/^define.*\n/m, ""), /define DANCE_MOVES_VERSION exactly once/);
++});
++check("missing both declarations is rejected", () => {
++  rejects("<?php\n/**\n * Plugin Name: DanceMoves\n */\n", /exactly one Version/);
++});
++check("duplicate header versions are rejected", () => {
++  rejects(fixture().replace(" * Version:", " * Version: 7.12.3\n * Version:"), /exactly one Version/);
++});
++check("duplicate runtime constants are rejected", () => {
++  rejects(fixture() + "define('DANCE_MOVES_VERSION', '7.12.3');\n", /define DANCE_MOVES_VERSION exactly once/);
++});
++for (const version of ["", "2.9", "v2.9.0", "2.9.0-extra", "2.9.0.1", "02.9.0", "2x9x0"]) {
++  check(`malformed version ${JSON.stringify(version)} is rejected`, () => {
++    rejects(fixture(version), /Plugin Version must be numeric/);
++  });
++}
++check("malformed runtime value is independently rejected", () => {
++  rejects(fixture("7.12.3", "7.12"), /DANCE_MOVES_VERSION must be numeric/);
++});
++check("non-literal runtime version cannot satisfy the contract", () => {
++  rejects(fixture().replace("'7.12.3');", "OTHER_VERSION);"), /literal quoted version/);
++});
++check("UTF-8 BOM and Windows CRLF are accepted", () => {
++  assert.equal(assertPluginVersion("\uFEFF" + fixture().replace(/\n/g, "\r\n")), "7.12.3");
++});
++check("double-quoted PHP constant is accepted", () => {
++  assert.equal(assertPluginVersion(fixture().replaceAll("'", '"')), "7.12.3");
++});
++check("multiline literal define is accepted", () => {
++  assert.equal(assertPluginVersion(fixture().replace("define('", "define(\n'").replace(", '", ",\n '")), "7.12.3");
++});
++check("a version outside the plugin header cannot replace the header", () => {
++  rejects(fixture().replace(" * Version: 7.12.3\n", "") + "// Version: 7.12.3\n", /exactly one Version/);
++});
++check("wrong or absent plugin identity is rejected", () => {
++  rejects(fixture().replace("Plugin Name: DanceMoves", "Plugin Name: Other"), /identity must remain DanceMoves/);
++  rejects(fixture().replace(" * Plugin Name: DanceMoves\n", ""), /exactly one Plugin Name/);
++});
++check("a source string rather than an arbitrary object is required", () => {
++  for (const value of [null, undefined, {}, 123]) {
++    assert.throws(() => assertPluginVersion(value), TypeError);
++  }
++});
++check("failure diagnostics do not dump unrelated PHP source", () => {
++  let error;
++  try { assertPluginVersion(fixture("2.9.0", "2.8.0") + "\n// PRIVATE_SOURCE_SENTINEL\n"); }
++  catch (caught) { error = caught; }
++  assert.ok(error);
++  assert.doesNotMatch(String(error.stack), /PRIVATE_SOURCE_SENTINEL|<\?php/);
++  assert.ok(error.message.length < 300);
++});
++
++// Execute the actual consumer tests against temporary in-memory PHP variants.
++// Only the PHP read is substituted; no checkout file is changed, and all other
++// reads (including the real effects source) use the filesystem normally.
++function consumer(file, source) {
++  const filename = path.join(__dirname, file);
++  const realRequire = createRequire(filename);
++  const fileSystem = Object.assign({}, fs, {
++    readFileSync(target, ...args) {
++      if (typeof target === "string" && path.resolve(target) === phpPath) return source;
++      return fs.readFileSync(target, ...args);
++    }
++  });
++  const context = {
++    __dirname, __filename: filename,
++    console: { log() {} },
++    require(name) { return name === "node:fs" ? fileSystem : realRequire(name); }
++  };
++  vm.runInNewContext(fs.readFileSync(filename, "utf8"), context, { filename, timeout: 5000 });
++}
++function reversion(source, header, runtime = header) {
++  return source
++    .replace(/^( \* Version: )[^\r\n]+/m, `$1${header}`)
++    .replace(/^(define\('DANCE_MOVES_VERSION', ')[^']+('.*)$/m, `$1${runtime}$2`);
++}
++for (const file of ["epk-download-contract.test.cjs", "effects-primitives.test.cjs"]) {
++  check(`${file}: exact current source passes`, () => consumer(file, php));
++  for (const next of ["2.10.0", "3.0.0"]) {
++    check(`${file}: a consistent future version needs no test edit (${next})`, () => {
++      consumer(file, reversion(php, next));
++    });
++  }
++  check(`${file}: real version mismatch still fails`, () => {
++    assert.throws(() => consumer(file, reversion(php, "2.9.0", "2.8.0")), /must match the WordPress plugin header/);
++  });
++}
++check("download routing assertions still reject a missing signature check", () => {
++  assert.throws(() => consumer("epk-download-contract.test.cjs",
++    php.replace("hash_equals(dance_moves_epk_download_signature($relative_path), $signature)", "true")),
++  error => error.code === "ERR_ASSERTION");
++});
++check("effects assertions still reject a missing enqueue source", () => {
++  assert.throws(() => consumer("effects-primitives.test.cjs",
++    php.replaceAll("dance-moves-effects.js", "missing-effects.js")),
++  error => error.code === "ERR_ASSERTION");
++});
++console.log(`DanceMoves version regression checks passed (${checks} groups).`);

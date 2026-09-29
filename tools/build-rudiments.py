@@ -28,6 +28,35 @@ def sha(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def git_blob_hash(data: bytes) -> str:
+    return hashlib.sha1(b'blob ' + str(len(data)).encode('ascii') + b'\0' + data).hexdigest()
+
+
+def pinned_text_bytes(data: bytes, expected: str, label: str) -> bytes:
+    """Accept only exact upstream bytes or CRLF pairs that reconstruct that pin.
+
+    Mirrors tools/rudiments-source-integrity.cjs; the regression tests exercise
+    both implementations. BOMs, lone CR, whitespace and content remain significant.
+    """
+    if not isinstance(expected, str) or len(expected) != 40 or any(c not in '0123456789abcdef' for c in expected):
+        raise ValueError(f'Missing or malformed upstream Git blob pin: {label}')
+    raw_hash = git_blob_hash(data)
+    if raw_hash == expected:
+        return data
+    canonical = data.replace(b'\r\n', b'\n')
+    canonical_hash = git_blob_hash(canonical)
+    if canonical_hash == expected:
+        return canonical
+    raise ValueError(f'Upstream source integrity mismatch: {label}; expected {expected}; '
+                     f'raw {raw_hash}; CRLF-to-LF {canonical_hash}. '
+                     'This is not solely a checkout line-ending difference. No files or pins were changed.')
+
+
+def write_utf8(path: Path, text: str) -> None:
+    # write_text(newline=None) would translate LF to CRLF on Windows.
+    path.write_bytes(text.encode('utf-8'))
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--cxx', default='g++', help='Host C++17 compiler, GCC/Clang command syntax')
@@ -35,16 +64,22 @@ def main() -> None:
     parser.add_argument('--check', action='store_true', help='Validate shipped native values; write no repository files')
     args = parser.parse_args()
     upstream = json.loads((VENDOR / 'UPSTREAM.json').read_text('utf-8'))
-    for name, expected in upstream['files'].items():
-        data = (VENDOR / name).read_bytes()
-        actual = hashlib.sha1(b'blob ' + str(len(data)).encode() + b'\0' + data).hexdigest()
-        if actual != expected:
-            raise SystemExit(f'Unreviewed upstream change: {name}; update pin deliberately, not automatically')
+    try:
+        sources = {name: pinned_text_bytes((VENDOR / name).read_bytes(), expected, name)
+                   for name, expected in upstream['files'].items()}
+    except ValueError as error:
+        raise SystemExit(str(error)) from error
     with tempfile.TemporaryDirectory(prefix='dancemoves-rudiments-') as td:
         tmp = Path(td)
+        # Compile the verified canonical bytes, never rewrite the checkout.
+        canonical_vendor = tmp / 'upstream'
+        for name, data in sources.items():
+            destination = canonical_vendor / name
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_bytes(data)
         exe = tmp / 'export.exe'
-        run([args.cxx, '-std=c++17', '-O2', '-I', str(VENDOR / 'include'),
-             str(VENDOR / 'src/dance_rudiments.cpp'), str(ROOT / 'tools/export-rudiment-samples.cpp'), '-o', str(exe)])
+        run([args.cxx, '-std=c++17', '-O2', '-I', str(canonical_vendor / 'include'),
+             str(canonical_vendor / 'src/dance_rudiments.cpp'), str(ROOT / 'tools/export-rudiment-samples.cpp'), '-o', str(exe)])
         catalogue = json.loads(run([str(exe)], stdout=subprocess.PIPE).stdout)
         if not catalogue or len(catalogue) > 256:
             raise SystemExit('Unsupported catalogue size')
@@ -52,7 +87,7 @@ def main() -> None:
             if not 1 <= row['periodPips'] <= 65535 or len(row['samples']) != row['periodPips']:
                 raise SystemExit('Unsupported period')
         samples = tmp / 'samples.json'
-        samples.write_text(json.dumps(catalogue, separators=(',', ':')), 'utf-8')
+        write_utf8(samples, json.dumps(catalogue, separators=(',', ':')))
         destination = OUT / 'dancerudiments-native.js'
         if args.check:
             run(['node', str(ROOT / 'tools/check-rudiment-native.cjs'), str(destination), str(samples)])
@@ -82,7 +117,7 @@ unsigned long dr_sample(int id, int pip) {
 }
 ''' % (entries, periods, ','.join(map(str, offsets)), len(catalogue))
         cpp = tmp / 'lookup.cpp'
-        cpp.write_text(source, 'utf-8')
+        write_utf8(cpp, source)
         wasm = tmp / 'lookup.wasm'
         command = [args.clang, '--target=wasm32', '-std=c++17', '-O2', '-nostdlib',
                    '-fno-exceptions', '-fno-rtti', str(cpp), '-Wl,--no-entry', '-Wl,--export-memory',
@@ -95,19 +130,19 @@ unsigned long dr_sample(int id, int pip) {
                    'catalogue': [{k: v for k, v in row.items() if k != 'samples'} for row in catalogue],
                    'wasmBase64': base64.b64encode(binary).decode('ascii')}
         candidate = tmp / 'dancerudiments-native.js'
-        candidate.write_text('/* Generated C++/WASM sample bank. MIT: see LICENSE. No JS motion mirror. */\n'
-                             'window.danceMovesRudimentsNative = ' + json.dumps(payload, separators=(',', ':')) + ';\n', 'utf-8')
+        write_utf8(candidate, '/* Generated C++/WASM sample bank. MIT: see LICENSE. No JS motion mirror. */\n'
+                             'window.danceMovesRudimentsNative = ' + json.dumps(payload, separators=(',', ':')) + ';\n')
         run(['node', str(ROOT / 'tools/check-rudiment-native.cjs'), str(candidate), str(samples)])
         OUT.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(candidate, destination)
-        shutil.copyfile(VENDOR / 'LICENSE', OUT / 'LICENSE')
+        (OUT / 'LICENSE').write_bytes(sources['LICENSE'])
         manifest = {'schema': 'dance-moves-rudiments-build/v1', 'upstream': upstream,
                     'backend': 'complete-integer-domain-cpp-wasm-lookup', 'sampleCount': len(points),
                     'wasmSha256': sha(binary), 'runtimeSha256': sha(candidate.read_bytes()),
                     'lookupSourceSha256': sha(source.encode()),
                     'hostCompiler': run([args.cxx, '--version'], stdout=subprocess.PIPE).stdout.splitlines()[0],
                     'wasmCompiler': run([args.clang, '--version'], stdout=subprocess.PIPE).stdout.splitlines()[0]}
-        (OUT / 'build-manifest.json').write_text(json.dumps(manifest, indent=2) + '\n', 'utf-8')
+        write_utf8(OUT / 'build-manifest.json', json.dumps(manifest, indent=2) + '\n')
         print(f'Built {len(catalogue)} rudiments, {len(points)} native samples; WASM {len(binary)} bytes')
 
 

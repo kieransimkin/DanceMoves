@@ -2,6 +2,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const { pinnedTextBytes } = require('../tools/rudiments-source-integrity.cjs');
 const root = path.resolve(__dirname, '..');
 const read = p => fs.readFileSync(path.join(root,p),'utf8');
 const runtime = read('assets/dance-moves-rudiments.js');
@@ -22,5 +23,8 @@ const keyframes = css.slice(css.indexOf('@keyframes'), css.indexOf('@media'));
 assert.doesNotMatch(keyframes, /translate|background|filter/, 'page accents must not recreate position or full-frame colour');
 assert.match(css, /prefers-reduced-motion: reduce/);
 assert.match(css, /forced-colors: active/);
-assert.equal(read('vendor/dancerudiments/LICENSE'), read('assets/vendor/dancerudiments/LICENSE'));
+const pin = JSON.parse(read('vendor/dancerudiments/UPSTREAM.json'));
+for (const name of ['vendor/dancerudiments/LICENSE', 'assets/vendor/dancerudiments/LICENSE']) {
+  pinnedTextBytes(fs.readFileSync(path.join(root, name)), pin.files.LICENSE, name);
+}
 console.log('PASS 15 source ownership, cadence, CSS, fallback and licence contracts');

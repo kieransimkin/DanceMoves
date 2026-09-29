@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
+const { assertPluginVersion } = require('./helpers/plugin-version.cjs');
 
 const root = path.resolve(__dirname, '..');
 const js = fs.readFileSync(path.join(root, 'assets', 'dance-moves-effects.js'), 'utf8');
@@ -33,6 +34,6 @@ assert.doesNotMatch(js, /\b(?:86|100|116|145)\b/);
 assert.match(php, /'dance-moves-effects'/);
 assert.match(php, /dance-moves-effects\.js/);
 assert.match(php, /array\('dance-moves-core', 'dance-moves-effects'\)/);
-assert.match(php, /Version: 2\.9\.0/);
+assertPluginVersion(php);
 
 console.log('DanceMoves reusable effect primitive contracts passed.');

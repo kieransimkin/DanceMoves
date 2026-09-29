@@ -5,6 +5,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
+const { pinnedTextBytes } = require('./rudiments-source-integrity.cjs');
 const root = path.resolve(__dirname, '..');
 const hash = (type, data) => crypto.createHash(type).update(data).digest('hex');
 (async () => {
@@ -13,11 +14,19 @@ const hash = (type, data) => crypto.createHash(type).update(data).digest('hex');
   const pin = JSON.parse(fs.readFileSync(path.join(vendor, 'UPSTREAM.json'), 'utf8'));
   const manifest = JSON.parse(fs.readFileSync(path.join(output, 'build-manifest.json'), 'utf8'));
   assert.deepEqual(manifest.upstream, pin);
+  const checkoutConversions = [];
   for (const [name, expected] of Object.entries(pin.files)) {
     const bytes = fs.readFileSync(path.join(vendor, name));
-    assert.equal(hash('sha1', Buffer.concat([Buffer.from(`blob ${bytes.length}\0`), bytes])), expected, name);
+    const canonical = pinnedTextBytes(bytes, expected, name);
+    if (!canonical.equals(bytes)) checkoutConversions.push(name);
   }
-  assert.equal(fs.readFileSync(path.join(vendor, 'LICENSE'), 'utf8'), fs.readFileSync(path.join(output, 'LICENSE'), 'utf8'));
+  // Each licence must independently match the upstream pin, not just each other.
+  const licence = fs.readFileSync(path.join(output, 'LICENSE'));
+  const canonicalLicence = pinnedTextBytes(licence, pin.files.LICENSE, 'assets/vendor/dancerudiments/LICENSE');
+  if (!canonicalLicence.equals(licence)) checkoutConversions.push('assets/vendor/dancerudiments/LICENSE');
+  if (checkoutConversions.length) {
+    console.log(`Verified canonical LF bytes for ${checkoutConversions.length} CRLF checkout file(s); working files left unchanged`);
+  }
   const source = fs.readFileSync(path.join(output, 'dancerudiments-native.js'));
   assert.equal(hash('sha256', source), manifest.runtimeSha256);
   const context = { window: {} }; vm.runInNewContext(source.toString('utf8'), context);
