@@ -1,0 +1,101 @@
+{
+  "name": "@kieransimkin/dancemoves",
+  "version": "3.0.0",
+  "description": "DanceFlow musical motion: a shared JavaScript runtime for browsers, React, Next.js and WordPress.",
+  "license": "GPL-2.0-or-later",
+  "author": {
+    "name": "Kieran Simkin",
+    "url": "https://kieransimkin.co.uk/"
+  },
+  "homepage": "https://github.com/kieransimkin/DanceMoves#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kieransimkin/DanceMoves.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kieransimkin/DanceMoves/issues"
+  },
+  "main": "./lib/index.cjs",
+  "module": "./lib/index.mjs",
+  "types": "./lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "import": "./lib/index.mjs",
+      "require": "./lib/index.cjs"
+    },
+    "./react": {
+      "types": "./lib/react.d.ts",
+      "import": "./lib/react.mjs",
+      "require": "./lib/react.cjs"
+    },
+    "./server": {
+      "types": "./lib/server.d.ts",
+      "import": "./lib/server.mjs",
+      "require": "./lib/server.cjs"
+    },
+    "./styles.css": "./lib/dancemoves.css",
+    "./assets/*": "./lib/assets/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/",
+    "LICENSE",
+    "README.md",
+    "RUDIMENTS-API.md",
+    "docs/"
+  ],
+  "sideEffects": [
+    "**/*.css",
+    "./lib/wordpress.js",
+    "./lib/dancemoves.min.js"
+  ],
+  "engines": {
+    "node": ">=22.14.0"
+  },
+  "peerDependencies": {
+    "react": "^18.3.1 || ^19.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "build:modules": "node tools/build-modules.mjs",
+    "build": "node tools/build-shared.mjs --target all",
+    "build:library": "node tools/build-shared.mjs --target library",
+    "build:wordpress": "node tools/build-shared.mjs --target wordpress",
+    "package:wordpress": "npm run build:wordpress && python tools/package-wordpress.py",
+    "package:web": "npm run build:library && python tools/package-web.py",
+    "test": "node --test tests/shared/*.test.mjs",
+    "test:legacy": "node tools/test-legacy.cjs",
+    "test:browser": "node tests/shared/browser.mjs",
+    "test:next": "node tools/run-next.mjs build",
+    "demo:react": "node examples/react/serve.mjs",
+    "demo:next": "node tools/run-next.mjs dev",
+    "check:release": "node tools/check-shared-release.mjs",
+    "prepack": "node tools/check-shared-build.mjs",
+    "demo:prepare": "python tools/prepare-app-demos.py",
+    "version": "node tools/sync-shared-version.mjs",
+    "test:next:smoke": "node tests/shared/next-smoke.mjs",
+    "test:react:ssr": "node --test tests/shared/exports.test.mjs"
+  },
+  "devDependencies": {
+    "esbuild-wasm": "0.28.2",
+    "typescript": "5.9.3",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "scheduler": "0.27.0",
+    "playwright-core": "1.57.0",
+    "next": "16.3.7",
+    "@types/react": "19.2.2"
+  },
+  "overrides": {
+    "scheduler": "0.27.0"
+  }
+}

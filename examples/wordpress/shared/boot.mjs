@@ -1,5 +1,5 @@
 const BASE = '/examples/wordpress/';
-const ASSET = '/assets/';
+const ASSET = '/lib/styles/';
 const ADAPTERS = {
   'dying-for-a-diagnosis':130, 'light-will-win':140, 'presents-and-chocolate':243,
   'clay-stars':252, 'fully-nocturnal':268, 'amnesty-honestly':270, 'walk-with-me':276,
@@ -76,15 +76,16 @@ async function main() {
     e.style.animation='demo-enter var(--dance-moves-16t) ease both';
   }
   app.querySelector('#config-json').textContent=format(config);
-  css('dance-moves-core.css');await script(ASSET+'dance-moves-core.js');await script(ASSET+'dance-moves-effects.js');
-  await script(ASSET+'vendor/dancerudiments/dancerudiments-native.js');await script(ASSET+'dance-moves-rudiments.js');
-  await script(ASSET+'dance-moves-catalogue-timing.js');
-  if(root.classList.contains('ks-clay-stars-v2')){css('clay-stars-effects.css');await script(ASSET+'clay-stars-effects.js');css('clay-stars-rudiments.css');await script(ASSET+'clay-stars-rudiments.js');}
-  if(meta._dance_moves_effect==='paper-planes'){
-    window.danceMovesPaperDreamsConfig={effect:'paper-planes',atlasUrl:ASSET+'paper-dreams-plane-atlas.png',planeCount:12,compactPlaneCount:5,bpm:config.bpm,effectBounds:'hero'};
-    css('paper-dreams-flight.css');await script(ASSET+'paper-dreams-flight.js');
-  }
-  if(['orientation','orientation-math'].includes(id)){css('ks-epk-device-orientation.css');await script(ASSET+'ks-epk-device-orientation-core.js');if(id==='orientation')await script(ASSET+'ks-epk-device-orientation.js');}
+  css('dance-moves-core.css');
+  if(root.classList.contains('ks-clay-stars-v2')){css('clay-stars-effects.css');css('clay-stars-rudiments.css');}
+  if(meta._dance_moves_effect==='paper-planes')css('paper-dreams-flight.css');
+  if(['orientation','orientation-math'].includes(id))css('ks-epk-device-orientation.css');
+  const {createDanceMoves}=await import('/lib/index.mjs');
+  const runtime=createDanceMoves({...config,root,legacyGlobals:true,catalogue:true,
+    clay:root.classList.contains('ks-clay-stars-v2'),orientation:window.ksEpkOrientationConfig || {},
+    paperPlanes:{atlasUrl:'/lib/assets/paper-dreams-plane-atlas.png',planeCount:12,compactPlaneCount:5}});
+  cleanup.push(()=>runtime.destroy());
+  await runtime.ready;
   const source=await fetch(BASE+feature.code).then(r=>r.text());app.querySelector('#demo-source').textContent=source;
   const ctx={root,audio,stage:root.querySelector('.stage'),target:root.querySelector('.demo-subject'),motion:window.DanceMoves,effects:window.DanceMovesEffects,
     sections,lrc,feature,meta,config,media,adapters:ADAPTERS,adapter:selectedAdapter,button,select,listen,log,readout,

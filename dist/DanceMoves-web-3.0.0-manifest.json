@@ -1,0 +1,36 @@
+{
+  "schema": "dancemoves-web/v1",
+  "version": "3.0.0",
+  "zip": "DanceMoves-web-3.0.0.zip",
+  "sha256": "6871d96c9e96ba5b242bff9fa6f213265b04d5332cee6b8224eb833655611205",
+  "files": [
+    {
+      "path": "dancemoves.min.js",
+      "sha256": "fff97e68a7e206ec40110ae7f73f062c45cdc845ecaecd6f5c2c0f6b734dfaab"
+    },
+    {
+      "path": "dancemoves.css",
+      "sha256": "0d768de1eda07c1981719b87fb6cc87c3e9278efd47d2d8e820cb4e3ba09e3c5"
+    },
+    {
+      "path": "build-manifest.json",
+      "sha256": "91f27bac2ca10e448c6887a2a025115680ca29954fb4b1c7b4a037cf5f5d8e31"
+    },
+    {
+      "path": "LICENSE",
+      "sha256": "498d32907f132c2cd7d3ae269f304aed87156293f63e724b83d9f62ed787d55a"
+    },
+    {
+      "path": "assets/DanceRudiments-build-manifest.json",
+      "sha256": "d08fcd81a5599cc50d7ed2e8517f031a2c7329dbfcd232491a4a2113c6ba44bd"
+    },
+    {
+      "path": "assets/DanceRudiments-LICENSE",
+      "sha256": "4821889e3cb8a0f14f5560fe3f3ea937f2da2f988dc8c45ebcc46e4302eadbbf"
+    },
+    {
+      "path": "assets/paper-dreams-plane-atlas.png",
+      "sha256": "72a04cfefa5a2daf46034fff5166fba01e9a6918a595257aeba53413b74687fa"
+    }
+  ]
+}

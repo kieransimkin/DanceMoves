@@ -1,0 +1,13 @@
+import {spawn} from 'node:child_process';
+import path from 'node:path';
+import {createRequire} from 'node:module';
+const require=createRequire(import.meta.url),root=path.resolve(import.meta.dirname,'..');
+const action=process.argv[2] || 'dev';
+if(!['dev','build','start'].includes(action))throw new Error('Expected dev, build or start');
+const args=[require.resolve('next/dist/bin/next'),action];
+if(action==='dev'||action==='build')args.push('--webpack');
+args.push(...process.argv.slice(3));
+const child=spawn(process.execPath,args,{cwd:path.join(root,'examples/next'),stdio:'inherit',env:{...process.env,NEXT_TELEMETRY_DISABLED:'1'}});
+child.on('error',error=>{console.error(error);process.exitCode=1;});
+child.on('exit',code=>{process.exitCode=code ?? 1;});
+for(const signal of ['SIGINT','SIGTERM'])process.on(signal,()=>child.kill(signal));

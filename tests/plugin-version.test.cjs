@@ -24,7 +24,7 @@ function rejects(source, message) {
 }
 
 check("actual entrypoint header and runtime constant agree", () => assertPluginVersion(php));
-for (const version of ["2.8.0", "2.9.0", "2.10.0", "3.0.0", "12.34.567"]) {
+for (const version of ["2.8.0", "2.9.0", "2.10.0", "3.0.0", "3.0.0-rc.1", "12.34.567"]) {
   check(`consistent ${version} is accepted without a hard-coded release pin`, () => {
     assert.equal(assertPluginVersion(fixture(version)), version);
   });
@@ -47,7 +47,7 @@ check("duplicate header versions are rejected", () => {
 check("duplicate runtime constants are rejected", () => {
   rejects(fixture() + "define('DANCE_MOVES_VERSION', '7.12.3');\n", /define DANCE_MOVES_VERSION exactly once/);
 });
-for (const version of ["", "2.9", "v2.9.0", "2.9.0-extra", "2.9.0.1", "02.9.0", "2x9x0"]) {
+for (const version of ["", "2.9", "v2.9.0", "2.9.0-01", "2.9.0.1", "02.9.0", "2x9x0"]) {
   check(`malformed version ${JSON.stringify(version)} is rejected`, () => {
     rejects(fixture(version), /Plugin Version must be numeric/);
   });
@@ -130,7 +130,7 @@ check("download routing assertions still reject a missing signature check", () =
 });
 check("effects assertions still reject a missing enqueue source", () => {
   assert.throws(() => consumer("effects-primitives.test.cjs",
-    php.replaceAll("dance-moves-effects.js", "missing-effects.js")),
+    php.replaceAll("'dance-moves-effects'", "'missing-effects'")),
   error => error.code === "ERR_ASSERTION");
 });
 console.log(`DanceMoves version regression checks passed (${checks} groups).`);

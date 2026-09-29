@@ -87,7 +87,7 @@ def main():
                 load('index');assert page.evaluate('window.__danceMovesDemo.features.length')==23;passed('gallery index: 23 feature pages')
                 for feature in manifest['features']:
                     load(feature['id'])
-                    assert page.evaluate('window.DanceMoves.version')=='2.9.0'
+                    assert page.evaluate('window.DanceMoves.version')==json.loads((ROOT/'package.json').read_text('utf-8'))['version']
                     assert page.locator('audio').first.get_attribute('autoplay') is None
                     assert page.evaluate('document.documentElement.scrollWidth<=innerWidth+1'),feature['id']+' desktop overflow'
                     page.set_viewport_size({'width':390,'height':844})

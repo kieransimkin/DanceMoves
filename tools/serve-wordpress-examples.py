@@ -151,7 +151,7 @@ class Handler(BaseHTTPRequestHandler):
         relative=path.lstrip('/')
         if '\0' in relative or '\\' in relative or any(part.startswith('.') for part in Path(relative).parts):
             self.reply(404,{'error':'Not part of the public example surface'});return
-        allowed=(relative.startswith('assets/') or relative.startswith('examples/wordpress/') or relative in ('README.md','RELEASING.md','RUDIMENTS-API.md','docs/wordpress-examples.md'))
+        allowed=(relative.startswith('lib/') or relative.startswith('assets/') or relative.startswith('examples/wordpress/') or relative in ('README.md','RELEASING.md','RUDIMENTS-API.md','docs/wordpress-examples.md'))
         target=(self.server.root/relative).resolve()
         if not allowed or not target.is_relative_to(self.server.root) or any(part.startswith('.') for part in Path(relative).parts):
             self.reply(404,{'error':'Not part of the public example surface'})

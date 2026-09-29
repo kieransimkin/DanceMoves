@@ -1,5 +1,12 @@
 # Making a DanceMoves release
 
+> **3.0 and later:** use [the coordinated release guide](docs/releasing-shared.md).
+> `v*` tags now run the shared-library tests, build npm/minified-browser/WordPress
+> distributions, and publish the verified artifacts. This requires a committed
+> dependency lockfile and npm publisher setup. Do not manually rebuild or upload
+> a second archive over the workflow output. The procedure below is retained as
+> the **historical 2.x manual release procedure**, not the current default.
+
 [README](README.md) · [WordPress examples](docs/wordpress-examples.md)
 
 A version in PHP, a Git tag, a published GitHub release and an installed

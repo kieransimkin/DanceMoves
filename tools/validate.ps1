@@ -2,9 +2,7 @@
 param(
     [ValidateSet('Unit', 'Package', 'All')]
     [string]$Mode = 'Unit',
-
     [switch]$IncludeFailureFixture,
-
     [string]$ReleasesRoot
 )
 
@@ -12,147 +10,37 @@ $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $runUnit = $Mode -in @('Unit', 'All')
 $runPackage = $Mode -in @('Package', 'All')
-
 if ($IncludeFailureFixture -and -not $runUnit) {
     throw '-IncludeFailureFixture is valid only when Unit validation runs.'
 }
 
-function Invoke-UnitValidation {
-    Get-ChildItem -LiteralPath $repoRoot -Recurse -File -Filter '*.php' | Where-Object {
-        $_.FullName -notlike '*\dist\*'
-    } | ForEach-Object {
-        & php -l $_.FullName
-        if ($LASTEXITCODE -ne 0) { throw "PHP syntax failed: $($_.FullName)" }
-    }
-
-    Get-ChildItem -LiteralPath $repoRoot -Recurse -File | Where-Object {
-        $_.Extension -in @('.js', '.cjs', '.mjs') -and
-        $_.FullName -notlike '*\dist\*' -and
-        $_.FullName -notlike '*\tests\fixtures\failing\*'
-    } | ForEach-Object {
-        & node --check $_.FullName
-        if ($LASTEXITCODE -ne 0) { throw "JavaScript syntax failed: $($_.FullName)" }
-    }
-
+Push-Location -LiteralPath $repoRoot
+try {
     if ($IncludeFailureFixture) {
-        $failureFixture = Join-Path $repoRoot 'tests\fixtures\failing\validation-deliberate-failure.js'
-        & node --check $failureFixture
-        if ($LASTEXITCODE -ne 0) { throw "JavaScript syntax failed: $failureFixture" }
-        throw "Deliberate failure fixture unexpectedly passed: $failureFixture"
+        $fixture = Join-Path $repoRoot 'tests\fixtures\failing\validation-deliberate-failure.js'
+        & node --check $fixture
+        if ($LASTEXITCODE -ne 0) { throw "JavaScript syntax failed: $fixture" }
+        throw "Deliberate failure fixture unexpectedly passed: $fixture"
     }
-
-    # Prepare ignored unit HTML from tracked inputs before any test reads it.
-    & node (Join-Path $PSScriptRoot 'prepare-test-harnesses.cjs')
-    if ($LASTEXITCODE -ne 0) { throw 'Offline unit harness preparation failed.' }
-
-    Get-ChildItem -LiteralPath (Join-Path $repoRoot 'tests') -File -Filter '*.test.cjs' | Sort-Object Name | ForEach-Object {
-        & node $_.FullName
-        if ($LASTEXITCODE -ne 0) { throw "Test failed: $($_.Name)" }
+    if ($runUnit) {
+        & npm run build
+        if ($LASTEXITCODE -ne 0) { throw 'Shared-library build failed. Install dependencies first.' }
+        & npm test
+        if ($LASTEXITCODE -ne 0) { throw 'Shared-library, React SSR or Node service tests failed.' }
+        # Preserves all original engine/PHP/harness/UTF-8 checks without walking node_modules.
+        & npm run test:legacy
+        if ($LASTEXITCODE -ne 0) { throw 'Original DanceMoves validation failed.' }
     }
-
-    & php (Join-Path $repoRoot 'tests\validate-clay-transform.php')
-    if ($LASTEXITCODE -ne 0) { throw 'Clay/Stars content-transform validation failed.' }
-
-    & php (Join-Path $repoRoot 'tests\validate-clay-legacy-collision.php')
-    if ($LASTEXITCODE -ne 0) { throw 'Clay/Stars legacy-plugin collision validation failed.' }
-
-    & php (Join-Path $repoRoot 'tests\validate-epk-download-paths.php')
-    if ($LASTEXITCODE -ne 0) { throw 'EPK download-path validation failed.' }
-
-    & php (Join-Path $repoRoot 'tests\rudiments-wordpress.php')
-    if ($LASTEXITCODE -ne 0) { throw 'DanceRudiments WordPress integration validation failed.' }
-
-    & python -X utf8 (Join-Path $PSScriptRoot 'validate-effect-harness.py') (Join-Path $repoRoot 'tests\harness\plugin-core') --mode scaffold
-    if ($LASTEXITCODE -ne 0) { throw 'DanceMoves core harness validation failed.' }
-
-    $clayHarness = Join-Path $repoRoot 'tests\harness\clay-stars'
-    $clayUnitCandidate = Join-Path $repoRoot 'qa\clay-stars-unit-candidate.html'
-    $clayHarnessOutput = & python -X utf8 (Join-Path $PSScriptRoot 'validate-effect-harness.py') $clayHarness --mode scaffold --manifest-file (Join-Path $clayHarness 'clay-stars.json') --shared-root (Join-Path $repoRoot 'tests\harness\plugin-core') --candidate-file $clayUnitCandidate
-    if ($LASTEXITCODE -ne 0) {
-        $clayHarnessOutput | Write-Output
-        throw 'Clay/Stars unit harness validation failed.'
-    }
-    Write-Output 'Clay/Stars unit scaffold passed; pre-live acceptance is separate.'
-
-    $californiaHarness = Join-Path $repoRoot 'tests\harness\california-screamin'
-    $californiaUnitCandidate = Join-Path $repoRoot 'qa\california-screamin-unit-candidate.html'
-    $californiaHarnessOutput = & python -X utf8 (Join-Path $PSScriptRoot 'validate-effect-harness.py') $californiaHarness --mode scaffold --manifest-file (Join-Path $californiaHarness 'california-screamin.json') --shared-root (Join-Path $repoRoot 'tests\harness\plugin-core') --candidate-file $californiaUnitCandidate
-    if ($LASTEXITCODE -ne 0) {
-        $californiaHarnessOutput | Write-Output
-        throw 'California Screamin unit harness validation failed.'
-    } else {
-        Write-Output 'California Screamin unit scaffold passed (synthetic DOM; not full-page QA).'
-    }
-
-    & python -X utf8 (Join-Path $repoRoot 'tests\test-harness-candidate-selection.py')
-    if ($LASTEXITCODE -ne 0) { throw 'Unit/pre-live harness separation checks failed.' }
-
-    $strictUtf8 = New-Object System.Text.UTF8Encoding($false, $true)
-    $textExtensions = @('.php', '.js', '.cjs', '.mjs', '.css', '.md', '.html', '.json', '.tsv', '.ps1', '.lrc')
-    Get-ChildItem -LiteralPath $repoRoot -Recurse -File | Where-Object {
-        $_.Extension -in $textExtensions -and
-        $_.FullName -notlike '*\dist\*' -and
-        $_.FullName -notlike '*\tests\fixtures\failing\*'
-    } | ForEach-Object {
-        $bytes = [System.IO.File]::ReadAllBytes($_.FullName)
-        try {
-            $text = $strictUtf8.GetString($bytes)
-        } catch {
-            throw "Strict UTF-8 decoding failed: $($_.FullName)"
+    if ($runPackage) {
+        # External site-migration evidence is optional and never inferred from a private drive.
+        if ($ReleasesRoot) {
+            & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'build-migration-manifest.ps1') -ReleasesRoot $ReleasesRoot
+            if ($LASTEXITCODE -ne 0) { throw 'Explicit migration evidence generation failed.' }
         }
-        if ($text.Contains([char]0xFFFD)) {
-            throw "Replacement character found: $($_.FullName)"
-        }
-        if ($text.Contains([char]0)) {
-            throw "Null character found: $($_.FullName)"
-        }
+        & npm run package:wordpress
+        if ($LASTEXITCODE -ne 0) { throw 'Shared WordPress archive generation/verification failed.' }
     }
-
-    $entrypoint = Get-Content -LiteralPath (Join-Path $repoRoot 'kieran-epk-device-orientation.php') -Raw -Encoding UTF8
-    if ($entrypoint -notmatch 'Plugin Name:\s*DanceMoves' -or $entrypoint -notmatch 'Version:\s*([0-9]+(?:\.[0-9]+){2})') {
-        throw 'WordPress plugin name/version contract failed.'
-    }
-
-    Write-Output 'DanceMoves Unit validation passed without rebuilding migration or package artifacts.'
+    Write-Output "DanceMoves $Mode validation passed. Attended browser/device release acceptance is separate."
+} finally {
+    Pop-Location
 }
-
-function Invoke-PackageValidation {
-    $manifestArguments = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', (Join-Path $PSScriptRoot 'build-migration-manifest.ps1'))
-    if ($ReleasesRoot) {
-        $manifestArguments += @('-ReleasesRoot', $ReleasesRoot)
-    }
-    & powershell @manifestArguments | Write-Output
-    if ($LASTEXITCODE -ne 0) { throw 'Migration manifest build failed.' }
-
-    & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'package.ps1') | Write-Output
-    if ($LASTEXITCODE -ne 0) { throw 'Packaging failed.' }
-
-    $entrypoint = Get-Content -LiteralPath (Join-Path $repoRoot 'kieran-epk-device-orientation.php') -Raw -Encoding UTF8
-    if ($entrypoint -notmatch 'Version:\s*([0-9]+(?:\.[0-9]+){2})') {
-        throw 'Unable to establish plugin version for package validation.'
-    }
-    $version = $Matches[1]
-    $packageManifestPath = Join-Path $repoRoot ("dist\DanceMoves-{0}-manifest.json" -f $version)
-    $packageManifest = Get-Content -LiteralPath $packageManifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
-    if (-not $packageManifest.root_entrypoint_present -or -not $packageManifest.forward_slash_entries) {
-        throw 'Package layout validation failed.'
-    }
-    if ($packageManifest.version -ne $version) {
-        throw "Package version mismatch: entrypoint $version, manifest $($packageManifest.version)."
-    }
-    if (@($packageManifest.files | Where-Object { $_.path -match '/(?:tests|tools|qa|migration)/' }).Count -ne 0) {
-        throw 'Development-only files leaked into the WordPress package.'
-    }
-
-    Write-Output "DanceMoves Package validation passed for version $version."
-}
-
-if ($runUnit) {
-    Invoke-UnitValidation
-}
-
-if ($runPackage) {
-    Invoke-PackageValidation
-}
-
-Write-Output "DanceMoves $Mode validation passed."

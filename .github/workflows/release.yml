@@ -1,0 +1,124 @@
+name: Publish shared DanceMoves release
+on:
+  push:
+    tags: ['v*']
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing vMAJOR.MINOR.PATCH or prerelease tag
+        required: true
+permissions:
+  contents: read
+concurrency:
+  group: release-${{ github.event.release.tag_name || inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+jobs:
+  build:
+    if: github.repository == 'kieransimkin/DanceMoves'
+    runs-on: ubuntu-latest
+    outputs:
+      commit: ${{ steps.source.outputs.commit }}
+    env:
+      TAG_NAME: ${{ github.event.release.tag_name || inputs.tag || github.ref_name }}
+      REQUIRE_LOCK: '1'
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ env.TAG_NAME }}
+          fetch-depth: 0
+      - name: Verify exact immutable tag checkout
+        id: source
+        shell: bash
+        run: |
+          [[ "$TAG_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]] || exit 1
+          test "$(git rev-parse HEAD)" = "$(git rev-parse "refs/tags/$TAG_NAME^{commit}")"
+          echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+      - run: node tools/install-ci.mjs
+      - run: npm run check:release
+      - run: npm run build
+      - run: npm test
+      - run: python tests/shared/test_package_outputs.py
+      - run: npm run test:legacy
+      - run: npm run demo:prepare
+      - run: npx playwright-core install --with-deps chromium
+      - run: npm run test:browser
+      - run: npm run test:next
+      - run: npm run test:next:smoke
+      - run: node tools/prepare-release.mjs
+      - run: node tools/verify-release-output.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ env.TAG_NAME }}
+          path: release-output/
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: release-browser-evidence-${{ env.TAG_NAME }}
+          path: .build/browser-evidence/
+          if-no-files-found: ignore
+  npm:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      TAG_NAME: ${{ github.event.release.tag_name || inputs.tag || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.build.outputs.commit }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          package-manager-cache: false
+          registry-url: https://registry.npmjs.org
+      - name: OIDC-capable npm (no package install scripts)
+        run: npm install --global npm@11.6.0 --ignore-scripts
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-${{ env.TAG_NAME }}
+          path: release-output/
+      - run: node tools/verify-release-output.mjs
+      - run: node tools/publish-npm.mjs
+        env:
+          # Optional one-time bootstrap only. Remove after setting up npm trusted publishing.
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_BOOTSTRAP_TOKEN }}
+  github:
+    needs: [build, npm]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      TAG_NAME: ${{ github.event.release.tag_name || inputs.tag || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.build.outputs.commit }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-${{ env.TAG_NAME }}
+          path: release-output/
+      - run: node tools/verify-release-output.mjs
+      - run: node tools/publish-github.mjs
+        env:
+          GH_TOKEN: ${{ github.token }}

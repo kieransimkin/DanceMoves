@@ -7,7 +7,8 @@ const page = fs.readFileSync(path.join(__dirname, "epk-motion-lab-4f8c8d11-6a28-
 const runtime = fs.readFileSync(path.join(__dirname, "mobile-api-conformance.js"), "utf8");
 const css = fs.readFileSync(path.join(__dirname, "../assets/ks-epk-device-orientation.css"), "utf8");
 
-const pluginVersion = plugin.match(/Version:\s*([0-9]+(?:\.[0-9]+){2})/)?.[1];
+const { assertPluginVersion } = require('./helpers/plugin-version.cjs');
+const pluginVersion = assertPluginVersion(plugin);
 const phpToken = plugin.match(/KS_EPK_MOTION_CAPTURE_TOKEN',\s*'([a-f0-9]{64})'/)?.[1];
 const pageToken = page.match(/token:\s*"([a-f0-9]{64})"/)?.[1];
 assert.ok(phpToken, "WordPress endpoint token is present");

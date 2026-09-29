@@ -2,7 +2,7 @@
 /**
  * Plugin Name: DanceMoves
  * Description: Adds BPM-synchronised motion, lyric and cue timing properties, reliable EPK downloads, named cue handlers, and permission-aware orientation control to EPK pages.
- * Version: 2.9.0
+ * Version: 3.0.0
  * Author: Kieran Simkin
  * License: GPL-2.0-or-later
  */
@@ -11,7 +11,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('DANCE_MOVES_VERSION', '2.9.0');
+define('DANCE_MOVES_VERSION', '3.0.0');
 define('KS_EPK_ORIENTATION_VERSION', DANCE_MOVES_VERSION);
 define('KS_EPK_MOTION_CAPTURE_TOKEN', 'e4c1d9a77fb446608e796a0f8fd8f576e59d2e67bca54a4d9f7fd06fbef3e1c2');
 
@@ -301,19 +301,24 @@ function ks_epk_orientation_enqueue_runtime() {
     }
 
     $adapters = dance_moves_orientation_adapters();
-    $base_url = plugin_dir_url(__FILE__) . 'assets/';
+    $base_url = plugin_dir_url(__FILE__) . 'lib/';
     $config = dance_moves_get_page_config($page_id);
+    // The WordPress build imports the shared JavaScript library. These values
+    // select its controllers; aliases below never enqueue another engine.
+    $config['orientationAdapter'] = $adapters[$page_id] ?? '';
+    $config['clayEnabled'] = DANCE_MOVES_CLAY_STARS_PAGE_ID === (int) $page_id && !defined('KS_CLAY_STARS_EFFECTS_VERSION');
+    $config['atlasUrl'] = $base_url . 'assets/paper-dreams-plane-atlas.png';
 
     wp_enqueue_style(
         'dance-moves-core',
-        $base_url . 'dance-moves-core.css',
+        $base_url . 'styles/dance-moves-core.css',
         array(),
         DANCE_MOVES_VERSION
     );
 
     wp_enqueue_script(
         'dance-moves-core',
-        $base_url . 'dance-moves-core.js',
+        $base_url . 'wordpress.js',
         array(),
         DANCE_MOVES_VERSION,
         true
@@ -322,7 +327,7 @@ function ks_epk_orientation_enqueue_runtime() {
 
     wp_enqueue_script(
         'dance-moves-effects',
-        $base_url . 'dance-moves-effects.js',
+        false,
         array('dance-moves-core'),
         DANCE_MOVES_VERSION,
         true
@@ -330,7 +335,7 @@ function ks_epk_orientation_enqueue_runtime() {
 
     wp_enqueue_script(
         'dance-moves-catalogue-timing',
-        $base_url . 'dance-moves-catalogue-timing.js',
+        false,
         array('dance-moves-core', 'dance-moves-effects'),
         DANCE_MOVES_VERSION,
         true
@@ -339,13 +344,13 @@ function ks_epk_orientation_enqueue_runtime() {
     if (DANCE_MOVES_CLAY_STARS_PAGE_ID === (int) $page_id && !defined('KS_CLAY_STARS_EFFECTS_VERSION')) {
         wp_enqueue_style(
             'dance-moves-clay-stars',
-            $base_url . 'clay-stars-effects.css',
+            $base_url . 'styles/clay-stars-effects.css',
             array(),
             DANCE_MOVES_VERSION
         );
         wp_enqueue_script(
             'dance-moves-clay-stars',
-            $base_url . 'clay-stars-effects.js',
+            false,
             array('dance-moves-core'),
             DANCE_MOVES_VERSION,
             true
@@ -355,13 +360,13 @@ function ks_epk_orientation_enqueue_runtime() {
     if ('paper-planes' === $config['effect']) {
         wp_enqueue_style(
             'dance-moves-paper-dreams',
-            $base_url . 'paper-dreams-flight.css',
+            $base_url . 'styles/paper-dreams-flight.css',
             array('dance-moves-core'),
             DANCE_MOVES_VERSION
         );
         wp_enqueue_script(
             'dance-moves-paper-dreams',
-            $base_url . 'paper-dreams-flight.js',
+            false,
             array('dance-moves-core'),
             DANCE_MOVES_VERSION,
             true
@@ -371,7 +376,7 @@ function ks_epk_orientation_enqueue_runtime() {
             'danceMovesPaperDreamsConfig',
             array(
                 'effect' => $config['effect'],
-                'atlasUrl' => $base_url . 'paper-dreams-plane-atlas.png',
+                'atlasUrl' => $config['atlasUrl'],
                 'planeCount' => 12,
                 'compactPlaneCount' => 5,
                 'bpm' => $config['bpm'],
@@ -386,15 +391,15 @@ function ks_epk_orientation_enqueue_runtime() {
 
     wp_enqueue_style(
         'ks-epk-device-orientation',
-        $base_url . 'ks-epk-device-orientation.css',
+        $base_url . 'styles/ks-epk-device-orientation.css',
         array(),
         KS_EPK_ORIENTATION_VERSION
     );
 
     wp_enqueue_script(
         'ks-epk-device-orientation-core',
-        $base_url . 'ks-epk-device-orientation-core.js',
-        array(),
+        false,
+        array('dance-moves-core'),
         KS_EPK_ORIENTATION_VERSION,
         true
     );
@@ -406,7 +411,7 @@ function ks_epk_orientation_enqueue_runtime() {
 
     wp_enqueue_script(
         'ks-epk-device-orientation',
-        $base_url . 'ks-epk-device-orientation.js',
+        false,
         $orientation_dependencies,
         KS_EPK_ORIENTATION_VERSION,
         true
@@ -769,7 +774,7 @@ function dance_moves_admin_assets($hook) {
     wp_enqueue_media();
     wp_enqueue_script(
         'dance-moves-admin',
-        plugin_dir_url(__FILE__) . 'assets/dance-moves-admin.js',
+        plugin_dir_url(__FILE__) . 'lib/admin.min.js',
         array('jquery'),
         DANCE_MOVES_VERSION,
         true

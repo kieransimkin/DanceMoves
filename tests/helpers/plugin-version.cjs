@@ -2,9 +2,9 @@
 
 const assert = require("node:assert/strict");
 
-// The repository uses a numeric MAJOR.MINOR.PATCH WordPress plugin version.
+// A numeric MAJOR.MINOR.PATCH, optionally followed by SemVer prerelease identifiers.
 // This is a source-contract check, not a general-purpose PHP parser.
-const VERSION = /^(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)$/;
+const VERSION = /^(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)(?:-(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*))*)?$/;
 
 /**
  * Validate the entrypoint's real plugin header and literal runtime constant.

@@ -2,3 +2,15 @@ qa/*.html
 *.log
 .DS_Store
 Thumbs.db
+node_modules/
+lib/
+.build/
+.next/
+examples/next/public/media/
+examples/next/public/dancemoves-assets/
+examples/next/.env*
+!examples/next/.env.example
+__pycache__/
+*.pyc
+release-output/
+*.tgz

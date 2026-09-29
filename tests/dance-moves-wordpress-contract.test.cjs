@@ -10,9 +10,8 @@ const clayCss = fs.readFileSync(path.join(root, "assets/clay-stars-effects.css")
 const clayJs = fs.readFileSync(path.join(root, "assets/clay-stars-effects.js"), "utf8");
 
 assert.match(php, /Plugin Name:\s*DanceMoves/);
-const declaredVersion = php.match(/Version:\s*([0-9]+(?:\.[0-9]+){2})/)?.[1];
-assert.ok(declaredVersion, "plugin declares a semantic version");
-assert.equal(php.match(/define\('DANCE_MOVES_VERSION',\s*'([^']+)'\)/)?.[1], declaredVersion, "runtime and plugin versions agree");
+const { assertPluginVersion } = require('./helpers/plugin-version.cjs');
+const declaredVersion = assertPluginVersion(php);
 assert.match(php, /252\s*=>\s*'clay-stars'/);
 for (const key of [
   "_dance_moves_bpm",

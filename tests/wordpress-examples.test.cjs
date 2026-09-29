@@ -7,7 +7,7 @@ const read=name=>fs.readFileSync(path.join(dir,name),'utf8');
 const manifest=JSON.parse(read('features.json')),coverage=JSON.parse(read('coverage.json')),media=JSON.parse(read('media/manifest.json'));
 const {config,KEYS,validBpm}=require(path.join(dir,'shared/model.cjs'));
 let checks=0;function check(fn){fn();checks++;}
-check(()=>assert.equal(manifest.pluginVersion,'2.9.0'));
+check(()=>assert.equal(manifest.pluginVersion,JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8')).version));
 check(()=>assert.equal(manifest.pluginCommit,coverage.baseline));
 check(()=>assert.equal(manifest.features.length,23));
 check(()=>assert.equal(new Set(manifest.features.map(f=>f.id)).size,23));
@@ -49,7 +49,7 @@ check(()=>assert.equal(coverage.orientationAdapters.length,9));
 const context={window:{}};vm.runInNewContext(fs.readFileSync(path.join(root,'assets/vendor/dancerudiments/dancerudiments-native.js'),'utf8'),context);
 check(()=>assert.deepEqual(Array.from(context.window.danceMovesRudimentsNative.catalogue,x=>x.name).sort(),[...coverage.rudiments].sort()));
 check(()=>assert.equal(coverage.rudiments.length,15));
-check(()=>assert(boot.includes('vendor/dancerudiments/dancerudiments-native.js')));
+check(()=>assert(boot.includes("import('/lib/index.mjs')") && boot.includes('createDanceMoves')));
 check(()=>assert(!boot.includes('autoplay=')));
 check(()=>assert(!sources.get('capture').includes('/wp-json/')));
 check(()=>assert(!/token\s*[:=]\s*['"][a-f0-9]{32,}/i.test([...sources.values()].join('\n')+boot)));

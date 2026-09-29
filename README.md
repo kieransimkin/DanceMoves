@@ -1,13 +1,82 @@
 # DanceMoves
 
-## Current source and published releases
+**DanceFlow musical motion by Kieran Simkin.** One JavaScript runtime for plain
+websites, React, Next.js and the separately packaged WordPress adapter.
 
-**Source: DanceMoves 2.9.0** (rudiments integration applied on `main`).
-The latest published release checked for this documentation is **2.8.0**;
-source version, Git tag, GitHub release and deployed WordPress version are separate.
-This examples patch is based on `c4252556774f38cad6d75b1a52de7917d2c65af0`.
-The earlier 2.8.0 reference remains linked below; the 2.9.0 additions have their
-own [rudiment API reference](RUDIMENTS-API.md) and examples here.
+**3.0.0 source candidate** based on the published 2.9.0 release. Applying this
+patch neither publishes npm nor updates a WordPress installation.
+
+## Shared JavaScript library and WordPress
+
+`@kieransimkin/dancemoves` exports browser ESM/CommonJS, optional React hooks,
+and separate Node server services. All frontend engines, CSS, admin behaviour
+and native DanceRudiments data have one canonical source in this repository.
+The WordPress archive consumes the generated library; it contains no parallel
+frontend implementation. PHP retains WordPress hooks, metadata and persistence.
+
+```sh
+# Build this source checkout (Node 22.14+, npm, Python 3, PHP 8+ for tests).
+npm install --ignore-scripts
+npm run build
+npm test
+npm run test:legacy
+# Generate the two separately installable browser/WordPress ZIPs.
+python tools/package-web.py
+python tools/package-wordpress.py
+```
+
+Commit the generated `package-lock.json` before a release tag. The release
+workflow intentionally refuses unlocked dependencies; no unverified lockfile
+is supplied by this patch. In consumer applications, after the first npm release:
+
+```js
+import { createDanceMoves } from '@kieransimkin/dancemoves';
+import '@kieransimkin/dancemoves/styles.css';
+
+const motion = createDanceMoves({
+  root: document.querySelector('#my-epk'),
+  bpm: 145,
+  lyricTimingUrl: '/media/arcadians.lrc'
+});
+await motion.ready;
+// motion.effects, motion.rudiments, motion.onCue, motion.onLyric, ...
+// On route/component disposal:
+motion.destroy();
+```
+
+For React and Next.js, use `@kieransimkin/dancemoves/react` inside a Client
+Component. Importing the root or React package during SSR does not access the
+DOM. Signed downloads and authenticated private motion capture are available
+from `@kieransimkin/dancemoves/server` (Node only; never bundle server secrets).
+
+| Guide | Contents |
+| --- | --- |
+| [JavaScript API](docs/javascript-api.md) | Existing timing/effects/native APIs, scoped mounts, lifecycle, metadata and phone input |
+| [React and Next.js](docs/react-next.md) | Hooks, components, SSR, Strict Mode, Arcadians demos and App Router routes |
+| [Node server API](docs/javascript-server.md) | Timing validation, signed MP3 delivery, authenticated private capture and storage adapters |
+| [WordPress usage](docs/wordpress-shared-runtime.md) | All six Page metadata keys, separate build, compatibility handles and installation |
+| [Architecture and migration](docs/shared-runtime-migration.md) | Single-source ownership and explicit browser/server/WordPress boundaries |
+| [Feature coverage](docs/shared-feature-coverage.md) | Existing features mapped to APIs, demos and tests |
+| [Builds and npm releases](docs/releasing-shared.md) | Tag-triggered npm/browser/WordPress artifacts and one-time trusted publishing setup |
+
+```sh
+npm run demo:prepare       # Hash-pinned Arcadians media from StemLab
+npm run demo:react         # http://127.0.0.1:4173
+npm run demo:next          # http://localhost:3000 (separate terminal)
+```
+
+The release workflow tests the same checkout, builds all three distributions,
+and publishes npm plus the minified browser and WordPress archives for `v*`
+tags. Prerelease versions use npm `next`. An npm trusted publisher (or an
+explicit one-time bootstrap token) must be configured before automatic
+publication. No secrets are included here.
+
+## Existing WordPress recipes and 2.x reference material
+
+The examples below remain useful. Their historical provenance/version notes
+refer to their original 2.9.0 authoring baseline. Current build/initialisation
+instructions are in the shared-library guides above. The 23-page WordPress
+simulator now imports the same library as the new React/Next frontends.
 
 <!-- BEGIN WORDPRESS EXAMPLES -->
 ## WordPress examples: Arcadians and complete feature coverage

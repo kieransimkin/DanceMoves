@@ -1,0 +1,68 @@
+name: Shared runtime CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  contracts:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: [22, 24]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node }}
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+      - run: node tools/install-ci.mjs
+      - run: npm run check:release
+      - run: npm run build
+      - run: npm test
+      - run: python tests/shared/test_package_outputs.py
+      - run: npm run test:legacy
+      - run: python tools/package-wordpress.py
+      - run: python tools/package-web.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tested-build-${{ matrix.os }}-node${{ matrix.node }}
+          path: |
+            dist/DanceMoves-3*.zip
+            dist/DanceMoves-3*-manifest.json
+            package-lock.json
+  browsers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: node tools/install-ci.mjs
+      - run: npm run build
+      - run: npm run demo:prepare
+      - run: npx playwright-core install --with-deps chromium
+      - run: npm run test:browser
+      - run: npm run test:next
+      - run: npm run test:next:smoke
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-evidence
+          path: .build/browser-evidence/
+          if-no-files-found: ignore

@@ -1,0 +1,11 @@
+import fs from 'node:fs';import path from 'node:path';
+const root=path.resolve(import.meta.dirname,'..');
+const pkg=JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8'));
+const php=fs.readFileSync(path.join(root,'kieran-epk-device-orientation.php'),'utf8');
+const header=php.match(/^\s*\*\s*Version:\s*(\S+)\s*$/m)?.[1];
+const constant=php.match(/define\('DANCE_MOVES_VERSION',\s*'([^']+)'\)/)?.[1];
+if(header!==pkg.version || constant!==pkg.version)throw new Error('npm and WordPress versions disagree');
+const tag=process.env.TAG_NAME || (process.env.GITHUB_REF_TYPE==='tag' ? process.env.GITHUB_REF_NAME : undefined);
+if(tag && tag!==`v${pkg.version}`)throw new Error(`Tag ${tag} does not match v${pkg.version}`);
+if(!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(pkg.version))throw new Error('Invalid release version');
+console.log(`Release identity verified: ${pkg.name}@${pkg.version}`);

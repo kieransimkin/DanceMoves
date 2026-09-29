@@ -1,0 +1,170 @@
+{
+  "schema": "dance-moves-package/v1",
+  "plugin_name": "DanceMoves",
+  "version": "3.0.0",
+  "wordpress_upgrade_slug": "kieran-epk-device-orientation",
+  "zip": "DanceMoves-3.0.0.zip",
+  "zip_bytes": 1135750,
+  "zip_sha256": "1A14C98A75DA0064EF8770AFC0EC9C13C09E2D0AD666AD6F7690E744A095C2B4",
+  "entry_count": 31,
+  "root_entrypoint": "kieran-epk-device-orientation/kieran-epk-device-orientation.php",
+  "root_entrypoint_present": true,
+  "forward_slash_entries": true,
+  "files": [
+    {
+      "path": "kieran-epk-device-orientation/dance-moves-rudiments.php",
+      "bytes": 1350,
+      "sha256": "9A0FD8C0AEC3280E8ED664B654C96D888E131D0187A99CFAC55955C22F0D23AB"
+    },
+    {
+      "path": "kieran-epk-device-orientation/docs/clay-transform-validation.md",
+      "bytes": 4383,
+      "sha256": "C0C19423A80A6CF4B15321A089740B01E934FC2B6F6B1A5E807E45C8467379D6"
+    },
+    {
+      "path": "kieran-epk-device-orientation/docs/development.md",
+      "bytes": 15650,
+      "sha256": "33269689CDD78E204C04B0EBF6EBEF083FCEC02DCFEF33AFBFBF3F0C5F7217B7"
+    },
+    {
+      "path": "kieran-epk-device-orientation/docs/guide.md",
+      "bytes": 14895,
+      "sha256": "F80666D6ADE6AF2F0E3B4865E6C0203292C86CB96C36FD157DBA1A4F081B5A8B"
+    },
+    {
+      "path": "kieran-epk-device-orientation/docs/javascript-api.md",
+      "bytes": 16704,
+      "sha256": "0BADFC955AF22D4A4900B1DA5470C9E45107D2466C6DCE36FF9C2B534DF130DC"
+    },
+    {
+      "path": "kieran-epk-device-orientation/docs/javascript-server.md",
+      "bytes": 7683,
+      "sha256": "57342B6DC2104519840D6B836614A579FCB7B114831B912D0E7AC0F57B9F7E73"
+    },
+    {
+      "path": "kieran-epk-device-orientation/docs/react-next.md",
+      "bytes": 8503,
+      "sha256": "34938BED9A2DA5BE7296E3B30B7578C94B15B5198AD4FF034B83C71A7ACFE622"
+    },
+    {
+      "path": "kieran-epk-device-orientation/docs/README.md",
+      "bytes": 6223,
+      "sha256": "A396F3235470D2435756F5F5A64CE9E593FC1CFDDEBBD9E151B00747305131B7"
+    },
+    {
+      "path": "kieran-epk-device-orientation/docs/releasing-shared.md",
+      "bytes": 7105,
+      "sha256": "FA0211FCA244C450FC9AC181B0AD4F39D7DC2BDB046D8EFACBD1877E9F0E9769"
+    },
+    {
+      "path": "kieran-epk-device-orientation/docs/rudiments-source-integrity.md",
+      "bytes": 3979,
+      "sha256": "509531679ECFB73FA0D7E8B15E85FA130C34C3A819A670E679ECD6809FEBF21D"
+    },
+    {
+      "path": "kieran-epk-device-orientation/docs/shared-feature-coverage.md",
+      "bytes": 3558,
+      "sha256": "9064517E33C1552460AD2896B44749F4FB1668848D6C2A390576E203A9EC113B"
+    },
+    {
+      "path": "kieran-epk-device-orientation/docs/shared-runtime-migration.md",
+      "bytes": 6794,
+      "sha256": "A933050470D63056877FE66E4E4D4967F870785F41DDEDBA4D7161DBFE58E689"
+    },
+    {
+      "path": "kieran-epk-device-orientation/docs/source-audit.md",
+      "bytes": 12452,
+      "sha256": "442DD8B04823B321881F38768063EB05A3D310A90D2E34CA2ED7C4BD3DF050E8"
+    },
+    {
+      "path": "kieran-epk-device-orientation/docs/validation-setup.md",
+      "bytes": 4660,
+      "sha256": "D2C276DBD944CE65D228BD91B78FE1A662398A28A488ED17B9AED403CE03F494"
+    },
+    {
+      "path": "kieran-epk-device-orientation/docs/wordpress-examples.md",
+      "bytes": 11707,
+      "sha256": "C09DE337E678F8AD767805A12B0F2874533F37154FA2536EEA6164F187458801"
+    },
+    {
+      "path": "kieran-epk-device-orientation/docs/wordpress-shared-runtime.md",
+      "bytes": 6367,
+      "sha256": "A5E66AD741FE6BD0070BB0A138C8108B3A0CCA4434AE78B094C7B13E20644BC3"
+    },
+    {
+      "path": "kieran-epk-device-orientation/kieran-epk-device-orientation.php",
+      "bytes": 36881,
+      "sha256": "D75FB65CA5BB2B6A97CF3B4199FA32A073A08151A5A478F1AE01AD11E4270B2C"
+    },
+    {
+      "path": "kieran-epk-device-orientation/lib/admin.min.js",
+      "bytes": 1157,
+      "sha256": "DB6CA41F28D0943A52C89093D279CC287A74702D412EA54C80B4C741525B9E43"
+    },
+    {
+      "path": "kieran-epk-device-orientation/lib/assets/DanceRudiments-build-manifest.json",
+      "bytes": 1021,
+      "sha256": "D08FCD81A5599CC50D7ED2E8517F031A2C7329DBFCD232491A4A2113C6BA44BD"
+    },
+    {
+      "path": "kieran-epk-device-orientation/lib/assets/DanceRudiments-LICENSE",
+      "bytes": 1091,
+      "sha256": "4821889E3CB8A0F14F5560FE3F3EA937F2DA2F988DC8C45EBCC46E4302EADBBF"
+    },
+    {
+      "path": "kieran-epk-device-orientation/lib/assets/paper-dreams-plane-atlas.png",
+      "bytes": 989622,
+      "sha256": "72A04CFEFA5A2DAF46034FFF5166FBA01E9A6918A595257AEBA53413B74687FA"
+    },
+    {
+      "path": "kieran-epk-device-orientation/lib/styles/clay-stars-effects.css",
+      "bytes": 20862,
+      "sha256": "FAE940703E782ED8FE13B3DC02A15DAEFC756429EBAEC440C65798D8E3578A00"
+    },
+    {
+      "path": "kieran-epk-device-orientation/lib/styles/clay-stars-rudiments.css",
+      "bytes": 1945,
+      "sha256": "C3EC5A979048C98EAD93767FE8BAF04B27E06425389F9F9D9D0846A8B809D7E6"
+    },
+    {
+      "path": "kieran-epk-device-orientation/lib/styles/dance-moves-core.css",
+      "bytes": 2763,
+      "sha256": "5D51CAA8F3D33FC703ECD416160FBB9491B55527E54FACC9248050D70CBCE8A3"
+    },
+    {
+      "path": "kieran-epk-device-orientation/lib/styles/ks-epk-device-orientation.css",
+      "bytes": 3192,
+      "sha256": "390215653D0352C6AB9D852DEE62A9798AE6DE6C1933ED62B72D06BC00FE1BE3"
+    },
+    {
+      "path": "kieran-epk-device-orientation/lib/styles/paper-dreams-flight.css",
+      "bytes": 2457,
+      "sha256": "6DD2B7E15A74B4386C64358802F44A84323E15BD4121046D649DA1C5BA498294"
+    },
+    {
+      "path": "kieran-epk-device-orientation/lib/wordpress.js",
+      "bytes": 159672,
+      "sha256": "6A18FBE6707C5016CEB34765FE5501C058F6EAD485BDE45C8BADC3B00812E446"
+    },
+    {
+      "path": "kieran-epk-device-orientation/library-manifest.json",
+      "bytes": 1767,
+      "sha256": "FB8DE0B5442D790EC1E7DB1B683883E34422926E37B4081442687EB1F05D856E"
+    },
+    {
+      "path": "kieran-epk-device-orientation/LICENSE",
+      "bytes": 18322,
+      "sha256": "498D32907F132C2CD7D3AE269F304AED87156293F63E724B83D9F62ED787D55A"
+    },
+    {
+      "path": "kieran-epk-device-orientation/README.md",
+      "bytes": 291,
+      "sha256": "0E5CBE89F22E5CC1A322185F6260CD578D79AC7BEBF446BA712B34249E4C3AD7"
+    },
+    {
+      "path": "kieran-epk-device-orientation/RUDIMENTS-API.md",
+      "bytes": 35947,
+      "sha256": "DF01405CBF7CD260A384F8505F1B5ABCC910CC8FB09DFB1DD3429F1AAA4BC695"
+    }
+  ]
+}

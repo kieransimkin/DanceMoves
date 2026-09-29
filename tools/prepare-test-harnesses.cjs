@@ -30,8 +30,8 @@ function readText(filename) {
 }
 function versionFor(repoRoot) {
   const source = readText(path.join(repoRoot, 'kieran-epk-device-orientation.php'));
-  const header = source.match(/\bVersion:\s*(\d+\.\d+\.\d+)\b/);
-  const constant = source.match(/define\(\s*['"]DANCE_MOVES_VERSION['"]\s*,\s*['"](\d+\.\d+\.\d+)['"]\s*\)/);
+  const header = source.match(/\bVersion:\s*(\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)(?=\s|$)/);
+  const constant = source.match(/define\(\s*['"]DANCE_MOVES_VERSION['"]\s*,\s*['"](\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)['"]\s*\)/);
   if (!header || !constant || header[1] !== constant[1]) throw new Error('Plugin header and DANCE_MOVES_VERSION must agree before building test harnesses.');
   return header[1];
 }
@@ -66,7 +66,7 @@ function removeOldPluginAssets(html) {
 function script(src) { return `<script src="${src}"></script>`; }
 function inline(name, value) { return `<script>window.${name}=${JSON.stringify(value).replace(/</g, '\\u003c')};</script>`; }
 function renderCandidate(source, slug, version, release) {
-  if (!/^\d+\.\d+\.\d+$/.test(version)) throw new Error('Invalid plugin version.');
+  if (!/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(version)) throw new Error('Invalid plugin version.');
   assertIdentity(source, slug);
   if (!Number.isFinite(release.bpm) || release.bpm < 20 || release.bpm > 400 ||
       !Number.isFinite(release.masterDurationMilliseconds) || release.masterDurationMilliseconds <= 0) {

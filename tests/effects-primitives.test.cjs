@@ -32,7 +32,7 @@ assert.doesNotMatch(js, /(?:backgroundColor|filter|mixBlendMode)\s*=/);
 assert.doesNotMatch(js, /paper-dreams|arcadians|amnesty|santa|clay-stars/i);
 assert.doesNotMatch(js, /\b(?:86|100|116|145)\b/);
 assert.match(php, /'dance-moves-effects'/);
-assert.match(php, /dance-moves-effects\.js/);
+assert.match(php, /'dance-moves-effects',\s*false,/);
 assert.match(php, /array\('dance-moves-core', 'dance-moves-effects'\)/);
 assertPluginVersion(php);
 

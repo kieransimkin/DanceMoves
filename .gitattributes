@@ -16,3 +16,7 @@ qa/prelive/clay-stars/canonical-live-2.3.2.html -whitespace
 *.hpp text eol=lf
 vendor/dancerudiments/LICENSE text eol=lf
 assets/vendor/dancerudiments/LICENSE text eol=lf
+
+# Shared library declarations and public package licence are text, with stable builds.
+*.d.ts text eol=lf
+LICENSE text eol=lf

@@ -29,10 +29,9 @@ require_check($scripts['dance-moves-clay-rudiments']['deps'] === array('dance-mo
 require_check($styles['dance-moves-clay-rudiments']['deps'] === array('dance-moves-clay-stars'), 'Clay override stylesheet order');
 foreach ($scripts as $script) {
     require_check($script['footer'] && $script['version'] === '2.9.0-rudiments-1.0.0', 'candidate cache key/footer');
-    $relative = substr($script['src'], strpos($script['src'], '/assets/') + 1);
-    require_check(is_file(__DIR__ . '/../' . $relative), 'enqueued file exists: ' . $relative);
+    require_check(false === $script['src'], 'compatibility handle must not enqueue a duplicate frontend');
 }
 $scripts = $styles = array(); define('KS_CLAY_STARS_EFFECTS_VERSION', '1.0.0');
 dance_moves_enqueue_rudiments();
 require_check(count($scripts) === 2 && !$styles, 'legacy plugin suppresses Clay adapter, not reusable API');
-echo "PASS 10 WordPress enqueue, cache-key, shipped-file and legacy-coexistence contracts\n";
+echo "PASS 10 WordPress enqueue, cache-key, single-library and legacy-coexistence contracts\n";
