@@ -82,18 +82,21 @@ can remain. There is no automatic root-removal observer for these primitives.
 
 ## cooperativeArena(options)
 
-Returns `{ id, type: "cooperative-arena", setEnabled, snapshot, teardown }`.
-This page-independent decorative simulation coordinates two to six autonomous
-ships against three to twenty-four hazards. The release supplies sprite URLs,
+Returns `{ id, type: "cooperative-arena", setEnabled, setDensity, snapshot, teardown }`.
+This page-independent decorative simulation coordinates two to twelve autonomous
+ships against three to forty-eight hazards. The release supplies sprite URLs,
 CSS and a bounded stage; the shared primitive owns movement, avoidance,
-beat-spaced firing, projectile collisions, recycling and lifecycle control.
+DanceMoves-tick-spaced firing, projectile collisions, hit callbacks, local
+explosion nodes, recycling and lifecycle control. `shotIntervalTicks` defaults
+to 32 ticks (two beats at the canonical 16 ticks per beat). `setDensity()` lets
+the shared quality monitor reduce active ships and hazards without remounting.
 Hazards enter from the top, left and right edges. It pauses while off-screen,
 hidden, manually disabled, reduced-motion is requested, or forced colours are
 active. Generated nodes are decorative and removed on teardown.
 
 The factory never supplies release names, colours or artwork. Consumers style
 `.dance-moves-arena__ship`, `.dance-moves-arena__hazard` and
-`.dance-moves-arena__shot` through the position variables
+`.dance-moves-arena__shot` and `.dance-moves-arena__explosion` through the position variables
 `--dance-moves-arena-x`, `--dance-moves-arena-y` and
 `--dance-moves-arena-angle`. Keep the stage behind readable content and avoid
 whole-frame flashing or colour modulation.
