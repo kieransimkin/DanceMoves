@@ -464,6 +464,17 @@
   }
 
   function dispatchLyric(entry, audio, index) {
+    var previousVisibleIndex = -1;
+    var previousVisibleEntry = null;
+    if (Number.isFinite(index)) {
+      for (var previousCursor = index - 1; previousCursor >= 0; previousCursor -= 1) {
+        if (String(lyricList[previousCursor].text || "").trim()) {
+          previousVisibleIndex = previousCursor;
+          previousVisibleEntry = lyricList[previousCursor];
+          break;
+        }
+      }
+    }
     var nextIndex = Number.isFinite(index) && index + 1 < lyricList.length ? index + 1 : -1;
     var nextEntry = nextIndex >= 0 ? lyricList[nextIndex] : null;
     var nextVisibleIndex = -1;
@@ -483,6 +494,10 @@
       text: entry ? entry.text : "",
       normalisedText: entry ? entry.normalisedText : "",
       index: Number.isFinite(index) ? index : -1,
+      previousVisibleTime: previousVisibleEntry ? previousVisibleEntry.time : null,
+      previousVisibleText: previousVisibleEntry ? previousVisibleEntry.text : "",
+      previousVisibleNormalisedText: previousVisibleEntry ? previousVisibleEntry.normalisedText : "",
+      previousVisibleIndex: previousVisibleIndex,
       nextTime: nextEntry ? nextEntry.time : null,
       nextText: nextEntry ? nextEntry.text : "",
       nextNormalisedText: nextEntry ? nextEntry.normalisedText : "",
@@ -550,6 +565,7 @@
       },
       hide: function () { this.element.dataset.danceMovesLyricState = "idle"; }
     };
+    document.dispatchEvent(new CustomEvent("dance-moves-lyric-ready", { detail: { element: container } }));
     return lyricRenderer;
   }
 

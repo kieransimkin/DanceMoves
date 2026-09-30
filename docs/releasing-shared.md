@@ -5,11 +5,12 @@ The same repository now produces:
 | Distribution | Output |
 |---|---|
 | npm | `@kieransimkin/dancemoves` tarball, with ESM, CJS, React/Node entrypoints, declarations and styles |
-| Plain browser | `DanceMoves-web-VERSION.zip` with minified `dancemoves.min.js`, styles and static assets |
-| WordPress | `DanceMoves-VERSION.zip` preserving `kieran-epk-device-orientation/` |
+| Plain browser | `DanceMoves-browser-VERSION.zip` with minified `dancemoves.min.js`, styles and static assets |
+| WordPress | `DanceMoves-wordpress-VERSION.zip` preserving `kieran-epk-device-orientation/` |
 
-The source candidate is 3.0.0. The already-published 2.9.0 tag and artifacts must
-not be overwritten. Package publishing is not WordPress deployment.
+The current source candidate version is read from `package.json`; never hard-code
+an earlier release name into a deployment instruction. Published tags and assets
+must not be overwritten. Package publishing is not WordPress deployment.
 
 ## First checkout: dependency lock is required before a release
 
@@ -109,9 +110,9 @@ After the migration, tests and setup are committed:
 ```sh
 git status --short
 npm run check:release
-git tag -a v3.0.0 -m "DanceMoves 3.0.0: shared JavaScript runtime"
+git tag -a vVERSION -m "DanceMoves VERSION"
 git push origin HEAD
-git push origin refs/tags/v3.0.0
+git push origin refs/tags/vVERSION
 ```
 
 The release workflow triggers on `v*` tag pushes, also supports an existing

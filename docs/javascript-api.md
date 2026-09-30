@@ -1,6 +1,6 @@
 # Shared JavaScript API
 
-Package: `@kieransimkin/dancemoves`, source candidate 3.0.0.
+Package: `@kieransimkin/dancemoves`, release candidate 3.0.4.
 This guide describes the public shared module; [WordPress](wordpress-shared-runtime.md)
 loads the same runtime through its adapter.
 
@@ -151,8 +151,9 @@ Lyric example with an explicit gap:
 ```
 
 The lyric callback contains `pageId`, `time`, `text`, `normalisedText`, `index`,
-`nextTime`, `nextText`, `nextNormalisedText`, `nextIndex`, `nextVisibleTime`,
-`nextVisibleText`, `nextVisibleNormalisedText`, `nextVisibleIndex`, and `audio`.
+the `previousVisible*` fields, `nextTime`, `nextText`, `nextNormalisedText`,
+`nextIndex`, the `nextVisible*` fields, and `audio`. The visible neighbours skip
+blank clear entries; their missing sentinel is `null`, an empty string and `-1`.
 Immediate-next fields can describe a blank clear; next-visible fields skip
 blanks. Absent times are null, text empty and indices -1.
 
@@ -176,6 +177,7 @@ Pass Elements or scoped selector strings for roots/targets.
 | `playbackPulse(options)` | `id`, `root`, `audio`, `ticks` (16), `className` (`dance-moves-playing`), `propertyPrefix` (`--dance-moves-pulse`), optional render. Publishes duration/delay in seconds. Controller `sync()`. |
 | `cueClass(options)` | `id`, `root`, `cue` (`*`), `className`, **`durationTicks`** (16), optional render. Class is applied to root, not a separate `target`. Controller `fire(detail)`, `clear(reason?)`. Its finite duration is wall-clock based. |
 | `cueTimeline(options)` | `id`, `root`, `audio`, `cues:[{id,time,end?,...}]`, optional `render` and `onCue`. Controller `restore(reason?)`, `start(reason?)`, `stop(reason?)`. |
+| `lyricStage(options)` | Shared previous/current/next lyric stage. DanceMoves owns audio, lyric, cue, visibility, preference, resize and teardown lifecycle; release code supplies scoped appearance callbacks. |
 | `quality(options)` | `id`, `root`, `tiers`, `initial`, sample/window ratios and cooldowns, optional render. Controller `setTier(index,reason?)`. |
 
 Pulse render receives `{root,audio,duration,delay,ticks}`. Cue-class render

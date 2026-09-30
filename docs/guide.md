@@ -225,13 +225,19 @@ Custom lyric consumers must handle audio `pause`/`ended` themselves when they ne
 to hide: `onLyric()` does not emit a synthetic blank on those events. It also does
 not immediately replay the last value to a newly registered handler.
 
+For a previous/current/next presentation, use `DanceMovesEffects.lyricStage()`.
+It consumes the core's previous/next visible neighbours and owns media, seek,
+visibility, preference, resize, timer and teardown lifecycle. A release adapter
+should supply only its scoped visual callbacks and CSS, not another parser or clock.
+
 ## Use the shared effects API
 
 Load after `dance-moves-effects`, or mount once in response to the document's
 `dance-moves-effects-ready` event. Select the smallest matching primitive:
 `pointer()` for bounded input, `playbackPulse()` for phase-aligned CSS,
 `cueClass()` for a short cue-triggered class, `cueTimeline()` for reconstructable
-playback state, and `quality()` for a reusable quality controller. Stable IDs
+playback state, `lyricStage()` for the shared three-line lyric lifecycle, and
+`quality()` for a reusable quality controller. Stable IDs
 identify instances for `get()`, `snapshot()` and teardown. Each has explicit
 options, callback payloads and disposal semantics in the [shared API](api/effects.md).
 These are APIs, not auto-enabled visual presets. In particular, a cue timeline

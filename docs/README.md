@@ -23,7 +23,7 @@ not a hypothetical 2.9. See [source provenance](source-audit.md).
 | Task | Reference |
 | --- | --- |
 | Install, configure a Page, prepare timing files, enable lyrics | [User and integration guide](guide.md) |
-| Mount pointer, pulse, cue-class, cue-timeline or quality effects | [Shared effect API](api/effects.md) |
+| Mount pointer, pulse, cue-class, cue-timeline, lyric-stage or quality effects | [Shared effect API](api/effects.md) |
 | Enable or integrate the paper-plane renderer | [Paper-plane API](api/paper-planes.md) |
 | Create reliable MP3 download links and understand the HTTP endpoint | [Download API](api/downloads.md) |
 | Call the musical clock, schedule work, subscribe to cues/lyrics | [JavaScript API](api/javascript.md) |
@@ -40,8 +40,8 @@ not a hypothetical 2.9. See [source provenance](source-audit.md).
 | Page properties | BPM, lyric attachment, cue attachment, lyric-pop-up opt-in, ambient-effect selection; hidden master duration | Attachment content validation on the editor save path is stronger than REST metadata sanitisation. |
 | Musical clock | 16 ticks per beat, duration quantisation, page and audio clocks, beat/bar helpers | A bar helper means four beats; this is not a meter or tempo-map engine. |
 | Cue timing | LRC-style timed labels, named/wildcard handlers, scoped animation resets, legacy event alias | `.cue` means the plugin's timestamped text format, not a CD cuesheet. |
-| Timed lyrics | One neutral visual layer, blank clears, playback/seek following, immediate-next and next-visible previews, callbacks and DOM events | Off by default; a release-specific design review is required before adoption. |
-| Shared effects | `pointer`, `playbackPulse`, `cueClass`, `cueTimeline`, `quality`; stable-ID instance management | Page code owns appearance; callback, transport and accessibility contracts differ between primitives. |
+| Timed lyrics | Neutral popover or shared three-slot stage, blank clears, playback/seek following, previous/next visible neighbours, callbacks and DOM events | Off by default; a release-specific design review is required before adoption. |
+| Shared effects | `pointer`, `playbackPulse`, `cueClass`, `cueTimeline`, `lyricStage`, `quality`; stable-ID instance management | Page code owns appearance; callback, transport and accessibility contracts differ between primitives. |
 | Signed MP3 downloads | Attachment-only GET/HEAD endpoint and rewriting of explicit upload download links | HMAC is not user authorisation or an expiring URL; players keep their original URLs. |
 | Paper planes | Page-configured hero effect, atlas sprites, compact mode, offscreen/hidden pause | DOM structure, CSS containment and count limits must be preserved; no user-facing tuning panel. |
 | Catalogue timing | EPK-owned stylesheet, inline, computed and pseudo-element timing conversion | It cannot rewrite canvas/WebGL phase logic or supply an arbitrary new root registration API. |

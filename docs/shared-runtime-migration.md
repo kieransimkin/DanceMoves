@@ -1,6 +1,6 @@
 # DanceMoves 3: one source, three distributions
 
-This is the 3.0.0 **source candidate**, based on DanceMoves 2.9.0 commit
+This records the historical 3.0.0 **source migration**, based on DanceMoves 2.9.0 commit
 `3a6e67652a1bf6968b9ac0715ee5d5eff1e74c98`. Applying the patch does not publish
 anything or change an installed WordPress site. The npm package name is
 `@kieransimkin/dancemoves`; package registration and trusted publishing require

@@ -6,7 +6,8 @@ const child=spawn(process.execPath,['examples/react/serve.mjs'],{env:{...process
 let browser;const checks=[],errors=[];
 try{
  let ready=false;for(let i=0;i<150;i++){if(child.exitCode!==null)throw new Error(serverLog);try{if((await fetch(base)).ok){ready=true;break;}}catch{}await new Promise(r=>setTimeout(r,200));}if(!ready)throw new Error('React server did not become ready: '+serverLog);
- browser=await chromium.launch({headless:true});const page=await browser.newPage({viewport:{width:1280,height:900}});page.on('pageerror',e=>errors.push(e.message));
+ const channel=process.env.DANCEMOVES_BROWSER_CHANNEL||undefined;
+ browser=await chromium.launch(channel?{headless:true,channel}:{headless:true});const page=await browser.newPage({viewport:{width:1280,height:900}});page.on('pageerror',e=>errors.push(e.message));
  await page.goto(base);await page.waitForFunction(()=>window.__reactDanceMoves && !window.__reactDanceMoves.destroyed);
  await page.waitForSelector('.motion-tile');assert.equal(await page.locator('.motion-tile').count(),15);checks.push('15 actual native rudiments rendered by React');
  await page.locator('audio').evaluate(a=>{a.muted=true;return a.play();});await page.waitForFunction(()=>document.querySelector('audio').currentTime>0.1);checks.push('canonical Arcadians media decodes and plays');
@@ -20,6 +21,6 @@ try{
  }
  await page.emulateMedia({reducedMotion:'reduce'});await page.getByRole('button',{name:'rudiments',exact:true}).click();await page.waitForSelector('.motion-tile');const snapshot=await page.evaluate(()=>window.__reactDanceMoves.rudiments.snapshot());checks.push('reduced-motion preference applied; snapshot captured');
  await page.screenshot({path:evidence+'/react-reduced-motion.png',fullPage:true});assert.deepEqual(errors,[]);
- fs.writeFileSync(evidence+'/react.json',JSON.stringify({status:'PASS',checks,errors,snapshot,limits:'Desktop browser simulation; not physical sensor/performance evidence'},null,2));
+ fs.writeFileSync(evidence+'/react.json',JSON.stringify({status:'PASS',checks,errors,snapshot,browserChannel:channel||'bundled-chromium',limits:'Desktop browser simulation; not physical sensor/performance evidence'},null,2));
 }catch(error){fs.writeFileSync(evidence+'/react.json',JSON.stringify({status:'FAIL',checks,errors,error:String(error)},null,2));throw error;}
 finally{await browser?.close();child.kill();fs.writeFileSync(evidence+'/react-server.log',serverLog);}
