@@ -437,7 +437,7 @@
     var removers = state.removers, ships = [], hazards = [], shots = [], bursts = [], burstTimers = [];
     var activeShips = shipCount, activeHazards = hazardCount;
     var width = 1, height = 1, frame = 0, last = 0, elapsed = 0, nextShot = 0, hits = 0;
-    var visible = true, enabled = options.enabled !== false, running = false;
+    var visible = true, enabled = options.enabled !== false, running = false, collisions = 0;
     function image(className, source, label) {
       var node = document.createElement("img");
       node.className = className; node.src = source; node.alt = ""; node.setAttribute("aria-hidden", "true");
@@ -463,8 +463,13 @@
       item.vx = (targetX - item.x) / length * velocity; item.vy = (targetY - item.y) / length * velocity;
       item.spin = (index % 2 ? -1 : 1) * (8 + index % 7); item.angle = index * 31 % 360;
     }
+    function resetShip(item, index) {
+      var best = null;
+      for (var candidateIndex = 0; candidateIndex < 8; candidateIndex += 1) { var candidate = (candidateIndex + index + collisions) % 8; var x = width * (.14 + .72 * (candidate % 4) / 3), y = height * (.58 + .18 * Math.floor(candidate / 4)); var nearest = ships.reduce(function (distance, other) { return other === item ? distance : Math.min(distance, Math.hypot(x - other.x, y - other.y)); }, Infinity); if (!best || nearest > best.nearest) best = { x: x, y: y, nearest: nearest }; }
+      item.x = best.x; item.y = best.y; item.vx = 0; item.vy = 0; item.angle = 0; item.cooldown = .72; place(item.node, item.x, item.y, item.angle);
+    }
     function makeShip(index) {
-      var item = { node: image("dance-moves-arena__ship", shipSources[index % shipSources.length], "ship"), x: width * (.2 + .6 * (index + 1) / (shipCount + 1)), y: height * (.64 + .08 * (index % 2)), vx: 0, vy: 0, angle: 0, index: index };
+      var item = { node: image("dance-moves-arena__ship", shipSources[index % shipSources.length], "ship"), x: width * (.14 + .72 * (index % 4) / 3), y: height * (.58 + .18 * Math.floor((index % 8) / 4)), vx: 0, vy: 0, angle: 0, cooldown: 0, index: index };
       ships.push(item); place(item.node, item.x, item.y, item.angle);
     }
     function makeHazard(index) {
@@ -475,8 +480,8 @@
       var node = document.createElement("i"); node.className = "dance-moves-arena__shot"; node.setAttribute("aria-hidden", "true"); stage.appendChild(node);
       shots.push({ node: node, x: ship.x, y: ship.y - 18, vx: Math.sin(ship.angle * Math.PI / 180) * 28, vy: -180 * speed, life: 2.4 });
     }
-    function burst(x, y) {
-      var node = document.createElement("i"); node.className = "dance-moves-arena__explosion"; node.setAttribute("aria-hidden", "true"); stage.appendChild(node); place(node, x, y, 0); bursts.push(node);
+    function burst(x, y, cause) {
+      var node = document.createElement("i"); node.className = "dance-moves-arena__explosion"; node.setAttribute("aria-hidden", "true"); node.dataset.danceMovesArenaExplosion = cause || "impact"; stage.appendChild(node); place(node, x, y, 0); bursts.push(node);
       var timer = window.setTimeout(function () { var index = bursts.indexOf(node); if (node.parentNode) node.parentNode.removeChild(node); if (index >= 0) bursts.splice(index, 1); }, 620);
       burstTimers.push(timer);
     }
@@ -497,6 +502,7 @@
         place(hazard.node, hazard.x, hazard.y, hazard.angle);
       });
       liveShips.forEach(function (ship) {
+        ship.cooldown = Math.max(0, ship.cooldown - dt);
         var targetX = width * (.16 + .68 * (.5 + .5 * Math.sin(elapsed * (.29 + ship.index * .03) + ship.index * 2.1)));
         var targetY = height * (.58 + .18 * (.5 + .5 * Math.cos(elapsed * (.23 + ship.index * .02) + ship.index)));
         var ax = (targetX - ship.x) * .34, ay = (targetY - ship.y) * .34;
@@ -506,11 +512,17 @@
         ship.x = clamp(ship.x + ship.vx * dt, 30, width - 30); ship.y = clamp(ship.y + ship.vy * dt, height * .4, height - 34);
         ship.angle = clamp(ship.vx * .32, -28, 28); place(ship.node, ship.x, ship.y, ship.angle);
       });
+      for (var firstShip = 0; firstShip < liveShips.length; firstShip += 1) {
+        var ship = liveShips[firstShip]; if (ship.cooldown > 0) continue;
+        for (var secondShip = firstShip + 1; secondShip < liveShips.length; secondShip += 1) { var other = liveShips[secondShip]; if (other.cooldown > 0) continue; var dx = other.x - ship.x, dy = other.y - ship.y, distance = Math.max(.01, Math.hypot(dx, dy)); if (distance < 84) { collisions += 1; stage.dataset.danceMovesArenaLastCollision = "ship-ship"; stage.dataset.danceMovesArenaCollisions = String(collisions); burst((ship.x + other.x) / 2, (ship.y + other.y) / 2, "ship-ship"); resetShip(ship, ship.index + collisions); resetShip(other, other.index + collisions + 3); if (typeof options.onCollision === "function") options.onCollision({ root: state.root, stage: stage, type: "ship-ship", collisions: collisions }); break; } }
+        if (ship.cooldown > 0) continue;
+        for (var contactHazard = 0; contactHazard < liveHazards.length; contactHazard += 1) { var hazard = liveHazards[contactHazard]; if (Math.hypot(ship.x - hazard.x, ship.y - hazard.y) < 62) { collisions += 1; stage.dataset.danceMovesArenaLastCollision = "ship-hazard"; stage.dataset.danceMovesArenaCollisions = String(collisions); burst((ship.x + hazard.x) / 2, (ship.y + hazard.y) / 2, "ship-hazard"); resetShip(ship, ship.index + collisions); resetHazard(hazard, hazard.index + collisions, false); if (typeof options.onCollision === "function") options.onCollision({ root: state.root, stage: stage, type: "ship-hazard", collisions: collisions }); break; } }
+      }
       if (elapsed >= nextShot) { fire(liveShips[Math.floor(elapsed * 1.7) % liveShips.length]); nextShot = elapsed + shotIntervalSeconds; }
       for (var shotIndex = shots.length - 1; shotIndex >= 0; shotIndex -= 1) {
         var shot = shots[shotIndex]; shot.x += shot.vx * dt; shot.y += shot.vy * dt; shot.life -= dt; place(shot.node, shot.x, shot.y, 0);
         var struck = false;
-        for (var hazardIndex = 0; hazardIndex < liveHazards.length; hazardIndex += 1) { var hazard = liveHazards[hazardIndex]; if (Math.hypot(shot.x - hazard.x, shot.y - hazard.y) < 34) { hits += 1; burst(hazard.x, hazard.y); if (typeof options.onHit === "function") options.onHit({ root: state.root, stage: stage, x: hazard.x, y: hazard.y, hits: hits, hazard: hazard }); resetHazard(hazard, hazard.index + hits, false); struck = true; break; } }
+        for (var hazardIndex = 0; hazardIndex < liveHazards.length; hazardIndex += 1) { var hazard = liveHazards[hazardIndex]; if (Math.hypot(shot.x - hazard.x, shot.y - hazard.y) < 34) { hits += 1; burst(hazard.x, hazard.y, "shot"); if (typeof options.onHit === "function") options.onHit({ root: state.root, stage: stage, x: hazard.x, y: hazard.y, hits: hits, hazard: hazard }); resetHazard(hazard, hazard.index + hits, false); struck = true; break; } }
         if (struck || shot.life <= 0 || shot.y < -40) removeShot(shotIndex);
       }
       if (typeof options.render === "function") options.render({ root: state.root, stage: stage, ships: ships, hazards: hazards, shots: shots, hits: hits });
@@ -527,7 +539,7 @@
     return register(state.id, Object.freeze({
       id: state.id, type: "cooperative-arena", setEnabled: function (value, reason) { enabled = Boolean(value); reconcile(reason || "manual"); },
       setDensity: function (nextShips, nextHazards) { activeShips = clamp(Math.round(finite(nextShips, activeShips)), 2, shipCount); activeHazards = clamp(Math.round(finite(nextHazards, activeHazards)), 3, hazardCount); ships.forEach(function (item, index) { item.node.hidden = index >= activeShips; }); hazards.forEach(function (item, index) { item.node.hidden = index >= activeHazards; }); },
-      snapshot: function () { return { id: state.id, type: "cooperative-arena", running: running, enabled: enabled, ships: activeShips, hazards: activeHazards, maximumShips: ships.length, maximumHazards: hazards.length, shots: shots.length, hits: hits, shotIntervalTicks: shotIntervalTicks }; },
+      snapshot: function () { return { id: state.id, type: "cooperative-arena", running: running, enabled: enabled, ships: activeShips, hazards: activeHazards, maximumShips: ships.length, maximumHazards: hazards.length, shots: shots.length, hits: hits, collisions: collisions, shotIntervalTicks: shotIntervalTicks }; },
       teardown: function () { running = false; if (frame) window.cancelAnimationFrame(frame); if (resizeObserver) resizeObserver.disconnect(); if (intersectionObserver) intersectionObserver.disconnect(); burstTimers.splice(0).forEach(window.clearTimeout); removers.splice(0).forEach(function (remove) { remove(); }); shots.concat(ships, hazards).forEach(function (item) { if (item.node.parentNode) item.node.parentNode.removeChild(item.node); }); bursts.splice(0).forEach(function (node) { if (node.parentNode) node.parentNode.removeChild(node); }); instances.delete(state.id); }
     }));
   }

@@ -12,6 +12,13 @@ new vm.Script(js, { filename: 'dance-moves-effects.js' });
 for (const primitive of ['pointer', 'playbackPulse', 'cueClass', 'cueTimeline', 'lyricStage', 'cooperativeArena', 'quality']) {
   assert.match(js, new RegExp('(?:function ' + primitive + '\\b|' + primitive + ': ' + primitive + '\\b)'));
 }
+
+assert.match(js, /danceMovesArenaLastCollision/);
+assert.match(js, /danceMovesArenaCollisions/);
+assert.match(js, /danceMovesArenaExplosion/);
+assert.match(js, /"ship-ship"/);
+assert.match(js, /"ship-hazard"/);
+assert.match(js, /burst\(hazard\.x, hazard\.y, "shot"\)/);
 assert.match(js, /dance-moves-effects-ready/);
 assert.match(js, /ResizeObserver/);
 assert.match(js, /--dance-moves-x/);

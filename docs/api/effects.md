@@ -87,7 +87,9 @@ This page-independent decorative simulation coordinates two to twelve autonomous
 ships against three to forty-eight hazards. The release supplies sprite URLs,
 CSS and a bounded stage; the shared primitive owns movement, avoidance,
 DanceMoves-tick-spaced firing, projectile collisions, hit callbacks, local
-explosion nodes, recycling and lifecycle control. `shotIntervalTicks` defaults
+explosion nodes, hard ship separation, ship-to-ship and ship-to-hazard collision
+callbacks, recycling and lifecycle control. Collision resets use separate lanes
+and a short cooldown so contacts cannot overlap or repeatedly burst. `shotIntervalTicks` defaults
 to 32 ticks (two beats at the canonical 16 ticks per beat). `setDensity()` lets
 the shared quality monitor reduce active ships and hazards without remounting.
 Hazards enter from the top, left and right edges. It pauses while off-screen,
