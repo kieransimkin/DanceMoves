@@ -44,7 +44,7 @@ expectations need updating; historical reports and the paper adapter’s own
 When the plugin version changes, refresh the current gallery version in
 `examples/wordpress/features.json`, `shared/model.cjs` under that directory, and
 the example static/browser version assertions; keep provenance commits historical.
-The rudiments API version and upstream 0.1.3 pin are independent identities.
+The rudiments API version and upstream 0.2.0 pin are independent identities.
 Do not blindly replace version text in historical reports or dependency manifests.
 
 `docs/check-reference.cjs` belongs to its explicitly recorded earlier reference

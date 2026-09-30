@@ -1,10 +1,10 @@
 <?php
-/** DanceMoves integration module: DanceRudiments animation API v1. */
+/** DanceMoves integration module: DanceRudiments animation API v1.1. */
 if (!defined('ABSPATH')) {
     exit;
 }
 
-define('DANCE_MOVES_RUDIMENTS_API_VERSION', '1.0.0');
+define('DANCE_MOVES_RUDIMENTS_API_VERSION', '1.1.0');
 
 /** Compatibility handles only: frontend implementations are in lib/wordpress.js. */
 function dance_moves_enqueue_rudiments() {

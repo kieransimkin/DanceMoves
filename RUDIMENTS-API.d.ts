@@ -1,4 +1,4 @@
-/** DanceMoves rudiment animation API v1; available on WordPress Page requests. */
+/** DanceMoves rudiment animation API v1.1; available on WordPress Page requests. */
 export type RudimentName = 'bounce' | 'sway' | 'circle' | 'figure_eight' | 'step_touch' |
   'box_step' | 'helix' | 'clay_background' | 'single_stroke_roll' | 'double_stroke_roll' |
   'multiple_bounce_roll' | 'single_paradiddle' | 'flam' | 'drag' | 'five_stroke_roll';
@@ -85,9 +85,11 @@ export interface RudimentAnimation {
   teardown(): void;
 }
 export interface RudimentApi {
-  readonly version: '1.0.0';
+  readonly version: '1.1.0';
   readonly upstreamVersion: string;
   readonly upstreamCommit: string;
+  /** Total movements exposed by the pinned upstream DanceRudiments catalogue. */
+  readonly sourceCatalogueCount: number;
   readonly pipsPerBeat: 64;
   readonly ticksPerBeat: 16;
   readonly pipsPerTick: 4;
@@ -99,7 +101,7 @@ export interface RudimentApi {
   pipsFromSeconds(seconds: number, bpm?: number): number;
   animate(options: RudimentOptions): RudimentAnimation;
   get(id: string): RudimentAnimation | null;
-  snapshot(): Readonly<{ version: '1.0.0'; upstreamVersion: string; loaded: boolean;
+  snapshot(): Readonly<{ version: '1.1.0'; upstreamVersion: string; sourceCatalogueCount: number; loaded: boolean;
     error: string | null; framePending: boolean; instances: readonly RudimentAnimationSnapshot[] }>;
   destroyAll(): void;
 }
@@ -108,6 +110,7 @@ export interface ClayRudimentApi {
   teardown(): void;
   snapshot(): Readonly<{ status: 'loading' | 'active' | 'suspended' | 'fallback' | 'destroyed';
     error: string | null; destroyed: boolean; loaded: boolean; rudiment: 'clay_background';
+    apiVersion: '1.1.0'; upstreamVersion: string; sourceCatalogueCount: number;
     cycleBeats: 8; rate: 0.5; controller: RudimentAnimationSnapshot | null }>;
 }
 declare global {
@@ -118,6 +121,7 @@ declare global {
   interface DocumentEventMap {
     'dance-moves-rudiments-ready': CustomEvent<{
       api: RudimentApi; version: string; upstreamVersion: string; upstreamCommit: string;
+      sourceCatalogueCount: number;
     }>;
     'dance-moves-rudiments-error': CustomEvent<{ id: string | null; message: string }>;
   }

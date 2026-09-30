@@ -1,6 +1,6 @@
 # Shared JavaScript API
 
-Package: `@kieransimkin/dancemoves`, release candidate 3.0.5.
+Package: `@kieransimkin/dancemoves`, release candidate 3.1.0.
 This guide describes the public shared module; [WordPress](wordpress-shared-runtime.md)
 loads the same runtime through its adapter.
 

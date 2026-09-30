@@ -1,4 +1,4 @@
-/* DanceMoves rudiment animation API 1.0.0. Movement samples are C++/WASM-owned. */
+/* DanceMoves rudiment animation API 1.1.0. Movement samples are DanceRudiments/WASM-owned. */
 (function (window, document) {
   'use strict';
   if (!window.DanceMoves || window.DanceMovesRudiments) return;
@@ -51,20 +51,23 @@
   function ready() {
     if (loading) return loading;
     loading = Promise.resolve().then(async () => {
-      if (!data || data.schema !== 1 || data.pipsPerBeat !== 64 || !catalogue.length) throw new Error('Missing or incompatible native rudiment bundle');
+      if (!data || data.schema !== 2 || data.pipsPerBeat !== 64 ||
+          !Number.isSafeInteger(data.sourceCatalogueCount) || data.sourceCatalogueCount < catalogue.length ||
+          !catalogue.length) throw new Error('Missing or incompatible native rudiment bundle');
       if (!window.WebAssembly) throw new Error('WebAssembly is unavailable');
       const binary = window.atob(data.wasmBase64);
       const bytes = new Uint8Array(binary.length);
       for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
       const result = await window.WebAssembly.instantiate(bytes, {});
       const ex = result.instance.exports;
-      if (ex.dr_abi() !== 1 || ex.dr_count() !== catalogue.length) throw new Error('DanceRudiments WASM ABI mismatch');
+      if (ex.dr_abi() !== 2 || ex.dr_count() !== catalogue.length) throw new Error('DanceRudiments WASM ABI mismatch');
       catalogue.forEach(row => {
         if (ex.dr_period(row.index) !== row.periodPips) throw new Error('DanceRudiments period mismatch');
       });
       view = new DataView(ex.memory.buffer);
       native = ex;
-      emit('dance-moves-rudiments-ready', { api, version: api.version, upstreamVersion: data.version, upstreamCommit: data.commit });
+      emit('dance-moves-rudiments-ready', { api, version: api.version, upstreamVersion: data.version,
+        upstreamCommit: data.commit, sourceCatalogueCount: data.sourceCatalogueCount });
       return api;
     }).catch(error => {
       loadError = error;
@@ -313,14 +316,16 @@
   window.addEventListener('pagehide', () => { pageHidden = true; refreshAll(); });
   window.addEventListener('pageshow', () => { pageHidden = false; refreshAll(); });
   const api = Object.freeze({
-    version: '1.0.0', upstreamVersion: data ? data.version : '', upstreamCommit: data ? data.commit : '',
+    version: '1.1.0', upstreamVersion: data ? data.version : '', upstreamCommit: data ? data.commit : '',
+    sourceCatalogueCount: data ? data.sourceCatalogueCount : 0,
     pipsPerBeat: 64, ticksPerBeat: 16, pipsPerTick: 4,
     ready, catalogue: () => catalogue, describe, sample,
     pipsFromTicks: ticks => floorPips(number(ticks, 'ticks') * 4),
     pipsFromSeconds: (seconds, tempo) => floorPips(number(seconds, 'seconds') * bpm(tempo) * 64 / 60),
     animate,
     get: id => instances.has(id) ? instances.get(id).handle : null,
-    snapshot: () => ({ version: '1.0.0', upstreamVersion: data ? data.version : '',
+    snapshot: () => ({ version: '1.1.0', upstreamVersion: data ? data.version : '',
+      sourceCatalogueCount: data ? data.sourceCatalogueCount : 0,
       loaded: Boolean(native), error: loadError ? String(loadError.message || loadError) : null,
       framePending: Boolean(frame), instances: Array.from(instances.values(), record => record.handle.snapshot()) }),
     destroyAll: () => Array.from(instances.values()).forEach(record => record.handle.destroy())

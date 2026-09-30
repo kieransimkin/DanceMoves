@@ -11,7 +11,7 @@ if ($LASTEXITCODE -ne 0) { throw "Validation failed; do not release" }
 
 The coordinator now prepares the ignored unit HTML before any adapter test
 tries to read it. No external song workspace, `Z:` drive, browser, network
-request, audio download, C++ compiler or WordPress installation is required for
+request, audio download, native compiler or WordPress installation is required for
 that preparation. Node, PHP and Python are still required by the test suite.
 
 ## Inputs and outputs

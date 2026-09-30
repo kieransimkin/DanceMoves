@@ -28,7 +28,7 @@ require_check(count($scripts) === 3 && count($styles) === 1, 'Clay opt-in assets
 require_check($scripts['dance-moves-clay-rudiments']['deps'] === array('dance-moves-rudiments','dance-moves-clay-stars'), 'Clay mounts only after both runtimes');
 require_check($styles['dance-moves-clay-rudiments']['deps'] === array('dance-moves-clay-stars'), 'Clay override stylesheet order');
 foreach ($scripts as $script) {
-    require_check($script['footer'] && $script['version'] === '2.9.0-rudiments-1.0.0', 'candidate cache key/footer');
+    require_check($script['footer'] && $script['version'] === '2.9.0-rudiments-1.1.0', 'candidate cache key/footer');
     require_check(false === $script['src'], 'compatibility handle must not enqueue a duplicate frontend');
 }
 $scripts = $styles = array(); define('KS_CLAY_STARS_EFFECTS_VERSION', '1.0.0');

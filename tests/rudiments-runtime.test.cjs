@@ -61,7 +61,7 @@ function fixture(noWasm = false) {
 }
 if (require.main === module) (async () => {
   const f = fixture(); const api = f.win.DanceMovesRudiments;
-  check('API alias and metadata', () => { assert.equal(api, f.win.DanceMoves.rudiments); assert.equal(api.pipsPerTick, 4); assert.equal(api.catalogue().length, 15); });
+  check('API alias and selected-catalogue metadata', () => { assert.equal(api, f.win.DanceMoves.rudiments); assert.equal(api.version, '1.1.0'); assert.equal(api.upstreamVersion, '0.2.0'); assert.equal(api.sourceCatalogueCount, 1731); assert.equal(api.pipsPerTick, 4); assert.equal(api.catalogue().length, 15); });
   check('strict inputs before loading', () => { assert.throws(() => api.sample('clay_background', 0)); assert.throws(() => api.pipsFromTicks('1')); assert.throws(() => api.pipsFromSeconds(1, 401)); });
   assert.equal(api.ready(), api.ready()); await api.ready();
   check('native exact clay waypoints', () => { const p = api.sample('clay_background', 100); assert.equal(p.x, -1); assert.ok(Math.abs(p.y - .9) < 1e-12); assert.equal(api.sample('clay_background', 169).y, 1); });
