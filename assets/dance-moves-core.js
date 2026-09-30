@@ -565,7 +565,7 @@
       },
       hide: function () { this.element.dataset.danceMovesLyricState = "idle"; }
     };
-    document.dispatchEvent(new CustomEvent("dance-moves-lyric-ready", { detail: { element: container } }));
+    document.dispatchEvent(new CustomEvent("dance-moves-lyric-ready", { bubbles: true, detail: { element: container } }));
     return lyricRenderer;
   }
 

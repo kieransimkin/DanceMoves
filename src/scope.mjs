@@ -87,10 +87,13 @@ export function createScope(root, config, {legacyGlobals = false, nonce, orienta
       if (property === 'defaultView') return window;
       // Scoped adoption writes computed timings inside this root, never shared stylesheet rules.
       if (property === 'styleSheets' && !legacyGlobals) return [];
-      if (property === 'querySelectorAll') return queryAll;
-      if (property === 'querySelector') return selector => queryAll(selector)[0] || null;
+      // WordPress compatibility mode deliberately retains document-wide lookup.
+      // The legacy lyric popover is mounted under body, outside the EPK root.
+      if (property === 'querySelectorAll') return legacyGlobals ? target.querySelectorAll.bind(target) : queryAll;
+      if (property === 'querySelector') return legacyGlobals ? target.querySelector.bind(target) : selector => queryAll(selector)[0] || null;
       if (property === 'getElementById') return wanted => {
         if (disposed) return null;
+        if (legacyGlobals) return target.getElementById(wanted);
         if (root.id === wanted) return root;
         return Array.from(root.querySelectorAll('[id]')).find(node => node.id === wanted)
           || [...created].find(node => node.id === wanted) || null;

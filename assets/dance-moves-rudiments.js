@@ -15,7 +15,7 @@
   let frame = 0, serial = 0, styleElement = null, removalObserver = null, pageHidden = false;
 
   function emit(name, detail) {
-    document.dispatchEvent(new window.CustomEvent(name, { detail }));
+    document.dispatchEvent(new window.CustomEvent(name, { bubbles: true, detail }));
   }
   function number(value, label) {
     if (typeof value !== 'number' || !Number.isFinite(value)) throw new TypeError(label + ' must be a finite number');

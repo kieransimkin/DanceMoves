@@ -24,7 +24,7 @@ if ($LASTEXITCODE -ne 0) { throw "WordPress build failed" }
 ```
 
 The build machine needs Node, npm and Python. The WordPress server needs neither
-Node, npm, a C++ compiler nor an external CDN. Install `dist/DanceMoves-wordpress-3.0.4.zip`
+Node, npm, a C++ compiler nor an external CDN. Install `dist/DanceMoves-wordpress-3.0.5.zip`
 through Plugins → Add New → Upload Plugin, preserving a backup and the prior
 working archive. Do not upload the npm tarball, web ZIP, repository source ZIP
 or a downloaded patch bundle.
@@ -70,6 +70,11 @@ The 3.0.4 WordPress adapter also exposes `DanceMovesEffects.lyricStage()`. It is
 the compatibility path for existing three-line lyric treatments: the plugin owns
 the LRC/audio clock and all lifecycle listeners while page code owns only the
 release-scoped render callbacks and CSS.
+
+From 3.0.5, public `dance-moves-*-ready` events bubble for compatibility with
+document-level page adapters. WordPress compatibility mode also keeps native
+document-wide selectors, allowing the body-level lyric popover to be found from
+the scoped runtime. Root-scoped module and React mounts remain isolated.
 
 ```php
 add_action('wp_enqueue_scripts', function () {

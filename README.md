@@ -3,9 +3,11 @@
 **DanceFlow musical motion by Kieran Simkin.** One JavaScript runtime for plain
 websites, React, Next.js and the separately packaged WordPress adapter.
 
-**3.0.4 release candidate** based on the published 3.0.3 shared-library release.
-It adds the shared three-slot lyric stage used by existing WordPress EPKs without
-restoring the duplicate raw-script layout removed in 3.0.
+**3.0.5 release candidate** based on the published 3.0.4 shared-library release.
+It preserves the shared three-slot lyric stage used by existing WordPress EPKs
+without restoring the duplicate raw-script layout removed in 3.0. Public ready
+events now bubble, and WordPress compatibility mode can find the body-level
+lyric popover while ordinary module and React mounts stay scoped.
 
 ## Shared JavaScript library and WordPress
 
@@ -881,6 +883,7 @@ shell errors or resolved development incidents.
 | Cues or lyrics do not appear | Verify the selected UTF-8 timing attachment, bracketed timestamps, successful fetch and master-duration match. Call `discoverAudio()` for deliberately inserted players. A final status of `none` can mask a fetch failure: inspect the request and entry counts. | [Audio discovery](docs/api/javascript.md#audio-discovery-and-playback) |
 | A chapter landing or resumed section has the wrong visual state | Core LRC subscriptions arm one cue within 50 ms. Shared timelines instead reconstruct active intervals and default to no landing callbacks; use their render state for persistent section styling. Do not replay skipped transient cues to restore a section. | [Cue timelines](docs/api/effects.md#cuetimelineoptions) |
 | Custom lyric styling fails, or remains visible on pause | The generated layer is a direct child of `body`, not `.ks-epk`. Use `nextVisible*` only for a nonblank preview; preserve blank clear cues. Custom renderers must handle pause/end separately. | [Lyric styling](docs/api/styling.md), [lyric events](docs/api/javascript.md) |
+| A document-level adapter never mounts, or `lyricStage()` stays `waiting-for-popover` while the popover exists | Versions before 3.0.5 could keep scoped readiness events from document listeners and could confine WordPress compatibility lookups to the EPK root even though the lyric popover is under `body`. Use 3.0.5 or later; verify a bubbling `dance-moves-*-ready` event, native document lookup in WordPress mode, three generated lyric lines and the adapter-specific ready marker. | [Shared effects loading](docs/api/effects.md#loading-and-ready-event) |
 | Phone motion is absent | Check the adapter's root, mobile/sensor/secure-context gates, user permission and reduced-motion state. Verify real sensor events on the intended device; a synthetic event is not physical-device evidence. | [Orientation runtime](docs/api/adapters.md) |
 | Paper planes are absent or obscure the hero | Save Ambient effect = Paper planes, provide `.ks-epk .epk-hero`, verify the atlas request and hero containment/stacking. Reduced-motion and forced-colour CSS intentionally hide decoration; offscreen/hidden state pauses flight. | [Paper-plane requirements](docs/api/paper-planes.md) |
 | Animation slows down or quality appears stuck | Measure the full visible page after load, inspect the active controller's snapshot and remove duplicate effect owners. Shared `quality()` and Clay/Stars use different thresholds and recovery rules; neither is a physical refresh-rate detector. | [Shared quality](docs/api/effects.md#qualityoptions), [Clay/Stars](docs/api/adapters.md) |

@@ -3,7 +3,7 @@
 [Documentation index](../README.md) · [JavaScript](javascript.md) ·
 [Adapters](adapters.md)
 
-Current shared-library baseline: DanceMoves 3.0.4.
+Current shared-library baseline: DanceMoves 3.0.5.
 Sources: [core JavaScript](../../assets/dance-moves-core.js),
 [core stylesheet](../../assets/dance-moves-core.css),
 [catalogue adopter](../../assets/dance-moves-catalogue-timing.js),
