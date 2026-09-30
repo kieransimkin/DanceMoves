@@ -4,7 +4,7 @@ const KEYS = Object.freeze(['_dance_moves_bpm','_dance_moves_lyric_timing_id','_
 function validBpm(v) { return v !== '' && v !== null && Number.isFinite(Number(v)) && Number(v) >= 20 && Number(v) <= 400; }
 function config(feature, meta) {
   const explicit = validBpm(meta._dance_moves_bpm);
-  return { pageId: feature.pageId, version: '3.0.0', bpm: explicit ? Number(meta._dance_moves_bpm) : 120,
+  return { pageId: feature.pageId, version: '3.0.1', bpm: explicit ? Number(meta._dance_moves_bpm) : 120,
     bpmSource: explicit ? 'explicit' : 'fallback', fallbackBpm: 120,
     lyricTimingUrl: meta._dance_moves_lyric_timing_id === 9001 ? '/examples/wordpress/media/canonical-lyric-timing.lrc' : '',
     cueTimingUrl: meta._dance_moves_cue_timing_id === 9002 ? '/examples/wordpress/media/sections.cue' : '',

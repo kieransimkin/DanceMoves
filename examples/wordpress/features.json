@@ -1,6 +1,6 @@
 {
   "schema": "dance-moves-examples/v1",
-  "pluginVersion": "3.0.0",
+  "pluginVersion": "3.0.1",
   "pluginCommit": "c4252556774f38cad6d75b1a52de7917d2c65af0",
   "media": "media/manifest.json",
   "features": [
@@ -9,7 +9,7 @@
       "title": "Arcadians: ancient to future",
       "kind": "Real-page-inspired",
       "summary": "Pointer, four-beat playback pulse, quality tiers and a ten-section journey.",
-      "instructions": "Follow the live Arcadians page\u2019s structure; this is a teaching adaptation, not a saved production page.",
+      "instructions": "Follow the live Arcadians page’s structure; this is a teaching adaptation, not a saved production page.",
       "pageId": 260,
       "meta": {
         "_dance_moves_bpm": 145,
@@ -89,7 +89,7 @@
       "title": "Named cues, events and animation ownership",
       "kind": "Supplementary",
       "summary": "File parsers, normalised names, manual cues, exact seek landings and owned animation resets.",
-      "instructions": "Seek to Drop 1 while paused, then play. Compare owned animation with the theme\u2019s unowned spinner.",
+      "instructions": "Seek to Drop 1 while paused, then play. Compare owned animation with the theme’s unowned spinner.",
       "pageId": 9104,
       "meta": {
         "_dance_moves_bpm": 145,
