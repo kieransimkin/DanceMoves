@@ -3,11 +3,11 @@
 **DanceFlow musical motion by Kieran Simkin.** One JavaScript runtime for plain
 websites, React, Next.js and the separately packaged WordPress adapter.
 
-**3.1.1 release candidate.** It updates the rudiment build to the official
-DanceRudiments 0.2.0 API while compiling only DanceMoves' reviewed 15-movement
-selection. Rudiment API 1.1.0 remains page-agnostic: consumers own their
-selectors, choreography and lifecycle configuration, while bubbling readiness
-events, the shared lyric stage and scoped module/React mounts remain compatible.
+**3.1.2 release candidate.** It adds the page-agnostic `cooperativeArena()`
+effect for bounded decorative ship-and-hazard simulations. Release pages still
+own sprites, styling and density while DanceMoves owns avoidance, firing,
+collisions and lifecycle controls. The official DanceRudiments 0.2.0 build and
+its reviewed 15-movement selection remain unchanged.
 
 ## Shared JavaScript library and WordPress
 
@@ -887,6 +887,7 @@ shell errors or resolved development incidents.
 | A document-level adapter never mounts, or `lyricStage()` stays `waiting-for-popover` while the popover exists | Versions before 3.0.5 could keep scoped readiness events from document listeners and could confine WordPress compatibility lookups to the EPK root even though the lyric popover is under `body`. Use 3.0.5 or later; verify a bubbling `dance-moves-*-ready` event, native document lookup in WordPress mode, three generated lyric lines and the adapter-specific ready marker. | [Shared effects loading](docs/api/effects.md#loading-and-ready-event) |
 | Phone motion is absent | Check the adapter's root, mobile/sensor/secure-context gates, user permission and reduced-motion state. Verify real sensor events on the intended device; a synthetic event is not physical-device evidence. | [Orientation runtime](docs/api/adapters.md) |
 | Paper planes are absent or obscure the hero | Save Ambient effect = Paper planes, provide `.ks-epk .epk-hero`, verify the atlas request and hero containment/stacking. Reduced-motion and forced-colour CSS intentionally hide decoration; offscreen/hidden state pauses flight. | [Paper-plane requirements](docs/api/paper-planes.md) |
+| A cooperative arena is absent, stops, or overlaps readable content | Verify non-empty sprite arrays, a measured bounded stage, the controller snapshot, intersection/visibility state and quality tier. Reduced-motion and forced-colour preferences intentionally pause it. Stacking, opacity and sprite sizing belong to the release page, which must keep the arena behind content. | [Cooperative arena](docs/api/effects.md#cooperativearenaoptions) |
 | Animation slows down or quality appears stuck | Measure the full visible page after load, inspect the active controller's snapshot and remove duplicate effect owners. Shared `quality()` and Clay/Stars use different thresholds and recovery rules; neither is a physical refresh-rate detector. | [Shared quality](docs/api/effects.md#qualityoptions), [Clay/Stars](docs/api/adapters.md) |
 | An MP3 opens inline or its download returns 404 | Rewriting requires an explicit `<a download>` processed through main Page content and a supported local uploads URL. Check the signature and readable local MP3. Keep direct `<audio>`/`<source>` responses inline; do not force attachment headers site-wide. | [Download endpoint](docs/api/downloads.md) |
 | Validation fails in a fresh checkout | Use the documented Unit coordinator and check the named missing fixture or hash mismatch. Build required previews from approved canonical inputs; do not weaken a failing assertion or treat a missing browser/device run as a pass. | [Development prerequisites and gates](docs/development.md) |

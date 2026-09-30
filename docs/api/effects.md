@@ -4,13 +4,13 @@
 [Release adapters](adapters.md) · [CSS/HTML](styling.md)
 
 Source: [assets/dance-moves-effects.js](../../assets/dance-moves-effects.js).
-Current shared-library baseline: **3.1.1**. Historical 2.7/2.8 notes below
+Current shared-library baseline: **3.1.2**. Historical 2.7/2.8 notes below
 identify when the earlier primitives were introduced.
 
 This is the reusable, page-independent layer introduced in 2.7 and extended with
 `cueTimeline()` in 2.8 and `lyricStage()` in 3.0.4. It supplies mechanisms rather than artwork. It does not
 replace the core's LRC parser, audio discovery, named cue subscriptions or clock.
-It contains six factories and four registry methods. Every factory returns a
+It contains seven factories and four registry methods. Every factory returns a
 frozen handle with `id`, `type`, `snapshot()` and `teardown()` plus the methods
 specified below. The returned object is frozen; its internal state is mutable.
 
@@ -79,6 +79,24 @@ and most instance methods do not have a destroyed guard. Dispose old references.
 Teardown cancels the factory's own timers/frames/listeners but is not a general
 DOM rollback. CSS variables, state attributes, and page-owned callback changes
 can remain. There is no automatic root-removal observer for these primitives.
+
+## cooperativeArena(options)
+
+Returns `{ id, type: "cooperative-arena", setEnabled, snapshot, teardown }`.
+This page-independent decorative simulation coordinates two to six autonomous
+ships against three to twenty-four hazards. The release supplies sprite URLs,
+CSS and a bounded stage; the shared primitive owns movement, avoidance,
+beat-spaced firing, projectile collisions, recycling and lifecycle control.
+Hazards enter from the top, left and right edges. It pauses while off-screen,
+hidden, manually disabled, reduced-motion is requested, or forced colours are
+active. Generated nodes are decorative and removed on teardown.
+
+The factory never supplies release names, colours or artwork. Consumers style
+`.dance-moves-arena__ship`, `.dance-moves-arena__hazard` and
+`.dance-moves-arena__shot` through the position variables
+`--dance-moves-arena-x`, `--dance-moves-arena-y` and
+`--dance-moves-arena-angle`. Keep the stage behind readable content and avoid
+whole-frame flashing or colour modulation.
 
 ## pointer(options)
 

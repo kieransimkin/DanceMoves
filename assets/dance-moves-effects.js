@@ -420,6 +420,108 @@
     }));
   }
 
+  function cooperativeArena(options) {
+    options = options || {};
+    var state = commonState(options, "cooperative-arena");
+    var stage = element(options.stage, state.root);
+    if (!stage) throw new Error("DanceMovesEffects cooperativeArena requires a stage element");
+    var shipSources = Array.isArray(options.shipSources) ? options.shipSources.filter(Boolean).map(String) : [];
+    var hazardSources = Array.isArray(options.hazardSources) ? options.hazardSources.filter(Boolean).map(String) : [];
+    if (!shipSources.length || !hazardSources.length) throw new Error("DanceMovesEffects cooperativeArena requires ship and hazard sources");
+    var shipCount = clamp(Math.round(finite(options.shipCount, 3)), 2, 6);
+    var hazardCount = clamp(Math.round(finite(options.hazardCount, 8)), 3, 24);
+    var speed = clamp(finite(options.speed, 1), .35, 2.4);
+    var bpm = Math.max(1, finite(options.bpm, motion.bpm || 120));
+    var removers = state.removers, ships = [], hazards = [], shots = [];
+    var width = 1, height = 1, frame = 0, last = 0, elapsed = 0, nextShot = 0, hits = 0;
+    var visible = true, enabled = options.enabled !== false, running = false;
+    function image(className, source, label) {
+      var node = document.createElement("img");
+      node.className = className; node.src = source; node.alt = ""; node.setAttribute("aria-hidden", "true");
+      node.draggable = false; node.dataset.danceMovesArenaRole = label; stage.appendChild(node); return node;
+    }
+    function place(node, x, y, angle) {
+      node.style.setProperty("--dance-moves-arena-x", x.toFixed(2) + "px");
+      node.style.setProperty("--dance-moves-arena-y", y.toFixed(2) + "px");
+      node.style.setProperty("--dance-moves-arena-angle", angle.toFixed(2) + "deg");
+    }
+    function measure() { var rect = stage.getBoundingClientRect(); width = Math.max(1, rect.width); height = Math.max(1, rect.height); }
+    function resetHazard(item, index, initial) {
+      var edge = (index + Math.floor(elapsed / 6)) % 3;
+      var lane = ((index * 37 + 17) % 91) / 91;
+      if (initial) { item.x = width * ((index * 29 + 11) % 89) / 89; item.y = height * ((index * 43 + 7) % 83) / 83; }
+      else if (edge === 0) { item.x = width * lane; item.y = -48; }
+      else if (edge === 1) { item.x = -48; item.y = height * lane; }
+      else { item.x = width + 48; item.y = height * lane; }
+      var targetX = width * (.22 + .56 * (((index * 19 + 5) % 79) / 79));
+      var targetY = height * (.18 + .64 * (((index * 23 + 9) % 73) / 73));
+      var length = Math.max(1, Math.hypot(targetX - item.x, targetY - item.y));
+      var velocity = (18 + (index % 5) * 4) * speed;
+      item.vx = (targetX - item.x) / length * velocity; item.vy = (targetY - item.y) / length * velocity;
+      item.spin = (index % 2 ? -1 : 1) * (8 + index % 7); item.angle = index * 31 % 360;
+    }
+    function makeShip(index) {
+      var item = { node: image("dance-moves-arena__ship", shipSources[index % shipSources.length], "ship"), x: width * (.2 + .6 * (index + 1) / (shipCount + 1)), y: height * (.64 + .08 * (index % 2)), vx: 0, vy: 0, angle: 0, index: index };
+      ships.push(item); place(item.node, item.x, item.y, item.angle);
+    }
+    function makeHazard(index) {
+      var item = { node: image("dance-moves-arena__hazard", hazardSources[index % hazardSources.length], "hazard"), index: index, x: 0, y: 0, vx: 0, vy: 0, angle: 0, spin: 0 };
+      hazards.push(item); resetHazard(item, index, true); place(item.node, item.x, item.y, item.angle);
+    }
+    function fire(ship) {
+      var node = document.createElement("i"); node.className = "dance-moves-arena__shot"; node.setAttribute("aria-hidden", "true"); stage.appendChild(node);
+      shots.push({ node: node, x: ship.x, y: ship.y - 18, vx: Math.sin(ship.angle * Math.PI / 180) * 28, vy: -180 * speed, life: 2.4 });
+    }
+    function removeShot(index) { var item = shots[index]; if (item.node.parentNode) item.node.parentNode.removeChild(item.node); shots.splice(index, 1); }
+    function blocked() { return !enabled || document.hidden || !visible || state.reduced.matches || state.forced.matches; }
+    function reconcile(reason) {
+      running = !blocked(); stage.dataset.danceMovesArena = running ? "running" : "paused"; stage.dataset.danceMovesArenaReason = reason || "reconcile";
+      if (running && !frame) { last = performance.now(); frame = window.requestAnimationFrame(tick); }
+      if (!running && frame) { window.cancelAnimationFrame(frame); frame = 0; }
+    }
+    function tick(now) {
+      frame = 0; if (!running) return;
+      var dt = clamp((now - last) / 1000, 0, .05); last = now; elapsed += dt;
+      hazards.forEach(function (hazard) {
+        hazard.x += hazard.vx * dt; hazard.y += hazard.vy * dt; hazard.angle += hazard.spin * dt;
+        if (hazard.x < -80 || hazard.x > width + 80 || hazard.y < -80 || hazard.y > height + 80) resetHazard(hazard, hazard.index, false);
+        place(hazard.node, hazard.x, hazard.y, hazard.angle);
+      });
+      ships.forEach(function (ship) {
+        var targetX = width * (.16 + .68 * (.5 + .5 * Math.sin(elapsed * (.29 + ship.index * .03) + ship.index * 2.1)));
+        var targetY = height * (.58 + .18 * (.5 + .5 * Math.cos(elapsed * (.23 + ship.index * .02) + ship.index)));
+        var ax = (targetX - ship.x) * .34, ay = (targetY - ship.y) * .34;
+        hazards.forEach(function (hazard) { var dx = ship.x - hazard.x, dy = ship.y - hazard.y, distance = Math.max(18, Math.hypot(dx, dy)); if (distance < 150) { ax += dx / distance * (150 - distance) * 2.2; ay += dy / distance * (150 - distance) * 2.2; } });
+        ships.forEach(function (other) { if (other === ship) return; var dx = ship.x - other.x, dy = ship.y - other.y, distance = Math.max(12, Math.hypot(dx, dy)); if (distance < 88) { ax += dx / distance * (88 - distance); ay += dy / distance * (88 - distance); } });
+        ship.vx = clamp((ship.vx + ax * dt) * .985, -96, 96); ship.vy = clamp((ship.vy + ay * dt) * .985, -72, 72);
+        ship.x = clamp(ship.x + ship.vx * dt, 30, width - 30); ship.y = clamp(ship.y + ship.vy * dt, height * .4, height - 34);
+        ship.angle = clamp(ship.vx * .32, -28, 28); place(ship.node, ship.x, ship.y, ship.angle);
+      });
+      if (elapsed >= nextShot) { fire(ships[Math.floor(elapsed * 1.7) % ships.length]); nextShot = elapsed + 120 / bpm; }
+      for (var shotIndex = shots.length - 1; shotIndex >= 0; shotIndex -= 1) {
+        var shot = shots[shotIndex]; shot.x += shot.vx * dt; shot.y += shot.vy * dt; shot.life -= dt; place(shot.node, shot.x, shot.y, 0);
+        var struck = false;
+        for (var hazardIndex = 0; hazardIndex < hazards.length; hazardIndex += 1) { var hazard = hazards[hazardIndex]; if (Math.hypot(shot.x - hazard.x, shot.y - hazard.y) < 34) { hits += 1; resetHazard(hazard, hazard.index + hits, false); struck = true; break; } }
+        if (struck || shot.life <= 0 || shot.y < -40) removeShot(shotIndex);
+      }
+      if (typeof options.render === "function") options.render({ root: state.root, stage: stage, ships: ships, hazards: hazards, shots: shots, hits: hits });
+      frame = window.requestAnimationFrame(tick);
+    }
+    measure(); for (var shipIndex = 0; shipIndex < shipCount; shipIndex += 1) makeShip(shipIndex); for (var hazardIndex = 0; hazardIndex < hazardCount; hazardIndex += 1) makeHazard(hazardIndex);
+    var resizeObserver = "ResizeObserver" in window ? new ResizeObserver(measure) : null; if (resizeObserver) resizeObserver.observe(stage);
+    var intersectionObserver = "IntersectionObserver" in window ? new IntersectionObserver(function (entries) { visible = Boolean(entries[0] && entries[0].isIntersecting); reconcile("intersection"); }, { rootMargin: "160px" }) : null;
+    if (intersectionObserver) intersectionObserver.observe(stage);
+    listen(document, "visibilitychange", function () { reconcile(document.hidden ? "hidden" : "visible"); }, { passive: true }, removers);
+    listen(state.reduced, "change", function () { reconcile(state.reduced.matches ? "reduced-motion" : "motion-restored"); }, undefined, removers);
+    listen(state.forced, "change", function () { reconcile(state.forced.matches ? "forced-colours" : "colours-restored"); }, undefined, removers);
+    reconcile("initial");
+    return register(state.id, Object.freeze({
+      id: state.id, type: "cooperative-arena", setEnabled: function (value, reason) { enabled = Boolean(value); reconcile(reason || "manual"); },
+      snapshot: function () { return { id: state.id, type: "cooperative-arena", running: running, enabled: enabled, ships: ships.length, hazards: hazards.length, shots: shots.length, hits: hits }; },
+      teardown: function () { running = false; if (frame) window.cancelAnimationFrame(frame); if (resizeObserver) resizeObserver.disconnect(); if (intersectionObserver) intersectionObserver.disconnect(); removers.splice(0).forEach(function (remove) { remove(); }); shots.concat(ships, hazards).forEach(function (item) { if (item.node.parentNode) item.node.parentNode.removeChild(item.node); }); instances.delete(state.id); }
+    }));
+  }
+
   function quality(options) {
     options = options || {};
     var state = commonState(options, "quality");
@@ -482,7 +584,7 @@
   }
 
   window.DanceMovesEffects = Object.freeze({
-    version: String(motion.version || ""), pointer: pointer, playbackPulse: playbackPulse, cueClass: cueClass, cueTimeline: cueTimeline, lyricStage: lyricStage, quality: quality,
+    version: String(motion.version || ""), pointer: pointer, playbackPulse: playbackPulse, cueClass: cueClass, cueTimeline: cueTimeline, lyricStage: lyricStage, cooperativeArena: cooperativeArena, quality: quality,
     get: function (id) { return instances.get(String(id)) || null; },
     snapshot: function () { return Array.from(instances.values()).map(function (instance) { return instance.snapshot(); }); },
     teardown: function (id) { var instance = instances.get(String(id)); if (instance) instance.teardown(); },

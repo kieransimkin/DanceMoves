@@ -9,7 +9,7 @@ const js = fs.readFileSync(path.join(root, 'assets', 'dance-moves-effects.js'), 
 const php = fs.readFileSync(path.join(root, 'kieran-epk-device-orientation.php'), 'utf8');
 
 new vm.Script(js, { filename: 'dance-moves-effects.js' });
-for (const primitive of ['pointer', 'playbackPulse', 'cueClass', 'cueTimeline', 'lyricStage', 'quality']) {
+for (const primitive of ['pointer', 'playbackPulse', 'cueClass', 'cueTimeline', 'lyricStage', 'cooperativeArena', 'quality']) {
   assert.match(js, new RegExp('(?:function ' + primitive + '\\b|' + primitive + ': ' + primitive + '\\b)'));
 }
 assert.match(js, /dance-moves-effects-ready/);

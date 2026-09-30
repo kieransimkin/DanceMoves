@@ -22,6 +22,7 @@ export interface PointerController extends Controller {set(x:number,y:number,rea
 export interface QualityController extends Controller {setTier(index:number,reason?:string):void}
 export interface CueTimelineController extends Controller {restore(reason?:string):void;start(reason?:string):void;stop(reason?:string):void}
 export interface LyricStageController extends Controller {restore(reason?:string):void}
+export interface CooperativeArenaController extends Controller {setEnabled(value:boolean,reason?:string):void}
 export interface LyricStageSlots {previous:HTMLElement;current:HTMLElement;next:HTMLElement;viewport:HTMLElement;track:HTMLElement}
 export interface LyricStageState {root:Element;popover:HTMLElement;audio:HTMLAudioElement;slots:LyricStageSlots;detail?:Lyric|null;phase?:string;progress?:number;reason?:string;playing?:boolean;reducedMotion:boolean;forcedColours:boolean;[field:string]:unknown}
 export type LyricStageCleanup = void | (()=>void) | {durationTicks?:number;cleanup?:()=>void};
@@ -32,6 +33,7 @@ export interface Effects {
  cueClass(options:EffectOptions & {cue?:string;className?:string;durationTicks?:number;render?:(state:Record<string,unknown>)=>void}):Controller & {fire(cue?:Cue):void;clear(reason?:string):void};
  cueTimeline(options:EffectOptions & {audio?:HTMLAudioElement|string;cues:Array<{id?:string;time:number;end?:number;[key:string]:unknown}>;onCue?:(event:Record<string,unknown>)=>void;render?:(state:Record<string,unknown>)=>void}):CueTimelineController;
  lyricStage(options:EffectOptions & {audio?:HTMLAudioElement|string;popover?:HTMLElement|string;travelTicks?:number;cueDurationTicks?:number;render?:(state:LyricStageState)=>void;renderLyric?:(state:LyricStageState & {previousDetail?:Lyric|null;previousText?:string})=>LyricStageCleanup;renderCue?:(state:LyricStageState & {detail:Cue;count:number})=>LyricStageCleanup}):LyricStageController|Controller;
+ cooperativeArena(options:EffectOptions & {stage?:HTMLElement|string;shipSources:string[];hazardSources:string[];shipCount?:number;hazardCount?:number;speed?:number;bpm?:number;enabled?:boolean;render?:(state:Record<string,unknown>)=>void}):CooperativeArenaController;
  quality(options:EffectOptions & {tiers?:string[];render?:(state:{tier:string;index:number;reason:string;sample?:{fps:number}})=>void;[key:string]:unknown}):QualityController;
  get(id:string):Controller|null;snapshot():Record<string,unknown>[];teardown(id:string):void;teardownAll():void;
 }
