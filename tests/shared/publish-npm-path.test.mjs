@@ -37,7 +37,9 @@ async function execute(options = {}) {
     },
     fetch: async (url) => {
       requests.push(url);
-      assert.equal(url, 'https://registry.npmjs.org/%40kieransimkin%2Fdancemoves/' + version);
+      const base = 'https://registry.npmjs.org/%40kieransimkin%2Fdancemoves/' + version;
+      assert.equal(url.split('?')[0], base);
+      if (url !== base) assert.match(url, /\?verify=\d+$/);
       assert.ok(responses.length, 'unexpected extra registry request');
       const response = responses.shift();
       return typeof response === 'number'
@@ -64,6 +66,21 @@ test('publisher uses the explicit local tarball and preserves publication flags'
   assert.deepEqual(result.calls[0].args, ['publish', './release-output/DanceMoves-npm-3.0.0.tgz',
     '--access', 'public', '--provenance', '--ignore-scripts', '--tag', 'latest']);
   assert.equal(result.requests.length, 2);
+});
+
+test('publisher tolerates npm registry propagation after a successful publish', async () => {
+  const result = await execute({responses: [404, 404, 404, published]});
+  assert.ifError(result.error);
+  assert.equal(result.calls.length, 1);
+  assert.equal(result.requests.length, 4);
+  assert.match(result.requests.at(-1), /\?verify=3$/);
+});
+
+test('publisher gives registry propagation about three minutes before failing', async () => {
+  const result = await execute({responses: Array(37).fill(404)});
+  assert.match(result.error?.message ?? '', /within about three minutes/);
+  assert.equal(result.calls.length, 1);
+  assert.equal(result.requests.length, 37);
 });
 
 test('Windows invocation still supplies a local tarball', async () => {
