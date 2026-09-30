@@ -2,50 +2,45 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DanceMoves native rudiment integration fixture</title>
 <style>
-:root { --dance-moves-128t: 5333.333333ms; color-scheme: dark; font: 17px/1.6 system-ui,sans-serif; }
+:root { color-scheme: dark; font: 17px/1.6 system-ui,sans-serif; }
 body { margin: 0; padding: 32px; background: #16191e; color: #f0eadf; }
-main { max-width: 760px; margin: auto; }
-.ks-clay-stars-v2 { --ks-master-intensity: 2; position: relative; }
+main { max-width: 760px; margin: auto; position: relative; }
 .epk-hero { height: 280px; border: 1px solid #9c8b60; position: relative; isolation: isolate; overflow: hidden; border-radius: 16px; }
-.epk-atmosphere { position: absolute; inset: 0; pointer-events: none; }
-.epk-atmosphere::after { content: ''; position: absolute; inset: -20px; background: radial-gradient(circle at 30% 40%, #c8b678 0 2px, transparent 3px), radial-gradient(circle at 70% 65%, #9fbdc6 0 1px, transparent 2px); background-size: 89px 73px, 101px 103px; animation: ks-particle-dance var(--dance-moves-128t) linear infinite; transform-origin: 50% 45%; }
-@keyframes ks-particle-dance { from { transform: translate3d(-14px,9px,0); } to { transform: translate3d(14px,-9px,0); } }
-.ks-clay-stars-v2:not([data-dance-moves-performance="full"]) .epk-atmosphere::after { animation:none!important; transform:none!important; opacity:.84; }
-@media (prefers-reduced-motion:reduce) { .epk-atmosphere::after { animation:none!important;transform:none!important; } }
+.motion-target { position: absolute; inset: -20px; pointer-events: none; translate: var(--fixture-rudiment-x,0px) var(--fixture-rudiment-y,0px); background: radial-gradient(circle at 30% 40%, #c8b678 0 2px, transparent 3px), radial-gradient(circle at 70% 65%, #9fbdc6 0 1px, transparent 2px); background-size: 89px 73px, 101px 103px; }
+@media (prefers-reduced-motion:reduce) { .motion-target { translate:none!important; } }
 .epk-heading { position: relative; z-index: 3; padding: 30px; text-shadow: 1px 2px 8px #000; }
 h1 { font-size: 28px; line-height: 1.2; } button { margin: 12px 8px 12px 0; padding: 10px 16px; } audio { width:100%; margin-top:16px; } code { color:#daca9a; }
 </style>
-<link rel="stylesheet" href="../assets/clay-stars-rudiments.css">
 </head><body>
-<main class="ks-epk ks-clay-stars-v2" data-dance-moves-performance="full" data-dance-moves-clay-runtime="ready">
+<main class="ks-epk rudiment-fixture">
 <p>DanceMoves · DanceRudiments API / WebAssembly</p>
-<div class="epk-hero"><div class="epk-atmosphere" aria-hidden="true"></div><div class="epk-heading"><h1>One rhythm. One musical clock.</h1><p><code>clay_background</code> · 90 BPM · eight-beat cycle</p></div></div>
+<div class="epk-hero"><div class="motion-target" aria-hidden="true"></div><div class="epk-heading"><h1>One rhythm. One musical clock.</h1><p><code>clay_background</code> · 90 BPM · eight-beat cycle</p></div></div>
 <audio controls muted preload="auto"></audio>
-<button id="accent">Seek to native pip 100</button><button id="quality">Toggle constrained quality</button>
-<p>Deterministic integration fixture with silent test audio. This is not a capture of the live Clay page or its artwork.</p>
+<button id="accent">Seek to native pip 100</button><button id="enabled">Toggle enabled state</button>
+<p>Deterministic consumer-owned integration fixture with silent test audio. It contains no EPK adapter or release artwork.</p>
 </main>
 <script>
-// Minimal, explicitly labelled test doubles for the pre-existing core/Clay APIs.
-// The native backend, new public API and new Clay adapter below are production code.
 const root = document.querySelector('main');
 const audio = document.querySelector('audio');
 const started = performance.now();
 const cueHandlers = new Set();
-window.DanceMoves = { bpm:90, version:'2.8.0', currentTick: () => (performance.now()-started)*90*16/60000,
+window.DanceMoves = { bpm:90, version:'3.1.1', currentTick: () => (performance.now()-started)*90*16/60000,
   onCue: (name, fn) => { cueHandlers.add(fn); return () => cueHandlers.delete(fn); } };
-window.DanceMovesClayStars = { root, snapshot: () => ({ destroyed:root.dataset.danceMovesClayRuntime==='stopped', settings:{enabled:true}, performance:{profile:root.dataset.danceMovesPerformance} }) };
 window.fireTestCue = () => cueHandlers.forEach(fn => fn({audio}));
 // Twelve seconds of silent mono PCM. No remote audio or release assets are used.
 const samples = 12 * 8000, bytes = new Uint8Array(44 + samples * 2), v = new DataView(bytes.buffer);
 function word(at, str) { for (let i=0;i<str.length;i++) bytes[at+i]=str.charCodeAt(i); }
 word(0,'RIFF');v.setUint32(4,36+samples*2,true);word(8,'WAVE');word(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,8000,true);v.setUint32(28,16000,true);v.setUint16(32,2,true);v.setUint16(34,16,true);word(36,'data');v.setUint32(40,samples*2,true);
 audio.src=URL.createObjectURL(new Blob([bytes],{type:'audio/wav'}));
-document.querySelector('#accent').onclick=()=>{audio.currentTime=100/48;};
-document.querySelector('#quality').onclick=()=>{root.dataset.danceMovesPerformance=root.dataset.danceMovesPerformance==='full'?'constrained':'full';};
+document.querySelector('#accent').onclick=()=>{audio.currentTime=100.5/48;};
 window.inlineStyleMutations=0;
 new MutationObserver(rows=>{window.inlineStyleMutations+=rows.length;}).observe(root,{subtree:true,attributes:true,attributeFilter:['style']});
 </script>
 <script src="../assets/vendor/dancerudiments/dancerudiments-native.js"></script>
 <script src="../assets/dance-moves-rudiments.js"></script>
-<script src="../assets/clay-stars-rudiments.js"></script>
+<script>
+const target=document.querySelector('.motion-target');
+window.fixtureRudiment=DanceMovesRudiments.animate({id:'fixture:background',root,target,rudiment:'clay_background',clock:'auto',audio,rate:.5,amplitude:{x:14,y:10,z:0},cssPrefix:'--fixture-rudiment',resetOnCue:true});
+document.querySelector('#enabled').onclick=()=>{const enabled=fixtureRudiment.snapshot().enabled;fixtureRudiment.setEnabled(!enabled);};
+</script>
 </body></html>

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Real browser / real WASM fixture test, NOT a live WordPress or physical-device test."""
+"""Real browser / real WASM generic API test, not a live WordPress or physical-device test."""
 from __future__ import annotations
 import argparse
 from functools import partial
@@ -15,7 +15,6 @@ ROOT = Path(__file__).resolve().parents[1]
 class QuietHandler(http.server.SimpleHTTPRequestHandler):
     def log_message(self, *args):
         pass
-
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -36,75 +35,68 @@ def main():
             page.on('pageerror', lambda error: errors.append(str(error)))
             url = f'http://127.0.0.1:{server.server_port}/tests/rudiments-browser.html'
             page.goto(url)
-            page.wait_for_function("window.DanceMovesClayRudiment?.snapshot().status === 'active'")
+            page.wait_for_function("window.fixtureRudiment?.snapshot().loaded === true")
             page.wait_for_function("document.querySelector('audio').readyState >= 1")
             page.wait_for_timeout(120)
-            state = page.evaluate("DanceMovesClayRudiment.snapshot()")
-            assert state['controller']['status'] == 'running', state
-            results.append('native ambient loop mounted in real Chromium')
-            pseudo = page.evaluate("({name:getComputedStyle(document.querySelector('.epk-atmosphere'),'::after').animationName,translate:getComputedStyle(document.querySelector('.epk-atmosphere'),'::after').translate})")
-            assert pseudo['name'] == 'ks-clay-rudiment-treatment', pseudo
-            assert pseudo['translate'] != 'none', pseudo
-            results.append('legacy translation replaced once; native CSS translate reaches pseudo-element')
+            state = page.evaluate("fixtureRudiment.snapshot()")
+            assert state['status'] == 'running', state
+            api = page.evaluate("DanceMovesRudiments.snapshot()")
+            assert api['upstreamVersion'] == '0.2.0' and api['sourceCatalogueCount'] == 1731, api
+            results.append('generic API mounted one selected native rudiment in real Chromium')
+            translate = page.evaluate("getComputedStyle(document.querySelector('.motion-target')).translate")
+            assert translate != 'none', translate
             assert page.evaluate('inlineStyleMutations') == 0
-            results.append('native frames cause zero inline style mutations / catalogue observer triggers')
+            results.append('CSSOM output moves the consumer target with zero inline-style mutations')
             page.evaluate("async () => { const a=document.querySelector('audio'); await a.play(); a.pause(); }")
-            page.evaluate("async () => { const a=document.querySelector('audio'); const done=new Promise(r=>a.addEventListener('seeked',r,{once:true})); a.currentTime=100/48; await done; }")
+            # Seek inside pip 100 rather than exactly on its leading boundary.
+            # Browsers may adjust the resulting media position to one supported by
+            # the decoded stream, so a boundary seek can legitimately land just below it.
+            page.evaluate("async () => { const a=document.querySelector('audio'); const done=new Promise(r=>a.addEventListener('seeked',r,{once:true})); a.currentTime=100.5/48; await done; }")
             page.wait_for_timeout(80)
-            state = page.evaluate('DanceMovesClayRudiment.snapshot()')
-            assert state['controller']['pip'] == 100, state
-            assert state['controller']['status'] == 'audio-paused', state
-            assert abs(state['controller']['position']['x'] + 14) < 1e-9
-            positions = page.evaluate("({t:getComputedStyle(document.querySelector('.epk-atmosphere'),'::after').translate, animations:document.querySelector('.epk-atmosphere').getAnimations().map(a=>({name:a.animationName,time:a.currentTime,playState:a.playState}))})")
-            assert '-14px' in positions['t'], positions
-            assert positions['animations'][0]['playState'] == 'paused', positions
-            assert abs(positions['animations'][0]['time']-100/256*(60000/90*8)) < .01, positions
-            results.append('real audio seek/pause restores native pip100 and matching paused accent phase')
-            page.screenshot(path=str(args.output / 'native-clay-fixture.png'), full_page=True)
-            page.evaluate("root.dataset.danceMovesPerformance='constrained'")
-            page.wait_for_function("DanceMovesClayRudiment.snapshot().status==='suspended'")
+            state = page.evaluate('fixtureRudiment.snapshot()')
+            assert state['pip'] == 100 and state['status'] == 'audio-paused', state
+            assert abs(state['position']['x'] + 14) < 1e-9
+            results.append('audio seek and pause restore deterministic native pip 100')
+            page.evaluate('fixtureRudiment.setEnabled(false)')
+            page.wait_for_function("fixtureRudiment.snapshot().status==='disabled'")
             assert page.evaluate('DanceMovesRudiments.snapshot().framePending') is False
-            assert page.evaluate("getComputedStyle(document.querySelector('.epk-atmosphere'),'::after').animationName") == 'none'
-            results.append('constrained tier disables both native work and visual accents')
-            page.evaluate("root.dataset.danceMovesPerformance='full'")
-            page.wait_for_function("DanceMovesClayRudiment.snapshot().status==='active'")
-            assert page.evaluate('DanceMovesClayRudiment.snapshot().controller.pip') == 100
-            results.append('quality recovery reconstructs current audio pose')
+            page.evaluate('fixtureRudiment.setEnabled(true)')
+            page.wait_for_function("fixtureRudiment.snapshot().status==='audio-paused'")
+            assert page.evaluate('fixtureRudiment.snapshot().pip') == 100
+            results.append('generic enabled state stops work and reconstructs the current audio pose')
             page.emulate_media(reduced_motion='reduce')
-            page.wait_for_function("DanceMovesClayRudiment.snapshot().controller.status==='reduced-motion'")
+            page.wait_for_function("fixtureRudiment.snapshot().status==='reduced-motion'")
             assert page.evaluate('DanceMovesRudiments.snapshot().framePending') is False
-            assert page.evaluate("getComputedStyle(document.querySelector('.epk-atmosphere'),'::after').translate") == 'none'
-            results.append('reduced motion removes translation, accents and the frame loop')
+            results.append('reduced motion stops the generic frame loop')
             page.emulate_media(reduced_motion='no-preference', forced_colors='active')
-            page.wait_for_function("DanceMovesClayRudiment.snapshot().controller.status==='forced-colors'")
+            page.wait_for_function("fixtureRudiment.snapshot().status==='forced-colors'")
             assert page.evaluate('DanceMovesRudiments.snapshot().framePending') is False
-            results.append('forced colours also stops native animation')
+            results.append('forced colours stops the generic frame loop')
             page.emulate_media(forced_colors='none')
-            page.evaluate('DanceMovesClayRudiment.teardown()')
-            assert page.evaluate("getComputedStyle(document.querySelector('.epk-atmosphere'),'::after').animationName") == 'ks-particle-dance'
+            page.evaluate('fixtureRudiment.destroy()')
             assert page.evaluate('DanceMovesRudiments.snapshot().instances.length') == 0
-            results.append('teardown restores original CSS fallback and removes ownership')
+            assert page.evaluate("document.querySelector('.motion-target').hasAttribute('data-dance-moves-rudiment-owner')") is False
+            results.append('destroy releases the generic CSS owner and instance')
+            page.screenshot(path=str(args.output / 'generic-rudiment-fixture.png'), full_page=True)
             assert errors == [], errors
             results.append('no uncaught browser errors')
-            # A separate clean navigation deliberately denies WebAssembly.
             fallback = browser.new_page()
             fallback.add_init_script('window.WebAssembly = undefined;')
             fallback.goto(url)
-            fallback.wait_for_function("window.DanceMovesClayRudiment?.snapshot().status==='fallback'")
-            assert fallback.evaluate("getComputedStyle(document.querySelector('.epk-atmosphere'),'::after').animationName") == 'ks-particle-dance'
+            fallback.wait_for_function("window.DanceMovesRudiments?.snapshot().error")
             assert fallback.evaluate('DanceMovesRudiments.snapshot().framePending') is False
-            results.append('WASM-unavailable path keeps existing CSS without starting another loop')
+            results.append('WASM-unavailable path reports failure without starting a frame loop')
             fallback.close()
             browser.close()
     except Exception as error:
         report = {'status': 'BLOCKED' if 'ERR_BLOCKED_BY_ADMINISTRATOR' in str(error) else 'FAIL',
-                  'scope': 'synthetic fixture; not live WordPress', 'passedBeforeFailure': len(results),
+                  'scope': 'generic synthetic fixture; not live WordPress', 'passedBeforeFailure': len(results),
                   'checks': results, 'error': str(error)}
         (args.output / 'results.json').write_text(json.dumps(report, indent=2) + '\n')
         raise
     finally:
         server.shutdown(); server.server_close(); thread.join(timeout=5)
-    report = {'status': 'PASS', 'scope': 'real Chromium, production integration/WASM, synthetic legacy APIs and silent audio; not live WordPress',
+    report = {'status': 'PASS', 'scope': 'real Chromium, production generic API/WASM, synthetic clock and silent audio; not live WordPress',
               'passed': len(results), 'checks': results}
     (args.output / 'results.json').write_text(json.dumps(report, indent=2)+'\n')
     print(json.dumps(report, indent=2))

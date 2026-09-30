@@ -22,7 +22,7 @@ for (const [entry,out,globalName] of [['index','dancemoves.min.js','DanceMovesLi
   await esbuild.build({...options,entryPoints:[path.join(modules,`${entry}.mjs`)],outfile:path.join(lib,out),format:'iife',platform:'browser',minify:true,globalName});
 }
 await esbuild.build({...options,entryPoints:['assets/dance-moves-admin.js'],outfile:path.join(lib,'admin.min.js'),format:'iife',platform:'browser',minify:true});
-const cssFiles=['dance-moves-core.css','ks-epk-device-orientation.css','clay-stars-effects.css','clay-stars-rudiments.css','paper-dreams-flight.css'];
+const cssFiles=['dance-moves-core.css','ks-epk-device-orientation.css','clay-stars-effects.css','paper-dreams-flight.css'];
 fs.mkdirSync(path.join(lib,'styles'),{recursive:true});
 for(const file of cssFiles) await esbuild.build({entryPoints:['assets/'+file],outfile:path.join(lib,'styles',file),minify:true,logLevel:'warning'});
 fs.writeFileSync(path.join(lib,'dancemoves.css'),cssFiles.map(file=>fs.readFileSync(path.join(lib,'styles',file),'utf8')).join('\n'));

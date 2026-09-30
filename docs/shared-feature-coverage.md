@@ -15,9 +15,9 @@ physical tests were executed in a restricted development environment.
 | Catalogue CSS adoption | `catalogue:true` | Original catalogue demo now imports the module; original source test |
 | All nine named orientation adapters | `orientation.adapter`, orientationCore | All nine original gallery layouts retained; original adapter/scheduler tests |
 | Generic orientation and recorder | `createOrientation`, `createRecorder` | React permission/capture panels; lifecycle/server tests; real-device permission still manual |
-| Clay cover/lights/particles/quality/native background | `clay:true`, getClay/getClayRudiment | React Clay panel, original Clay contracts and native adapter tests |
+| Retained Clay cover/lights/particles/quality | `clay:true`, getClay | React Clay panel and original Clay contracts |
 | Paper planes | `effect:'paper-planes'` | React/Next plane panel using the shipped atlas; original flight tests |
-| All 15 native patterns and custom render callbacks | `runtime.rudiments` | React 15-motion grid; original Canvas/clock demos; actual WASM tests |
+| All 15 selected native patterns and custom render callbacks | `runtime.rudiments` | React 15-motion grid; generic Canvas/clock demos; actual WASM tests |
 | Diagnostic attribution and lifetime inspection | diagnostic sink, resources/on/destroy | Original diagnostic demo, React inspect/unmount controls, scope tests |
 | Page metadata and validation/revisions | Config exports, PageMetadataEditor, memory store | React metadata panel; server config tests; PHP's original native storage kept |
 | Timing upload validation | `/server.validateTimingFile` | Strict UTF-8/order/extension/clear-line tests; PHP validation retained |

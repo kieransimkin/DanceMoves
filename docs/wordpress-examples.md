@@ -142,9 +142,10 @@ A new Page cannot obtain those mappings just by copying an ID into metadata.
 The local selector uses the localhost-only harness override and demonstrates all
 nine mappings with Arcadians, not nine real new WordPress pages.
 
-Clay’s release adapter and automatic native background are Page-252-specific and
-respect the legacy-plugin coexistence guard. The supplementary fixture uses the
-same real scripts with compact educational markup and Arcadians at 145 BPM.
+Clay’s retained release adapter is Page-252-specific and respects the
+legacy-plugin coexistence guard. Native rudiment configuration is deliberately
+absent: a consuming page owns that call to the general API. The supplementary
+fixture uses the same real scripts with compact educational markup and Arcadians at 145 BPM.
 Do not change the real Clay page’s tempo to the demo tempo or copy its art direction
 into another release merely to enable generic input. Use the page-agnostic APIs
 for new EPKs. Paper planes are property-selected and work with a positioned,

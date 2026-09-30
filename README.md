@@ -3,11 +3,11 @@
 **DanceFlow musical motion by Kieran Simkin.** One JavaScript runtime for plain
 websites, React, Next.js and the separately packaged WordPress adapter.
 
-**3.1.0 release candidate.** It updates the rudiment build to the official
+**3.1.1 release candidate.** It updates the rudiment build to the official
 DanceRudiments 0.2.0 API while compiling only DanceMoves' reviewed 15-movement
-selection. The Clay background now requires rudiment API 1.1.0 and records its
-0.2.0 source at runtime. Existing bubbling readiness events, shared lyric stage
-and scoped module/React mounts remain compatible.
+selection. Rudiment API 1.1.0 remains page-agnostic: consumers own their
+selectors, choreography and lifecycle configuration, while bubbling readiness
+events, the shared lyric stage and scoped module/React mounts remain compatible.
 
 ## Shared JavaScript library and WordPress
 
@@ -428,9 +428,9 @@ scheduler.teardown(); // The demo also exercises every scalar and target-schedul
 
 [Run the example](examples/wordpress/orientation-math.html) · [Read its complete source](examples/wordpress/demos/orientation-math.mjs).
 
-#### 16. Clay adapter with Arcadians audio
+#### 16. Legacy Clay adapter with Arcadians audio
 
-Clay motion/settings, cues, lifecycle, snapshots and automatic clay_background rudiment. A compact educational Clay-shaped fixture uses Arcadians at 145 BPM. It does not reproduce or change the Clay release page.
+Clay motion/settings, cues, lifecycle and snapshots. A compact educational Clay-shaped fixture uses Arcadians at 145 BPM. It does not reproduce or change the Clay release page. Rudiment selection and mounting belong to the consuming page rather than this adapter.
 
 ```js
 // Only on the existing Clay-shaped/mapped page. Do not attach a second owner.
@@ -440,8 +440,7 @@ DanceMovesClayStars.setMotionTarget({x:0,y:0});
 DanceMovesClayStars.setCueState({name:'DROP 1',type:'SECTION'});
 DanceMovesClayStars.lifecycle('seeking');
 inspect(DanceMovesClayStars.snapshot());
-inspect(DanceMovesClayRudiment.snapshot());
-// reset() restores visuals; teardown() disposes. Native background is mounted automatically.
+// reset() restores visuals; teardown() disposes.
 ```
 
 [Run the example](examples/wordpress/clay.html) · [Read its complete source](examples/wordpress/demos/clay.mjs).
@@ -573,8 +572,9 @@ python tests/test-wordpress-examples-browser.py
 ```
 
 The Node check is static, Python checks local HTTP/preparation, and the PHP
-check uses WordPress stubs. The browser runner needs Playwright and a working
-Chromium installation. Browser, WordPress and physical
+check uses WordPress stubs. The browser runner needs Playwright and either its
+matching Chromium installation or `DANCEMOVES_BROWSER_CHANNEL=msedge` to use an
+installed stable Edge channel. Browser, WordPress and physical
 sensor checks are different evidence. Never interpret synthetic slider input,
 manual quality selection or a simulator’s response as a real-device or live-site
 pass. The machine-readable [coverage contract](examples/wordpress/coverage.json)
@@ -890,6 +890,8 @@ shell errors or resolved development incidents.
 | Animation slows down or quality appears stuck | Measure the full visible page after load, inspect the active controller's snapshot and remove duplicate effect owners. Shared `quality()` and Clay/Stars use different thresholds and recovery rules; neither is a physical refresh-rate detector. | [Shared quality](docs/api/effects.md#qualityoptions), [Clay/Stars](docs/api/adapters.md) |
 | An MP3 opens inline or its download returns 404 | Rewriting requires an explicit `<a download>` processed through main Page content and a supported local uploads URL. Check the signature and readable local MP3. Keep direct `<audio>`/`<source>` responses inline; do not force attachment headers site-wide. | [Download endpoint](docs/api/downloads.md) |
 | Validation fails in a fresh checkout | Use the documented Unit coordinator and check the named missing fixture or hash mismatch. Build required previews from approved canonical inputs; do not weaken a failing assertion or treat a missing browser/device run as a pass. | [Development prerequisites and gates](docs/development.md) |
+| Browser validation says the Playwright executable does not exist | Each Playwright version requires matching browser binaries. Install its pinned Chromium, or set `DANCEMOVES_BROWSER_CHANNEL=msedge` when stable Edge is already installed; record the channel in browser evidence. Do not report a browser pass from static checks. | [Playwright browser requirements](https://playwright.dev/docs/browsers) |
+| A page-owned rudiment adapter waits forever when its inline script precedes the footer runtime | Native rudiment compilation is intentionally lazy, so `dance-moves-rudiments-ready` cannot bootstrap the first consumer. Listen once for the bubbling generic `dance-moves-ready` event, then call `animate()` or `ready()`; use the native-ready event only to observe compilation already in progress. | [Rudiment consumer integration](RUDIMENTS-API.md#consumer-owned-page-integration) |
 
 For a new issue, record the plugin commit/version, affected API or page root,
 minimal reproduction, expected/actual result and relevant evidence. Do not put

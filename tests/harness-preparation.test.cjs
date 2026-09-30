@@ -43,8 +43,9 @@ check('probe and shared runtime precede consumers', () => {
     assert.ok(html.indexOf('dance-moves-effects.js') < html.indexOf('dance-moves-catalogue-timing.js'));
     assert.ok(html.indexOf('dancerudiments-native.js') < html.indexOf('dance-moves-rudiments.js'));
   }
-  assert.ok(clay.indexOf('clay-stars-effects.js') < clay.indexOf('clay-stars-rudiments.js'));
-  assert.ok(clay.indexOf('clay-stars-rudiments.js') < clay.indexOf('effect-under-test-adapter.js'));
+  assert.ok(clay.indexOf('clay-stars-effects.js') < clay.indexOf('dance-moves-rudiments.js'));
+  assert.ok(clay.indexOf('dance-moves-rudiments.js') < clay.indexOf('effect-under-test-adapter.js'));
+  assert.doesNotMatch(clay, /clay-stars-rudiments\.(?:js|css)/);
 });
 check('remote and legacy plugin copies are removed, page code stays', () => {
   assert.doesNotMatch(clay, /wp-content\/plugins\//); assert.match(clay, /window.keepTheme=true/);

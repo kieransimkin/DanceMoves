@@ -1,6 +1,6 @@
 # Shared JavaScript API
 
-Package: `@kieransimkin/dancemoves`, release candidate 3.1.0.
+Package: `@kieransimkin/dancemoves`, release candidate 3.1.1.
 This guide describes the public shared module; [WordPress](wordpress-shared-runtime.md)
 loads the same runtime through its adapter.
 
@@ -65,7 +65,7 @@ does not import either dependency.
 | `lyricDisclosureTicks` | 6; positive duration ticks. |
 | `effect` | Empty or `paper-planes`. |
 | `catalogue` | false; opt-in CSS timing adoption. |
-| `clay` | false; initialize Clay and its native background adapter when the required Clay markup exists. |
+| `clay` | false; initialize the retained legacy Clay controller when its markup exists. Rudiments remain consumer-owned. |
 | `clayPerformance` | Per-mount overrides for the existing Clay monitor. Fields retain their canonical validation and defaults. |
 | `orientation` | Optional `{adapter, transitionTargetTicks, harness}`. Adapter is one of `ORIENTATION_ADAPTERS`. Harness remains loopback-only. |
 | `paperPlanes` | `{atlasUrl, planeCount, compactPlaneCount}`. The atlas URL is required with `effect:'paper-planes'`; use the shipped asset, not a fabricated sprite. |
@@ -239,9 +239,9 @@ are `setParameters`, `setMotion`, `setMotionTarget`, `setCueState`, `lifecycle`,
 `reset`, `snapshot`, `teardown`. Visual parameters remain `enabled`,
 `masterIntensity`, `coverTiltDegrees`, `coverTranslationPixels`,
 `bloomTravelPixels`, `flareTravelPixels`, `specularTravelPixels`, and
-`particleReleaseTicks`. `getClayRudiment()` exposes its native background
-controller snapshot/teardown. Required markup and all original mapping examples
-remain in the 23-page WordPress-style gallery, now loading the shared package.
+`particleReleaseTicks`. Required markup and all original mapping examples remain
+in the 23-page WordPress-style gallery. A page that wants native motion calls the
+general `runtime.rudiments.animate()` API itself.
 
 `getPaperPlanes()` returns the canonical paper-plane controller; its stage is
 bounded by `.epk-hero`, with `.epk-cover-wrap` and `.epk-heading` for stacking.
@@ -287,8 +287,10 @@ updates, and configured page/revision limits bound memory. It is not durable
 storage and not an authorization mechanism.
 
 The core's `dance-moves-ready`, `dance-moves-cue`, `kieran-epk-cue` and
-`dance-moves-lyric` events, plus effects/native ready/error events, are emitted
-on the scoped root. The WordPress adapter preserves document dispatch. Register
-lifecycle subscriptions with `runtime.on`; consumers needing initial native
-readiness should await the Promise instead of hoping to subscribe before an
-initialization event already fired.
+`dance-moves-lyric` events, plus effects/native ready/error events, bubble from
+the scoped root. The WordPress adapter preserves document dispatch.
+`dance-moves-ready` fires after the runtime's cue/lyric setup promise settles and
+its detail contains `{runtime, version}`; it is the generic footer-load signal.
+Register lifecycle subscriptions with `runtime.on`; consumers needing native
+rudiment readiness should then call or await that service's `ready()` rather
+than waiting for its lazy-compilation event to start the compilation itself.

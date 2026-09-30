@@ -8,27 +8,22 @@ const read = file => fs.readFileSync(path.join(root, file), 'utf8');
 const hash = data => crypto.createHash('sha256').update(data).digest('hex');
 
 const runtime = read('assets/dance-moves-rudiments.js');
-const adapter = read('assets/clay-stars-rudiments.js');
-const css = read('assets/clay-stars-rudiments.css');
+const wordpress = read('dance-moves-rudiments.php');
+const modules = read('tools/build-modules.mjs');
+const declarations = read('RUDIMENTS-API.d.ts');
 assert.doesNotMatch(runtime, /Math\.(?:sin|cos)|clay_keys|stroke_envelope|smooth\(/, 'no JS motion implementation');
 assert.match(runtime, /native\.dr_sample/);
 assert.match(runtime, /rule\.style\.setProperty/);
 assert.doesNotMatch(runtime, /target\.style\./, 'no per-frame inline styles');
 assert.doesNotMatch(runtime, /setInterval|setTimeout/, 'no independent timer clock');
-assert.match(adapter, /rudiments\.version !== '1\.1\.0'/);
-assert.match(adapter, /rudiments\.upstreamVersion !== '0\.2\.0'/);
-assert.match(adapter, /rudiments\.describe\('clay_background'\)/);
-assert.match(adapter, /rate: 0\.5/);
-assert.match(adapter, /amplitude: \{ x: 14, y: 10, z: 0 \}/);
-assert.match(adapter, /accents\.currentTime = detail\.loopProgress \* detail\.durationMilliseconds/);
-assert.match(adapter, /data-dance-moves-rudiment-source/);
-assert.match(adapter, /snapshot\(\)\.destroyed/);
-assert.match(adapter, /controller\.destroy\(\)/);
-assert.match(css, /animation-play-state: paused !important/);
-const keyframes = css.slice(css.indexOf('@keyframes'), css.indexOf('@media'));
-assert.doesNotMatch(keyframes, /translate|background|filter/, 'page accents must not recreate position or full-frame colour');
-assert.match(css, /prefers-reduced-motion: reduce/);
-assert.match(css, /forced-colors: active/);
+assert.match(wordpress, /wp_enqueue_script\('dance-moves-rudiments-native'/);
+assert.match(wordpress, /wp_enqueue_script\('dance-moves-rudiments'/);
+for (const source of [runtime, wordpress, modules, declarations]) {
+  assert.doesNotMatch(source, /DanceMovesClayRudiment|clay-stars-rudiments|DANCE_MOVES_CLAY_STARS_PAGE_ID/,
+    'the reusable rudiment layer must not own an EPK adapter, page ID or release asset');
+}
+assert.equal(fs.existsSync(path.join(root, 'assets/clay-stars-rudiments.js')), false);
+assert.equal(fs.existsSync(path.join(root, 'assets/clay-stars-rudiments.css')), false);
 
 const pin = JSON.parse(read('vendor/dancerudiments/UPSTREAM.json'));
 const lock = JSON.parse(read('package-lock.json'));
@@ -41,4 +36,4 @@ assert.equal(lock.packages['node_modules/' + pin.package].integrity, pin.integri
 assert.equal(installed.version, pin.version);
 assert.equal(hash(fs.readFileSync(path.join(installedRoot, 'LICENSE'))), pin.licenseSha256);
 assert.equal(hash(fs.readFileSync(path.join(root, 'assets/vendor/dancerudiments/LICENSE'))), pin.licenseSha256);
-console.log('PASS selected-source ownership, Clay cadence, CSS, fallback and package provenance contracts');
+console.log('PASS selected-source ownership, generic API boundary and package provenance contracts');

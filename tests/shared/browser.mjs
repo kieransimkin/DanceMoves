@@ -8,7 +8,9 @@ try{
  let ready=false;for(let i=0;i<150;i++){if(child.exitCode!==null)throw new Error(serverLog);try{if((await fetch(base)).ok){ready=true;break;}}catch{}await new Promise(r=>setTimeout(r,200));}if(!ready)throw new Error('React server did not become ready: '+serverLog);
  const channel=process.env.DANCEMOVES_BROWSER_CHANNEL||undefined;
  browser=await chromium.launch(channel?{headless:true,channel}:{headless:true});const page=await browser.newPage({viewport:{width:1280,height:900}});page.on('pageerror',e=>errors.push(e.message));
+ await page.addInitScript(()=>{window.__danceMovesReadyEvents=[];document.addEventListener('dance-moves-ready',event=>window.__danceMovesReadyEvents.push({bubbles:event.bubbles,version:event.detail?.version}));});
  await page.goto(base);await page.waitForFunction(()=>window.__reactDanceMoves && !window.__reactDanceMoves.destroyed);
+ assert.deepEqual(await page.evaluate(()=>window.__danceMovesReadyEvents),[{bubbles:true,version:'3.1.1'}]);checks.push('generic dance-moves-ready event bubbles after runtime readiness');
  await page.waitForSelector('.motion-tile');assert.equal(await page.locator('.motion-tile').count(),15);checks.push('15 actual native rudiments rendered by React');
  await page.locator('audio').evaluate(a=>{a.muted=true;return a.play();});await page.waitForFunction(()=>document.querySelector('audio').currentTime>0.1);checks.push('canonical Arcadians media decodes and plays');
  await page.getByRole('button',{name:'Drop 1',exact:true}).click();await page.waitForFunction(()=>document.querySelector('audio').currentTime>=104);checks.push('React chapter seek');
