@@ -15,7 +15,7 @@ async function execute(options = {}) {
   const calls = [];
   const requests = [];
   const version = options.version ?? '3.0.0';
-  const files = options.files ?? [`kieransimkin-dancemoves-${version}.tgz`];
+  const files = options.files ?? [`DanceMoves-npm-${version}.tgz`];
   const responses = [...(options.responses ?? [404, published])];
   const input = (options.source ?? source).replace(/^import[^\n]*;\r?\n/gm, '');
   // Remove only built-in import declarations; keep all executable publisher code.
@@ -61,7 +61,7 @@ test('publisher uses the explicit local tarball and preserves publication flags'
   const result = await execute();
   assert.ifError(result.error);
   assert.equal(result.calls.length, 1);
-  assert.deepEqual(result.calls[0].args, ['publish', './release-output/kieransimkin-dancemoves-3.0.0.tgz',
+  assert.deepEqual(result.calls[0].args, ['publish', './release-output/DanceMoves-npm-3.0.0.tgz',
     '--access', 'public', '--provenance', '--ignore-scripts', '--tag', 'latest']);
   assert.equal(result.requests.length, 2);
 });
