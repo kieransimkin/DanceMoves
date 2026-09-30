@@ -3,11 +3,11 @@
 **DanceFlow musical motion by Kieran Simkin.** One JavaScript runtime for plain
 websites, React, Next.js and the separately packaged WordPress adapter.
 
-**3.0.5 release candidate** based on the published 3.0.4 shared-library release.
-It preserves the shared three-slot lyric stage used by existing WordPress EPKs
-without restoring the duplicate raw-script layout removed in 3.0. Public ready
-events now bubble, and WordPress compatibility mode can find the body-level
-lyric popover while ordinary module and React mounts stay scoped.
+**3.1.0 release candidate.** It updates the rudiment build to the official
+DanceRudiments 0.2.0 API while compiling only DanceMoves' reviewed 15-movement
+selection. The Clay background now requires rudiment API 1.1.0 and records its
+0.2.0 source at runtime. Existing bubbling readiness events, shared lyric stage
+and scoped module/React mounts remain compatible.
 
 ## Shared JavaScript library and WordPress
 
@@ -603,19 +603,20 @@ WordPress ZIP. Packaged readers can visit the [source repository](https://github
 and select the documentation-bearing branch. This documentation change does not
 rebuild release ZIPs, alter PHP/JavaScript, or change the WordPress upgrade slug.
 
-## Rudiment animation integration (2.9.0 candidate)
+## Rudiment animation integration
 
 DanceMoves now exposes `DanceMoves.rudiments` (also `DanceMovesRudiments`) for the
-pinned DanceRudiments 0.1.3 position catalogue. The bundled native WebAssembly
-backend is generated from every integer sample of the upstream C++ functions;
-there is no JavaScript motion-formula mirror or runtime CDN dependency.
+pinned DanceRudiments 0.2.0 API. The build verifies its 1,731-movement upstream
+catalogue, then compiles every integer sample for only the 15 movements selected
+in `vendor/dancerudiments/UPSTREAM.json`. The compact browser WebAssembly contains
+no JavaScript motion-formula mirror or runtime CDN dependency.
 
 The integration converts 16 DanceMoves ticks per beat to 64 DanceRudiments pips
 per beat. Controllers share one animation-frame scheduler and provide explicit
 page/audio clocks, pause/seek handling, cue resets, accessibility and visibility
 suspension, CSS-variable or callback rendering, snapshots and teardown.
 
-The existing Clay/Stars page automatically uses `clay_background` for its
+The existing Clay/Stars page uses API 1.1.0's `clay_background` for its
 atmosphere translation. Half-speed sampling preserves the original eight-beat
 cycle; the existing rotation, scale and opacity treatment shares the new phase.
 The original CSS remains the capability-failure fallback. No page-content edit
@@ -625,8 +626,8 @@ See [the complete rudiment API reference](RUDIMENTS-API.md),
 [TypeScript declarations](RUDIMENTS-API.d.ts) and the
 [pinned source record](vendor/dancerudiments/UPSTREAM.json).
 Run `node tools/verify-rudiments.cjs` and the new tests before packaging. This
-version is a candidate: native and lifecycle contracts do not substitute for
-signed-out WordPress, real-browser and physical-device acceptance.
+Native and lifecycle contracts do not substitute for signed-out WordPress,
+real-browser and physical-device acceptance.
 
 ## Reusable effect primitives (2.8.0)
 

@@ -14,6 +14,7 @@
   let status = 'loading';
   const id = 'clay-stars:background-rudiment';
   const marker = 'data-dance-moves-rudiment-clay';
+  const sourceMarker = 'data-dance-moves-rudiment-source';
   function allowed() {
     const state = clay.snapshot();
     return !state.destroyed && state.settings.enabled && state.performance.profile === 'full';
@@ -39,6 +40,7 @@
     accents = null;
     status = allowed() ? 'active' : 'suspended';
     root.setAttribute(marker, status);
+    root.setAttribute(sourceMarker, rudiments.upstreamVersion);
     controller.setEnabled(status === 'active');
     controller.refresh();
   }
@@ -47,6 +49,7 @@
     error = String(failure && failure.message || failure);
     status = 'fallback'; loaded = false; accents = null;
     root.setAttribute(marker, 'fallback'); // no overriding CSS selector: legacy animation survives
+    root.removeAttribute(sourceMarker);
     if (controller) controller.destroy();
   }
   function onError(event) {
@@ -65,13 +68,20 @@
     document.removeEventListener('dance-moves-rudiments-error', onError);
     if (controller) controller.destroy();
     root.removeAttribute(marker);
+    root.removeAttribute(sourceMarker);
   }
   window.DanceMovesClayRudiment = Object.freeze({
     root, teardown,
     snapshot: () => ({ status, error, destroyed, loaded, rudiment: 'clay_background',
+      apiVersion: rudiments.version, upstreamVersion: rudiments.upstreamVersion,
+      sourceCatalogueCount: rudiments.sourceCatalogueCount,
       cycleBeats: 8, rate: 0.5, controller: controller ? controller.snapshot() : null })
   });
   try {
+    if (rudiments.version !== '1.1.0' || rudiments.upstreamVersion !== '0.2.0' ||
+        !rudiments.describe('clay_background')) {
+      throw new Error('Clay background requires DanceMoves Rudiments API 1.1.0 backed by DanceRudiments 0.2.0');
+    }
     controller = rudiments.animate({
       id, root, target: atmosphere, rudiment: 'clay_background',
       clock: audio ? 'auto' : 'page', audio,

@@ -15,7 +15,10 @@ const crypto = require('node:crypto');
   const ex = instance.exports;
   const view = new DataView(ex.memory.buffer);
   const rows = JSON.parse(fs.readFileSync(nativeSamples, 'utf8'));
-  assert.equal(ex.dr_abi(), 1);
+  assert.equal(data.schema, 2);
+  assert.ok(Number.isSafeInteger(data.sourceCatalogueCount));
+  assert.ok(data.sourceCatalogueCount >= rows.length);
+  assert.equal(ex.dr_abi(), 2);
   assert.equal(ex.dr_count(), rows.length);
   let count = 0;
   rows.forEach((row, id) => {
@@ -32,5 +35,5 @@ const crypto = require('node:crypto');
   });
   assert.equal(ex.dr_sample(-1, 0), 0);
   assert.equal(ex.dr_sample(rows.length, 0), 0);
-  console.log(`PASS native C++/shipped WASM parity: ${rows.length} patterns, ${count} wrapped positions, three axes each`);
+  console.log(`PASS official API/shipped WASM parity: ${rows.length} selected of ${data.sourceCatalogueCount} movements, ${count} wrapped positions, three axes each`);
 })().catch(error => { console.error(error); process.exitCode = 1; });

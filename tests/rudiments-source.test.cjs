@@ -2,9 +2,11 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { pinnedTextBytes } = require('../tools/rudiments-source-integrity.cjs');
+const crypto = require('node:crypto');
 const root = path.resolve(__dirname, '..');
-const read = p => fs.readFileSync(path.join(root,p),'utf8');
+const read = file => fs.readFileSync(path.join(root, file), 'utf8');
+const hash = data => crypto.createHash('sha256').update(data).digest('hex');
+
 const runtime = read('assets/dance-moves-rudiments.js');
 const adapter = read('assets/clay-stars-rudiments.js');
 const css = read('assets/clay-stars-rudiments.css');
@@ -13,9 +15,13 @@ assert.match(runtime, /native\.dr_sample/);
 assert.match(runtime, /rule\.style\.setProperty/);
 assert.doesNotMatch(runtime, /target\.style\./, 'no per-frame inline styles');
 assert.doesNotMatch(runtime, /setInterval|setTimeout/, 'no independent timer clock');
+assert.match(adapter, /rudiments\.version !== '1\.1\.0'/);
+assert.match(adapter, /rudiments\.upstreamVersion !== '0\.2\.0'/);
+assert.match(adapter, /rudiments\.describe\('clay_background'\)/);
 assert.match(adapter, /rate: 0\.5/);
 assert.match(adapter, /amplitude: \{ x: 14, y: 10, z: 0 \}/);
 assert.match(adapter, /accents\.currentTime = detail\.loopProgress \* detail\.durationMilliseconds/);
+assert.match(adapter, /data-dance-moves-rudiment-source/);
 assert.match(adapter, /snapshot\(\)\.destroyed/);
 assert.match(adapter, /controller\.destroy\(\)/);
 assert.match(css, /animation-play-state: paused !important/);
@@ -23,8 +29,16 @@ const keyframes = css.slice(css.indexOf('@keyframes'), css.indexOf('@media'));
 assert.doesNotMatch(keyframes, /translate|background|filter/, 'page accents must not recreate position or full-frame colour');
 assert.match(css, /prefers-reduced-motion: reduce/);
 assert.match(css, /forced-colors: active/);
+
 const pin = JSON.parse(read('vendor/dancerudiments/UPSTREAM.json'));
-for (const name of ['vendor/dancerudiments/LICENSE', 'assets/vendor/dancerudiments/LICENSE']) {
-  pinnedTextBytes(fs.readFileSync(path.join(root, name)), pin.files.LICENSE, name);
-}
-console.log('PASS 15 source ownership, cadence, CSS, fallback and licence contracts');
+const lock = JSON.parse(read('package-lock.json'));
+const installedRoot = path.join(root, 'node_modules', ...pin.package.split('/'));
+const installed = JSON.parse(fs.readFileSync(path.join(installedRoot, 'package.json'), 'utf8'));
+assert.equal(pin.version, '0.2.0');
+assert.equal(pin.sourceCatalogueCount, 1731);
+assert.equal(pin.selection.length, 15);
+assert.equal(lock.packages['node_modules/' + pin.package].integrity, pin.integrity);
+assert.equal(installed.version, pin.version);
+assert.equal(hash(fs.readFileSync(path.join(installedRoot, 'LICENSE'))), pin.licenseSha256);
+assert.equal(hash(fs.readFileSync(path.join(root, 'assets/vendor/dancerudiments/LICENSE'))), pin.licenseSha256);
+console.log('PASS selected-source ownership, Clay cadence, CSS, fallback and package provenance contracts');

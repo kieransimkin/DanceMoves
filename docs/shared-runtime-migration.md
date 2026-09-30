@@ -36,10 +36,10 @@ ship a second `assets/dance-moves-core.js`, a separate effect engine or separate
 native-data script. Existing script handles are kept as WordPress dependency
 aliases with `src=false`.
 
-The native movement authority remains the pinned DanceRudiments 0.1.3 C++/WASM
-sample bank. This patch does not import a newer atlas from a sibling checkout.
-`tools/verify-rudiments.cjs` still checks its existing source, licence and native
-hash contracts before building the library.
+The native movement authority is the pinned DanceRudiments 0.2.0 npm API.
+DanceMoves verifies the 1,731-item source catalogue but compiles only its reviewed
+15-movement browser selection. `tools/verify-rudiments.cjs` checks the lockfile,
+package integrity, licences, selection and native hashes before building.
 
 ## Instance lifetime and compatibility
 

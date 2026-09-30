@@ -24,6 +24,9 @@ function mount(noWasm = false) {
   await api.get('clay-stars:background-rudiment').ready;
   await new Promise(setImmediate);
   assert.equal(f.root.getAttribute('data-dance-moves-rudiment-clay'),'active');
+  assert.equal(f.root.getAttribute('data-dance-moves-rudiment-source'),'0.2.0');
+  assert.equal(f.win.DanceMovesClayRudiment.snapshot().apiVersion,'1.1.0');
+  assert.equal(f.win.DanceMovesClayRudiment.snapshot().sourceCatalogueCount,1731);
   assert.equal(api.snapshot().instances.length,1);
   f.setTicks(50); f.frame();
   const c = f.win.DanceMovesClayRudiment.snapshot().controller;
@@ -44,6 +47,7 @@ function mount(noWasm = false) {
   assert.equal(f.win.DanceMovesClayRudiment.snapshot().status,'destroyed');
   assert.equal(api.snapshot().instances.length,0);
   assert.equal(f.root.hasAttribute('data-dance-moves-rudiment-clay'),false);
+  assert.equal(f.root.hasAttribute('data-dance-moves-rudiment-source'),false);
   assert.equal(f.frames.size,0);
   console.log('PASS legacy runtime disable and teardown release native resources');
   const bad=mount(true);
@@ -53,6 +57,7 @@ function mount(noWasm = false) {
   assert.equal(bad.win.DanceMovesRudiments.snapshot().instances.length,0);
   assert.equal(bad.frames.size,0);
   assert.equal(bad.root.getAttribute('data-dance-moves-rudiment-clay'),'fallback');
+  assert.equal(bad.root.hasAttribute('data-dance-moves-rudiment-source'),false);
   console.log('PASS Clay WASM failure leaves the non-overridden legacy path and no orphan controller');
-  console.log('Completed 20 Clay adapter assertions (mock DOM, real WASM)');
+  console.log('Completed 25 Clay adapter assertions (mock DOM, real WASM)');
 })().catch(error => { console.error(error); process.exitCode=1; });

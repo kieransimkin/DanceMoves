@@ -1,60 +1,73 @@
 'use strict';
-// Read-only packaging gate. No compiler or registry access is required.
+// Read-only release gate. The exact npm package must already be installed.
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
-const { pinnedTextBytes } = require('./rudiments-source-integrity.cjs');
 const root = path.resolve(__dirname, '..');
-const hash = (type, data) => crypto.createHash(type).update(data).digest('hex');
+const hash = data => crypto.createHash('sha256').update(data).digest('hex');
+
 (async () => {
-  const vendor = path.join(root, 'vendor/dancerudiments');
+  const pin = JSON.parse(fs.readFileSync(path.join(root, 'vendor/dancerudiments/UPSTREAM.json'), 'utf8'));
+  const lock = JSON.parse(fs.readFileSync(path.join(root, 'package-lock.json'), 'utf8'));
+  const packageRoot = path.join(root, 'node_modules', ...pin.package.split('/'));
+  const installed = JSON.parse(fs.readFileSync(path.join(packageRoot, 'package.json'), 'utf8'));
+  const locked = lock.packages['node_modules/' + pin.package];
+  assert.equal(locked.version, pin.version);
+  assert.equal(locked.integrity, pin.integrity);
+  assert.equal(installed.name, pin.package);
+  assert.equal(installed.version, pin.version);
+  assert.equal(installed.license, pin.licenseExpression);
+  const packageLicence = fs.readFileSync(path.join(packageRoot, 'LICENSE'));
+  assert.equal(hash(packageLicence), pin.licenseSha256);
+
   const output = path.join(root, 'assets/vendor/dancerudiments');
-  const pin = JSON.parse(fs.readFileSync(path.join(vendor, 'UPSTREAM.json'), 'utf8'));
   const manifest = JSON.parse(fs.readFileSync(path.join(output, 'build-manifest.json'), 'utf8'));
   assert.deepEqual(manifest.upstream, pin);
-  const checkoutConversions = [];
-  for (const [name, expected] of Object.entries(pin.files)) {
-    const bytes = fs.readFileSync(path.join(vendor, name));
-    const canonical = pinnedTextBytes(bytes, expected, name);
-    if (!canonical.equals(bytes)) checkoutConversions.push(name);
-  }
-  // Each licence must independently match the upstream pin, not just each other.
-  const licence = fs.readFileSync(path.join(output, 'LICENSE'));
-  const canonicalLicence = pinnedTextBytes(licence, pin.files.LICENSE, 'assets/vendor/dancerudiments/LICENSE');
-  if (!canonicalLicence.equals(licence)) checkoutConversions.push('assets/vendor/dancerudiments/LICENSE');
-  if (checkoutConversions.length) {
-    console.log(`Verified canonical LF bytes for ${checkoutConversions.length} CRLF checkout file(s); working files left unchanged`);
-  }
+  assert.equal(manifest.schema, 'dance-moves-rudiments-build/v2');
+  assert.equal(manifest.backend, 'selected-official-npm-api-samples-wasm-lookup');
+  assert.equal(manifest.sourceCatalogueCount, pin.sourceCatalogueCount);
+  assert.equal(manifest.selectedCount, pin.selection.length);
+  assert.equal(hash(fs.readFileSync(path.join(output, 'LICENSE'))), pin.licenseSha256);
+
   const source = fs.readFileSync(path.join(output, 'dancerudiments-native.js'));
-  assert.equal(hash('sha256', source), manifest.runtimeSha256);
-  const context = { window: {} }; vm.runInNewContext(source.toString('utf8'), context);
+  assert.equal(hash(source), manifest.runtimeSha256);
+  const context = { window: {} };
+  vm.runInNewContext(source.toString('utf8'), context);
   const data = context.window.danceMovesRudimentsNative;
   const bytes = Buffer.from(data.wasmBase64, 'base64');
-  assert.equal(hash('sha256', bytes), manifest.wasmSha256);
+  assert.equal(hash(bytes), manifest.wasmSha256);
   assert.equal(data.wasmSha256, manifest.wasmSha256);
-  assert.equal(data.commit, pin.commit); assert.equal(data.version, pin.version);
+  assert.equal(data.schema, 2);
+  assert.equal(data.commit, pin.commit);
+  assert.equal(data.version, pin.version);
+  assert.equal(data.package, pin.package);
   assert.equal(data.pipsPerBeat, 64);
+  assert.equal(data.sourceCatalogueCount, pin.sourceCatalogueCount);
+  assert.deepEqual(Array.from(data.catalogue, row => row.name), pin.selection);
+
   const module = await WebAssembly.compile(bytes);
   assert.equal(WebAssembly.Module.imports(module).length, 0, 'backend has no JS math or host imports');
   const { exports: native } = await WebAssembly.instantiate(module, {});
-  assert.equal(native.dr_abi(), 1); assert.equal(native.dr_count(), data.catalogue.length);
+  assert.equal(native.dr_abi(), 2);
+  assert.equal(native.dr_count(), data.catalogue.length);
   const view = new DataView(native.memory.buffer);
   let positions = 0;
   data.catalogue.forEach((row, id) => {
     assert.equal(native.dr_period(id), row.periodPips);
-    for (let p = 0; p < row.periodPips; p++) {
-      const a = native.dr_sample(id, p), b = native.dr_sample(id, p-row.periodPips);
+    for (let pip = 0; pip < row.periodPips; pip++) {
+      const direct = native.dr_sample(id, pip);
+      const wrapped = native.dr_sample(id, pip - row.periodPips);
       for (let axis = 0; axis < 3; axis++) {
-        const v = view.getFloat64(a+axis*8, true);
-        assert.ok(Number.isFinite(v) && Math.abs(v) <= 1.00000001);
-        assert.equal(v, view.getFloat64(b+axis*8,true));
+        const value = view.getFloat64(direct + axis * 8, true);
+        assert.ok(Number.isFinite(value) && Math.abs(value) <= 1.00000001);
+        assert.equal(value, view.getFloat64(wrapped + axis * 8, true));
       }
       positions++;
     }
   });
   assert.equal(positions, manifest.sampleCount);
   assert.equal(native.dr_sample(-1, 0), 0);
-  console.log(`PASS pinned native sources, MIT licence, JS/WASM hashes, ${data.catalogue.length} catalogue entries and ${positions} native positions`);
+  console.log(`PASS pinned ${pin.package}@${pin.version}, ${data.catalogue.length} selected of ${data.sourceCatalogueCount} movements, ${positions} native positions`);
 })().catch(error => { console.error(error); process.exitCode = 1; });

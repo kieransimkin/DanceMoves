@@ -24,7 +24,8 @@ if ($LASTEXITCODE -ne 0) { throw "WordPress build failed" }
 ```
 
 The build machine needs Node, npm and Python. The WordPress server needs neither
-Node, npm, a C++ compiler nor an external CDN. Install `dist/DanceMoves-wordpress-3.0.5.zip`
+Node, npm, a native compiler nor an external CDN. Install the WordPress ZIP
+created by the matching GitHub release workflow
 through Plugins → Add New → Upload Plugin, preserving a backup and the prior
 working archive. Do not upload the npm tarball, web ZIP, repository source ZIP
 or a downloaded patch bundle.
@@ -83,7 +84,7 @@ add_action('wp_enqueue_scripts', function () {
         'my-arcadians-effects',
         get_stylesheet_directory_uri() . '/arcadians-effects.js',
         array('dance-moves-rudiments', 'dance-moves-effects'),
-        '1.0.0',
+        '1.1.0',
         true
     );
 }, 40);

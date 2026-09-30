@@ -1,8 +1,8 @@
 # DanceMoves rudiment animation API
 
-API **1.0.0**, introduced by the **2.9.0 integration candidate**, based on released DanceMoves **2.8.0** (`4cb6a71f60459b5579be87d7e55ac8b1426c578e`). This source patch is not a published release or evidence of a WordPress deployment.
+API **1.1.0** is the selected-catalogue DanceRudiments 0.2 integration. This source patch is not a published release or evidence of a WordPress deployment.
 
-The integration pins DanceRudiments **0.1.3**, commit `0df000db8753f04f397311f5b7c6ae6561e1d260`. The pinned C++ source, header and MIT licence are under [vendor/dancerudiments](vendor/dancerudiments/). [UPSTREAM.json](vendor/dancerudiments/UPSTREAM.json) records their Git blob identities. [TypeScript declarations](RUDIMENTS-API.d.ts) describe the complete public interface.
+The integration pins the published npm package `@kieransimkin/dance-rudiments` **0.2.0**, release commit `7f77874efa8a8ff96e9b1a866f14c5773553b9b6`. [UPSTREAM.json](vendor/dancerudiments/UPSTREAM.json) records the exact npm integrity, licence hash, 1,731-item source catalogue count and DanceMoves' 15-item selection. [TypeScript declarations](RUDIMENTS-API.d.ts) describe the public browser interface.
 
 ## Contents
 
@@ -12,13 +12,13 @@ The integration pins DanceRudiments **0.1.3**, commit `0df000db8753f04f397311f5b
 
 DanceRudiments defines positions; DanceMoves supplies musical time, lifecycle and rendering. There is no second audio clock, no beat detector, no LRC reparser and no JavaScript copy of a movement formula.
 
-The backend is a **complete-integer-domain C++/WASM lookup build**, not the upstream npm/Emscripten wrapper. This distinction matters:
+The backend is a **selected complete-integer-domain WASM lookup build** produced through the official 0.2.0 npm API. This distinction matters:
 
-1. The build compiles and executes the unmodified upstream C++17 library. It samples **every** integer pip of **every** catalogue period, checking positive and negative wrap parity.
-2. The resulting IEEE-double values are emitted as hexadecimal C++ literals. Clang compiles those tables and a tiny C++ lookup ABI into import-free WebAssembly.
+1. The build calls the official `bindNative`, `catalogue` and `sample` APIs and verifies that the source catalogue has exactly 1,731 movements.
+2. It exports every integer pip only for the 15 movements in the reviewed DanceMoves allow-list, then encodes those exact IEEE-double values into a tiny import-free WebAssembly lookup module.
 3. The generated browser asset contains the native module as base64 plus catalogue metadata. JavaScript selects the pattern and musical pip; native WASM returns the three coordinates.
 
-For this pinned upstream API, each function depends only on a name and an integer pip, with a finite periodic domain. Exhaustively compiling that domain preserves the upstream sampling contract; it is not sparse curve fitting or a JS approximation. The 15 patterns comprise 1,856 unique positions. The shipped native module is 44,921 bytes, with fixed 128 KiB linear memory and no host imports. It does not call JavaScript trigonometry. The build compares all three axes at 5,568 wrapped positions against the native exporter, with tolerance `1e-12` for platform floating-point variation.
+For this pinned upstream API, each selected movement depends only on a name and integer pip with a finite periodic domain. Exhaustively compiling each selected domain preserves the upstream sampling contract; it is not sparse curve fitting or a JS approximation. The 15 selected movements comprise 1,856 unique positions. The full upstream WASM is deliberately not shipped to every WordPress page. The compact module is 44,866 bytes with no host imports, and the build compares all three axes at 5,568 wrapped positions against the official API.
 
 The compiled browser asset is checked in. **No npm install, CDN access, Python interpreter, compiler or WASM MIME configuration is needed on the WordPress server.** Compilation is lazy and occurs once per document when `ready()` or `animate()` is used. If WASM is unavailable or blocked, loading rejects; there is deliberately no fallback JS motion implementation. Clay retains its existing CSS instead.
 
@@ -101,9 +101,10 @@ The frozen service is available as both `window.DanceMovesRudiments` and `window
 
 | Property | Value / meaning |
 | --- | --- |
-| `version` | `'1.0.0'`: this API's contract version, not the plugin version |
-| `upstreamVersion` | `'0.1.3'`: the bundled library version |
+| `version` | `'1.1.0'`: this API's contract version, not the plugin version |
+| `upstreamVersion` | `'0.2.0'`: the pinned library version |
 | `upstreamCommit` | Exact pinned source commit |
+| `sourceCatalogueCount` | `1731`: movements available in the pinned upstream catalogue; `catalogue()` remains the reviewed 15-movement browser selection |
 | `pipsPerBeat` | `64` |
 | `ticksPerBeat` | `16`: DanceMoves timing ticks |
 | `pipsPerTick` | `4` |
@@ -324,33 +325,31 @@ On native-load failure the original CSS remains active. To remove this migration
 
 ## WordPress and packaging
 
-The entrypoint requires `dance-moves-rudiments.php`. It defines `DANCE_MOVES_RUDIMENTS_API_VERSION` (`1.0.0`) and registers `dance_moves_enqueue_rudiments(): void` on `wp_enqueue_scripts` at priority **25**, after the existing core runtime's priority 20.
+The entrypoint requires `dance-moves-rudiments.php`. It defines `DANCE_MOVES_RUDIMENTS_API_VERSION` (`1.1.0`) and registers `dance_moves_enqueue_rudiments(): void` on `wp_enqueue_scripts` at priority **25**, after the existing core runtime's priority 20.
 
 | Handle | Type | Dependencies / scope |
 | --- | --- | --- |
-| `dance-moves-rudiments-native` | Footer script | Bundled C++/WASM asset; all WordPress Pages |
+| `dance-moves-rudiments-native` | Footer script | Compact selected-movement WASM asset; all WordPress Pages |
 | `dance-moves-rudiments` | Footer script | `dance-moves-core`, `dance-moves-rudiments-native`; all Pages |
 | `dance-moves-clay-rudiments` | Style | `dance-moves-clay-stars`; existing Clay page only |
 | `dance-moves-clay-rudiments` | Footer script | `dance-moves-rudiments`, `dance-moves-clay-stars`; existing Clay page only |
 
 The API can be used on any Page; only the release adapter is tied to the existing Clay page ID. Non-Page requests receive none of these assets. When `KS_CLAY_STARS_EFFECTS_VERSION` indicates the legacy Clay effects plugin, the reusable API still loads on Pages but the new Clay migration assets are suppressed.
 
-Cache versions combine the plugin version and API version. The patch increments the plugin candidate to **2.9.0** and aligns the known version-sensitive contract and phone-fixture cache keys. It does not publish that version, regenerate migration manifests or replace existing `dist` releases.
+Cache versions combine the plugin version and API version. This change increments the DanceMoves candidate to **3.1.0** and the rudiment API to **1.1.0**. It does not publish that version or replace existing `dist` releases; publishable artifacts come from the release workflow.
 
-`tools/package.ps1` verifies the native bundle before packaging and includes the new PHP module, both API-reference files and the pinned vendor directory, alongside the existing assets. The package retains `kieran-epk-device-orientation` as its WordPress upgrade slug. Tests and build tooling remain repository-only. The MIT licence accompanies both the vendored C++ and generated native browser asset.
+The release workflow verifies the native bundle before packaging and includes the PHP module, both API-reference files and the pinned provenance record alongside the generated assets. The package retains `kieran-epk-device-orientation` as its WordPress upgrade slug. Tests, node modules and build tooling remain repository-only. The complete upstream licence accompanies the generated native browser asset.
 
 ## Building and testing
 
 Normal consumers use the checked-in generated native bundle. Rebuild only when reviewing an upstream/library/backend change.
 
 ```sh
-# Host GCC or Clang in C++17 mode; Clang must support wasm32 and have wasm-ld.
-# Python orchestrates compilation; it does not implement motion functions.
-python tools/build-rudiments.py --cxx g++ --clang clang++
+# Node calls the pinned official API; Python creates the deterministic compact lookup.
+python tools/build-rudiments.py
 
-# Compare the committed backend against freshly executed upstream C++ samplers.
-# --check writes no repository files and needs only the host C++ compiler and Node.
-python tools/build-rudiments.py --check --cxx g++
+# Compare the committed backend against fresh official-API samples without writing it.
+python tools/build-rudiments.py --check
 
 # Read-only package/hash/ABI gate; no compiler required.
 node tools/verify-rudiments.cjs
@@ -362,9 +361,9 @@ php tests/rudiments-wordpress.php
 tsc --noEmit --strict --lib es2020,dom RUDIMENTS-API.d.ts
 ```
 
-`--cxx` and `--clang` accept executable paths; the host compiler needs GCC/Clang-style command-line arguments. The generator verifies vendored Git blob identities before compilation. It rejects unreviewed source edits rather than fetching a moving branch. Review a new exact upstream commit and source hashes deliberately, rebuild, rerun exhaustive parity, then update both the plugin release version and evidence.
+The generator verifies the installed package against `package-lock.json` and the pinned registry integrity and licence hash. It rejects package drift, source-catalogue count drift and selection drift rather than fetching a moving branch. Review a new exact upstream release deliberately, rebuild, rerun exhaustive parity, then update both the DanceMoves version and evidence.
 
-The build's local repeatability can be checked with output hashes. Different native math libraries/compilers can differ by floating-point roundoff for transcendental functions; cross-toolchain **bitwise** reproducibility is not guaranteed. The committed native asset and recorded digest are the release artifact; regeneration validates coordinates to `1e-12` and records compiler identities without wall-clock timestamps.
+The build is deterministic for the same official package samples and records the generated JS and WASM SHA-256 values without wall-clock timestamps. The committed native asset and recorded digest are the release inputs.
 
 The normal Unit validator discovers the new `.test.cjs` files and explicitly runs the PHP enqueue test. It remains necessary to run the existing DanceMoves suite. Package mode has its pre-existing migration/release-workspace prerequisites.
 
@@ -384,11 +383,11 @@ The core's animation-reset API does not own this controller's CSSOM variables; u
 
 CSSOM output still has rendering cost; callbacks allocate payload objects and may be expensive. Clay also updates a paused CSS animation's current time. Full-page performance must be measured before deployment. Browser rendering was not proven merely by native or mocked-DOM tests.
 
-As the upstream library grows, retain C++ as movement authority. For a future API whose domain cannot be exhaustively precompiled, add a direct compiled binding rather than inventing JavaScript formulas. Keep any new backend behind the same readiness, unit, lifecycle and capability-error contracts and document its compatibility separately.
+As the upstream library grows, retain DanceRudiments as movement authority and add movements to the explicit allow-list only when a DanceMoves consumer uses them. Do not ship the full catalogue by default or invent JavaScript formulas. A future parameterised/stateful API needs a separately versioned binding behind the same readiness, lifecycle and capability-error contracts.
 
 ## Source references
 
 - [DanceMoves 2.8.0 source](https://github.com/kieransimkin/DanceMoves/tree/4cb6a71f60459b5579be87d7e55ac8b1426c578e): core clock, existing Clay adapter, stylesheet, enqueue and packaging contracts.
 - [Clay stylesheet and original keyframes](https://github.com/kieransimkin/DanceMoves/blob/4cb6a71f60459b5579be87d7e55ac8b1426c578e/assets/clay-stars-effects.css).
-- [Pinned DanceRudiments source](https://github.com/kieransimkin/DanceRudiments/tree/0df000db8753f04f397311f5b7c6ae6561e1d260): integer-pip contract, catalogue, C++ functions and MIT licence.
+- [Pinned DanceRudiments 0.2.0 source](https://github.com/kieransimkin/DanceRudiments/tree/7f77874efa8a8ff96e9b1a866f14c5773553b9b6): official package API, catalogue and licences.
 - [Target public page](https://kieransimkin.co.uk/made-from-the-clay-and-the-stars-anunnaki/). The public page text was inspected; the integration is based on the pinned release source, not a claim that the modified runtime has been deployed there.
