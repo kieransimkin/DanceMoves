@@ -488,5 +488,5 @@
     teardown: function (id) { var instance = instances.get(String(id)); if (instance) instance.teardown(); },
     teardownAll: function () { Array.from(instances.values()).forEach(function (instance) { instance.teardown(); }); }
   });
-  document.dispatchEvent(new CustomEvent("dance-moves-effects-ready", { detail: { api: window.DanceMovesEffects, version: window.DanceMovesEffects.version } }));
+  document.dispatchEvent(new CustomEvent("dance-moves-effects-ready", { bubbles: true, detail: { api: window.DanceMovesEffects, version: window.DanceMovesEffects.version } }));
 }(window, document));

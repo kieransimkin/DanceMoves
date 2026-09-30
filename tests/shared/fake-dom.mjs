@@ -40,7 +40,7 @@ export function environment(){
   fetch:async()=>new Response(''),getComputedStyle:element=>element.style,
   matchMedia(query){if(!media.has(query))media.set(query,Object.assign(new EventTarget(),{matches:false}));return media.get(query);}
  });
- Object.assign(doc,{defaultView:host,hidden:false,readyState:'complete',styleSheets:[],createElement(tag){return new Element(doc,tag);},createElementNS(ns,tag){return new Element(doc,tag);}});
+ Object.assign(doc,{defaultView:host,hidden:false,readyState:'complete',styleSheets:[],createElement(tag){return new Element(doc,tag);},createElementNS(ns,tag){return new Element(doc,tag);},querySelectorAll(selector){return this.documentElement.querySelectorAll(selector);},querySelector(selector){return this.documentElement.querySelector(selector);},getElementById(id){return this.documentElement.querySelector('#'+id);}});
  doc.documentElement=new Element(doc,'html');doc.head=new Element(doc,'head');doc.body=new Element(doc,'body');doc.documentElement.append(doc.head,doc.body);
  const root=new Element(doc);doc.body.append(root);
  return {host,doc,root,frames,timers,media,advance(ms=16){time+=ms;const callbacks=[...frames.values()];frames.clear();callbacks.forEach(fn=>fn(time));},setTime(ms){time=ms;}};

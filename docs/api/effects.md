@@ -4,7 +4,7 @@
 [Release adapters](adapters.md) · [CSS/HTML](styling.md)
 
 Source: [assets/dance-moves-effects.js](../../assets/dance-moves-effects.js).
-Current shared-library baseline: **3.0.4**. Historical 2.7/2.8 notes below
+Current shared-library baseline: **3.0.5**. Historical 2.7/2.8 notes below
 identify when the earlier primitives were introduced.
 
 This is the reusable, page-independent layer introduced in 2.7 and extended with
@@ -21,9 +21,11 @@ catalogue adopter. The module installs only if `window.DanceMoves` already exist
 and `window.DanceMovesEffects` does not. It does not retry a missing dependency.
 Its `version` property copies `DanceMoves.version`.
 
-After installation it dispatches **`dance-moves-effects-ready`** on **`document`**
-with `detail: { api: window.DanceMovesEffects, version: string }`. It is a native
-`CustomEvent` with default `bubbles: false` and `cancelable: false`. It fires once
+After installation it dispatches **`dance-moves-effects-ready`** from the scoped
+EPK root, or from `document` in WordPress compatibility mode, with
+`detail: { api: window.DanceMovesEffects, version: string }`. It is a native
+`CustomEvent` with `bubbles: true` and `cancelable: false`, so established
+document-level adapters receive it in either mode. It fires once
 per successful installation; a late listener does not receive a replay.
 
 ```js

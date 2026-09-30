@@ -83,7 +83,7 @@ const document = Object.assign(emitter(documentListeners), {
   dispatchEvent() {}
 });
 const motion = {
-  version: '3.0.4',
+  version: '3.0.5',
   durationMilliseconds(ticks) { return ticks * 10; },
   onLyric(handler) { lyricHandlers.push(handler); return () => lyricHandlers.splice(lyricHandlers.indexOf(handler), 1); },
   onCue(name, handler) { cueHandlers.push(handler); return () => cueHandlers.splice(cueHandlers.indexOf(handler), 1); }
