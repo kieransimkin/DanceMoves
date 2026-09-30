@@ -4,12 +4,13 @@
 [Release adapters](adapters.md) · [CSS/HTML](styling.md)
 
 Source: [assets/dance-moves-effects.js](../../assets/dance-moves-effects.js).
-Baseline: **2.8.0 / `4cb6a71f60459b5579be87d7e55ac8b1426c578e`**.
+Current shared-library baseline: **3.0.4**. Historical 2.7/2.8 notes below
+identify when the earlier primitives were introduced.
 
 This is the reusable, page-independent layer introduced in 2.7 and extended with
-`cueTimeline()` in 2.8. It supplies mechanisms rather than artwork. It does not
+`cueTimeline()` in 2.8 and `lyricStage()` in 3.0.4. It supplies mechanisms rather than artwork. It does not
 replace the core's LRC parser, audio discovery, named cue subscriptions or clock.
-It contains five factories and four registry methods. Every factory returns a
+It contains six factories and four registry methods. Every factory returns a
 frozen handle with `id`, `type`, `snapshot()` and `teardown()` plus the methods
 specified below. The returned object is frozen; its internal state is mutable.
 
@@ -18,7 +19,7 @@ specified below. The returned object is frozen; its internal state is mutable.
 WordPress enqueues `dance-moves-effects` after `dance-moves-core`, before the
 catalogue adopter. The module installs only if `window.DanceMoves` already exists
 and `window.DanceMovesEffects` does not. It does not retry a missing dependency.
-Its `version` property copies `DanceMoves.version`, normally `"2.8.0"`.
+Its `version` property copies `DanceMoves.version`.
 
 After installation it dispatches **`dance-moves-effects-ready`** on **`document`**
 with `detail: { api: window.DanceMovesEffects, version: string }`. It is a native
@@ -393,6 +394,38 @@ The example's timestamps are illustrative, not actual song data. Keep meaningful
 section styling readable when motion is stopped, and add explicit reduced-motion
 and forced-colour CSS for any animated treatment.
 
+## lyricStage(options)
+
+Returns `{ id, type: "lyric-stage", restore, snapshot, teardown }`, or a
+temporary `lyric-stage-pending` handle while the core lyric popover is being
+created. It upgrades the neutral popover into previous/current/next visible
+slots without parsing the LRC again or adding a page-owned playback clock.
+
+| Option | Default | Meaning |
+| --- | --- | --- |
+| `root`, `id` | Shared options | Release root and stable registry identity. |
+| `audio` | First root `audio` | Required playback element or selector. |
+| `popover` | `.dance-moves-lyric-popover` | Existing core popover. When absent, mounting waits for `dance-moves-lyric-ready`. |
+| `travelTicks` | `32` | Positive integer duration of the approach to the next visible line. |
+| `cueDurationTicks` | `32` | Default finite lifetime for `renderCue` output. |
+| `render(state)` | Unset | State callback for phase, progress, resize and lifecycle reconciliation. |
+| `renderLyric(state)` | Unset | Release-owned finite lyric treatment. May return a cleanup function or `{durationTicks, cleanup}`. |
+| `renderCue(state)` | Unset | Release-owned bounded cue treatment with the same cleanup forms. |
+
+The slots are `{previous,current,next,viewport,track}`. Lyric detail includes the
+core `previousVisible*` and `nextVisible*` fields, so blank clear entries remain
+part of the canonical timeline while the visual stage shows meaningful neighbours.
+Phases include `waiting`, `travelling`, `arrived`, `paused`, `ended` and
+`inactive`. Progress is clamped to `0..1` and published as
+`--dance-moves-lyric-progress`.
+
+DanceMoves owns lyric/cue subscriptions, media events, the animation frame,
+wake-up timers, visibility, resize, reduced motion, forced colours and teardown.
+Page callbacks may style or animate a bounded release-specific subject; they
+must not attach a second LRC parser, media listener or clock. Teardown cancels
+finite callback work, restores the original current-text node and removes the
+stage wrapper and public stage attributes.
+
 ## quality(options)
 
 Returns `{ id, type: "quality", setTier, snapshot, teardown }`. This reusable
@@ -456,6 +489,8 @@ primitive. Keep cheaper tiers visually acceptable and benchmark the whole page.
 The shipped [cue-timeline contract](../../tests/cue-timeline.test.cjs) exercises
 crossing deduplication, pause/resume, forward/backward seeks, active-interval and
 visibility reconstruction, and registry removal. The
+[lyric-stage contract](../../tests/lyric-stage.test.cjs) exercises neighbour
+selection, travel progress, cue/lyric cleanup, preferences and teardown. The
 [primitive contract](../../tests/effects-primitives.test.cjs) is mostly static
 source assertions. Neither establishes physical-device frame performance or
 complete callback-error, duplicate-ID, accessibility or post-teardown coverage.

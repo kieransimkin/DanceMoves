@@ -14,19 +14,24 @@ export interface Options extends PageConfig {
 }
 export type OrientationAdapter = 'light-will-win'|'dying-for-a-diagnosis'|'presents-and-chocolate'|'fully-nocturnal'|'amnesty-honestly'|'walk-with-me'|'dmitri-my-talisman'|'clay-stars'|'california-screamin';
 export interface Cue {time:number;type:string;name:string;label?:string;normalisedType?:string;normalisedName?:string;normalisedLabel?:string;audio?:HTMLAudioElement|null}
-export interface Lyric {time:number;text:string;normalisedText?:string;audio?:HTMLAudioElement|null;nextTime?:number|null;nextText?:string;nextVisibleTime?:number|null;nextVisibleText?:string;[field:string]:unknown}
+export interface Lyric {time:number;text:string;normalisedText?:string;audio?:HTMLAudioElement|null;previousVisibleTime?:number|null;previousVisibleText?:string;previousVisibleNormalisedText?:string;previousVisibleIndex?:number;nextTime?:number|null;nextText?:string;nextVisibleTime?:number|null;nextVisibleText?:string;nextVisibleNormalisedText?:string;nextVisibleIndex?:number;[field:string]:unknown}
 export interface Clock {clock?:'page'|'audio';audio?:HTMLAudioElement;bpm?:number;strictlyFuture?:boolean;handlerId?:string}
 export interface IntervalDetail {intervalTicks:number;boundaryTick:number;audio:HTMLAudioElement|null;clock:'page'|'audio'}
 export interface Controller {id?:string;teardown():void;snapshot():Record<string,unknown>}
 export interface PointerController extends Controller {set(x:number,y:number,reason?:string):void;reset(reason?:string):void}
 export interface QualityController extends Controller {setTier(index:number,reason?:string):void}
 export interface CueTimelineController extends Controller {restore(reason?:string):void;start(reason?:string):void;stop(reason?:string):void}
+export interface LyricStageController extends Controller {restore(reason?:string):void}
+export interface LyricStageSlots {previous:HTMLElement;current:HTMLElement;next:HTMLElement;viewport:HTMLElement;track:HTMLElement}
+export interface LyricStageState {root:Element;popover:HTMLElement;audio:HTMLAudioElement;slots:LyricStageSlots;detail?:Lyric|null;phase?:string;progress?:number;reason?:string;playing?:boolean;reducedMotion:boolean;forcedColours:boolean;[field:string]:unknown}
+export type LyricStageCleanup = void | (()=>void) | {durationTicks?:number;cleanup?:()=>void};
 export interface Effects {
  version:string;
  pointer(options:EffectOptions & {target?:Element|string;bounds?:Element|string;render?:(point:{x:number;y:number;reason?:string})=>void}):PointerController;
  playbackPulse(options:EffectOptions & {audio?:HTMLAudioElement|string;ticks?:number;className?:string;propertyPrefix?:string;render?:(state:Record<string,unknown> & {audio:HTMLAudioElement})=>void}):Controller & {sync():void};
  cueClass(options:EffectOptions & {cue?:string;className?:string;durationTicks?:number;render?:(state:Record<string,unknown>)=>void}):Controller & {fire(cue?:Cue):void;clear(reason?:string):void};
  cueTimeline(options:EffectOptions & {audio?:HTMLAudioElement|string;cues:Array<{id?:string;time:number;end?:number;[key:string]:unknown}>;onCue?:(event:Record<string,unknown>)=>void;render?:(state:Record<string,unknown>)=>void}):CueTimelineController;
+ lyricStage(options:EffectOptions & {audio?:HTMLAudioElement|string;popover?:HTMLElement|string;travelTicks?:number;cueDurationTicks?:number;render?:(state:LyricStageState)=>void;renderLyric?:(state:LyricStageState & {previousDetail?:Lyric|null;previousText?:string})=>LyricStageCleanup;renderCue?:(state:LyricStageState & {detail:Cue;count:number})=>LyricStageCleanup}):LyricStageController|Controller;
  quality(options:EffectOptions & {tiers?:string[];render?:(state:{tier:string;index:number;reason:string;sample?:{fps:number}})=>void;[key:string]:unknown}):QualityController;
  get(id:string):Controller|null;snapshot():Record<string,unknown>[];teardown(id:string):void;teardownAll():void;
 }

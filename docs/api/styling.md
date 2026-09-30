@@ -3,8 +3,7 @@
 [Documentation index](../README.md) · [JavaScript](javascript.md) ·
 [Adapters](adapters.md)
 
-Baseline: DanceMoves 2.8.0, commit
-`4cb6a71f60459b5579be87d7e55ac8b1426c578e`.
+Current shared-library baseline: DanceMoves 3.0.4.
 Sources: [core JavaScript](../../assets/dance-moves-core.js),
 [core stylesheet](../../assets/dance-moves-core.css),
 [catalogue adopter](../../assets/dance-moves-catalogue-timing.js),
@@ -127,6 +126,28 @@ these properties on a matching component selector, not only on an ancestor.
 | `data-dance-moves-lyric-index` | Index of the last rendered lyric entry, including `-1` before the first entry. Not present before the first update. |
 | `data-dance-moves-lyric-pulse="true"` | Removed and re-added on index changes to restart the text arrival animation. |
 | `dance-moves-lyric-arrive` | Neutral six-tick arrival keyframe animation, attached to the text span while the pulse marker is present. |
+
+Calling `DanceMovesEffects.lyricStage()` changes the interior to a shared
+three-line structure while preserving the same popover:
+
+```html
+<div class="dance-moves-lyric-popover" data-dance-moves-lyric-stage="ready">
+  <div class="dance-moves-lyric-stage__viewport">
+    <div class="dance-moves-lyric-stage__track">
+      <span class="dance-moves-lyric-stage__line dance-moves-lyric-stage__line--previous"></span>
+      <span class="dance-moves-lyric-popover__text dance-moves-lyric-stage__line dance-moves-lyric-stage__line--current"></span>
+      <span class="dance-moves-lyric-stage__line dance-moves-lyric-stage__line--next"></span>
+    </div>
+  </div>
+</div>
+```
+
+The stage publishes `data-dance-moves-lyric-phase`, per-line
+`data-dance-moves-lyric-slot` and `data-dance-moves-lyric-index`, plus the
+`--dance-moves-lyric-progress` and `--dance-moves-lyric-stage-step` properties.
+The neutral track moves only within the bounded lyric viewport. Reduced motion
+and forced colours remove the travel transform while keeping the current text
+readable; release CSS may change appearance but must preserve that fallback.
 
 The default text block has a maximum width of `min(44rem, 100%)`, balanced centred
 text and responsive font sizing. Reduced motion removes component animation,

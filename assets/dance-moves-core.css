@@ -60,6 +60,59 @@ html[data-dance-moves-shared-controls="true"] .ks-epk .epk-download {
   animation: dance-moves-lyric-arrive var(--dance-moves-6t) ease both;
 }
 
+/* Opt-in shared three-line lyric stage. DanceMoves owns the scrolling state;
+   each release still supplies its own bounded visual treatment. */
+.dance-moves-lyric-popover[data-dance-moves-lyric-stage="ready"] {
+  --dance-moves-lyric-stage-step: 4.75rem;
+  --dance-moves-lyric-progress: 0;
+  overflow: hidden;
+  height: calc(var(--dance-moves-lyric-stage-step) * 3);
+  align-items: stretch;
+}
+
+.dance-moves-lyric-stage__viewport {
+  width: min(48rem, 100%);
+  height: 100%;
+  overflow: hidden;
+}
+
+.dance-moves-lyric-stage__track {
+  display: grid;
+  grid-template-rows: repeat(3, var(--dance-moves-lyric-stage-step));
+  transform: translate3d(0, calc(var(--dance-moves-lyric-progress) * var(--dance-moves-lyric-stage-step) * -1), 0);
+  will-change: transform;
+}
+
+.dance-moves-lyric-stage__line {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  padding: 0.4rem 1rem;
+  color: var(--dance-moves-lyric-color);
+  font: 650 clamp(0.92rem, 2.2vw, 1.22rem)/1.25 system-ui, sans-serif;
+  text-align: center;
+  text-wrap: balance;
+  opacity: 0.58;
+}
+
+.dance-moves-lyric-stage__line--current {
+  opacity: 1;
+}
+
+.dance-moves-lyric-popover[data-dance-moves-lyric-stage="ready"] .dance-moves-lyric-popover__text {
+  max-width: none;
+  padding: 0.4rem 1rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  animation: none;
+}
+
+.dance-moves-lyric-popover[data-dance-moves-lyric-stage="ready"][data-dance-moves-lyric-phase="waiting"] .dance-moves-lyric-stage__track {
+  will-change: auto;
+}
+
 @keyframes dance-moves-lyric-arrive {
   from { transform: translateY(0.4rem) scale(0.98); }
   to { transform: translateY(0) scale(1); }
@@ -89,7 +142,8 @@ html[data-dance-moves-shared-controls="true"] .ks-epk .epk-download {
   }
 
   .dance-moves-lyric-popover,
-  .dance-moves-lyric-popover__text {
+  .dance-moves-lyric-popover__text,
+  .dance-moves-lyric-stage__track {
     animation: none !important;
     transition: none !important;
     transform: none !important;

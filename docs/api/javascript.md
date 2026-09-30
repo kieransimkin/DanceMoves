@@ -350,6 +350,9 @@ LyricDetail = {
   time: number,                 // entry seconds; 0 if no entry
   text: string, normalisedText: string,
   index: number,                // zero-based; -1 before the first entry
+  previousVisibleTime: number | null,
+  previousVisibleText: string, previousVisibleNormalisedText: string,
+  previousVisibleIndex: number,
   nextTime: number | null,
   nextText: string, nextNormalisedText: string, nextIndex: number,
   nextVisibleTime: number | null,
@@ -359,7 +362,8 @@ LyricDetail = {
 }
 ```
 
-`next*` describes the **immediately following LRC entry**, including a blank
+`previousVisible*` scans backwards to the first nonblank trimmed lyric. `next*`
+describes the **immediately following LRC entry**, including a blank
 clear. `nextVisible*` scans forward to the first nonblank trimmed lyric, skipping
 all blank clears. Missing next entries use `null` time, `""` text/normalised text
 and `-1` index. Before the first entry, look-ahead starts at entry zero. Repeated
@@ -369,8 +373,9 @@ cue-name normalisation, not a translation or Unicode-preserving identifier.
 For `[00:01]A`, `[00:02]`, `[00:03]B`, the A event has `nextTime: 2`,
 `nextText: ""`, `nextVisibleTime: 3`, and `nextVisibleText: "B"`. A preview should
 use those timestamps with `detail.audio.currentTime`; do not parse the LRC twice
-or assume the next visible line starts at the blank clear. Fields were added by
-the 2.4.1/2.5.1 changes and are included in 2.8.0.
+or assume the next visible line starts at the blank clear. The forward fields
+were added by the 2.4.1/2.5.1 changes; the previous-visible fields were added
+with the shared lyric stage in 3.0.4.
 
 After callbacks, the core dispatches bubbling `dance-moves-lyric` on `document`
 with the same detail. It then updates the built-in visual layer when enabled.

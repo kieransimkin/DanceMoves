@@ -3,8 +3,9 @@
 **DanceFlow musical motion by Kieran Simkin.** One JavaScript runtime for plain
 websites, React, Next.js and the separately packaged WordPress adapter.
 
-**3.0.0 source candidate** based on the published 2.9.0 release. Applying this
-patch neither publishes npm nor updates a WordPress installation.
+**3.0.4 release candidate** based on the published 3.0.3 shared-library release.
+It adds the shared three-slot lyric stage used by existing WordPress EPKs without
+restoring the duplicate raw-script layout removed in 3.0.
 
 ## Shared JavaScript library and WordPress
 
@@ -587,7 +588,7 @@ than treating historical release notes as the current API contract.
 | Reference | Contents |
 | --- | --- |
 | [Core JavaScript](docs/api/javascript.md) | All clock, interval, parser, cue, lyric, animation-scope and diagnostic methods; exact cue landings; immediate-next and next-visible lyric payloads. |
-| [Shared effects](docs/api/effects.md) | `pointer`, `playbackPulse`, `cueClass`, `cueTimeline`, `quality`; all options, callbacks, returned handles and registry methods. |
+| [Shared effects](docs/api/effects.md) | `pointer`, `playbackPulse`, `cueClass`, `cueTimeline`, `lyricStage`, `quality`; all options, callbacks, returned handles and registry methods. |
 | [WordPress, PHP and REST](docs/api/wordpress.md) | Page metadata, helpers, editor validation, asset dependencies, hooks and full motion-capture request/response contract. |
 | [Signed MP3 downloads](docs/api/downloads.md) | All eight download helpers, anchor rewriting, signed GET/HEAD endpoint, response headers, errors and security limits. |
 | [Paper planes](docs/api/paper-planes.md) | Ambient-effect selection, hero markup, configuration, snapshot/teardown, compact mode and accessibility behaviour. |

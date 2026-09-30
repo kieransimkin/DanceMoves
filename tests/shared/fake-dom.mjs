@@ -17,7 +17,8 @@ export class Element extends EventTarget {
  get id(){return this.getAttribute('id')||'';}set id(value){this.setAttribute('id',value);}
  get className(){return this.getAttribute('class')||'';}set className(value){this.setAttribute('class',value);}
  getAttribute(k){return this.attributes.get(k)??null;}setAttribute(k,v){this.attributes.set(k,String(v));}removeAttribute(k){this.attributes.delete(k);}hasAttribute(k){return this.attributes.has(k);}
- appendChild(node){this.children.push(node);node.parentNode=this;return node;}append(...nodes){nodes.forEach(n=>this.appendChild(n));}
+ appendChild(node){if(node.parentNode)node.parentNode.children=node.parentNode.children.filter(child=>child!==node);this.children.push(node);node.parentNode=this;return node;}append(...nodes){nodes.forEach(n=>this.appendChild(n));}
+ removeChild(node){if(node.parentNode!==this)throw new Error('NotFoundError');this.children=this.children.filter(child=>child!==node);node.parentNode=null;return node;}
  remove(){if(this.parentNode)this.parentNode.children=this.parentNode.children.filter(n=>n!==this);this.parentNode=null;this.isConnected=false;}
  contains(node){return node===this||this.children.some(c=>c.contains(node));}
  matches(selector){return selector.split(',').some(s=>{s=s.trim();return s==='*'||s.toUpperCase()===this.tagName||s==='#'+this.id||s==='[id]'&&!!this.id||s.startsWith('.')&&s.slice(1).split('.').every(k=>this.classList.contains(k));});}

@@ -14,3 +14,7 @@ __pycache__/
 *.pyc
 release-output/
 *.tgz
+dist/DanceMoves-browser-*.zip
+dist/DanceMoves-browser-*-manifest.json
+dist/DanceMoves-wordpress-*.zip
+dist/DanceMoves-wordpress-*-manifest.json

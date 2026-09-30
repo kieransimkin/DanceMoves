@@ -90,6 +90,9 @@ function element(tagName) {
   assert.equal(firstEvent.detail.nextVisibleTime, 1, "the next visible lyric may share a blank cue timestamp");
   assert.equal(firstEvent.detail.nextVisibleText, "Second line");
   assert.equal(firstEvent.detail.nextVisibleIndex, 2);
+  assert.equal(firstEvent.detail.previousVisibleTime, null);
+  assert.equal(firstEvent.detail.previousVisibleText, "");
+  assert.equal(firstEvent.detail.previousVisibleIndex, -1);
 
   audio.currentTime = 1.1;
   frames.shift()();
@@ -101,6 +104,9 @@ function element(tagName) {
   assert.equal(lastEvent.detail.nextVisibleTime, null);
   assert.equal(lastEvent.detail.nextVisibleText, "");
   assert.equal(lastEvent.detail.nextVisibleIndex, -1);
+  assert.equal(lastEvent.detail.previousVisibleTime, 0);
+  assert.equal(lastEvent.detail.previousVisibleText, "First line", "blank entries are skipped when finding the previous visible lyric");
+  assert.equal(lastEvent.detail.previousVisibleIndex, 0);
 
   audio.paused = true;
   audioListeners.pause();
