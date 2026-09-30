@@ -1,0 +1,237 @@
+diff --git a/package.json b/package.json
+--- a/package.json
++++ b/package.json
+@@ -7,7 +7,7 @@
+     "name": "Kieran Simkin",
+     "url": "https://kieransimkin.co.uk/"
+   },
+-  "homepage": "https://github.com/kieransimkin/DanceMoves#readme",
++  "homepage": "https://kieransimkin.co.uk/my-songs/",
+   "repository": {
+     "type": "git",
+     "url": "git+https://github.com/kieransimkin/DanceMoves.git"
+diff --git a/kieran-epk-device-orientation.php b/kieran-epk-device-orientation.php
+--- a/kieran-epk-device-orientation.php
++++ b/kieran-epk-device-orientation.php
+@@ -1,8 +1,10 @@
+ <?php
+ /**
+  * Plugin Name: DanceMoves
++ * Plugin URI: https://kieransimkin.co.uk/my-songs/
+  * Description: Adds BPM-synchronised motion, lyric and cue timing properties, reliable EPK downloads, named cue handlers, and permission-aware orientation control to EPK pages.
+  * Version: 3.0.2
+  * Author: Kieran Simkin
++ * Author URI: https://kieransimkin.co.uk/my-songs/
+  * License: GPL-2.0-or-later
+  */
+diff --git a/tools/build-shared.mjs b/tools/build-shared.mjs
+--- a/tools/build-shared.mjs
++++ b/tools/build-shared.mjs
+@@ -31,6 +31,6 @@
+  });
+ }
+-fs.writeFileSync(path.join(lib,'build-manifest.json'),JSON.stringify({schema:'dancemoves-library-build/v1',name:packageInfo.name,version:packageInfo.version,files:inventory(lib)},null,2)+'\n');
++fs.writeFileSync(path.join(lib,'build-manifest.json'),JSON.stringify({schema:'dancemoves-library-build/v1',name:packageInfo.name,version:packageInfo.version,homepage:packageInfo.homepage,files:inventory(lib)},null,2)+'\n');
+ if (target!=='library') {
+   const wp=path.join(ROOT,'.build/wordpress');fs.rmSync(wp,{recursive:true,force:true});fs.mkdirSync(path.join(wp,'lib/assets'),{recursive:true});
+   fs.mkdirSync(path.join(wp,'lib/styles'),{recursive:true});
+@@ -47,7 +47,7 @@
+   fs.mkdirSync(path.join(wp,'docs'),{recursive:true});
+   for(const file of fs.readdirSync('docs').filter(name=>name.endsWith('.md'))) fs.copyFileSync(path.join('docs',file),path.join(wp,'docs',file));
+   fs.copyFileSync('RUDIMENTS-API.md',path.join(wp,'RUDIMENTS-API.md'));
+-  fs.writeFileSync(path.join(wp,'README.md'),`# DanceMoves ${packageInfo.version} for WordPress\n\n[WordPress setup and all six Page metadata fields](docs/wordpress-shared-runtime.md)\n\nThis archive imports the shared DanceMoves JavaScript library.\nSource, JavaScript/React/Next.js packages and release artifacts: https://github.com/kieransimkin/DanceMoves\n`);
+-  fs.writeFileSync(path.join(wp,'library-manifest.json'),JSON.stringify({schema:'dancemoves-wordpress-library/v1',name:packageInfo.name,version:packageInfo.version,frontend:inventory(path.join(wp,'lib'))},null,2)+'\n');
++  fs.writeFileSync(path.join(wp,'README.md'),`# DanceMoves ${packageInfo.version} for WordPress\n\nHomepage: ${packageInfo.homepage}\n\n[WordPress setup and all six Page metadata fields](docs/wordpress-shared-runtime.md)\n\nThis archive imports the shared DanceMoves JavaScript library.\nSource, JavaScript/React/Next.js packages and release artifacts: https://github.com/kieransimkin/DanceMoves\n`);
++  fs.writeFileSync(path.join(wp,'library-manifest.json'),JSON.stringify({schema:'dancemoves-wordpress-library/v1',name:packageInfo.name,version:packageInfo.version,homepage:packageInfo.homepage,frontend:inventory(path.join(wp,'lib'))},null,2)+'\n');
+ }
+ console.log(`Built ${packageInfo.name}@${packageInfo.version}: ESM, CommonJS, React, Node, minified browser${target!=='library'?' and WordPress adapter':''}`);
+diff --git a/tools/package-wordpress.py b/tools/package-wordpress.py
+--- a/tools/package-wordpress.py
++++ b/tools/package-wordpress.py
+@@ -38,6 +38,6 @@
+         for p,n in zip(files,names):
+             entry=zipfile.ZipInfo(slug+'/'+n,(2020,1,1,0,0,0));entry.external_attr=0o100644<<16;entry.compress_type=zipfile.ZIP_DEFLATED;z.writestr(entry,p.read_bytes())
+-    manifest={'schema':'dance-moves-package/v1','plugin_name':'DanceMoves','version':version,'wordpress_upgrade_slug':slug,
++    manifest={'schema':'dance-moves-package/v1','plugin_name':'DanceMoves','version':version,'homepage':pkg.get('homepage',''),'wordpress_upgrade_slug':slug,
+       'zip':archive.name,'zip_bytes':archive.stat().st_size,'zip_sha256':digest(archive.read_bytes()),'entry_count':len(files),
+       'root_entrypoint':slug+'/kieran-epk-device-orientation.php','root_entrypoint_present':True,'forward_slash_entries':True,
+       'files':[{'path':slug+'/'+n,'bytes':p.stat().st_size,'sha256':digest(p.read_bytes())} for p,n in zip(files,names)]}
+diff --git a/tools/package-web.py b/tools/package-web.py
+--- a/tools/package-web.py
++++ b/tools/package-web.py
+@@ -5,6 +5,7 @@
+ ROOT=Path(__file__).resolve().parents[1]
+ def main():
+-    version=json.loads((ROOT/'package.json').read_text())['version'];lib=ROOT/'lib'
++    pkg=json.loads((ROOT/'package.json').read_text());version=pkg['version'];lib=ROOT/'lib'
++    homepage=pkg.get('homepage','')
+     files=[lib/'dancemoves.min.js',lib/'dancemoves.css',lib/'build-manifest.json',ROOT/'LICENSE']+sorted((lib/'assets').glob('*'))
+     if any(not p.is_file() for p in files):raise SystemExit('Run npm run build:library first')
+     manifest=json.loads((lib/'build-manifest.json').read_text('utf-8'))
+@@ -19,7 +20,7 @@
+         for p in files:
+             name=p.relative_to(lib).as_posix() if p.is_relative_to(lib) else p.name
+             info=zipfile.ZipInfo(f'dancemoves-{version}/'+name,(2020,1,1,0,0,0));info.external_attr=0o100644<<16;info.compress_type=zipfile.ZIP_DEFLATED;z.writestr(info,p.read_bytes())
+-    manifest={'schema':'dancemoves-web/v1','version':version,'zip':output.name,'sha256':hashlib.sha256(output.read_bytes()).hexdigest(),
++    manifest={'schema':'dancemoves-web/v1','version':version,'homepage':homepage,'zip':output.name,'sha256':hashlib.sha256(output.read_bytes()).hexdigest(),
+       'files':[{'path':p.relative_to(lib).as_posix() if p.is_relative_to(lib) else p.name,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()} for p in files]}
+     (dist/f'DanceMoves-web-{version}-manifest.json').write_text(json.dumps(manifest,indent=2)+'\n',encoding='utf-8',newline='\n');print(output)
+ if __name__=='__main__':main()
+diff --git a/.github/workflows/release.yml b/.github/workflows/release.yml
+--- a/.github/workflows/release.yml
++++ b/.github/workflows/release.yml
+@@ -78,9 +78,6 @@
+           path: release-output/
+       - run: node tools/verify-release-output.mjs
+       - run: node tools/publish-npm.mjs
+-        env:
+-          # Optional one-time bootstrap only. Remove after setting up npm trusted publishing.
+-          NODE_AUTH_TOKEN: ${{ secrets.NPM_BOOTSTRAP_TOKEN }}
+   github:
+     needs: [build, npm]
+     runs-on: ubuntu-latest
+diff --git a/tools/publish-github.mjs b/tools/publish-github.mjs
+--- a/tools/publish-github.mjs
++++ b/tools/publish-github.mjs
+@@ -1,20 +1,88 @@
+-/** Create/update only the release for the existing tag; do not clobber assets. */
+-import fs from 'node:fs';import {createHash} from 'node:crypto';import {spawnSync} from 'node:child_process';
++/** Create/update only the release for the existing tag; do not clobber assets. */
++import fs from 'node:fs';
++import {createHash} from 'node:crypto';
++
+ const pkg=JSON.parse(fs.readFileSync('package.json','utf8')),tag=`v${pkg.version}`,repo=process.env.GITHUB_REPOSITORY;
+ if(repo!=='kieransimkin/DanceMoves')throw new Error('Release publishing is restricted to kieransimkin/DanceMoves');
+ const token=process.env.GH_TOKEN;if(!token)throw new Error('GH_TOKEN missing');
+-const endpoint=`https://api.github.com/repos/${repo}/releases/tags/${encodeURIComponent(tag)}`;
++const api=`https://api.github.com/repos/${repo}`;
+ const headers={Accept:'application/vnd.github+json',Authorization:`Bearer ${token}`,'X-GitHub-Api-Version':'2022-11-28'};
+-function gh(args){const r=spawnSync('gh',args,{stdio:'inherit'});if(r.status!==0)throw new Error('GitHub release command failed; inspect existing assets before retrying');}
+-let response=await fetch(endpoint,{headers,signal:AbortSignal.timeout(30000)});
+-if(response.status===404){gh(['release','create',tag,'--repo',repo,'--verify-tag','--draft','--title',`DanceMoves ${pkg.version}`,'--notes',`Shared JavaScript, React/Next.js and WordPress build. Install the attached WordPress ZIP, not Source code. See the tagged documentation for usage and npm publishing.\n\nAll attachment digests are in SHA256SUMS.txt.`]);response=await fetch(endpoint,{headers});}
+-if(!response.ok)throw new Error(`Could not inspect release (${response.status})`);
+-const release=await response.json();
++
++async function request(url,options={}){
++ const response=await fetch(url,{...options,headers:{...headers,...(options.headers||{})},signal:AbortSignal.timeout(30000)});
++ return response;
++}
++
++async function findRelease(){
++ for(let page=1;page<=10;page++){
++  const response=await request(`${api}/releases?per_page=100&page=${page}`);
++  if(!response.ok)throw new Error(`Could not list releases (${response.status})`);
++  const releases=await response.json();
++  const found=releases.find(item=>item.tag_name===tag);
++  if(found)return found;
++  if(releases.length<100)break;
++ }
++ return null;
++}
++
++const tagCheck=await request(`${api}/git/ref/tags/${encodeURIComponent(tag)}`);
++if(!tagCheck.ok)throw new Error(`Release tag ${tag} is not available (${tagCheck.status})`);
++
++let release=await findRelease();
++if(!release){
++ const notes=`Shared JavaScript, React/Next.js and WordPress build.
++
++Homepage: ${pkg.homepage}
++
++Install the attached WordPress ZIP, not Source code. The npm tarball and
++minified browser ZIP are attached from the same tested build.
++
++All attachment digests are in SHA256SUMS.txt.`;
++ const response=await request(`${api}/releases`,{
++  method:'POST',
++  headers:{'Content-Type':'application/json'},
++  body:JSON.stringify({
++   tag_name:tag,
++   name:`DanceMoves ${pkg.version}`,
++   body:notes,
++   draft:true,
++   prerelease:pkg.version.includes('-')
++  })
++ });
++ if(!response.ok)throw new Error(`Could not create draft release (${response.status}): ${await response.text()}`);
++ release=await response.json();
++}
++
++if(!Array.isArray(release.assets))release.assets=[];
+ for(const name of fs.readdirSync('release-output').filter(n=>n!=='build-package-lock.json').sort()){
+  const file='release-output/'+name,bytes=fs.readFileSync(file),expected='sha256:'+createHash('sha256').update(bytes).digest('hex');
+  const existing=release.assets.find(a=>a.name===name);
+- if(existing){let actual=existing.digest;if(!actual){const r=await fetch(existing.url,{headers:{...headers,Accept:'application/octet-stream'}});if(!r.ok)throw new Error('Cannot verify existing asset '+name);actual='sha256:'+createHash('sha256').update(Buffer.from(await r.arrayBuffer())).digest('hex');}if(actual!==expected)throw new Error('Existing GitHub asset differs: '+name+'; use a new release version.');console.log('Keeping identical asset '+name);}
+- else gh(['release','upload',tag,file,'--repo',repo]);
++ if(existing){
++  let actual=existing.digest;
++  if(!actual){
++   const response=await request(existing.url,{headers:{Accept:'application/octet-stream'}});
++   if(!response.ok)throw new Error('Cannot verify existing asset '+name);
++   actual='sha256:'+createHash('sha256').update(Buffer.from(await response.arrayBuffer())).digest('hex');
++  }
++  if(actual!==expected)throw new Error('Existing GitHub asset differs: '+name+'; use a new release version.');
++  console.log('Keeping identical asset '+name);
++  continue;
++ }
++ const uploadBase=release.upload_url.replace(/\{\?name,label\}$/,'');
++ const response=await request(`${uploadBase}?name=${encodeURIComponent(name)}`,{
++  method:'POST',
++  headers:{Accept:'application/vnd.github+json','Content-Type':'application/octet-stream','Content-Length':String(bytes.length)},
++  body:bytes
++ });
++ if(!response.ok)throw new Error(`Could not upload ${name} (${response.status}): ${await response.text()}`);
++ release.assets.push(await response.json());
++ console.log('Uploaded '+name);
+ }
+ const prerelease=pkg.version.includes('-');
+-gh(['release','edit',tag,'--repo',repo,'--draft=false',`--prerelease=${prerelease}`,prerelease?'--latest=false':'--latest']);
++const publish=await request(`${api}/releases/${release.id}`,{
++ method:'PATCH',
++ headers:{'Content-Type':'application/json'},
++ body:JSON.stringify({draft:false,prerelease,make_latest:prerelease?'false':'true'})
++});
++if(!publish.ok)throw new Error(`Could not publish release (${publish.status}): ${await publish.text()}`);
++console.log(`Published GitHub release ${tag} with ${release.assets.length} verified attachment(s).`);
+diff --git a/tests/shared/release-publishing.test.mjs b/tests/shared/release-publishing.test.mjs
+new file mode 100644
+--- /dev/null
++++ b/tests/shared/release-publishing.test.mjs
+@@ -0,0 +0,37 @@
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import fs from 'node:fs';
++
++const read = file => fs.readFileSync(file, 'utf8');
++const homepage = 'https://kieransimkin.co.uk/my-songs/';
++
++test('all distributable package metadata uses the My Songs homepage', () => {
++  const pkg = JSON.parse(read('package.json'));
++  assert.equal(pkg.homepage, homepage);
++  const php = read('kieran-epk-device-orientation.php');
++  assert.match(php, /Plugin URI:\s*https:\/\/kieransimkin\.co\.uk\/my-songs\//);
++  assert.match(read('tools/package-wordpress.py'), /'homepage':pkg\.get\('homepage',''\)/);
++  assert.match(read('tools/package-web.py'), /'homepage':homepage/);
++  const build = read('tools/build-shared.mjs');
++  assert.match(build, /homepage:packageInfo\.homepage/);
++});
++
++test('npm release job is OIDC-only', () => {
++  const workflow = read('.github/workflows/release.yml');
++  assert.match(workflow, /id-token:\s*write/);
++  assert.doesNotMatch(workflow, /NPM_BOOTSTRAP_TOKEN/);
++  assert.doesNotMatch(workflow, /NODE_AUTH_TOKEN/);
++});
++
++test('GitHub release publication can resume drafts and uploads exact artifacts', () => {
++  const publisher = read('tools/publish-github.mjs');
++  assert.match(publisher, /\/releases\?per_page=100/);
++  assert.match(publisher, /draft:true/);
++  assert.match(publisher, /release\.upload_url/);
++  assert.match(publisher, /Content-Type':'application\/octet-stream'/);
++  assert.match(publisher, /Existing GitHub asset differs/);
++  assert.match(publisher, /method:'PATCH'/);
++  assert.match(publisher, /make_latest/);
++  assert.doesNotMatch(publisher, /release','upload/);
++  assert.doesNotMatch(publisher, /--clobber/);
++});

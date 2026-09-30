@@ -30,14 +30,14 @@ def main():
         if digest(data)!=item['sha256'].upper() or len(data)!=item['bytes']:raise SystemExit('WordPress frontend manifest mismatch: '+name)
         if data!=(ROOT/'lib'/name).read_bytes():raise SystemExit('WordPress frontend differs from the shared library artifact: '+name)
     dist=ROOT/'dist';dist.mkdir(exist_ok=True)
-    slug='kieran-epk-device-orientation';archive=dist/f'DanceMoves-{version}.zip'
+    slug='kieran-epk-device-orientation';archive=dist/f'DanceMoves-wordpress-{version}.zip'
     with zipfile.ZipFile(archive,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as z:
         for p,n in zip(files,names):
             entry=zipfile.ZipInfo(slug+'/'+n,(2020,1,1,0,0,0));entry.external_attr=0o100644<<16;entry.compress_type=zipfile.ZIP_DEFLATED;z.writestr(entry,p.read_bytes())
-    manifest={'schema':'dance-moves-package/v1','plugin_name':'DanceMoves','version':version,'wordpress_upgrade_slug':slug,
+    manifest={'schema':'dance-moves-package/v1','plugin_name':'DanceMoves','version':version,'homepage':pkg.get('homepage',''),'wordpress_upgrade_slug':slug,
       'zip':archive.name,'zip_bytes':archive.stat().st_size,'zip_sha256':digest(archive.read_bytes()),'entry_count':len(files),
       'root_entrypoint':slug+'/kieran-epk-device-orientation.php','root_entrypoint_present':True,'forward_slash_entries':True,
       'files':[{'path':slug+'/'+n,'bytes':p.stat().st_size,'sha256':digest(p.read_bytes())} for p,n in zip(files,names)]}
-    manifest_path=dist/f'DanceMoves-{version}-manifest.json';manifest_path.write_text(json.dumps(manifest,indent=2)+'\n',encoding='utf-8',newline='\n')
+    manifest_path=dist/f'DanceMoves-wordpress-{version}-manifest.json';manifest_path.write_text(json.dumps(manifest,indent=2)+'\n',encoding='utf-8',newline='\n')
     print(archive);print(manifest_path);print('SHA256='+manifest['zip_sha256'])
 if __name__=='__main__':main()

@@ -96,9 +96,6 @@ jobs:
           path: release-output/
       - run: node tools/verify-release-output.mjs
       - run: node tools/publish-npm.mjs
-        env:
-          # Optional one-time bootstrap only. Remove after setting up npm trusted publishing.
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_BOOTSTRAP_TOKEN }}
   github:
     needs: [build, npm]
     runs-on: ubuntu-latest

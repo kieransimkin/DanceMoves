@@ -1,9 +1,11 @@
 <?php
 /**
  * Plugin Name: DanceMoves
+ * Plugin URI: https://kieransimkin.co.uk/my-songs/
  * Description: Adds BPM-synchronised motion, lyric and cue timing properties, reliable EPK downloads, named cue handlers, and permission-aware orientation control to EPK pages.
  * Version: 3.0.2
  * Author: Kieran Simkin
+ * Author URI: https://kieransimkin.co.uk/my-songs/
  * License: GPL-2.0-or-later
  */
 

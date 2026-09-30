@@ -1,0 +1,209 @@
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+index cd9c523..eacbfdc 100644
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -40,8 +40,10 @@ jobs:
+         with:
+           name: tested-build-${{ matrix.os }}-node${{ matrix.node }}
+           path: |
+-            dist/DanceMoves-3*.zip
+-            dist/DanceMoves-3*-manifest.json
++            dist/DanceMoves-wordpress-*.zip
++            dist/DanceMoves-wordpress-*-manifest.json
++            dist/DanceMoves-browser-*.zip
++            dist/DanceMoves-browser-*-manifest.json
+             package-lock.json
+   browsers:
+     runs-on: ubuntu-latest
+diff --git a/tests/shared/publish-npm-path.test.mjs b/tests/shared/publish-npm-path.test.mjs
+index ea02639..41e34a4 100644
+--- a/tests/shared/publish-npm-path.test.mjs
++++ b/tests/shared/publish-npm-path.test.mjs
+@@ -15,7 +15,7 @@ async function execute(options = {}) {
+   const calls = [];
+   const requests = [];
+   const version = options.version ?? '3.0.0';
+-  const files = options.files ?? [`kieransimkin-dancemoves-${version}.tgz`];
++  const files = options.files ?? [`DanceMoves-npm-${version}.tgz`];
+   const responses = [...(options.responses ?? [404, published])];
+   const input = (options.source ?? source).replace(/^import[^\n]*;\r?\n/gm, '');
+   assert.doesNotMatch(input, /^import\b/m);
+@@ -60,7 +60,7 @@ test('publisher uses the explicit local tarball and preserves publication flags'
+   const result = await execute();
+   assert.ifError(result.error);
+   assert.equal(result.calls.length, 1);
+-  assert.deepEqual(result.calls[0].args, ['publish', './release-output/kieransimkin-dancemoves-3.0.0.tgz',
++  assert.deepEqual(result.calls[0].args, ['publish', './release-output/DanceMoves-npm-3.0.0.tgz',
+     '--access', 'public', '--provenance', '--ignore-scripts', '--tag', 'latest']);
+   assert.equal(result.requests.length, 2);
+ });
+diff --git a/tests/shared/release-publishing.test.mjs b/tests/shared/release-publishing.test.mjs
+index edb641b..48e31fd 100644
+--- a/tests/shared/release-publishing.test.mjs
++++ b/tests/shared/release-publishing.test.mjs
+@@ -35,3 +35,18 @@ test('GitHub release publication can resume drafts and uploads exact artifacts',
+   assert.doesNotMatch(publisher, /release','upload/);
+   assert.doesNotMatch(publisher, /--clobber/);
+ });
++
++
++test('release artifacts have explicit distribution names', () => {
++  const prepare = read('tools/prepare-release.mjs');
++  const verify = read('tools/verify-release-output.mjs');
++  for (const token of ['DanceMoves-npm-', 'DanceMoves-wordpress-', 'DanceMoves-browser-', 'SHA256SUMS.txt']) {
++    assert.ok(prepare.includes(token), token);
++    assert.ok(verify.includes(token), token);
++  }
++  const publisher = read('tools/publish-github.mjs');
++  assert.match(publisher, /WordPress plugin/);
++  assert.match(publisher, /Browser package/);
++  assert.match(publisher, /npm package/);
++  assert.match(publisher, /label=/);
++});
+diff --git a/tests/shared/test_package_outputs.py b/tests/shared/test_package_outputs.py
+index 3e229fc..ef6b045 100644
+--- a/tests/shared/test_package_outputs.py
++++ b/tests/shared/test_package_outputs.py
+@@ -24,9 +24,9 @@ class PackageTests(unittest.TestCase):
+  def run_builder(self):return subprocess.run([sys.executable,str(self.root/'tools/package-wordpress.py')],text=True,capture_output=True)
+  def test_deterministic_slug_and_hash(self):
+   a=self.run_builder();self.assertEqual(a.returncode,0,a.stderr)
+-  p=self.root/'dist/DanceMoves-3.0.0.zip';data=p.read_bytes();self.assertEqual(self.run_builder().returncode,0);self.assertEqual(p.read_bytes(),data)
++  p=self.root/'dist/DanceMoves-wordpress-3.0.0.zip';data=p.read_bytes();self.assertEqual(self.run_builder().returncode,0);self.assertEqual(p.read_bytes(),data)
+   with zipfile.ZipFile(p) as z:self.assertTrue(all(n.startswith('kieran-epk-device-orientation/') for n in z.namelist()))
+-  m=json.loads((self.root/'dist/DanceMoves-3.0.0-manifest.json').read_text());self.assertEqual(m['zip_sha256'],hashlib.sha256(data).hexdigest().upper())
++  m=json.loads((self.root/'dist/DanceMoves-wordpress-3.0.0-manifest.json').read_text());self.assertEqual(m['zip_sha256'],hashlib.sha256(data).hexdigest().upper())
+  def test_no_duplicate_engine(self):
+   (self.stage/'lib/second-engine.js').write_text('duplicate');self.assertNotEqual(self.run_builder().returncode,0)
+  def test_admin_also_must_equal_library(self):
+diff --git a/tools/package-web.py b/tools/package-web.py
+index 2c3c649..6a07a78 100644
+--- a/tools/package-web.py
++++ b/tools/package-web.py
+@@ -16,12 +16,12 @@ def main():
+         if p.parent==ROOT or p.name=='build-manifest.json':continue
+         name=p.relative_to(lib).as_posix();item=inventory.get(name);data=p.read_bytes()
+         if not item or item['bytes']!=len(data) or item['sha256']!=hashlib.sha256(data).hexdigest():raise SystemExit('Changed web artifact: '+name)
+-    dist=ROOT/'dist';dist.mkdir(exist_ok=True);output=dist/f'DanceMoves-web-{version}.zip'
++    dist=ROOT/'dist';dist.mkdir(exist_ok=True);output=dist/f'DanceMoves-browser-{version}.zip'
+     with zipfile.ZipFile(output,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as z:
+         for p in files:
+             name=p.relative_to(lib).as_posix() if p.is_relative_to(lib) else p.name
+             info=zipfile.ZipInfo(f'dancemoves-{version}/'+name,(2020,1,1,0,0,0));info.external_attr=0o100644<<16;info.compress_type=zipfile.ZIP_DEFLATED;z.writestr(info,p.read_bytes())
+     manifest={'schema':'dancemoves-web/v1','version':version,'homepage':homepage,'zip':output.name,'sha256':hashlib.sha256(output.read_bytes()).hexdigest(),
+       'files':[{'path':p.relative_to(lib).as_posix() if p.is_relative_to(lib) else p.name,'sha256':hashlib.sha256(p.read_bytes()).hexdigest()} for p in files]}
+-    (dist/f'DanceMoves-web-{version}-manifest.json').write_text(json.dumps(manifest,indent=2)+'\n',encoding='utf-8',newline='\n');print(output)
++    (dist/f'DanceMoves-browser-{version}-manifest.json').write_text(json.dumps(manifest,indent=2)+'\n',encoding='utf-8',newline='\n');print(output)
+ if __name__=='__main__':main()
+diff --git a/tools/package-wordpress.py b/tools/package-wordpress.py
+index 0260462..49c4194 100644
+--- a/tools/package-wordpress.py
++++ b/tools/package-wordpress.py
+@@ -30,7 +30,7 @@ def main():
+         if digest(data)!=item['sha256'].upper() or len(data)!=item['bytes']:raise SystemExit('WordPress frontend manifest mismatch: '+name)
+         if data!=(ROOT/'lib'/name).read_bytes():raise SystemExit('WordPress frontend differs from the shared library artifact: '+name)
+     dist=ROOT/'dist';dist.mkdir(exist_ok=True)
+-    slug='kieran-epk-device-orientation';archive=dist/f'DanceMoves-{version}.zip'
++    slug='kieran-epk-device-orientation';archive=dist/f'DanceMoves-wordpress-{version}.zip'
+     with zipfile.ZipFile(archive,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as z:
+         for p,n in zip(files,names):
+             entry=zipfile.ZipInfo(slug+'/'+n,(2020,1,1,0,0,0));entry.external_attr=0o100644<<16;entry.compress_type=zipfile.ZIP_DEFLATED;z.writestr(entry,p.read_bytes())
+@@ -38,6 +38,6 @@ def main():
+       'zip':archive.name,'zip_bytes':archive.stat().st_size,'zip_sha256':digest(archive.read_bytes()),'entry_count':len(files),
+       'root_entrypoint':slug+'/kieran-epk-device-orientation.php','root_entrypoint_present':True,'forward_slash_entries':True,
+       'files':[{'path':slug+'/'+n,'bytes':p.stat().st_size,'sha256':digest(p.read_bytes())} for p,n in zip(files,names)]}
+-    manifest_path=dist/f'DanceMoves-{version}-manifest.json';manifest_path.write_text(json.dumps(manifest,indent=2)+'\n',encoding='utf-8',newline='\n')
++    manifest_path=dist/f'DanceMoves-wordpress-{version}-manifest.json';manifest_path.write_text(json.dumps(manifest,indent=2)+'\n',encoding='utf-8',newline='\n')
+     print(archive);print(manifest_path);print('SHA256='+manifest['zip_sha256'])
+ if __name__=='__main__':main()
+diff --git a/tools/prepare-release.mjs b/tools/prepare-release.mjs
+index 0640f90..d1e1829 100644
+--- a/tools/prepare-release.mjs
++++ b/tools/prepare-release.mjs
+@@ -6,8 +6,13 @@ run(process.execPath,['tools/check-shared-release.mjs']);run(process.execPath,['
+ run('python',['tools/package-wordpress.py']);run('python',['tools/package-web.py']);
+ fs.rmSync(out,{recursive:true,force:true});fs.mkdirSync(out);
+ run(process.platform==='win32'?'npm.cmd':'npm',['pack','--ignore-scripts','--pack-destination',out]);
+-for(const file of [`DanceMoves-${pkg.version}.zip`,`DanceMoves-${pkg.version}-manifest.json`,`DanceMoves-web-${pkg.version}.zip`,`DanceMoves-web-${pkg.version}-manifest.json`])fs.copyFileSync(path.join('dist',file),path.join(out,file));
++const packed=fs.readdirSync(out).filter(name=>name.endsWith('.tgz'));
++if(packed.length!==1)throw new Error('Expected exactly one npm pack output');
++const npmName=`DanceMoves-npm-${pkg.version}.tgz`;
++fs.renameSync(path.join(out,packed[0]),path.join(out,npmName));
++for(const file of [`DanceMoves-wordpress-${pkg.version}.zip`,`DanceMoves-wordpress-${pkg.version}-manifest.json`,`DanceMoves-browser-${pkg.version}.zip`,`DanceMoves-browser-${pkg.version}-manifest.json`])fs.copyFileSync(path.join('dist',file),path.join(out,file));
+ const inventory=fs.readdirSync(out).sort().map(name=>({name,sha256:createHash('sha256').update(fs.readFileSync(path.join(out,name))).digest('hex')}));
+-fs.writeFileSync(path.join(out,'SHA256SUMS.txt'),inventory.map(f=>`${f.sha256}  ${f.name}`).join('\n')+'\n');
++const sums=`DanceMoves-${pkg.version}-SHA256SUMS.txt`;
++fs.writeFileSync(path.join(out,sums),inventory.map(f=>`${f.sha256}  ${f.name}`).join('\n')+'\n');
+ fs.copyFileSync('package-lock.json',path.join(out,'build-package-lock.json'));
+ console.log(`Release outputs prepared for ${pkg.version}`);
+diff --git a/tools/publish-github.mjs b/tools/publish-github.mjs
+index 5b11db8..35d3c53 100644
+--- a/tools/publish-github.mjs
++++ b/tools/publish-github.mjs
+@@ -30,14 +30,19 @@ if(!tagCheck.ok)throw new Error(`Release tag ${tag} is not available (${tagCheck
+ 
+ let release=await findRelease();
+ if(!release){
+- const notes=`Shared JavaScript, React/Next.js and WordPress build.
++ const notes=`DanceMoves ${pkg.version}
+ 
+ Homepage: ${pkg.homepage}
+ 
+-Install the attached WordPress ZIP, not Source code. The npm tarball and
+-minified browser ZIP are attached from the same tested build.
++| File | Use |
++| --- | --- |
++| DanceMoves-wordpress-${pkg.version}.zip | Install/update the WordPress plugin |
++| DanceMoves-browser-${pkg.version}.zip | Minified standalone browser distribution |
++| DanceMoves-npm-${pkg.version}.tgz | Exact npm package tarball published by CI |
++| *-manifest.json | Per-distribution file/hash metadata |
++| DanceMoves-${pkg.version}-SHA256SUMS.txt | SHA-256 checksums for all five distribution artifacts |
+ 
+-All attachment digests are in SHA256SUMS.txt.`;
++GitHub's automatic Source code archives are repository snapshots, not packaged distributions.`;
+  const response=await request(`${api}/releases`,{
+   method:'POST',
+   headers:{'Content-Type':'application/json'},
+@@ -54,6 +59,15 @@ All attachment digests are in SHA256SUMS.txt.`;
+ }
+ 
+ if(!Array.isArray(release.assets))release.assets=[];
++function assetLabel(name){
++ if(name===`DanceMoves-wordpress-${pkg.version}.zip`)return `WordPress plugin ${pkg.version}`;
++ if(name===`DanceMoves-browser-${pkg.version}.zip`)return `Browser package ${pkg.version}`;
++ if(name===`DanceMoves-npm-${pkg.version}.tgz`)return `npm package ${pkg.version}`;
++ if(name===`DanceMoves-${pkg.version}-SHA256SUMS.txt`)return `SHA-256 checksums ${pkg.version}`;
++ if(name.includes('-wordpress-')&&name.endsWith('-manifest.json'))return `WordPress manifest ${pkg.version}`;
++ if(name.includes('-browser-')&&name.endsWith('-manifest.json'))return `Browser manifest ${pkg.version}`;
++ return name;
++}
+ for(const name of fs.readdirSync('release-output').filter(n=>n!=='build-package-lock.json').sort()){
+  const file='release-output/'+name,bytes=fs.readFileSync(file),expected='sha256:'+createHash('sha256').update(bytes).digest('hex');
+  const existing=release.assets.find(a=>a.name===name);
+@@ -69,7 +83,7 @@ for(const name of fs.readdirSync('release-output').filter(n=>n!=='build-package-
+   continue;
+  }
+  const uploadBase=release.upload_url.replace(/\{\?name,label\}$/,'');
+- const response=await request(`${uploadBase}?name=${encodeURIComponent(name)}`,{
++ const response=await request(`${uploadBase}?name=${encodeURIComponent(name)}&label=${encodeURIComponent(assetLabel(name))}`,{
+   method:'POST',
+   headers:{Accept:'application/vnd.github+json','Content-Type':'application/octet-stream','Content-Length':String(bytes.length)},
+   body:bytes
+diff --git a/tools/verify-release-output.mjs b/tools/verify-release-output.mjs
+index 0c1e09d..731964c 100644
+--- a/tools/verify-release-output.mjs
++++ b/tools/verify-release-output.mjs
+@@ -1,6 +1,8 @@
+ import fs from 'node:fs';import path from 'node:path';import {createHash} from 'node:crypto';
+-const dir='release-output';
+-const text=fs.readFileSync(path.join(dir,'SHA256SUMS.txt'),'utf8');let count=0;
+-for(const line of text.trim().split('\n')){const match=/^([a-f0-9]{64})  ([A-Za-z0-9@_.-]+)$/.exec(line);if(!match)throw new Error('Invalid checksum line');const data=fs.readFileSync(path.join(dir,match[2]));if(createHash('sha256').update(data).digest('hex')!==match[1])throw new Error('Release artifact changed: '+match[2]);count++;}
+-if(count!==5)throw new Error('Expected one npm tarball and four browser/WordPress artifacts');
+-console.log('All five release artifact digests match the tested build.');
++const dir='release-output',pkg=JSON.parse(fs.readFileSync('package.json','utf8')),version=pkg.version;
++const expected=[`DanceMoves-npm-${version}.tgz`,`DanceMoves-wordpress-${version}.zip`,`DanceMoves-wordpress-${version}-manifest.json`,`DanceMoves-browser-${version}.zip`,`DanceMoves-browser-${version}-manifest.json`].sort();
++const sums=`DanceMoves-${version}-SHA256SUMS.txt`,text=fs.readFileSync(path.join(dir,sums),'utf8');
++const recorded=[];
++for(const line of text.trim().split('\n')){const match=/^([a-f0-9]{64})  ([A-Za-z0-9@_.-]+)$/.exec(line);if(!match)throw new Error('Invalid checksum line');const data=fs.readFileSync(path.join(dir,match[2]));if(createHash('sha256').update(data).digest('hex')!==match[1])throw new Error('Release artifact changed: '+match[2]);recorded.push(match[2]);}
++recorded.sort();if(JSON.stringify(recorded)!==JSON.stringify(expected))throw new Error(`Unexpected release artifact set: ${recorded.join(', ')}`);
++console.log(`All five ${version} distribution artifacts match the tested build.`);

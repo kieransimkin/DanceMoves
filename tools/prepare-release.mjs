@@ -6,8 +6,13 @@ run(process.execPath,['tools/check-shared-release.mjs']);run(process.execPath,['
 run('python',['tools/package-wordpress.py']);run('python',['tools/package-web.py']);
 fs.rmSync(out,{recursive:true,force:true});fs.mkdirSync(out);
 run(process.platform==='win32'?'npm.cmd':'npm',['pack','--ignore-scripts','--pack-destination',out]);
-for(const file of [`DanceMoves-${pkg.version}.zip`,`DanceMoves-${pkg.version}-manifest.json`,`DanceMoves-web-${pkg.version}.zip`,`DanceMoves-web-${pkg.version}-manifest.json`])fs.copyFileSync(path.join('dist',file),path.join(out,file));
+const packed=fs.readdirSync(out).filter(name=>name.endsWith('.tgz'));
+if(packed.length!==1)throw new Error('Expected exactly one npm pack output');
+const npmName=`DanceMoves-npm-${pkg.version}.tgz`;
+fs.renameSync(path.join(out,packed[0]),path.join(out,npmName));
+for(const file of [`DanceMoves-wordpress-${pkg.version}.zip`,`DanceMoves-wordpress-${pkg.version}-manifest.json`,`DanceMoves-browser-${pkg.version}.zip`,`DanceMoves-browser-${pkg.version}-manifest.json`])fs.copyFileSync(path.join('dist',file),path.join(out,file));
 const inventory=fs.readdirSync(out).sort().map(name=>({name,sha256:createHash('sha256').update(fs.readFileSync(path.join(out,name))).digest('hex')}));
-fs.writeFileSync(path.join(out,'SHA256SUMS.txt'),inventory.map(f=>`${f.sha256}  ${f.name}`).join('\n')+'\n');
+const sums=`DanceMoves-${pkg.version}-SHA256SUMS.txt`;
+fs.writeFileSync(path.join(out,sums),inventory.map(f=>`${f.sha256}  ${f.name}`).join('\n')+'\n');
 fs.copyFileSync('package-lock.json',path.join(out,'build-package-lock.json'));
 console.log(`Release outputs prepared for ${pkg.version}`);

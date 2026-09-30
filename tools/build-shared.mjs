@@ -38,7 +38,7 @@ function inventory(directory,prefix='') {
    return e.isDirectory()?inventory(abs,rel+'/'):[{path:rel,bytes:fs.statSync(abs).size,sha256:createHash('sha256').update(fs.readFileSync(abs)).digest('hex')}];
  });
 }
-fs.writeFileSync(path.join(lib,'build-manifest.json'),JSON.stringify({schema:'dancemoves-library-build/v1',name:packageInfo.name,version:packageInfo.version,files:inventory(lib)},null,2)+'\n');
+fs.writeFileSync(path.join(lib,'build-manifest.json'),JSON.stringify({schema:'dancemoves-library-build/v1',name:packageInfo.name,version:packageInfo.version,homepage:packageInfo.homepage,files:inventory(lib)},null,2)+'\n');
 if (target!=='library') {
   const wp=path.join(ROOT,'.build/wordpress');fs.rmSync(wp,{recursive:true,force:true});fs.mkdirSync(path.join(wp,'lib/assets'),{recursive:true});
   fs.mkdirSync(path.join(wp,'lib/styles'),{recursive:true});
@@ -50,7 +50,7 @@ if (target!=='library') {
   fs.mkdirSync(path.join(wp,'docs'),{recursive:true});
   for(const file of fs.readdirSync('docs').filter(name=>name.endsWith('.md'))) fs.copyFileSync(path.join('docs',file),path.join(wp,'docs',file));
   fs.copyFileSync('RUDIMENTS-API.md',path.join(wp,'RUDIMENTS-API.md'));
-  fs.writeFileSync(path.join(wp,'README.md'),`# DanceMoves ${packageInfo.version} for WordPress\n\n[WordPress setup and all six Page metadata fields](docs/wordpress-shared-runtime.md)\n\nThis archive imports the shared DanceMoves JavaScript library.\nSource, JavaScript/React/Next.js packages and release artifacts: https://github.com/kieransimkin/DanceMoves\n`);
-  fs.writeFileSync(path.join(wp,'library-manifest.json'),JSON.stringify({schema:'dancemoves-wordpress-library/v1',name:packageInfo.name,version:packageInfo.version,frontend:inventory(path.join(wp,'lib'))},null,2)+'\n');
+  fs.writeFileSync(path.join(wp,'README.md'),`# DanceMoves ${packageInfo.version} for WordPress\n\nHomepage: ${packageInfo.homepage}\n\n[WordPress setup and all six Page metadata fields](docs/wordpress-shared-runtime.md)\n\nThis archive imports the shared DanceMoves JavaScript library.\nSource, JavaScript/React/Next.js packages and release artifacts: https://github.com/kieransimkin/DanceMoves\n`);
+  fs.writeFileSync(path.join(wp,'library-manifest.json'),JSON.stringify({schema:'dancemoves-wordpress-library/v1',name:packageInfo.name,version:packageInfo.version,homepage:packageInfo.homepage,frontend:inventory(path.join(wp,'lib'))},null,2)+'\n');
 }
 console.log(`Built ${packageInfo.name}@${packageInfo.version}: ESM, CommonJS, React, Node, minified browser${target!=='library'?' and WordPress adapter':''}`);

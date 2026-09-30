@@ -24,9 +24,9 @@ class PackageTests(unittest.TestCase):
  def run_builder(self):return subprocess.run([sys.executable,str(self.root/'tools/package-wordpress.py')],text=True,capture_output=True)
  def test_deterministic_slug_and_hash(self):
   a=self.run_builder();self.assertEqual(a.returncode,0,a.stderr)
-  p=self.root/'dist/DanceMoves-3.0.0.zip';data=p.read_bytes();self.assertEqual(self.run_builder().returncode,0);self.assertEqual(p.read_bytes(),data)
+  p=self.root/'dist/DanceMoves-wordpress-3.0.0.zip';data=p.read_bytes();self.assertEqual(self.run_builder().returncode,0);self.assertEqual(p.read_bytes(),data)
   with zipfile.ZipFile(p) as z:self.assertTrue(all(n.startswith('kieran-epk-device-orientation/') for n in z.namelist()))
-  m=json.loads((self.root/'dist/DanceMoves-3.0.0-manifest.json').read_text());self.assertEqual(m['zip_sha256'],hashlib.sha256(data).hexdigest().upper())
+  m=json.loads((self.root/'dist/DanceMoves-wordpress-3.0.0-manifest.json').read_text());self.assertEqual(m['zip_sha256'],hashlib.sha256(data).hexdigest().upper())
  def test_no_duplicate_engine(self):
   (self.stage/'lib/second-engine.js').write_text('duplicate');self.assertNotEqual(self.run_builder().returncode,0)
  def test_admin_also_must_equal_library(self):
