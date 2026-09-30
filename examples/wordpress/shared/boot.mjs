@@ -77,7 +77,7 @@ async function main() {
   }
   app.querySelector('#config-json').textContent=format(config);
   css('dance-moves-core.css');
-  if(root.classList.contains('ks-clay-stars-v2')){css('clay-stars-effects.css');css('clay-stars-rudiments.css');}
+  if(root.classList.contains('ks-clay-stars-v2'))css('clay-stars-effects.css');
   if(meta._dance_moves_effect==='paper-planes')css('paper-dreams-flight.css');
   if(['orientation','orientation-math'].includes(id))css('ks-epk-device-orientation.css');
   const {createDanceMoves}=await import('/lib/index.mjs');

@@ -1,12 +1,14 @@
 # DanceMoves rudiment animation API
 
-API **1.1.0** is the selected-catalogue DanceRudiments 0.2 integration. This source patch is not a published release or evidence of a WordPress deployment.
+API **1.1.0** is the selected-catalogue DanceRudiments 0.2 integration shipped
+with DanceMoves 3.1.1. Repository source or a passing build is not by itself
+evidence of npm, GitHub or WordPress publication.
 
 The integration pins the published npm package `@kieransimkin/dance-rudiments` **0.2.0**, release commit `7f77874efa8a8ff96e9b1a866f14c5773553b9b6`. [UPSTREAM.json](vendor/dancerudiments/UPSTREAM.json) records the exact npm integrity, licence hash, 1,731-item source catalogue count and DanceMoves' 15-item selection. [TypeScript declarations](RUDIMENTS-API.d.ts) describe the public browser interface.
 
 ## Contents
 
-[Architecture](#architecture-and-native-authority) · [Quick start](#quick-start) · [Catalogue](#catalogue) · [Service API](#service-api) · [Animation options](#animation-options) · [Controller API](#controller-api) · [Frame payload](#render-callback-payload) · [Clocks](#clock-and-lifecycle-contract) · [CSS](#css-and-html-contract) · [Events](#events-and-errors) · [Clay migration](#claystars-integration) · [WordPress](#wordpress-and-packaging) · [Build and validation](#building-and-testing) · [Limitations](#limits-and-extension-policy)
+[Architecture](#architecture-and-native-authority) · [Quick start](#quick-start) · [Catalogue](#catalogue) · [Service API](#service-api) · [Animation options](#animation-options) · [Controller API](#controller-api) · [Frame payload](#render-callback-payload) · [Clocks](#clock-and-lifecycle-contract) · [CSS](#css-and-html-contract) · [Events](#events-and-errors) · [Consumer integration](#consumer-owned-page-integration) · [WordPress](#wordpress-and-packaging) · [Build and validation](#building-and-testing) · [Limitations](#limits-and-extension-policy)
 
 ## Architecture and native authority
 
@@ -20,7 +22,7 @@ The backend is a **selected complete-integer-domain WASM lookup build** produced
 
 For this pinned upstream API, each selected movement depends only on a name and integer pip with a finite periodic domain. Exhaustively compiling each selected domain preserves the upstream sampling contract; it is not sparse curve fitting or a JS approximation. The 15 selected movements comprise 1,856 unique positions. The full upstream WASM is deliberately not shipped to every WordPress page. The compact module is 44,866 bytes with no host imports, and the build compares all three axes at 5,568 wrapped positions against the official API.
 
-The compiled browser asset is checked in. **No npm install, CDN access, Python interpreter, compiler or WASM MIME configuration is needed on the WordPress server.** Compilation is lazy and occurs once per document when `ready()` or `animate()` is used. If WASM is unavailable or blocked, loading rejects; there is deliberately no fallback JS motion implementation. Clay retains its existing CSS instead.
+The compiled browser asset is checked in. **No npm install, CDN access, Python interpreter, compiler or WASM MIME configuration is needed on the WordPress server.** Compilation is lazy and occurs once per document when `ready()` or `animate()` is used. If WASM is unavailable or blocked, loading rejects; there is deliberately no fallback JS motion implementation. Consumers retain their own static or legacy fallback styling.
 
 This backend covers the pinned **integer-position** API only. Future upstream parameterised, stateful, curve or event APIs must receive a separately versioned binding. They must not silently be reduced to this fixed lookup contract.
 
@@ -261,67 +263,52 @@ Reduced motion and forced colours publish zero-offset output and stop scheduling
 
 ## Events and errors
 
-Events are non-bubbling `CustomEvent`s dispatched on `document`.
+Events are bubbling `CustomEvent`s dispatched on `document`. Bubbling preserves
+document-level WordPress consumers when a scoped runtime emits from a nested root.
+The host-neutral `dance-moves-ready` event means the runtime and synchronous
+rudiment service object are available; it does not eagerly compile the WASM.
 
 | Event | Detail | When |
 | --- | --- | --- |
 | `dance-moves-rudiments-ready` | `{api, version, upstreamVersion, upstreamCommit}` | Once after successful lazy native compilation |
 | `dance-moves-rudiments-error` | `{id, message}` | Shared load failure (`id:null`) or a specific mount/render failure |
 
-Subscribe before calling `ready()` when event order matters; events are not replayed to late listeners. Prefer the readiness promise for mounting. No per-pip DOM event is emitted, avoiding event storms.
+Subscribe before calling `ready()` when native event order matters; events are not replayed to late listeners. Prefer the readiness promise for native sampling. No per-pip DOM event is emitted, avoiding event storms.
 
 Synchronous registration errors throw. Asynchronous initial errors reject `controller.ready`; ongoing render errors set its state to `error`, stop its frame work and release CSS ownership. Failed controllers remain inspectable in the registry until destroyed. Native-loading failure can produce both the shared error and per-controller errors; consumers should not treat those as separate user-facing incidents.
 
 CSP can block WASM compilation or the generated stylesheet. A compatible policy must permit the bundled script, WebAssembly compilation and this style creation. Do not weaken a site's policy automatically. Correctly retain static/legacy rendering on failure and obtain a reviewed site-policy change where needed. No remote executable text, timing-file text or caller-provided CSS source is evaluated by this API.
 
-## Clay/Stars integration
+## Consumer-owned page integration
 
-The existing release source assigns `ks-particle-dance` to `.ks-clay-stars-v2 .epk-atmosphere::after`, using `--dance-moves-128t`: **eight beats**. DanceRudiments' `clay_background` represents the positional waypoints in a 256-pip, **four-beat** period. Direct rate-1 substitution would double the visual speed.
-
-The bundled adapter therefore uses:
+DanceMoves does not recognise, configure or auto-mount a particular EPK. The
+owning page selects its target, rudiment, rate, amplitude, CSS variables and any
+companion treatment. Mount immediately when the API exists, or listen once for
+the generic bubbling runtime event when WordPress prints the runtime in the
+footer. Do not wait for `dance-moves-rudiments-ready` as the bootstrap signal:
+native compilation is lazy and that event fires only after a consumer calls
+`ready()` or `animate()`.
 
 ```js
-// This is already mounted by assets/clay-stars-rudiments.js on page 252.
-// Do not paste a second copy into the WordPress page.
-const settings = {
-  id: 'clay-stars:background-rudiment',
-  rudiment: 'clay_background',
-  rate: 0.5,
-  amplitude: { x: 14, y: 10, z: 0 },
-  clock: 'auto',
-  cssPrefix: '--ks-clay-rudiment',
-  resetOnCue: true,
-  renderEveryFrame: true
-};
+function mountRudiment() {
+  const root = document.querySelector('[data-my-page]');
+  const target = root?.querySelector('[data-my-motion-target]');
+  if (!root || !target || !window.DanceMovesRudiments) return;
+  const controller = window.DanceMovesRudiments.animate({
+    id: 'my-page:ambient-motion', root, target, rudiment: 'sway',
+    clock: 'auto', audio: root.querySelector('audio'), rate: 0.5,
+    amplitude: {x: 12, y: 8, z: 0}, cssPrefix: '--my-page-motion'
+  });
+  controller.ready.catch(() => root.dataset.myMotion = 'fallback');
+}
+if (window.DanceMovesRudiments) mountRudiment();
+else document.addEventListener('dance-moves-ready', mountRudiment, {once:true});
 ```
 
-At page BPM 90 the cycle remains approximately `5333.333333ms`. The ±14px x and ±10px y gains restore the original positional scale; `--ks-master-intensity` continues to control the existing non-positional treatment rather than silently multiplying native translation.
-
-A new, release-scoped `ks-clay-rudiment-treatment` CSS animation preserves the original rotation, scale and opacity keyframes **without their translations**. CSS individual `translate` consumes the native position. The companion animation stays paused and its `currentTime` is explicitly scrubbed from the rudiment's `loopProgress`. Thus it does not introduce a separate free-running phase or leave the old translation active underneath the new one. Cloud drift, cover tilt, button choreography, lyrics, artwork, player behaviour and warm-light input are not replaced.
-
-The positional path now follows the **library's discrete, smoothstep-generated table**, rather than the old CSS's continuous linear interpolation between percentage waypoints. Source key percentages are also quantised to native pips. The waypoint vocabulary, spatial scale and eight-beat pace are preserved; byte-for-byte or pixel-for-pixel continuous trajectory identity is not claimed.
-
-Only a successful native mount sets `data-dance-moves-rudiment-clay="active"`. Required DOM/capabilities: the existing `.ks-epk.ks-clay-stars-v2` root, `.epk-atmosphere`, the existing `DanceMovesClayStars` runtime, CSS individual translate support and `getAnimations()`. The first root audio supplies `auto` playback timing; a missing audio explicitly selects the page clock. If prerequisites are absent, no migration is mounted and the existing CSS remains.
-
-The marker's states are `active`, `suspended` and `fallback`; it is absent before successful mounting and after teardown. `suspended` follows the existing Clay quality profile or disabled setting. In constrained/minimal profiles the existing static quality CSS remains authoritative and the native controller is disabled. Recovery re-samples the current clock. Reduced motion/forced colours also remove both translation and accents. This adapter does not create a competing quality sampler.
-
-### `window.DanceMovesClayRudiment`
-
-Available only after a compatible Clay mount attempt. It exposes `root`, `snapshot()` and `teardown()`.
-
-`snapshot()` returns `{status, error, destroyed, loaded, rudiment, cycleBeats, rate, controller}`. `status` is `loading`, `active`, `suspended`, `fallback` or `destroyed`; `controller` is the underlying controller snapshot or `null`. `loaded` means a native controller was mounted, not that it is currently running. Inspect `controller.status` for accessibility/transport state.
-
-`teardown()` is idempotent. It disconnects the adapter observer/error listener, destroys its native controller, removes the marker and restores the original CSS fallback. Root removal or teardown of the original Clay runtime also tears down this adapter. This is an adapter teardown, not a WordPress plugin deactivation.
-
-The underlying controller is available through `DanceMovesRudiments.get('clay-stars:background-rudiment')`. For normal page integration, let the bundled adapter manage its enabled state and teardown. Do not mount another controller on the same atmosphere element.
-
-### Adoption and rollback
-
-No WordPress page-content edit or new metadata is required for the existing page-252 adapter. The plugin's PHP integration enqueues the new assets behind the existing legacy-plugin coexistence guard. The compiled backend must be present before packaging; the package gate verifies it.
-
-Before publishing, check full/constrained/minimal, reduced motion, forced colours, hidden/visible, offscreen, pause/resume, both seek directions, exact chapter landings, playback-rate changes, long playback, deliberate WASM failure and teardown on the real page. Confirm that only one translation owner exists and that no catalogue rescan occurs per frame. Test signed out at desktop, tablet and narrow-mobile sizes; profile the complete effect stack.
-
-On native-load failure the original CSS remains active. To remove this migration from a staged/live build, disable its PHP enqueue module or restore the prior approved plugin package through the normal release procedure. `DanceMovesClayRudiment.teardown()` is a useful in-document diagnostic rollback; it is not a persistent deployment rollback.
+Keep page selectors, release names, colours, timing choices, amplitudes,
+companion keyframes, quality mappings and fallback markers in the page source.
+Use `get(id)` for diagnostics and `destroy()` or `destroyAll()` for teardown. Do
+not mount two CSS-owning controllers on the same target.
 
 ## WordPress and packaging
 
@@ -331,12 +318,14 @@ The entrypoint requires `dance-moves-rudiments.php`. It defines `DANCE_MOVES_RUD
 | --- | --- | --- |
 | `dance-moves-rudiments-native` | Footer script | Compact selected-movement WASM asset; all WordPress Pages |
 | `dance-moves-rudiments` | Footer script | `dance-moves-core`, `dance-moves-rudiments-native`; all Pages |
-| `dance-moves-clay-rudiments` | Style | `dance-moves-clay-stars`; existing Clay page only |
-| `dance-moves-clay-rudiments` | Footer script | `dance-moves-rudiments`, `dance-moves-clay-stars`; existing Clay page only |
 
-The API can be used on any Page; only the release adapter is tied to the existing Clay page ID. Non-Page requests receive none of these assets. When `KS_CLAY_STARS_EFFECTS_VERSION` indicates the legacy Clay effects plugin, the reusable API still loads on Pages but the new Clay migration assets are suppressed.
+The API can be used on any WordPress Page. Non-Page requests receive none of
+these assets. The bridge contains no page IDs, release selectors, release names,
+page-owned styles or auto-mount behaviour.
 
-Cache versions combine the plugin version and API version. This change increments the DanceMoves candidate to **3.1.0** and the rudiment API to **1.1.0**. It does not publish that version or replace existing `dist` releases; publishable artifacts come from the release workflow.
+Cache versions combine the plugin version and API version. DanceMoves **3.1.1**
+ships rudiment API **1.1.0**; publishable artifacts come only from the release
+workflow.
 
 The release workflow verifies the native bundle before packaging and includes the PHP module, both API-reference files and the pinned provenance record alongside the generated assets. The package retains `kieran-epk-device-orientation` as its WordPress upgrade slug. Tests, node modules and build tooling remain repository-only. The complete upstream licence accompanies the generated native browser asset.
 
@@ -355,7 +344,6 @@ python tools/build-rudiments.py --check
 node tools/verify-rudiments.cjs
 
 node tests/rudiments-runtime.test.cjs
-node tests/clay-rudiments.test.cjs
 node tests/rudiments-source.test.cjs
 php tests/rudiments-wordpress.php
 tsc --noEmit --strict --lib es2020,dom RUDIMENTS-API.d.ts
@@ -367,13 +355,20 @@ The build is deterministic for the same official package samples and records the
 
 The normal Unit validator discovers the new `.test.cjs` files and explicitly runs the PHP enqueue test. It remains necessary to run the existing DanceMoves suite. Package mode has its pre-existing migration/release-workspace prerequisites.
 
-[Browser fixture](tests/rudiments-browser.html) uses real integration code and WASM with explicitly labelled legacy API test doubles and locally generated silent audio. It is not the live Clay EPK. With Python Playwright and a permitted Chromium installation:
+[Browser fixture](tests/rudiments-browser.html) uses the real generic API and
+WASM with an explicitly labelled clock test double and locally generated silent
+audio. It is not a live EPK. With Python Playwright and a permitted Chromium
+installation:
 
 ```sh
 python tests/test-rudiments-browser.py --chromium /path/to/chromium --output qa/rudiments-browser
 ```
 
-The fixture exercises pseudo-element translation, companion phase, real audio seeking, quality/accessibility state, failure fallback and teardown. It also counts inline style mutations. A browser navigation failure means the rendering tests did not run; it is not a pass. Headless results do not establish physical-device FPS, GPU cost, input latency or WordPress compatibility.
+The fixture exercises CSSOM translation, audio seeking, enabled/accessibility
+state, failure reporting and teardown. It also counts inline-style mutations. A
+browser navigation failure means the rendering tests did not run; it is not a
+pass. Headless results do not establish physical-device FPS, GPU cost, input
+latency or WordPress compatibility.
 
 ## Limits and extension policy
 
@@ -381,13 +376,12 @@ This API does not import timing files, infer BPM, synchronise multiple players, 
 
 The core's animation-reset API does not own this controller's CSSOM variables; use `resetOnCue` deliberately. Conversely, the new controller does not own or stop unrelated core/theme RAF loops. `snapshot().framePending === false` means the rudiment scheduler is idle, not that the whole page is idle.
 
-CSSOM output still has rendering cost; callbacks allocate payload objects and may be expensive. Clay also updates a paused CSS animation's current time. Full-page performance must be measured before deployment. Browser rendering was not proven merely by native or mocked-DOM tests.
+CSSOM output still has rendering cost and callbacks allocate payload objects.
+Full-page performance must be measured before deployment. Browser rendering is
+not proven merely by native or mocked-DOM tests.
 
 As the upstream library grows, retain DanceRudiments as movement authority and add movements to the explicit allow-list only when a DanceMoves consumer uses them. Do not ship the full catalogue by default or invent JavaScript formulas. A future parameterised/stateful API needs a separately versioned binding behind the same readiness, lifecycle and capability-error contracts.
 
-## Source references
+## Source reference
 
-- [DanceMoves 2.8.0 source](https://github.com/kieransimkin/DanceMoves/tree/4cb6a71f60459b5579be87d7e55ac8b1426c578e): core clock, existing Clay adapter, stylesheet, enqueue and packaging contracts.
-- [Clay stylesheet and original keyframes](https://github.com/kieransimkin/DanceMoves/blob/4cb6a71f60459b5579be87d7e55ac8b1426c578e/assets/clay-stars-effects.css).
 - [Pinned DanceRudiments 0.2.0 source](https://github.com/kieransimkin/DanceRudiments/tree/7f77874efa8a8ff96e9b1a866f14c5773553b9b6): official package API, catalogue and licences.
-- [Target public page](https://kieransimkin.co.uk/made-from-the-clay-and-the-stars-anunnaki/). The public page text was inspected; the integration is based on the pinned release source, not a claim that the modified runtime has been deployed there.

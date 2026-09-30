@@ -60,7 +60,7 @@ export interface DanceMoves {
  applyCatalogueTiming?():Record<string,unknown>;catalogueTimingSnapshot?():Record<string,unknown>;removeCatalogueAnimationScope?():void;
  effects:Effects;rudiments:import('./rudiments').RudimentApi;
  orientationCore:Record<string,(...args:any[])=>any>;
- getOrientation():(Controller & {reset():void})|null;getClay():(Controller & Record<string,any>)|null;getClayRudiment():Controller|null;getPaperPlanes():Controller|null;
+ getOrientation():(Controller & {reset():void})|null;getClay():(Controller & Record<string,any>)|null;getPaperPlanes():Controller|null;
  createOrientation(options:{render:(point:Offset & Record<string,unknown>)=>void;windowMilliseconds?:number;minimumSpanDegrees?:number;smoothingTimeConstantMilliseconds?:number}):OrientationController;
  createRecorder(options?:{durationMilliseconds?:number;maxSamples?:number}):Recorder;
  on(type:string,callback:EventListener):Remove;resources():{id:string;disposed:boolean;listeners:number;timers:number;frames:number;observers:number;created:number};destroy():void;

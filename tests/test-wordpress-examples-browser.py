@@ -32,7 +32,7 @@ def main():
     try:
         required=['dance-moves-core.js','dance-moves-core.css','dance-moves-effects.js','dance-moves-catalogue-timing.js',
             'dance-moves-rudiments.js','vendor/dancerudiments/dancerudiments-native.js',
-            'clay-stars-effects.js','clay-stars-effects.css','clay-stars-rudiments.js','clay-stars-rudiments.css',
+            'clay-stars-effects.js','clay-stars-effects.css',
             'ks-epk-device-orientation-core.js','ks-epk-device-orientation.js','ks-epk-device-orientation.css',
             'paper-dreams-flight.js','paper-dreams-flight.css','paper-dreams-plane-atlas.png']
         missing=[name for name in required if not (ROOT/'assets'/name).is_file()]

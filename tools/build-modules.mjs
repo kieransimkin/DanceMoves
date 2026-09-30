@@ -11,7 +11,7 @@ export const MODULES = Object.freeze({
   catalogue: 'assets/dance-moves-catalogue-timing.js', orientationCore: 'assets/ks-epk-device-orientation-core.js',
   orientation: 'assets/ks-epk-device-orientation.js', clay: 'assets/clay-stars-effects.js',
   planes: 'assets/paper-dreams-flight.js', native: 'assets/vendor/dancerudiments/dancerudiments-native.js',
-  rudiments: 'assets/dance-moves-rudiments.js', clayRudiments: 'assets/clay-stars-rudiments.js'
+  rudiments: 'assets/dance-moves-rudiments.js'
 });
 const f = ts.factory;
 const scopeCall = (name, args) => f.createCallExpression(f.createPropertyAccessExpression(f.createIdentifier('__dmScope'),name),undefined,args);

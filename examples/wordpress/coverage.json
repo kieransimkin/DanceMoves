@@ -435,16 +435,6 @@
       "token": "teardown("
     },
     {
-      "api": "DanceMovesClayRudiment.snapshot",
-      "feature": "clay",
-      "token": "snapshot("
-    },
-    {
-      "api": "DanceMovesClayRudiment.teardown",
-      "feature": "clay",
-      "token": "teardown("
-    },
-    {
       "api": "PointerController.set",
       "feature": "pointer",
       "token": "set("

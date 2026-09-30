@@ -75,7 +75,7 @@ function renderCandidate(source, slug, version, release) {
   let html = removeOldPluginAssets(source);
   const clay = slug === 'clay-stars';
   const asset = name => `../assets/${name}?ver=${version}-local`;
-  const styles = [...COMMON_STYLES, ...(clay ? ['clay-stars-effects.css', 'clay-stars-rudiments.css'] : [])];
+  const styles = [...COMMON_STYLES, ...(clay ? ['clay-stars-effects.css'] : [])];
   const head = [UNIT_MARKER, ...styles.map(name => `<link rel="stylesheet" href="${asset(name)}">`),
     script('../tests/harness/plugin-core/harness-probe.js')].join('\n');
   const scripts = [...COMMON_SCRIPTS, ...(clay ? ['clay-stars-effects.js'] : []),
@@ -89,7 +89,6 @@ function renderCandidate(source, slug, version, release) {
       bpm: release.bpm, bpmSource: 'explicit', ticksPerBeat: 16, transitionTargetTicks: 2, harness: true }),
     script(asset('ks-epk-device-orientation.js')),
     ...RUDIMENT_SCRIPTS.map(name => script(asset(name))),
-    ...(clay ? [script(asset('clay-stars-rudiments.js'))] : []),
     script(`../tests/harness/${slug}/effect-under-test-adapter.js`),
     script('../tests/harness/plugin-core/harness-bridge.js')
   ].join('\n');
@@ -98,8 +97,7 @@ function renderCandidate(source, slug, version, release) {
   if (/wp-content\/plugins\/(?:kieran-epk-device-orientation|kieran-made-from-clay-stars-epk-effects)\//i.test(html)) {
     throw new Error(`${slug} still contains a remote or legacy plugin asset after replacement.`);
   }
-  const expected = [...scripts, 'ks-epk-device-orientation.js', ...RUDIMENT_SCRIPTS,
-    ...(clay ? ['clay-stars-rudiments.js'] : [])];
+  const expected = [...scripts, 'ks-epk-device-orientation.js', ...RUDIMENT_SCRIPTS];
   for (const name of expected) {
     const needle = `src="${asset(name)}"`;
     if (html.split(needle).length - 1 !== 1) throw new Error(`Expected exactly one local script: ${name}`);

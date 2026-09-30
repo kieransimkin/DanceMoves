@@ -105,18 +105,9 @@ export interface RudimentApi {
     error: string | null; framePending: boolean; instances: readonly RudimentAnimationSnapshot[] }>;
   destroyAll(): void;
 }
-export interface ClayRudimentApi {
-  readonly root: Element;
-  teardown(): void;
-  snapshot(): Readonly<{ status: 'loading' | 'active' | 'suspended' | 'fallback' | 'destroyed';
-    error: string | null; destroyed: boolean; loaded: boolean; rudiment: 'clay_background';
-    apiVersion: '1.1.0'; upstreamVersion: string; sourceCatalogueCount: number;
-    cycleBeats: 8; rate: 0.5; controller: RudimentAnimationSnapshot | null }>;
-}
 declare global {
   interface Window {
     DanceMovesRudiments?: RudimentApi;
-    DanceMovesClayRudiment?: ClayRudimentApi;
   }
   interface DocumentEventMap {
     'dance-moves-rudiments-ready': CustomEvent<{

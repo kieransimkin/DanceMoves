@@ -4,6 +4,7 @@ const path = require("node:path");
 
 const root = path.join(__dirname, "..");
 const php = fs.readFileSync(path.join(root, "kieran-epk-device-orientation.php"), "utf8");
+const rudimentsPhp = fs.readFileSync(path.join(root, "dance-moves-rudiments.php"), "utf8");
 const core = fs.readFileSync(path.join(root, "assets/dance-moves-core.js"), "utf8");
 const coreCss = fs.readFileSync(path.join(root, "assets/dance-moves-core.css"), "utf8");
 const clayCss = fs.readFileSync(path.join(root, "assets/clay-stars-effects.css"), "utf8");
@@ -46,6 +47,10 @@ assert.match(php, /!defined\('KS_CLAY_STARS_EFFECTS_VERSION'\)/);
 assert.match(php, /DANCE_MOVES_CLAY_STARS_PAGE_ID/);
 assert.match(php, /'ticksPerBeat'\s*=>\s*16/);
 assert.match(php, /dance-moves-core\.css/);
+assert.match(rudimentsPhp, /wp_enqueue_script\('dance-moves-rudiments-native'/);
+assert.match(rudimentsPhp, /wp_enqueue_script\('dance-moves-rudiments'/);
+assert.doesNotMatch(rudimentsPhp, /DANCE_MOVES_CLAY_STARS_PAGE_ID|clay-stars|\b252\b|wp_enqueue_style/,
+  'the WordPress rudiment bridge must remain page-agnostic');
 
 assert.match(core, /var DEFAULT_BPM = 120/);
 assert.match(core, /var LONG_DURATION_QUANTUM_TICKS = 16/);
