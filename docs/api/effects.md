@@ -4,7 +4,7 @@
 [Release adapters](adapters.md) · [CSS/HTML](styling.md)
 
 Source: [assets/dance-moves-effects.js](../../assets/dance-moves-effects.js).
-Current shared-library baseline: **3.1.5**. Historical 2.7/2.8 notes below
+Current shared-library baseline: **3.1.6**. Historical 2.7/2.8 notes below
 identify when the earlier primitives were introduced.
 
 This is the reusable, page-independent layer introduced in 2.7 and extended with
@@ -87,7 +87,7 @@ This page-independent decorative simulation coordinates two to twelve autonomous
 ships against three to forty-eight hazards. The release supplies sprite URLs,
 CSS and a bounded stage; the shared primitive owns movement, avoidance,
 DanceMoves-tick-spaced firing, projectile collisions, hit callbacks, local
-explosion nodes, bounds-based ship separation, ship-to-ship and ship-to-hazard collision
+explosion nodes, oriented hitbox-based ship separation, ship-to-ship and ship-to-hazard collision
 callbacks, recycling and lifecycle control. Collided ships are hidden during a short
 cooldown and reappear only at a non-overlapping spawn position. `onBurst` receives
 `{root, stage, node, x, y, cause, durationSeconds}` so the page can draw its own
@@ -98,6 +98,12 @@ the shared quality monitor reduce active ships and hazards without remounting.
 `inlineTransform: true` opts into one direct transform write per moving sprite
 instead of the default three CSS custom-property writes. Use it only when the
 page does not need to compose an additional CSS transform on arena sprites.
+`shipHitboxScale` and `hazardHitboxScale` independently shrink the rendered
+sprite rectangles around their centres before rotated-box collision tests;
+both default to 1 and are constrained to 0.4–1. A shot uses a narrow 4×24 px
+contact area against the rotated hazard box. These are collision dimensions,
+not visual scaling. When an adaptive tier hides inactive sprites, the page's
+CSS must respect `[hidden]` even if it sets `display` on the sprite class.
 Hazards enter from the top, left and right edges. It pauses while off-screen,
 hidden, manually disabled, reduced-motion is requested, or forced colours are
 active. Generated nodes are decorative and removed on teardown.

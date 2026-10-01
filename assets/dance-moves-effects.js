@@ -436,6 +436,8 @@
     var shotIntervalTicks = clamp(Math.round(finite(options.shotIntervalTicks, 32)), 4, 256);
     var shotIntervalSeconds = motion.durationMilliseconds ? motion.durationMilliseconds(shotIntervalTicks, bpm) / 1000 : shotIntervalTicks * 60 / (bpm * 16);
     var burstDurationSeconds = clamp(finite(options.burstDurationBeats, 1.5), .1, 8) * 60 / bpm;
+    var shipHitboxScale = clamp(finite(options.shipHitboxScale, 1), .4, 1);
+    var hazardHitboxScale = clamp(finite(options.hazardHitboxScale, 1), .4, 1);
     var removers = state.removers, ships = [], hazards = [], shots = [], bursts = [], burstTimers = [];
     var activeShips = shipCount, activeHazards = hazardCount;
     var width = 1, height = 1, frame = 0, last = 0, elapsed = 0, nextShot = 0, hits = 0;
@@ -452,14 +454,28 @@
       node.style.setProperty("--dance-moves-arena-angle", angle.toFixed(2) + "deg");
     }
     function measure() { var rect = stage.getBoundingClientRect(); width = Math.max(1, rect.width); height = Math.max(1, rect.height); ships.concat(hazards).forEach(function (item) { var style = window.getComputedStyle(item.node); item.w = parseFloat(style.width) || item.w; item.h = parseFloat(style.height) || item.h; }); }
-    function extent(item) { var angle = item.angle * Math.PI / 180, c = Math.abs(Math.cos(angle)), s = Math.abs(Math.sin(angle)); return { x: (item.w * c + item.h * s) / 2, y: (item.w * s + item.h * c) / 2 }; }
-    function touching(first, second) { var a = extent(first), b = extent(second); return Math.abs(first.x - second.x) < a.x + b.x && Math.abs(first.y - second.y) < a.y + b.y; }
+    function hitShape(item) {
+      if (item.hitShape && item.hitShape.angle === item.angle && item.hitShape.w === item.w && item.hitShape.h === item.h) return item.hitShape;
+      var angle = item.angle * Math.PI / 180, c = Math.cos(angle), s = Math.sin(angle), scale = item.hitboxScale || 1;
+      item.hitShape = { angle: item.angle, w: item.w, h: item.h, c: c, s: s, halfW: item.w * scale / 2, halfH: item.h * scale / 2 };
+      return item.hitShape;
+    }
+    function radius(shape, ax, ay) { return Math.abs(ax * shape.c + ay * shape.s) * shape.halfW + Math.abs(-ax * shape.s + ay * shape.c) * shape.halfH; }
+    function touching(first, second) {
+      var a = hitShape(first), b = hitShape(second), dx = second.x - first.x, dy = second.y - first.y;
+      if (Math.abs(dx) >= Math.abs(a.c) * a.halfW + Math.abs(a.s) * a.halfH + Math.abs(b.c) * b.halfW + Math.abs(b.s) * b.halfH || Math.abs(dy) >= Math.abs(a.s) * a.halfW + Math.abs(a.c) * a.halfH + Math.abs(b.s) * b.halfW + Math.abs(b.c) * b.halfH) return false;
+      return Math.abs(dx * a.c + dy * a.s) < a.halfW + radius(b, a.c, a.s) &&
+        Math.abs(-dx * a.s + dy * a.c) < a.halfH + radius(b, -a.s, a.c) &&
+        Math.abs(dx * b.c + dy * b.s) < b.halfW + radius(a, b.c, b.s) &&
+        Math.abs(-dx * b.s + dy * b.c) < b.halfH + radius(a, -b.s, b.c);
+    }
+    function shotTouches(shot, hazard) { return touching(shot, hazard); }
     function chooseShipSpawn(item, index) {
       var best = null;
       for (var candidateIndex = 0; candidateIndex < 12; candidateIndex += 1) {
         var candidate = (candidateIndex + index + collisions) % 12;
         var x = width * (.12 + .76 * (candidate % 4) / 3), y = height * (.46 + .42 * Math.floor(candidate / 4) / 2);
-        var proposed = { x: x, y: y, angle: 0, w: item.w, h: item.h };
+        var proposed = { x: x, y: y, angle: 0, w: item.w, h: item.h, hitboxScale: item.hitboxScale };
         var occupied = ships.slice(0, activeShips).some(function (other) { return other !== item && other.cooldown <= 0 && touching(proposed, other); }) || hazards.slice(0, activeHazards).some(function (hazard) { return touching(proposed, hazard); });
         if (occupied) continue;
         var nearest = ships.slice(0, activeShips).reduce(function (distance, other) { return other === item || other.cooldown > 0 ? distance : Math.min(distance, Math.hypot(x - other.x, y - other.y)); }, Infinity);
@@ -484,21 +500,21 @@
     }
     function resetShip(item) { item.cooldown = .72; item.node.style.display = "none"; item.vx = 0; item.vy = 0; }
     function makeShip(index) {
-      var item = { node: image("dance-moves-arena__ship", shipSources[index % shipSources.length], "ship"), x: width * (.14 + .72 * (index % 4) / 3), y: height * (.58 + .18 * Math.floor((index % 8) / 4)), vx: 0, vy: 0, angle: 0, cooldown: 0, index: index, w: 0, h: 0 };
+      var item = { node: image("dance-moves-arena__ship", shipSources[index % shipSources.length], "ship"), x: width * (.14 + .72 * (index % 4) / 3), y: height * (.58 + .18 * Math.floor((index % 8) / 4)), vx: 0, vy: 0, angle: 0, cooldown: 0, index: index, w: 0, h: 0, hitboxScale: shipHitboxScale };
       ships.push(item); place(item.node, item.x, item.y, item.angle);
     }
     function makeHazard(index) {
-      var item = { node: image("dance-moves-arena__hazard", hazardSources[index % hazardSources.length], "hazard"), index: index, x: 0, y: 0, vx: 0, vy: 0, angle: 0, spin: 0, w: 0, h: 0 };
+      var item = { node: image("dance-moves-arena__hazard", hazardSources[index % hazardSources.length], "hazard"), index: index, x: 0, y: 0, vx: 0, vy: 0, angle: 0, spin: 0, w: 0, h: 0, hitboxScale: hazardHitboxScale };
       hazards.push(item); resetHazard(item, index, true); place(item.node, item.x, item.y, item.angle);
     }
     function fire(ship) {
       var node = document.createElement("i"); node.className = "dance-moves-arena__shot"; node.setAttribute("aria-hidden", "true"); stage.appendChild(node);
-      shots.push({ node: node, x: ship.x, y: ship.y - 18, vx: Math.sin(ship.angle * Math.PI / 180) * 28, vy: -180 * speed, life: 2.4 });
+      shots.push({ node: node, x: ship.x, y: ship.y - 18, vx: Math.sin(ship.angle * Math.PI / 180) * 28, vy: -180 * speed, life: 2.4, angle: 0, w: 4, h: 24, hitboxScale: 1 });
     }
     function burst(x, y, cause) {
       var node = document.createElement("i"); node.className = "dance-moves-arena__explosion"; node.setAttribute("aria-hidden", "true"); node.dataset.danceMovesArenaExplosion = cause || "impact"; stage.appendChild(node); place(node, x, y, 0); node.style.setProperty("--dance-moves-arena-burst-duration", burstDurationSeconds.toFixed(4) + "s"); bursts.push(node);
       if (typeof options.onBurst === "function") options.onBurst({ root: state.root, stage: stage, node: node, x: x, y: y, cause: cause || "impact", durationSeconds: burstDurationSeconds });
-      var timer = window.setTimeout(function () { var index = bursts.indexOf(node); if (node.parentNode) node.parentNode.removeChild(node); if (index >= 0) bursts.splice(index, 1); }, burstDurationSeconds * 1000);
+      var timer = window.setTimeout(function () { var index = bursts.indexOf(node), timerIndex = burstTimers.indexOf(timer); if (node.parentNode) node.parentNode.removeChild(node); if (index >= 0) bursts.splice(index, 1); if (timerIndex >= 0) burstTimers.splice(timerIndex, 1); }, burstDurationSeconds * 1000);
       burstTimers.push(timer);
     }
     function removeShot(index) { var item = shots[index]; if (item.node.parentNode) item.node.parentNode.removeChild(item.node); shots.splice(index, 1); }
@@ -538,7 +554,7 @@
       for (var shotIndex = shots.length - 1; shotIndex >= 0; shotIndex -= 1) {
         var shot = shots[shotIndex]; shot.x += shot.vx * dt; shot.y += shot.vy * dt; shot.life -= dt; place(shot.node, shot.x, shot.y, 0);
         var struck = false;
-        for (var hazardIndex = 0; hazardIndex < liveHazards.length; hazardIndex += 1) { var hazard = liveHazards[hazardIndex]; if (Math.hypot(shot.x - hazard.x, shot.y - hazard.y) < 34) { hits += 1; burst(hazard.x, hazard.y, "shot"); if (typeof options.onHit === "function") options.onHit({ root: state.root, stage: stage, x: hazard.x, y: hazard.y, hits: hits, hazard: hazard }); resetHazard(hazard, hazard.index + hits, false); struck = true; break; } }
+        for (var hazardIndex = 0; hazardIndex < liveHazards.length; hazardIndex += 1) { var hazard = liveHazards[hazardIndex]; if (shotTouches(shot, hazard)) { hits += 1; burst(hazard.x, hazard.y, "shot"); if (typeof options.onHit === "function") options.onHit({ root: state.root, stage: stage, x: hazard.x, y: hazard.y, hits: hits, hazard: hazard }); resetHazard(hazard, hazard.index + hits, false); struck = true; break; } }
         if (struck || shot.life <= 0 || shot.y < -40) removeShot(shotIndex);
       }
       if (typeof options.render === "function") options.render({ root: state.root, stage: stage, ships: ships, hazards: hazards, shots: shots, hits: hits });
@@ -554,7 +570,7 @@
     reconcile("initial");
     return register(state.id, Object.freeze({
       id: state.id, type: "cooperative-arena", setEnabled: function (value, reason) { enabled = Boolean(value); reconcile(reason || "manual"); },
-      setDensity: function (nextShips, nextHazards) { activeShips = clamp(Math.round(finite(nextShips, activeShips)), 2, shipCount); activeHazards = clamp(Math.round(finite(nextHazards, activeHazards)), 3, hazardCount); ships.forEach(function (item, index) { item.node.hidden = index >= activeShips; }); hazards.forEach(function (item, index) { item.node.hidden = index >= activeHazards; }); },
+      setDensity: function (nextShips, nextHazards) { var shipsNext = clamp(Math.round(finite(nextShips, activeShips)), 2, shipCount), hazardsNext = clamp(Math.round(finite(nextHazards, activeHazards)), 3, hazardCount); if (shipsNext === activeShips && hazardsNext === activeHazards) return; activeShips = shipsNext; activeHazards = hazardsNext; ships.forEach(function (item, index) { item.node.hidden = index >= activeShips; }); hazards.forEach(function (item, index) { item.node.hidden = index >= activeHazards; }); },
       snapshot: function () { return { id: state.id, type: "cooperative-arena", running: running, enabled: enabled, ships: activeShips, hazards: activeHazards, maximumShips: ships.length, maximumHazards: hazards.length, shots: shots.length, hits: hits, collisions: collisions, shotIntervalTicks: shotIntervalTicks }; },
       teardown: function () { running = false; if (frame) window.cancelAnimationFrame(frame); if (resizeObserver) resizeObserver.disconnect(); if (intersectionObserver) intersectionObserver.disconnect(); burstTimers.splice(0).forEach(window.clearTimeout); removers.splice(0).forEach(function (remove) { remove(); }); shots.concat(ships, hazards).forEach(function (item) { if (item.node.parentNode) item.node.parentNode.removeChild(item.node); }); bursts.splice(0).forEach(function (node) { if (node.parentNode) node.parentNode.removeChild(node); }); instances.delete(state.id); }
     }));
