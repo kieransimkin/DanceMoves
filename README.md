@@ -3,8 +3,8 @@
 **DanceFlow musical motion by Kieran Simkin.** One JavaScript runtime for plain
 websites, React, Next.js and the separately packaged WordPress adapter.
 
-**3.1.4 release candidate.** It extends the page-agnostic `cooperativeArena()`
-effect with hard separation, collision explosions, quality-responsive density,
+**3.1.5 release candidate.** It extends the page-agnostic `cooperativeArena()`
+effect with sprite-bounds separation, page-customisable collision explosions, quality-responsive density,
 DanceMoves-tick firing and hit callbacks. Release pages still own sprites and styling while
 DanceMoves owns avoidance, firing, collisions and lifecycle controls. The official DanceRudiments 0.2.0 build and
 its reviewed 15-movement selection remain unchanged.

@@ -431,9 +431,11 @@
     var shipCount = clamp(Math.round(finite(options.shipCount, 3)), 2, 12);
     var hazardCount = clamp(Math.round(finite(options.hazardCount, 8)), 3, 48);
     var speed = clamp(finite(options.speed, 1), .35, 2.4);
+    var inlineTransform = options.inlineTransform === true;
     var bpm = Math.max(1, finite(options.bpm, motion.bpm || 120));
     var shotIntervalTicks = clamp(Math.round(finite(options.shotIntervalTicks, 32)), 4, 256);
     var shotIntervalSeconds = motion.durationMilliseconds ? motion.durationMilliseconds(shotIntervalTicks, bpm) / 1000 : shotIntervalTicks * 60 / (bpm * 16);
+    var burstDurationSeconds = clamp(finite(options.burstDurationBeats, 1.5), .1, 8) * 60 / bpm;
     var removers = state.removers, ships = [], hazards = [], shots = [], bursts = [], burstTimers = [];
     var activeShips = shipCount, activeHazards = hazardCount;
     var width = 1, height = 1, frame = 0, last = 0, elapsed = 0, nextShot = 0, hits = 0;
@@ -444,11 +446,28 @@
       node.draggable = false; node.dataset.danceMovesArenaRole = label; stage.appendChild(node); return node;
     }
     function place(node, x, y, angle) {
+      if (inlineTransform) { node.style.transform = "translate3d(" + x.toFixed(2) + "px," + y.toFixed(2) + "px,0) translate(-50%,-50%) rotate(" + angle.toFixed(2) + "deg)"; return; }
       node.style.setProperty("--dance-moves-arena-x", x.toFixed(2) + "px");
       node.style.setProperty("--dance-moves-arena-y", y.toFixed(2) + "px");
       node.style.setProperty("--dance-moves-arena-angle", angle.toFixed(2) + "deg");
     }
-    function measure() { var rect = stage.getBoundingClientRect(); width = Math.max(1, rect.width); height = Math.max(1, rect.height); }
+    function measure() { var rect = stage.getBoundingClientRect(); width = Math.max(1, rect.width); height = Math.max(1, rect.height); ships.concat(hazards).forEach(function (item) { var style = window.getComputedStyle(item.node); item.w = parseFloat(style.width) || item.w; item.h = parseFloat(style.height) || item.h; }); }
+    function extent(item) { var angle = item.angle * Math.PI / 180, c = Math.abs(Math.cos(angle)), s = Math.abs(Math.sin(angle)); return { x: (item.w * c + item.h * s) / 2, y: (item.w * s + item.h * c) / 2 }; }
+    function touching(first, second) { var a = extent(first), b = extent(second); return Math.abs(first.x - second.x) < a.x + b.x && Math.abs(first.y - second.y) < a.y + b.y; }
+    function chooseShipSpawn(item, index) {
+      var best = null;
+      for (var candidateIndex = 0; candidateIndex < 12; candidateIndex += 1) {
+        var candidate = (candidateIndex + index + collisions) % 12;
+        var x = width * (.12 + .76 * (candidate % 4) / 3), y = height * (.46 + .42 * Math.floor(candidate / 4) / 2);
+        var proposed = { x: x, y: y, angle: 0, w: item.w, h: item.h };
+        var occupied = ships.slice(0, activeShips).some(function (other) { return other !== item && other.cooldown <= 0 && touching(proposed, other); }) || hazards.slice(0, activeHazards).some(function (hazard) { return touching(proposed, hazard); });
+        if (occupied) continue;
+        var nearest = ships.slice(0, activeShips).reduce(function (distance, other) { return other === item || other.cooldown > 0 ? distance : Math.min(distance, Math.hypot(x - other.x, y - other.y)); }, Infinity);
+        if (!best || nearest > best.nearest) best = { x: x, y: y, nearest: nearest };
+      }
+      if (!best) return false;
+      item.x = best.x; item.y = best.y; item.vx = 0; item.vy = 0; item.angle = 0; place(item.node, item.x, item.y, item.angle); return true;
+    }
     function resetHazard(item, index, initial) {
       var edge = (index + Math.floor(elapsed / 6)) % 3;
       var lane = ((index * 37 + 17) % 91) / 91;
@@ -463,17 +482,13 @@
       item.vx = (targetX - item.x) / length * velocity; item.vy = (targetY - item.y) / length * velocity;
       item.spin = (index % 2 ? -1 : 1) * (8 + index % 7); item.angle = index * 31 % 360;
     }
-    function resetShip(item, index) {
-      var best = null;
-      for (var candidateIndex = 0; candidateIndex < 8; candidateIndex += 1) { var candidate = (candidateIndex + index + collisions) % 8; var x = width * (.14 + .72 * (candidate % 4) / 3), y = height * (.58 + .18 * Math.floor(candidate / 4)); var nearest = ships.reduce(function (distance, other) { return other === item ? distance : Math.min(distance, Math.hypot(x - other.x, y - other.y)); }, Infinity); if (!best || nearest > best.nearest) best = { x: x, y: y, nearest: nearest }; }
-      item.x = best.x; item.y = best.y; item.vx = 0; item.vy = 0; item.angle = 0; item.cooldown = .72; place(item.node, item.x, item.y, item.angle);
-    }
+    function resetShip(item) { item.cooldown = .72; item.node.style.display = "none"; item.vx = 0; item.vy = 0; }
     function makeShip(index) {
-      var item = { node: image("dance-moves-arena__ship", shipSources[index % shipSources.length], "ship"), x: width * (.14 + .72 * (index % 4) / 3), y: height * (.58 + .18 * Math.floor((index % 8) / 4)), vx: 0, vy: 0, angle: 0, cooldown: 0, index: index };
+      var item = { node: image("dance-moves-arena__ship", shipSources[index % shipSources.length], "ship"), x: width * (.14 + .72 * (index % 4) / 3), y: height * (.58 + .18 * Math.floor((index % 8) / 4)), vx: 0, vy: 0, angle: 0, cooldown: 0, index: index, w: 0, h: 0 };
       ships.push(item); place(item.node, item.x, item.y, item.angle);
     }
     function makeHazard(index) {
-      var item = { node: image("dance-moves-arena__hazard", hazardSources[index % hazardSources.length], "hazard"), index: index, x: 0, y: 0, vx: 0, vy: 0, angle: 0, spin: 0 };
+      var item = { node: image("dance-moves-arena__hazard", hazardSources[index % hazardSources.length], "hazard"), index: index, x: 0, y: 0, vx: 0, vy: 0, angle: 0, spin: 0, w: 0, h: 0 };
       hazards.push(item); resetHazard(item, index, true); place(item.node, item.x, item.y, item.angle);
     }
     function fire(ship) {
@@ -481,8 +496,9 @@
       shots.push({ node: node, x: ship.x, y: ship.y - 18, vx: Math.sin(ship.angle * Math.PI / 180) * 28, vy: -180 * speed, life: 2.4 });
     }
     function burst(x, y, cause) {
-      var node = document.createElement("i"); node.className = "dance-moves-arena__explosion"; node.setAttribute("aria-hidden", "true"); node.dataset.danceMovesArenaExplosion = cause || "impact"; stage.appendChild(node); place(node, x, y, 0); bursts.push(node);
-      var timer = window.setTimeout(function () { var index = bursts.indexOf(node); if (node.parentNode) node.parentNode.removeChild(node); if (index >= 0) bursts.splice(index, 1); }, 620);
+      var node = document.createElement("i"); node.className = "dance-moves-arena__explosion"; node.setAttribute("aria-hidden", "true"); node.dataset.danceMovesArenaExplosion = cause || "impact"; stage.appendChild(node); place(node, x, y, 0); node.style.setProperty("--dance-moves-arena-burst-duration", burstDurationSeconds.toFixed(4) + "s"); bursts.push(node);
+      if (typeof options.onBurst === "function") options.onBurst({ root: state.root, stage: stage, node: node, x: x, y: y, cause: cause || "impact", durationSeconds: burstDurationSeconds });
+      var timer = window.setTimeout(function () { var index = bursts.indexOf(node); if (node.parentNode) node.parentNode.removeChild(node); if (index >= 0) bursts.splice(index, 1); }, burstDurationSeconds * 1000);
       burstTimers.push(timer);
     }
     function removeShot(index) { var item = shots[index]; if (item.node.parentNode) item.node.parentNode.removeChild(item.node); shots.splice(index, 1); }
@@ -502,23 +518,23 @@
         place(hazard.node, hazard.x, hazard.y, hazard.angle);
       });
       liveShips.forEach(function (ship) {
-        ship.cooldown = Math.max(0, ship.cooldown - dt);
+        if (ship.cooldown > 0) { ship.cooldown = Math.max(0, ship.cooldown - dt); if (ship.cooldown === 0 && chooseShipSpawn(ship, ship.index + collisions)) ship.node.style.display = ""; else if (ship.cooldown === 0) ship.cooldown = .1; if (ship.cooldown > 0) return; }
         var targetX = width * (.16 + .68 * (.5 + .5 * Math.sin(elapsed * (.29 + ship.index * .03) + ship.index * 2.1)));
         var targetY = height * (.58 + .18 * (.5 + .5 * Math.cos(elapsed * (.23 + ship.index * .02) + ship.index)));
         var ax = (targetX - ship.x) * .34, ay = (targetY - ship.y) * .34;
         liveHazards.forEach(function (hazard) { var dx = ship.x - hazard.x, dy = ship.y - hazard.y, distance = Math.max(18, Math.hypot(dx, dy)); if (distance < 150) { ax += dx / distance * (150 - distance) * 2.2; ay += dy / distance * (150 - distance) * 2.2; } });
-        liveShips.forEach(function (other) { if (other === ship) return; var dx = ship.x - other.x, dy = ship.y - other.y, distance = Math.max(12, Math.hypot(dx, dy)); if (distance < 88) { ax += dx / distance * (88 - distance); ay += dy / distance * (88 - distance); } });
+        liveShips.forEach(function (other) { if (other === ship || other.cooldown > 0) return; var dx = ship.x - other.x, dy = ship.y - other.y, distance = Math.max(12, Math.hypot(dx, dy)); if (distance < 140) { ax += dx / distance * (140 - distance); ay += dy / distance * (140 - distance); } });
         ship.vx = clamp((ship.vx + ax * dt) * .985, -96, 96); ship.vy = clamp((ship.vy + ay * dt) * .985, -72, 72);
         ship.x = clamp(ship.x + ship.vx * dt, 30, width - 30); ship.y = clamp(ship.y + ship.vy * dt, height * .4, height - 34);
         ship.angle = clamp(ship.vx * .32, -28, 28); place(ship.node, ship.x, ship.y, ship.angle);
       });
       for (var firstShip = 0; firstShip < liveShips.length; firstShip += 1) {
         var ship = liveShips[firstShip]; if (ship.cooldown > 0) continue;
-        for (var secondShip = firstShip + 1; secondShip < liveShips.length; secondShip += 1) { var other = liveShips[secondShip]; if (other.cooldown > 0) continue; var dx = other.x - ship.x, dy = other.y - ship.y, distance = Math.max(.01, Math.hypot(dx, dy)); if (distance < 84) { collisions += 1; stage.dataset.danceMovesArenaLastCollision = "ship-ship"; stage.dataset.danceMovesArenaCollisions = String(collisions); burst((ship.x + other.x) / 2, (ship.y + other.y) / 2, "ship-ship"); resetShip(ship, ship.index + collisions); resetShip(other, other.index + collisions + 3); if (typeof options.onCollision === "function") options.onCollision({ root: state.root, stage: stage, type: "ship-ship", collisions: collisions }); break; } }
+        for (var secondShip = firstShip + 1; secondShip < liveShips.length; secondShip += 1) { var other = liveShips[secondShip]; if (other.cooldown > 0) continue; if (touching(ship, other)) { collisions += 1; stage.dataset.danceMovesArenaLastCollision = "ship-ship"; stage.dataset.danceMovesArenaCollisions = String(collisions); burst((ship.x + other.x) / 2, (ship.y + other.y) / 2, "ship-ship"); resetShip(ship); resetShip(other); if (typeof options.onCollision === "function") options.onCollision({ root: state.root, stage: stage, type: "ship-ship", collisions: collisions }); break; } }
         if (ship.cooldown > 0) continue;
-        for (var contactHazard = 0; contactHazard < liveHazards.length; contactHazard += 1) { var hazard = liveHazards[contactHazard]; if (Math.hypot(ship.x - hazard.x, ship.y - hazard.y) < 62) { collisions += 1; stage.dataset.danceMovesArenaLastCollision = "ship-hazard"; stage.dataset.danceMovesArenaCollisions = String(collisions); burst((ship.x + hazard.x) / 2, (ship.y + hazard.y) / 2, "ship-hazard"); resetShip(ship, ship.index + collisions); resetHazard(hazard, hazard.index + collisions, false); if (typeof options.onCollision === "function") options.onCollision({ root: state.root, stage: stage, type: "ship-hazard", collisions: collisions }); break; } }
+        for (var contactHazard = 0; contactHazard < liveHazards.length; contactHazard += 1) { var hazard = liveHazards[contactHazard]; if (touching(ship, hazard)) { collisions += 1; stage.dataset.danceMovesArenaLastCollision = "ship-hazard"; stage.dataset.danceMovesArenaCollisions = String(collisions); burst((ship.x + hazard.x) / 2, (ship.y + hazard.y) / 2, "ship-hazard"); resetShip(ship); resetHazard(hazard, hazard.index + collisions, false); if (typeof options.onCollision === "function") options.onCollision({ root: state.root, stage: stage, type: "ship-hazard", collisions: collisions }); break; } }
       }
-      if (elapsed >= nextShot) { fire(liveShips[Math.floor(elapsed * 1.7) % liveShips.length]); nextShot = elapsed + shotIntervalSeconds; }
+      if (elapsed >= nextShot) { var readyShips = liveShips.filter(function (ship) { return ship.cooldown <= 0; }); if (readyShips.length) fire(readyShips[Math.floor(elapsed * 1.7) % readyShips.length]); nextShot = elapsed + shotIntervalSeconds; }
       for (var shotIndex = shots.length - 1; shotIndex >= 0; shotIndex -= 1) {
         var shot = shots[shotIndex]; shot.x += shot.vx * dt; shot.y += shot.vy * dt; shot.life -= dt; place(shot.node, shot.x, shot.y, 0);
         var struck = false;
@@ -528,7 +544,7 @@
       if (typeof options.render === "function") options.render({ root: state.root, stage: stage, ships: ships, hazards: hazards, shots: shots, hits: hits });
       frame = window.requestAnimationFrame(tick);
     }
-    measure(); for (var shipIndex = 0; shipIndex < shipCount; shipIndex += 1) makeShip(shipIndex); for (var hazardIndex = 0; hazardIndex < hazardCount; hazardIndex += 1) makeHazard(hazardIndex);
+    measure(); for (var shipIndex = 0; shipIndex < shipCount; shipIndex += 1) makeShip(shipIndex); for (var hazardIndex = 0; hazardIndex < hazardCount; hazardIndex += 1) makeHazard(hazardIndex); measure();
     var resizeObserver = "ResizeObserver" in window ? new ResizeObserver(measure) : null; if (resizeObserver) resizeObserver.observe(stage);
     var intersectionObserver = "IntersectionObserver" in window ? new IntersectionObserver(function (entries) { visible = Boolean(entries[0] && entries[0].isIntersecting); reconcile("intersection"); }, { rootMargin: "160px" }) : null;
     if (intersectionObserver) intersectionObserver.observe(stage);

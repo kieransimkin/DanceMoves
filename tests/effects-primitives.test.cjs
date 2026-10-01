@@ -16,6 +16,11 @@ for (const primitive of ['pointer', 'playbackPulse', 'cueClass', 'cueTimeline', 
 assert.match(js, /danceMovesArenaLastCollision/);
 assert.match(js, /danceMovesArenaCollisions/);
 assert.match(js, /danceMovesArenaExplosion/);
+assert.match(js, /function touching\(first, second\)/);
+assert.match(js, /chooseShipSpawn\(ship,/);
+assert.match(js, /options\.onBurst/);
+assert.match(js, /options\.burstDurationBeats/);
+assert.match(js, /options\.inlineTransform === true/);
 assert.match(js, /"ship-ship"/);
 assert.match(js, /"ship-hazard"/);
 assert.match(js, /burst\(hazard\.x, hazard\.y, "shot"\)/);
