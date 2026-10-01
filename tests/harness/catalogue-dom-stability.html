@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="robots" content="noindex,nofollow">
+  <title>DanceMoves catalogue DOM stability fixture</title>
+  <style>
+    .ks-epk { position: relative; width: 800px; height: 600px; }
+    .ks-epk .arena { position: absolute; inset: 0; }
+    .ks-epk .plane { position: absolute; width: 32px; height: 32px; background: #a6d8e6; animation-duration: 750ms; }
+  </style>
+</head>
+<body>
+  <main class="ks-epk" data-release="catalogue-stability-fixture">
+    <h1>Catalogue DOM stability fixture</h1>
+    <div class="arena" data-dance-moves-arena="running" aria-hidden="true"></div>
+  </main>
+  <script>window.danceMovesConfig = { bpm: 145, pageId: 260 };</script>
+  <script src="../../assets/dance-moves-core.js"></script>
+  <script src="../../assets/dance-moves-catalogue-timing.js"></script>
+  <script>
+    const arena = document.querySelector('.arena');
+    const planes = Array.from({ length: 8 }, () => {
+      const node = document.createElement('i');
+      node.className = 'plane';
+      arena.appendChild(node);
+      return node;
+    });
+    let frame = 0;
+    function move() {
+      frame += 1;
+      planes.forEach((node, index) => { node.style.transform = `translate3d(${(frame + index * 37) % 720}px,${index * 62}px,0)`; });
+      if (frame % 12 === 0) {
+        const shot = document.createElement('i');
+        shot.className = 'shot';
+        arena.appendChild(shot);
+        window.setTimeout(() => shot.remove(), 200);
+      }
+      requestAnimationFrame(move);
+    }
+    requestAnimationFrame(move);
+  </script>
+</body>
+</html>

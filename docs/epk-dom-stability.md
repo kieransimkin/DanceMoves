@@ -1,0 +1,21 @@
+# EPK DOM/CSS stability check
+
+`npm run test:epk-dom-stability -- <EPK URL> [more URLs]` is a read-only long-run browser test for any EPK URL. It samples the live element count and the generated DanceMoves catalogue stylesheet after a five-second settling period. A pass means those counts stayed within the documented tolerances during that run; it does not prove good FPS, rule out detached-node leaks, or substitute for an attended Brave/mobile check.
+
+Use a representative active state. For an audio-driven effect, add `--play-audio` to start the first master/ordinary `<audio>` muted, or `--audio-selector=<selector>` to name the exact player. If activation fails, the test fails rather than treating an idle page as playback evidence. Run one page at a time on low-memory hardware, then compare the saved report and visible page. The script never posts to WordPress or changes the page.
+
+Example using the local moving-sprite fixture and an already-installed browser:
+
+```powershell
+npm run test:epk-dom-stability -- http://127.0.0.1:8768/tests/harness/catalogue-dom-stability.html --seconds=90 --interval=10 --channel=msedge --output=qa/epk-dom-stability.json
+```
+
+Options: `--seconds` (minimum 30, default 90), `--interval` (default 10 seconds, automatically shortened to ensure at least six samples), `--play-audio` and `--audio-selector`, `--channel` or `--executable` for an installed browser, and `--output` for a JSON report. Supply explicit `http://` or `https://` URLs; there is no implicit live-site sweep. The test uses medians of the first and last three settled samples and fails on growth above 20 elements or 5% of baseline, 1,024 generated-CSS characters or 10%, or 10 generated CSS rules or 10%. These are regression-screening thresholds, not universal memory budgets. Investigate a failure before changing tolerances; legitimate lazy-loaded content can grow briefly.
+
+The unit tests in `tests/epk-dom-stability.test.mjs` prove the checker fails on both expanding DOM and expanding CSSOM with a stable element count. The moving-sprite fixture in `tests/harness/catalogue-dom-stability.html` exercises frequent style writes and short-lived child nodes. The local examples server exposes only that exact fixture path in addition to its prior allowlist.
+
+## Potential problems
+
+- **Playwright says `Executable doesn't exist ... chromium_headless_shell`:** the browser binary matching the pinned Playwright version is absent. Check an existing verified browser first. Locally, `--channel=msedge` worked with the installed Microsoft Edge and avoided a download. If no suitable browser exists, follow the project-wide pinned-tool provisioning rule rather than silently fetching a different build. Playwright browser guidance: https://playwright.dev/docs/browsers (accessed 1 October 2026).
+- **`spawn EPERM` in the Windows restricted sandbox:** browser/build child-process creation is blocked by that sandbox, not necessarily by the test. Use one narrowly approved unsandboxed local run and retain the exact output; never claim a browser pass from a blocked run. Matching Codex issue: https://github.com/openai/codex/issues/35070 (accessed 1 October 2026).
+- **A public test page crashes or slows during an old build:** record the last readable DOM/CSS sample, close only agent-created stressed tabs, and keep the result as evidence of that build rather than assuming the new candidate passed. The Arcadians 3.1.6 CSSOM grew past 1.36 million characters; the local 3.1.7 fixture remained at one 796-character rule through 92 seconds.

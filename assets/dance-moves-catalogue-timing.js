@@ -34,6 +34,7 @@
     "}";
   var records = [];
   var convertedCustomProperties = new Set();
+  var motionVariables = new Set();
   var observed = false;
   var pendingFrame = 0;
   var removeAnimationScope = function () {};
@@ -241,7 +242,7 @@
   }
 
   function applyCatalogueTiming() {
-    var motionVariables = new Set();
+    motionVariables = new Set();
     Array.from(document.styleSheets).forEach(function (sheet) {
       var rules = accessibleRules(sheet);
       if (rules) collectMotionVariablesFromRules(rules, motionVariables);
@@ -262,7 +263,8 @@
 
     root.dataset.danceMovesCatalogueTiming = "ready";
     root.dataset.danceMovesCatalogueTimingConversions = String(records.length);
-    ensureCatalogueStyle().textContent += pseudoRules.join("") + REDUCED_MOTION_CSS;
+    // Replacing, rather than appending, keeps repeat adoption bounded.
+    ensureCatalogueStyle().textContent = pseudoRules.join("") + REDUCED_MOTION_CSS;
     document.documentElement.dataset.danceMovesCatalogueTiming = "ready";
     return snapshot();
   }
@@ -286,17 +288,35 @@
     });
   }
 
+  function timingStyleSignature(styleText) {
+    return String(styleText || "").split(";").map(function (declaration) {
+      var colon = declaration.indexOf(":");
+      if (colon < 0) return "";
+      var originalProperty = declaration.slice(0, colon).trim();
+      var property = originalProperty.startsWith("--") ? originalProperty : originalProperty.toLowerCase();
+      if (!/^(?:animation|transition)(?:-(?:duration|delay))?$/.test(property) && !motionVariables.has(property)) return "";
+      return property + ":" + declaration.slice(colon + 1).trim();
+    }).filter(Boolean).sort().join(";");
+  }
+
+  function mutationNeedsAdoption(mutation) {
+    var target = mutation.target;
+    // The arena owns its timing. Its moving sprites and transient shots can
+    // change style or children every frame without changing catalogue CSS.
+    if (target && target.closest && target.closest("[data-dance-moves-arena]")) return false;
+    if (mutation.type === "attributes") {
+      return timingStyleSignature(mutation.oldValue) !== timingStyleSignature(target.getAttribute("style"));
+    }
+    return Array.from(mutation.addedNodes || []).some(function (node) { return node.nodeType === 1; });
+  }
+
   function observeDynamicMotion() {
     if (observed || typeof MutationObserver !== "function") return;
     observed = true;
     var observer = new MutationObserver(function (mutations) {
-      if (mutations.some(function (mutation) {
-        return mutation.type === "attributes" || Array.from(mutation.addedNodes || []).some(function (node) {
-          return node.nodeType === 1;
-        });
-      })) scheduleApply();
+      if (mutations.some(mutationNeedsAdoption)) scheduleApply();
     });
-    observer.observe(root, { subtree: true, childList: true, attributes: true, attributeFilter: ["style"] });
+    observer.observe(root, { subtree: true, childList: true, attributes: true, attributeFilter: ["style"], attributeOldValue: true });
   }
 
   removeAnimationScope = motion.registerAnimationScope(root, ["*"]);

@@ -79,12 +79,14 @@ const unrelatedRule = {
   }
 };
 const documentElement = { dataset: {} };
+let selectorCalls = 0;
+let pseudoStyle;
 const document = {
   querySelector: selector => selector === ".ks-epk" ? root : null,
-  querySelectorAll: selector => String(selector).includes("ks-epk") ? [root] : [],
+  querySelectorAll: selector => { selectorCalls += 1; return String(selector).includes("ks-epk") ? [root] : []; },
   styleSheets: [{ href: null, cssRules: [animationRule, viewRule, unrelatedRule] }],
   createElement() { return { id: "", textContent: "" }; },
-  head: { appendChild() {} },
+  head: { appendChild(element) { pseudoStyle = element; } },
   documentElement
 };
 const motion = {
@@ -102,10 +104,13 @@ const motion = {
     return () => {};
   }
 };
+let observerCallback;
+let observerOptions;
+const animationFrames = [];
 const window = {
   DanceMoves: motion,
   danceMovesConfig: { pageId: 248 },
-  requestAnimationFrame(callback) { callback(); return 1; },
+  requestAnimationFrame(callback) { animationFrames.push(callback); return animationFrames.length; },
   addEventListener() {},
   getComputedStyle() {
     return {
@@ -113,7 +118,7 @@ const window = {
       getPropertyValue() { return ""; }
     };
   },
-  MutationObserver: function () { this.observe = () => {}; }
+  MutationObserver: function (callback) { observerCallback = callback; this.observe = (_root, options) => { observerOptions = options; }; }
 };
 
 vm.runInNewContext(source, { window, document, MutationObserver: window.MutationObserver, Set, Array, Number, String });
@@ -127,5 +132,31 @@ assert.equal(unrelatedRule.style.values["transition-duration"], "0.4s", "unrelat
 assert.equal(root.dataset.danceMovesCatalogueTiming, "ready");
 assert.equal(documentElement.dataset.danceMovesCatalogueTiming, "ready");
 assert.equal(window.DanceMovesCatalogueTiming.snapshot().conversionCount, 3);
+assert.equal(observerOptions.attributeOldValue, true, "the observer compares timing declarations before and after a style change");
+
+const initialCss = pseudoStyle.textContent;
+const initialSelectorCalls = selectorCalls;
+const movingSprite = { closest: () => ({}) };
+observerCallback([{ type: "attributes", target: movingSprite, oldValue: "transform:translateX(0px)" }]);
+observerCallback([{ type: "childList", target: movingSprite, addedNodes: [{ nodeType: 1 }] }]);
+assert.equal(animationFrames.length, 0, "arena animation must not trigger a catalogue-wide rescan");
+
+const ordinaryElement = {
+  closest: () => null,
+  getAttribute: () => "transform:translateX(8px); animation-duration: 1s"
+};
+observerCallback([{ type: "attributes", target: ordinaryElement, oldValue: "transform:translateX(0px); animation-duration: 1s" }]);
+assert.equal(animationFrames.length, 0, "a transform-only change outside the arena must not trigger a rescan");
+ordinaryElement.getAttribute = () => "transform:translateX(8px); animation-duration: 2s";
+observerCallback([{ type: "attributes", target: ordinaryElement, oldValue: "transform:translateX(0px); animation-duration: 1s" }]);
+assert.equal(animationFrames.length, 1, "a timing change must still trigger adoption");
+animationFrames.shift()(0);
+assert.ok(selectorCalls > initialSelectorCalls);
+assert.equal(pseudoStyle.textContent, initialCss, "repeat adoption must replace, not grow, generated CSS");
+
+observerCallback([{ type: "childList", target: root, addedNodes: [{ nodeType: 1 }] }]);
+assert.equal(animationFrames.length, 1, "new non-arena content must still trigger adoption");
+animationFrames.shift()(0);
+assert.equal(pseudoStyle.textContent, initialCss, "repeated non-arena adoption must remain bounded");
 
 console.log("DanceMoves catalogue-wide CSS timing adoption tests passed");
