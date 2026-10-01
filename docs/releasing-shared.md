@@ -105,6 +105,21 @@ claimed to have been performed by applying this patch.
 
 ## Release tags
 
+Kieran confirmed on 1 October 2026 that a DanceMoves release-tag push is
+intended to publish the matching package to npm as well as GitHub; do not ask
+again solely because the normal tag workflow includes npm. This standing
+instruction does not waive the exact-version/source/artifact checks, CI gates,
+or approval for any materially different destination or permission change.
+
+When WordPress installation approval names an exact ZIP hash, package it from
+the final source tree **after** committing documentation and tests, then compare
+the local archive/manifest to the CI release archive before claiming they are
+identical. On v3.1.7, CI included one new documentation file that the earlier
+approved local ZIP lacked; all shared runtime entries matched, but the two ZIP
+hashes differed. Record both hashes and the per-entry comparison. Do not move
+an immutable tag or silently replace an approved WordPress installation merely
+to make hashes match.
+
 After the migration, tests and setup are committed:
 
 ```sh
@@ -161,3 +176,12 @@ checksums. Confirm the registry version and its provenance. For WordPress,
 install the exact generated ZIP separately, retain rollback artifacts and check
 public pages/caches. Publication does not set page metadata, migrate site data
 or prove live rendering.
+
+## Potential problems
+
+### The locally approved WordPress ZIP and CI release ZIP have different hashes
+
+- **Symptom (1 October 2026, v3.1.7):** the ZIP installed in WordPress had SHA-256 `935E313FA9A2AFA0C75E8C2BBD8E150DA8E4602CD72AF867DA599DE84371A781`, while the published CI ZIP had `749736DA856EEF3F57165533DCA697BBDCBC3F75A2568F49574F83BEE53DB2C2`.
+- **Cause verified:** the approved local ZIP was built before the new DOM-stability documentation file entered the final tagged source. The CI ZIP contained that one extra `docs/epk-dom-stability.md`; all 30 common entries matched by path, size and SHA-256, including PHP/JavaScript runtime files.
+- **Corrective action:** retain both immutable artifacts and manifest files, disclose the mismatch, and compare every entry rather than treating version equality as byte equality. No second WordPress install or tag move was needed for this docs-only difference.
+- **Verification and limit:** both manifest counts/digests were checked, GitHub Actions build/npm/GitHub jobs passed, and the active WordPress plugin and public assets showed 3.1.7. This establishes runtime-file equivalence in this instance, not a general rule that mismatched archives are safe. For future releases, package after the final commit and compare exact outputs before approval.
