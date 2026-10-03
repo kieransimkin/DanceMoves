@@ -276,6 +276,7 @@
     let control = null;
     let observer = null;
     let destroyed = false;
+    let controlFeedback = null;
     const phonePreference = Core.createOrientationPreference(window);
 
     adapter.root.dataset.ksOrientation = "supported";
@@ -371,8 +372,12 @@
       control.className = "ks-epk-orientation-control";
       control.textContent = "Use phone motion";
       control.setAttribute("aria-live", "polite");
+      controlFeedback?.destroy();
+      controlFeedback = Core.createControlFeedback(window, control, { color: "#ffe066" });
       control.addEventListener("click", async () => {
         const button = control;
+        // Decoration must never prevent the permission request in this gesture.
+        try { controlFeedback.burst(); } catch (error) { controlFeedback.clear(); }
         button.disabled = true;
         button.textContent = "Checking motion…";
         try {
@@ -403,11 +408,12 @@
     };
 
     const visibilityChanged = () => {
+      if (document.hidden) controlFeedback?.clear();
       if (document.hidden) stopListening();
       else pageShown();
     };
 
-    const pageHidden = () => stopListening();
+    const pageHidden = () => { controlFeedback?.clear(); stopListening(); };
     const pageShown = () => {
       if (destroyed || reducedMotion.matches) return;
       if (Core.permissionRequired(window)) {
@@ -427,6 +433,7 @@
 
     const preferenceChanged = () => {
       if (reducedMotion.matches) {
+        controlFeedback?.clear();
         stopListening();
         removeControl();
       } else {
@@ -447,6 +454,7 @@
       latest = { x: 0, y: 0 };
       active = false;
       adapter.reset();
+      controlFeedback?.destroy();
       removeControl();
       window.removeEventListener("orientationchange", recalibrate);
       window.removeEventListener("pagehide", pageHidden);

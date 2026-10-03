@@ -15,9 +15,9 @@
       "../../../assets/clay-stars-effects.css": "5F6B0F4EA64B572F3D2057B0910013D79DF63E2861CBBB228996FADFCE5803FF",
       "../../../assets/dance-moves-core.js": "78C41A350B45D544BDC4E6F33D71D0B27B01EE2D5D43D3D98E3964AA8057681B",
       "../../../assets/clay-stars-effects.js": "D5D27D5CD4ED3F1E8E409BEF7E25BD5F550E23782D68DFA113E0C697E8D51C2A",
-      "../../../assets/ks-epk-device-orientation.css": "1CB19DA11F6158853D893AF15460FBEABAD4A0D3665505D9857A3137713A8E42",
-      "../../../assets/ks-epk-device-orientation-core.js": "D3C1749B679C58A02AFFDDCC41C131BAA3A20C867D7F36597A6E4DCE0A32269E",
-      "../../../assets/ks-epk-device-orientation.js": "1AF09D4F62CD91104D30CC4E796D0564B23B91233C4181722B3CC9F2DD51E2C9"
+      "../../../assets/ks-epk-device-orientation.css": "5E1C975673AC118BCC231BF2A06C2CA2E4854F45BD626E73F66730DA617F7A20",
+      "../../../assets/ks-epk-device-orientation-core.js": "D49FB3D4170986A796CB7066AE5D514E089AD1A2897196742A1868A7A3466A86",
+      "../../../assets/ks-epk-device-orientation.js": "1EF6F888178A185FD325E075AD6ABF5D9FC7B086A25E61035B7C5A687A31D60C"
     },
     "inputModes": ["pointer", "touch", "keyboard", "cue"]
   },

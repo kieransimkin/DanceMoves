@@ -7,6 +7,63 @@
 
   const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
+  // Finite, reusable control feedback. No sensor, permission or page ownership.
+  function createControlFeedback(environment, button, { color = "currentColor" } = {}) {
+    const document = environment.document;
+    if (!document || !button.classList || !button.style) return { burst() {}, clear() {}, destroy() {} };
+    const particles = new Set();
+    let destroyed = false;
+    const allowed = () => !destroyed && !document.hidden &&
+      !environment.matchMedia("(prefers-reduced-motion: reduce)").matches &&
+      !environment.matchMedia("(forced-colors: active)").matches;
+    const clear = () => {
+      for (const entry of particles) { entry.animation.cancel(); entry.node.remove(); }
+      particles.clear();
+    };
+    if (button.classList && button.style) {
+      button.classList.add("dm-control-attention");
+      button.style.setProperty("--dm-attention-color", color);
+    }
+    function burst() {
+      if (!allowed() || typeof button.animate !== "function") return;
+      clear();
+      const rect = button.getBoundingClientRect();
+      const width = environment.innerWidth, height = environment.innerHeight;
+      if (width < 32 || height < 32) return;
+      const x = clamp(rect.left + rect.width / 2, 12, width - 12);
+      const y = clamp(rect.top + rect.height / 2, 12, height - 12);
+      for (let i = 0; i < 18; i++) {
+        const node = document.createElement("span");
+        node.className = "dm-control-spark";
+        node.setAttribute("aria-hidden", "true");
+        Object.assign(node.style, { left: `${x}px`, top: `${y}px`, color });
+        document.body.append(node);
+        const dx = (i / 17 * 2 - 1) * (48 + (i % 3) * 18);
+        const apexX = clamp(x + dx * .65, 12, width - 12) - x;
+        const endX = clamp(x + dx, 12, width - 12) - x;
+        const apexY = clamp(y - 64 - (i % 5) * 10, 12, height - 12) - y;
+        const endY = clamp(y + 24 + (i % 4) * 9, 12, height - 12) - y;
+        const angle = (i * 47) % 180;
+        const transform = (px, py, scale) => `translate(${px}px,${py}px) rotate(${angle}deg) scale(${scale})`;
+        const animation = node.animate([
+          { transform: transform(0, 0, .4), opacity: 0, offset: 0 },
+          { transform: transform(apexX * .3, apexY * .5, 1), opacity: .95, offset: .15 },
+          { transform: transform(apexX, apexY, .85), opacity: .8, offset: .5 },
+          { transform: transform(endX, endY, .25), opacity: 0, offset: 1 }
+        ], { duration: 850 + (i % 4) * 90, easing: "linear", fill: "both" });
+        const entry = { node, animation };
+        particles.add(entry);
+        animation.finished.then(() => { node.remove(); particles.delete(entry); }, () => {});
+      }
+    }
+    return { burst, clear, destroy() {
+      if (destroyed) return;
+      destroyed = true; clear();
+      button.classList?.remove("dm-control-attention");
+      button.style?.removeProperty("--dm-attention-color");
+    } };
+  }
+
   function isMobileDevice(environment) {
     const nav = environment.navigator || {};
     const ua = String(nav.userAgent || "");
@@ -365,6 +422,7 @@
 
   return {
     clamp,
+    createControlFeedback,
     createLatestSampleRafScheduler,
     createTransitionTargetScheduler,
     createRollingMapper,

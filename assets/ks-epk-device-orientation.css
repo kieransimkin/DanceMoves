@@ -1,8 +1,9 @@
 .ks-epk-orientation-control {
   position: fixed;
   z-index: 999998;
-  left: max(.75rem, env(safe-area-inset-left));
-  bottom: max(.75rem, env(safe-area-inset-bottom));
+  /* Reserve transparent room for the outer glow before the viewport edge. */
+  left: max(2rem, env(safe-area-inset-left));
+  bottom: max(2rem, env(safe-area-inset-bottom));
   min-height: 2.75rem;
   padding: .65rem .9rem;
   border: 1px solid rgba(255, 255, 255, .72);
@@ -25,6 +26,34 @@
 .ks-epk-orientation-control:disabled {
   cursor: default;
   opacity: .72;
+}
+
+/* Local attention cue: static soft shadow, only opacity animates. */
+.dm-control-attention::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: 0 0 8px 2px var(--dm-attention-color), 0 0 18px 3px var(--dm-attention-color);
+  opacity: .18;
+  animation: dm-control-glow 3.2s ease-in-out infinite;
+}
+.dm-control-attention:disabled::after { animation: none; opacity: .18; }
+@keyframes dm-control-glow { 0%, 100% { opacity: .18; } 50% { opacity: .5; } }
+.dm-control-spark {
+  position: fixed;
+  z-index: 999999;
+  width: 3px;
+  height: 7px;
+  margin: -3.5px 0 0 -1.5px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 4px currentColor;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce), (forced-colors: active) {
+  .dm-control-attention::after, .dm-control-spark { display: none !important; animation: none !important; }
 }
 
 .ks-epk[data-release="presents-and-chocolate"][data-ks-orientation="active"] .epk-cover-wrap {
