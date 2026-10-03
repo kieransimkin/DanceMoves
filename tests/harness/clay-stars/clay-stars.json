@@ -16,8 +16,8 @@
       "../../../assets/dance-moves-core.js": "78C41A350B45D544BDC4E6F33D71D0B27B01EE2D5D43D3D98E3964AA8057681B",
       "../../../assets/clay-stars-effects.js": "D5D27D5CD4ED3F1E8E409BEF7E25BD5F550E23782D68DFA113E0C697E8D51C2A",
       "../../../assets/ks-epk-device-orientation.css": "1CB19DA11F6158853D893AF15460FBEABAD4A0D3665505D9857A3137713A8E42",
-      "../../../assets/ks-epk-device-orientation-core.js": "97DA95E3062C89CB4BEEB0795A4DB7A8A31887890DB41BB9334A7B256135C73D",
-      "../../../assets/ks-epk-device-orientation.js": "538F07DF6606860082DE36744119F7C8DFEA5CF8C8D2FC76C53730F48FB48C86"
+      "../../../assets/ks-epk-device-orientation-core.js": "D3C1749B679C58A02AFFDDCC41C131BAA3A20C867D7F36597A6E4DCE0A32269E",
+      "../../../assets/ks-epk-device-orientation.js": "1AF09D4F62CD91104D30CC4E796D0564B23B91233C4181722B3CC9F2DD51E2C9"
     },
     "inputModes": ["pointer", "touch", "keyboard", "cue"]
   },

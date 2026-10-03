@@ -276,6 +276,7 @@
     let control = null;
     let observer = null;
     let destroyed = false;
+    const phonePreference = Core.createOrientationPreference(window);
 
     adapter.root.dataset.ksOrientation = "supported";
     adapter.root.dataset.ksOrientationAdapter = config.adapter || "detected";
@@ -345,13 +346,13 @@
     };
 
     const startListening = () => {
-      if (listening || reducedMotion.matches) return;
+      if (listening || reducedMotion.matches || document.hidden || destroyed) return;
       listening = true;
       window.addEventListener("deviceorientation", onOrientation, { passive: true });
       availabilityTimer = window.setTimeout(() => {
         if (!active && control) {
-          control.textContent = "Phone motion unavailable";
-          control.disabled = true;
+          control.textContent = Core.permissionRequired(window) ? "Use phone motion" : "Phone motion unavailable";
+          control.disabled = !Core.permissionRequired(window);
         }
       }, 3500);
     };
@@ -371,20 +372,29 @@
       control.textContent = "Use phone motion";
       control.setAttribute("aria-live", "polite");
       control.addEventListener("click", async () => {
-        control.disabled = true;
-        control.textContent = "Checking motion…";
+        const button = control;
+        button.disabled = true;
+        button.textContent = "Checking motion…";
         try {
           const result = await window.DeviceOrientationEvent.requestPermission();
+          if (destroyed || control !== button) return;
           if (result !== "granted") {
-            control.textContent = "Phone motion blocked";
+            phonePreference.write(false);
+            stopListening();
+            button.textContent = "Phone motion blocked";
+            button.disabled = false;
             return;
           }
-          control.textContent = "Move phone to enable…";
+          phonePreference.write(true);
+          button.textContent = "Move phone to enable…";
+          stopListening();
           startListening();
         } catch (error) {
-          control.textContent = "Phone motion unavailable";
+          if (destroyed || control !== button) return;
+          button.textContent = "Use phone motion";
+          button.disabled = false;
         }
-      }, { once: true });
+      });
       document.body.append(control);
     };
 
@@ -400,8 +410,11 @@
     const pageHidden = () => stopListening();
     const pageShown = () => {
       if (destroyed || reducedMotion.matches) return;
-      if (Core.permissionRequired(window)) makePermissionControl();
-      else startListening();
+      if (Core.permissionRequired(window)) {
+        makePermissionControl();
+        if (phonePreference.read() === "enabled") startListening();
+      }
+      else if (phonePreference.read() !== "disabled") startListening();
     };
 
     window.addEventListener("orientationchange", recalibrate, { passive: true });
@@ -416,10 +429,8 @@
       if (reducedMotion.matches) {
         stopListening();
         removeControl();
-      } else if (Core.permissionRequired(window)) {
-        makePermissionControl();
       } else {
-        startListening();
+        pageShown();
       }
     };
     if (typeof reducedMotion.addEventListener === "function") reducedMotion.addEventListener("change", preferenceChanged);
@@ -468,8 +479,7 @@
       observer.observe(document.documentElement, { childList: true, subtree: true });
     }
 
-    if (Core.permissionRequired(window)) makePermissionControl();
-    else startListening();
+    pageShown();
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initialise, { once: true });

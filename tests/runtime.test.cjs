@@ -9,7 +9,7 @@ const runtime = fs.readFileSync(
   "utf8"
 );
 
-function createEnvironment({ mobile = true, permission = false, adapter = "dmitri-my-talisman" } = {}) {
+function createEnvironment({ mobile = true, permission = false, adapter = "dmitri-my-talisman", storage = new Map(), reduced = false, permissionResult = "granted" } = {}) {
   const windowListeners = {};
   const raf = [];
   const timers = new Map();
@@ -35,10 +35,11 @@ function createEnvironment({ mobile = true, permission = false, adapter = "dmitr
   };
 
   function OrientationEvent() {}
-  if (permission) OrientationEvent.requestPermission = async () => "granted";
+  let permissionCalls = 0;
+  if (permission) OrientationEvent.requestPermission = async () => { permissionCalls++; return permissionResult; };
 
   const matchMedia = query => ({
-    matches: query.includes("prefers-reduced-motion") ? false :
+    matches: query.includes("prefers-reduced-motion") ? reduced :
       query.includes("pointer: coarse") ? mobile :
       query.includes("max-width") ? true : false,
     addEventListener() {},
@@ -47,6 +48,7 @@ function createEnvironment({ mobile = true, permission = false, adapter = "dmitr
 
   const window = {
     DeviceOrientationEvent: OrientationEvent,
+    localStorage: { getItem: key => storage.get(key), setItem: (key, value) => storage.set(key, value) },
     KSEpkOrientationCore: Core,
     ksEpkOrientationConfig: { adapter, pageId: adapter === "walk-with-me" ? 276 : 298 },
     navigator: {
@@ -86,7 +88,7 @@ function createEnvironment({ mobile = true, permission = false, adapter = "dmitr
         listeners,
         setAttribute() {},
         addEventListener: (name, callback) => { listeners[name] = callback; },
-        remove() {},
+        remove() { this.removed = true; },
       };
     },
   };
@@ -98,6 +100,10 @@ function createEnvironment({ mobile = true, permission = false, adapter = "dmitr
     properties,
     root,
     windowListeners,
+    permissionCalls: () => permissionCalls,
+    expireAvailability() {
+      [...timers.entries()].filter(([, timer]) => timer.delay === 3500).forEach(([id, timer]) => { timers.delete(id); timer.callback(); });
+    },
     advance(value) { clock = value; },
     flush() {
       while (raf.length) raf.shift()();
@@ -195,6 +201,39 @@ assert.match(runtime, /Math\.sqrt\(Math\.abs\(bounded\)\)/);
   assert.equal(gated.controls[0].textContent, "Use phone motion");
   await gated.controls[0].listeners.click();
   assert.equal(typeof gated.windowListeners.deviceorientation, "function");
+  const storage = new Map();
+  const first = createEnvironment({ permission: true, storage });
+  await first.controls[0].listeners.click();
+  assert.equal(storage.get("dancemoves:phone-motion:v1"), "enabled");
+  const next = createEnvironment({ permission: true, storage });
+  assert.equal(typeof next.windowListeners.deviceorientation, "function", "new document restores the choice");
+  assert.equal(next.permissionCalls(), 0, "restoration never invokes the permission API");
+  next.windowListeners.deviceorientation({ beta: null, gamma: null }); next.flush();
+  assert.equal(next.root.dataset.ksOrientation, "supported", "invalid samples do not prove permission");
+  next.expireAvailability();
+  assert.equal(next.controls[0].textContent, "Use phone motion");
+  assert.equal(next.controls[0].disabled, false, "expired permission can be requested with a fresh click");
+  await next.controls[0].listeners.click();
+  next.windowListeners.deviceorientation({ beta: 0, gamma: 0 }); next.flush();
+  assert.equal(next.root.dataset.ksOrientation, "active");
+  assert.equal(next.controls[0].removed, true, "usable readings clear the enable control");
+  next.windowListeners.pagehide(); next.windowListeners.pageshow();
+  assert.equal(typeof next.windowListeners.deviceorientation, "function", "BFCache restoration resumes without another click");
+  assert.equal(next.permissionCalls(), 1);
+  const blocked = createEnvironment({ permission: true, storage, permissionResult: "denied" });
+  await blocked.controls[0].listeners.click();
+  assert.equal(storage.get("dancemoves:phone-motion:v1"), "disabled");
+  assert.equal(blocked.windowListeners.deviceorientation, undefined);
+  assert.equal(createEnvironment({ permission: true, storage }).windowListeners.deviceorientation, undefined);
+  storage.set("dancemoves:phone-motion:v1", "enabled");
+  const reducedPage = createEnvironment({ permission: true, storage, reduced: true });
+  assert.equal(reducedPage.controls.length, 0);
+  assert.equal(reducedPage.windowListeners.deviceorientation, undefined);
+  const unavailableStorage = { get() { throw new Error("Storage blocked"); }, set() { throw new Error("Storage blocked"); } };
+  const privatePage = createEnvironment({ permission: true, storage: unavailableStorage });
+  await privatePage.controls[0].listeners.click();
+  privatePage.windowListeners.pagehide(); privatePage.windowListeners.pageshow();
+  assert.equal(typeof privatePage.windowListeners.deviceorientation, "function", "blocked storage still works within the page");
   console.log("Kieran EPK orientation runtime tests passed");
 })().catch(error => {
   console.error(error);

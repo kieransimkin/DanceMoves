@@ -60,6 +60,7 @@ jobs:
       - run: npm run demo:prepare
       - run: npx playwright-core install --with-deps chromium
       - run: npm run test:browser
+      - run: node tests/shared/orientation-navigation-browser.mjs
       - run: npm run test:next
       - run: npm run test:next:smoke
       - uses: actions/upload-artifact@v4

@@ -33,6 +33,25 @@
     return Number.isFinite(event && event.beta) && Number.isFinite(event && event.gamma);
   }
 
+  // A visitor preference, never a cached browser permission grant.
+  function createOrientationPreference(environment) {
+    const key = "dancemoves:phone-motion:v1";
+    let current = null;
+    return {
+      read() {
+        try {
+          const value = environment.localStorage?.getItem(key);
+          if (value === "enabled" || value === "disabled") current = value;
+        } catch (_) { /* Storage may be blocked; retain this mount's choice. */ }
+        return current;
+      },
+      write(enabled) {
+        current = enabled ? "enabled" : "disabled";
+        try { environment.localStorage?.setItem(key, current); } catch (_) {}
+      },
+    };
+  }
+
   function shortestDelta(value, origin) {
     let delta = value - origin;
     while (delta > 180) delta -= 360;
@@ -349,6 +368,7 @@
     createLatestSampleRafScheduler,
     createTransitionTargetScheduler,
     createRollingMapper,
+    createOrientationPreference,
     hasMotionData,
     isMobileDevice,
     mapPointToWindow,

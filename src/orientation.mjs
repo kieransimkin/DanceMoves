@@ -4,7 +4,8 @@ export function createOrientationController(scope,{render,windowMilliseconds=200
   if(typeof render!=='function')throw new TypeError('render callback is required');
   for(const [name,value] of Object.entries({windowMilliseconds,minimumSpanDegrees,smoothingTimeConstantMilliseconds}))if(!Number.isFinite(value)||value<=0)throw new RangeError(name);
   const w=scope.window,core=w.KSEpkOrientationCore;
-  let enabled=false,listening=false,destroyed=false,pending=false;
+  const preference=core.createOrientationPreference(w);
+  let enabled=core.sensorSupported(w)&&preference.read()==='enabled',listening=false,destroyed=false,pending=false;
   const reduced=w.matchMedia('(prefers-reduced-motion: reduce)'),forced=w.matchMedia('(forced-colors: active)');
   const scheduler=core.createLatestSampleRafScheduler({requestFrame:w.requestAnimationFrame,cancelFrame:w.cancelAnimationFrame,
     now:()=>w.performance.now(),mapper:core.createRollingMapper(windowMilliseconds,minimumSpanDegrees),smoothingTimeConstantMilliseconds,
@@ -24,6 +25,7 @@ export function createOrientationController(scope,{render,windowMilliseconds=200
   scope.listen(scope.document,'visibilitychange',reconcile);scope.listen(reduced,'change',reconcile);scope.listen(forced,'change',reconcile);scope.listen(w,'orientationchange',reset);
   function destroy(){if(destroyed)return;enabled=false;reconcile();destroyed=true;pending=false;scheduler.teardown();disposers.forEach(fn=>fn());removeDispose();}
   const removeDispose=scope.onDispose(destroy);
+  reconcile();
   return Object.freeze({
     async enable(){
       if(destroyed||scope.disposed)throw new Error('Orientation controller is destroyed');
@@ -31,12 +33,15 @@ export function createOrientationController(scope,{render,windowMilliseconds=200
       if(!core.sensorSupported(w))throw new Error('Device orientation is unavailable in this browser or insecure context');
       pending=true;
       try{
-        if(core.permissionRequired(w)&&await w.DeviceOrientationEvent.requestPermission()!=='granted')throw new Error('Motion permission denied');
+        if(core.permissionRequired(w)&&await w.DeviceOrientationEvent.requestPermission()!=='granted'){
+          if(!destroyed&&!scope.disposed){preference.write(false);enabled=false;reconcile();}
+          throw new Error('Motion permission denied');
+        }
         if(destroyed||scope.disposed)throw new Error('Orientation controller is destroyed');
-        enabled=true;reconcile();return true;
+        preference.write(true);enabled=true;reconcile();return true;
       }finally{pending=false;}
     },
-    disable(){enabled=false;reconcile();},reset,destroy,
+    disable(){preference.write(false);enabled=false;reconcile();},reset,destroy,
     snapshot:()=>({enabled,listening,destroyed,pending,reducedMotion:reduced.matches,forcedColors:forced.matches,framePending:scheduler.pending()})
   });
 }
