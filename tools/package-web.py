@@ -6,7 +6,7 @@ ROOT=Path(__file__).resolve().parents[1]
 def main():
     pkg=json.loads((ROOT/'package.json').read_text());version=pkg['version'];lib=ROOT/'lib'
     homepage=pkg.get('homepage','')
-    files=[lib/'dancemoves.min.js',lib/'dancemoves.css',lib/'build-manifest.json',ROOT/'LICENSE',ROOT/'README.md']+sorted((lib/'assets').glob('*'))+sorted((ROOT/'docs/branding').glob('*'))
+    files=[lib/'dancemoves.min.js',lib/'dancemoves.css',lib/'build-manifest.json',ROOT/'LICENSE',ROOT/'README.md',ROOT/'AGENTS.md',ROOT/'CONTRIBUTING.md']+sorted((lib/'assets').glob('*'))+sorted((ROOT/'docs/branding').glob('*'))
     if any(not p.is_file() for p in files):raise SystemExit('Run npm run build:library first')
     manifest=json.loads((lib/'build-manifest.json').read_text('utf-8'))
     if manifest.get('version')!=version:raise SystemExit('Stale library version; rebuild')

@@ -1,6 +1,6 @@
 {
   "schema": "dance-moves-examples/v1",
-  "pluginVersion": "3.1.15",
+  "pluginVersion": "3.1.16",
   "pluginCommit": "c4252556774f38cad6d75b1a52de7917d2c65af0",
   "media": "media/manifest.json",
   "features": [
