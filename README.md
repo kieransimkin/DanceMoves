@@ -319,7 +319,7 @@ const pointer = DanceMovesEffects.pointer({id:'arc:pointer', root, target:art, b
 pointer.reset('manual');
 inspect(pointer.snapshot());
 // pointer.set(x,y) is an immediate manual override; enforce accessibility yourself.
-pointer.teardown(); // Discard the handle; remount after position-only layout changes.
+pointer.teardown(); // Discard the handle when its owning surface is removed.
 ```
 
 [Run the example](examples/wordpress/pointer.html) · [Read its complete source](examples/wordpress/demos/pointer.mjs).

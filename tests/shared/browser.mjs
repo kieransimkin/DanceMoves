@@ -10,6 +10,9 @@ try{
  browser=await chromium.launch(channel?{headless:true,channel}:{headless:true});const page=await browser.newPage({viewport:{width:1280,height:900}});page.on('pageerror',e=>errors.push(e.message));
  await page.addInitScript(()=>{window.__danceMovesReadyEvents=[];document.addEventListener('dance-moves-ready',event=>window.__danceMovesReadyEvents.push({bubbles:event.bubbles,version:event.detail?.version}));});
  await page.goto(base);await page.waitForFunction(()=>window.__reactDanceMoves && !window.__reactDanceMoves.destroyed);
+ // A mounted handle precedes asynchronous runtime readiness. Wait for the
+ // actual event before asserting its complete payload; retain a bounded gate.
+ await page.waitForFunction(()=>window.__danceMovesReadyEvents.length > 0, undefined, {timeout:15000});
  const expectedVersion=JSON.parse(fs.readFileSync('package.json','utf8')).version;
  assert.deepEqual(await page.evaluate(()=>window.__danceMovesReadyEvents),[{bubbles:true,version:expectedVersion}]);checks.push('generic dance-moves-ready event bubbles after runtime readiness');
  await page.waitForSelector('.motion-tile');assert.equal(await page.locator('.motion-tile').count(),15);checks.push('15 actual native rudiments rendered by React');

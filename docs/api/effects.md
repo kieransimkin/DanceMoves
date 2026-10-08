@@ -136,9 +136,12 @@ to `--dance-moves-x` and `--dance-moves-y` and a reason to
 Native pointer handling is inactive when the page is hidden, reduced motion or
 forced colours is active, or the default fine-pointer condition fails. Inactive
 state resets coordinates to zero. Pointer leave resets to zero without disabling
-subsequent movement; orientation changes recache geometry and reset. There is no
-scroll listener: a bounding box that moves without resizing can be stale. Mount
-on stable geometry or remount after layout changes that move it.
+subsequent movement; orientation changes recache geometry and reset. From the
+3.1.11 candidate, captured scroll, window resize and visual-viewport scroll/resize
+invalidate cached geometry and cancel stale pending input. The next movement
+reads fresh bounds once; pointer entry also refreshes bounds. No scroll-frame
+measurement loop is added. Position-only layout changes without those events
+remain a limitation; remount after such an application-owned layout change.
 
 `render` receives:
 
