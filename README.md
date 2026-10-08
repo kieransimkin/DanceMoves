@@ -559,10 +559,14 @@ inspect(example);
 
 ### Release a new DanceMoves version
 
-The source is at 2.9.0 but that does not publish a GitHub release or deploy
-WordPress. Follow [RELEASING.md](RELEASING.md) to validate the exact commit, build
-`dist/DanceMoves-<version>.zip` and its manifest, tag that commit, create a draft
-GitHub release with those artifacts, verify downloads, and explicitly publish it.
+For 3.x, follow [the shared release guide](docs/releasing-shared.md), not the
+historical 2.x procedure. Legacy 2.x maintenance remains documented in
+[RELEASING.md](RELEASING.md). Validate the exact clean source commit and build all
+required distributions from that identity. Every new version must have a matching
+published GitHub release with verified distribution assets and checksums before
+the release work is declared complete. Source changes and a local build alone
+are not publication; reconcile any missing existing release first. Public tags,
+release publication and deployment retain their action-time approval gates.
 Upload the **packaged plugin ZIP**, not GitHub’s automatically generated source
 archive. WordPress deployment and per-page metadata changes are separate actions.
 

@@ -58,5 +58,6 @@ for(const file of ['shared/boot.mjs','shared/model.cjs','wordpress/arcadians-exa
 const readme=fs.readFileSync(path.join(root,'README.md'),'utf8');
 for(const f of manifest.features)check(()=>assert(readme.includes(`examples/wordpress/${f.page}`),f.id+' missing README recipe link'));
 check(()=>assert(readme.includes('RELEASING.md')));
+check(()=>assert(readme.includes('docs/releasing-shared.md'), '3.x shared release guide must remain linked'));
 check(()=>assert(!/current.*main.*2\.4\.0/i.test(readme.slice(0,1200))));
 console.log(JSON.stringify({status:'PASS',scope:'static coverage and metadata/media contracts only',checks,featurePages:23,apiExampleReferences:coverage.apiExamples.length,rudiments:15,orientationAdapters:10},null,2));

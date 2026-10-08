@@ -47,9 +47,16 @@
     }
     function render() { frame = 0; apply(latestX, latestY, "active"); }
     function reset(reason) { if (frame) window.cancelAnimationFrame(frame); frame = 0; apply(0, 0, reason || "reset"); }
+    // Position can change without a ResizeObserver notification. Invalidate
+    // lazily: one bounds read on the next input, never a scroll-frame loop.
+    function invalidateBounds() {
+      if (!rect) return;
+      rect = null;
+      reset("geometry-change");
+    }
     function reconcile() {
       active = !state.reduced.matches && !state.forced.matches && !document.hidden && (!fineOnly || fine.matches);
-      if (!active) reset("inactive"); else state.root.dataset.danceMovesPointer = "ready";
+      if (!active) reset("inactive"); else { rect = null; state.root.dataset.danceMovesPointer = "ready"; }
     }
     function move(event) {
       if (!active) return;
@@ -61,8 +68,15 @@
     cacheBounds();
     var resizeObserver = "ResizeObserver" in window ? new ResizeObserver(cacheBounds) : null;
     if (resizeObserver) resizeObserver.observe(bounds);
+    listen(target, "pointerenter", cacheBounds, { passive: true }, state.removers);
     listen(target, "pointermove", move, { passive: true }, state.removers);
     listen(target, "pointerleave", function () { reset("leave"); }, { passive: true }, state.removers);
+    listen(window, "scroll", invalidateBounds, { passive: true, capture: true }, state.removers);
+    listen(window, "resize", invalidateBounds, { passive: true }, state.removers);
+    if (window.visualViewport) {
+      listen(window.visualViewport, "scroll", invalidateBounds, { passive: true }, state.removers);
+      listen(window.visualViewport, "resize", invalidateBounds, { passive: true }, state.removers);
+    }
     listen(document, "visibilitychange", reconcile, { passive: true }, state.removers);
     listen(window, "orientationchange", function () { cacheBounds(); reset("orientation"); }, { passive: true }, state.removers);
     listen(state.reduced, "change", reconcile, undefined, state.removers);
