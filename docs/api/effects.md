@@ -4,13 +4,13 @@
 [Release adapters](adapters.md) · [CSS/HTML](styling.md)
 
 Source: [assets/dance-moves-effects.js](../../assets/dance-moves-effects.js).
-Current shared-library baseline: **3.1.6**. Historical 2.7/2.8 notes below
+Current shared-library baseline: **3.1.12**. Historical 2.7/2.8 notes below
 identify when the earlier primitives were introduced.
 
 This is the reusable, page-independent layer introduced in 2.7 and extended with
-`cueTimeline()` in 2.8 and `lyricStage()` in 3.0.4. It supplies mechanisms rather than artwork. It does not
+`cueTimeline()` in 2.8, `lyricStage()` in 3.0.4 and `spritePlayback()` in 3.1.12. It supplies mechanisms rather than artwork. It does not
 replace the core's LRC parser, audio discovery, named cue subscriptions or clock.
-It contains seven factories and four registry methods. Every factory returns a
+It contains eight factories and four registry methods. Every factory returns a
 frozen handle with `id`, `type`, `snapshot()` and `teardown()` plus the methods
 specified below. The returned object is frozen; its internal state is mutable.
 
@@ -433,6 +433,166 @@ function disposeTimeline() {
 The example's timestamps are illustrative, not actual song data. Keep meaningful
 section styling readable when motion is stopped, and add explicit reduced-motion
 and forced-colour CSS for any animated treatment.
+
+## spritePlayback(options)
+
+Returns `{ id, type: "sprite-playback", restore, start, stop, setQuality,
+snapshot, teardown }`. This is the **3.1.12** media-clock sprite primitive. It
+selects an atlas frame from `audio.currentTime`, so pause, seek, visibility and
+playback resumption reconstruct the same pose without a free-running timer. It
+does not play or seek audio, fetch an image, choose page artwork, or impose a CSS
+rendering technique.
+
+### Options and atlas mapping
+
+| Option | Default | Meaning |
+| --- | --- | --- |
+| `root`, `id`, `render` | Shared options | Root receives playback and quality state attributes. |
+| `audio` | First root `audio` | Element/selector; required to resolve. |
+| `target` | Root | Element/selector that receives sprite CSS variables and frame data attributes. |
+| `frameCount` | `1` | Number of local animation frames; rounded and clamped to at least 1. Ignored when `frameMap` is supplied. |
+| `columns` | `frameCount` | Atlas column count, rounded and clamped to at least 1. |
+| `framesPerRow` | `columns` | Local sequence width before advancing to the next atlas row. Useful for one direction stored in half of each row. |
+| `columnOffset` | `0` | Starting atlas column for each local row. Clamped so the sequence remains inside `columns`. |
+| `rowOffset` | `0` | Starting atlas row, rounded and clamped to nonnegative. |
+| `frameMap` | Unset | Optional nonempty array of explicit, nonnegative source-frame indices. It replaces the regular row/column sequence. |
+| `cycleTicks` | `32` | Duration of one complete sprite cycle in DanceMoves ticks. With 16 ticks per beat, the default is two beats. |
+| `phaseOffsetSeconds` | `0` | Media time that should map to local frame zero. Any equivalent cycle boundary may be used. |
+| `staticFrame` | `0` | Local frame used for reduced motion, forced colours, hidden documents and ended audio. |
+| `propertyPrefix` | `--dance-moves-sprite` | CSS custom-property prefix. A missing leading `--` is added. Trailing hyphens are removed. |
+| `qualityTiers` | `full`, `constrained`, `minimal` | Names accepted by `setQuality`; the current name is exposed on the root. |
+| `qualityFramesPerSecond` | `60`, `30`, `15` | Maximum visual update rates by tier. Frame choice always comes from current media time, so throttling cannot accumulate drift. |
+| `initialQuality` | `0` | Initial tier index, rounded and clamped to the available tiers. |
+
+Regular atlas mapping uses:
+
+```text
+localRow   = floor(localFrame / framesPerRow)
+column     = columnOffset + (localFrame % framesPerRow)
+row        = rowOffset + localRow
+sourceFrame = row * columns + column
+```
+
+An explicit `frameMap` instead supplies `sourceFrame`; `column` and `row` are
+then reconstructed from the configured `columns`. This supports sparse or
+reordered atlases without making the page own playback state.
+
+The target receives these properties on every published state:
+
+```text
+--dance-moves-sprite-frame
+--dance-moves-sprite-local-frame
+--dance-moves-sprite-column
+--dance-moves-sprite-row
+--dance-moves-sprite-phase
+--dance-moves-sprite-cycle-duration
+```
+
+It also receives `data-dance-moves-sprite-frame` and
+`data-dance-moves-sprite-local-frame`. The root receives
+`data-dance-moves-sprite-playback` and `data-dance-moves-sprite-quality`.
+
+### Media, preference and quality lifecycle
+
+| Trigger | Behaviour |
+| --- | --- |
+| Construction | Publishes the current media-derived pose, or the static pose when ended/blocked. Starts one frame loop only when audio is already playing and eligible. |
+| `play`, `playing` | Reconstructs immediately from `currentTime`, then starts one animation-frame loop. |
+| Ordinary frame | Applies the tier's maximum update rate; each rendered frame is derived afresh from media time. |
+| `pause`, `seeking` | Cancels the frame loop and freezes the exact current media-derived pose. |
+| `seeked`, `timeupdate`, `ratechange`, `loadedmetadata` | Reconstructs from `currentTime`; resumes only when the player is eligible and unpaused. Playback rate is not applied a second time. |
+| `ended` | Cancels the loop and publishes `staticFrame`. |
+| Hidden document | Cancels the loop and publishes `staticFrame`; visibility restoration reconstructs from actual media time. |
+| Reduced motion or forced colours | Cancels the loop and publishes `staticFrame`; restoration reconstructs and resumes when eligible. |
+| `setQuality` | Changes only maximum render frequency, publishes immediately, and leaves media-clock phase unchanged. |
+| `teardown` | Cancels the loop, publishes the static pose with reason `teardown`, removes listeners and unregisters. |
+
+`render` receives the following state. CSS properties and data attributes are
+written before the callback:
+
+```text
+{
+  root, target, audio, reason, time, playing, phase,
+  localFrame, frame, column, row, frameCount, columns,
+  cycleTicks, cycleSeconds, qualityTier, qualityIndex,
+  reducedMotion, forcedColours
+}
+```
+
+### Paired-sheet example
+
+This example selects the right-facing eight-column half of each row in a
+16-column atlas. The page owns only layout and artwork; DanceMoves owns the
+transport listeners, frame scheduling, preference gates and teardown.
+
+```html
+<div class="release-sprite" aria-hidden="true">
+  <img src="/approved-sprite-sheet.png" alt="">
+</div>
+```
+
+```css
+.release-sprite {
+  aspect-ratio: 296 / 444;
+  inline-size: min(28vw, 10rem);
+  overflow: hidden;
+}
+.release-sprite img {
+  display: block;
+  block-size: 800%;
+  inline-size: 1600%;
+  max-block-size: none;
+  max-inline-size: none;
+  transform-origin: left top;
+  transform: translate(
+    calc(var(--dance-moves-sprite-column) * -6.25%),
+    calc(var(--dance-moves-sprite-row) * -12.5%)
+  );
+}
+```
+
+```js
+const effects = window.DanceMovesEffects;
+const root = document.querySelector('.ks-epk');
+const audio = root.querySelector('audio');
+const sprite = effects.spritePlayback({
+  id: 'release:walking-sprite',
+  root,
+  audio,
+  target: root.querySelector('.release-sprite'),
+  frameCount: 64,
+  columns: 16,
+  framesPerRow: 8,
+  columnOffset: 8,
+  cycleTicks: 32,
+  phaseOffsetSeconds: 8.533333333,
+  staticFrame: 0
+});
+
+effects.quality({
+  id: 'release:quality',
+  root,
+  render(state) { sprite.setQuality(state.index, state.reason); }
+});
+```
+
+The numeric phase offset is illustrative. Use a release's verified beat-grid or
+footfall boundary, not a guessed waveform position. Keep the viewport bounded,
+provide transparent padding for blur/glow/smoke, and verify every motion extreme
+against its clipping ancestors. A continuously moving sprite may be page-wide
+under a separate page contract, but intermittent cue accents still require an
+explicit local region and must not flash or recolour the whole viewport.
+
+### Instance methods and snapshot
+
+| Method | Return and semantics |
+| --- | --- |
+| `restore(reason?)` | Recomputes from current media time; resumes when audio is eligible and unpaused. Uses the static pose when ended or blocked. |
+| `start(reason?)` | Starts one eligible effect loop; never starts audio. |
+| `stop(reason?)` | Cancels effect frames and freezes the media-derived pose; never pauses audio. |
+| `setQuality(indexOrTier, reason?)` | Accepts a clamped numeric index or exact tier name. Unknown strings preserve the current tier. |
+| `snapshot()` | Reports status, time, mapped/local frame, row/column, phase, cycle, tier, render count and whether a frame is scheduled. |
+| `teardown()` | Publishes the static pose, removes listeners and unregisters. |
 
 ## lyricStage(options)
 

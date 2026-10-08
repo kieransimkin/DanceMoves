@@ -224,6 +224,122 @@
     }));
   }
 
+  function spritePlayback(options) {
+    options = options || {};
+    var state = commonState(options, "sprite-playback");
+    var audio = element(options.audio, state.root.querySelector("audio"));
+    var target = element(options.target, state.root);
+    if (!audio) throw new Error("DanceMovesEffects spritePlayback requires an audio element");
+    if (!target) throw new Error("DanceMovesEffects spritePlayback requires a target element");
+    var frameMap = Array.isArray(options.frameMap) && options.frameMap.length ? options.frameMap.map(function (value) {
+      value = Math.floor(finite(value, -1));
+      if (value < 0) throw new TypeError("DanceMovesEffects spritePlayback frameMap values must be non-negative integers");
+      return value;
+    }) : null;
+    var frameCount = frameMap ? frameMap.length : Math.max(1, Math.round(finite(options.frameCount, 1)));
+    var columns = Math.max(1, Math.round(finite(options.columns, frameCount)));
+    var framesPerRow = clamp(Math.round(finite(options.framesPerRow, columns)), 1, columns);
+    var columnOffset = clamp(Math.round(finite(options.columnOffset, 0)), 0, columns - framesPerRow);
+    var rowOffset = Math.max(0, Math.round(finite(options.rowOffset, 0)));
+    var cycleTicks = Math.max(1, Math.round(finite(options.cycleTicks, 32)));
+    var phaseOffsetSeconds = finite(options.phaseOffsetSeconds, 0);
+    var staticFrame = clamp(Math.round(finite(options.staticFrame, 0)), 0, frameCount - 1);
+    var prefix = String(options.propertyPrefix || "--dance-moves-sprite").replace(/-+$/, "");
+    if (prefix.slice(0, 2) !== "--") prefix = "--" + prefix.replace(/^-+/, "");
+    var tiers = Array.isArray(options.qualityTiers) && options.qualityTiers.length ? options.qualityTiers.map(String) : ["full", "constrained", "minimal"];
+    var suppliedFps = Array.isArray(options.qualityFramesPerSecond) ? options.qualityFramesPerSecond : [60, 30, 15];
+    var qualityFps = tiers.map(function (_, index) { return Math.max(1, finite(suppliedFps[index], suppliedFps[suppliedFps.length - 1] || 15)); });
+    var qualityIndex = clamp(Math.round(finite(options.initialQuality, 0)), 0, tiers.length - 1);
+    var frame = 0, status = "idle", lastWall = -Infinity, renders = 0, latest = null;
+    function blocked() { return document.hidden || state.reduced.matches || state.forced.matches; }
+    function mappedFrame(localFrame) {
+      var sourceFrame = frameMap ? frameMap[localFrame] : ((rowOffset + Math.floor(localFrame / framesPerRow)) * columns + columnOffset + (localFrame % framesPerRow));
+      return { sourceFrame: sourceFrame, column: sourceFrame % columns, row: Math.floor(sourceFrame / columns) };
+    }
+    function calculate(reason, staticFallback) {
+      var cycleSeconds = Math.max(.001, finite(motion.durationMilliseconds(cycleTicks), 1) / 1000);
+      var time = Math.max(0, finite(audio.currentTime, 0));
+      var phase = ((time - phaseOffsetSeconds) % cycleSeconds + cycleSeconds) % cycleSeconds / cycleSeconds;
+      var localFrame = staticFallback ? staticFrame : Math.min(frameCount - 1, Math.floor(phase * frameCount + 1e-9));
+      var mapped = mappedFrame(localFrame);
+      return {
+        root: state.root, target: target, audio: audio, reason: reason, time: time,
+        playing: !audio.paused && !audio.ended && !blocked(), phase: phase,
+        localFrame: localFrame, frame: mapped.sourceFrame, column: mapped.column, row: mapped.row,
+        frameCount: frameCount, columns: columns, cycleTicks: cycleTicks, cycleSeconds: cycleSeconds,
+        qualityTier: tiers[qualityIndex], qualityIndex: qualityIndex,
+        reducedMotion: state.reduced.matches, forcedColours: state.forced.matches
+      };
+    }
+    function publish(reason, staticFallback) {
+      latest = calculate(reason, Boolean(staticFallback)); renders += 1;
+      target.style.setProperty(prefix + "-frame", String(latest.frame));
+      target.style.setProperty(prefix + "-local-frame", String(latest.localFrame));
+      target.style.setProperty(prefix + "-column", String(latest.column));
+      target.style.setProperty(prefix + "-row", String(latest.row));
+      target.style.setProperty(prefix + "-phase", latest.phase.toFixed(6));
+      target.style.setProperty(prefix + "-cycle-duration", latest.cycleSeconds.toFixed(6) + "s");
+      target.dataset.danceMovesSpriteFrame = String(latest.frame);
+      target.dataset.danceMovesSpriteLocalFrame = String(latest.localFrame);
+      state.root.dataset.danceMovesSpritePlayback = reason;
+      state.root.dataset.danceMovesSpriteQuality = tiers[qualityIndex];
+      if (typeof options.render === "function") options.render(latest);
+      return latest;
+    }
+    function stop(reason, staticFallback) {
+      if (frame) window.cancelAnimationFrame(frame);
+      frame = 0; status = reason || "paused";
+      publish(status, staticFallback === true);
+    }
+    function tick(wallNow) {
+      frame = 0;
+      if (audio.paused || audio.ended || blocked()) return stop(audio.ended ? "ended" : blocked() ? "inactive" : "paused", audio.ended || blocked());
+      var minimumInterval = 1000 / qualityFps[qualityIndex];
+      if (!Number.isFinite(lastWall) || finite(wallNow, lastWall) - lastWall >= minimumInterval - .01) {
+        lastWall = finite(wallNow, lastWall); status = "playing"; publish("frame", false);
+      }
+      frame = window.requestAnimationFrame(tick);
+    }
+    function start(reason) {
+      if (frame) return;
+      if (audio.paused || audio.ended || blocked()) return stop(blocked() ? "inactive" : audio.ended ? "ended" : "paused", audio.ended || blocked());
+      status = reason || "playing"; lastWall = -Infinity; publish(status, false); frame = window.requestAnimationFrame(tick);
+    }
+    function restore(reason) {
+      if (audio.ended || blocked()) return stop(reason || (audio.ended ? "ended" : "inactive"), true);
+      publish(reason || "restore", false);
+      if (!audio.paused) start("resume-after-restore");
+    }
+    function preference(reason) {
+      if (blocked()) stop(reason, true);
+      else restore(reason);
+    }
+    function setQuality(value, reason) {
+      var named = typeof value === "string" ? tiers.indexOf(value) : -1;
+      qualityIndex = named >= 0 ? named : clamp(Math.round(finite(value, qualityIndex)), 0, tiers.length - 1);
+      lastWall = -Infinity; publish(reason || "quality-change", audio.ended || blocked());
+    }
+    listen(audio, "play", function () { start("play"); }, undefined, state.removers);
+    listen(audio, "playing", function () { start("playing"); }, undefined, state.removers);
+    listen(audio, "pause", function () { stop("paused", false); }, undefined, state.removers);
+    listen(audio, "seeking", function () { stop("seeking", false); }, undefined, state.removers);
+    listen(audio, "seeked", function () { restore("seeked"); }, undefined, state.removers);
+    listen(audio, "timeupdate", function () { if (!frame) restore("timeupdate"); }, undefined, state.removers);
+    listen(audio, "ratechange", function () { restore("ratechange"); }, undefined, state.removers);
+    listen(audio, "loadedmetadata", function () { restore("metadata"); }, undefined, state.removers);
+    listen(audio, "ended", function () { stop("ended", true); }, undefined, state.removers);
+    listen(document, "visibilitychange", function () { preference(document.hidden ? "hidden" : "visible"); }, { passive: true }, state.removers);
+    listen(state.reduced, "change", function () { preference(state.reduced.matches ? "reduced-motion" : "motion-restored"); }, undefined, state.removers);
+    listen(state.forced, "change", function () { preference(state.forced.matches ? "forced-colours" : "colours-restored"); }, undefined, state.removers);
+    publish(audio.ended || blocked() ? "initial-static" : "initial", audio.ended || blocked());
+    if (!audio.paused && !audio.ended && !blocked()) start("initial-playing");
+    return register(state.id, Object.freeze({
+      id: state.id, type: "sprite-playback", restore: restore, start: start, stop: function (reason) { stop(reason || "manual-stop", false); }, setQuality: setQuality,
+      snapshot: function () { return { id: state.id, type: "sprite-playback", status: status, time: finite(audio.currentTime, 0), frame: latest ? latest.frame : null, localFrame: latest ? latest.localFrame : null, column: latest ? latest.column : null, row: latest ? latest.row : null, phase: latest ? latest.phase : null, cycleTicks: cycleTicks, cycleSeconds: latest ? latest.cycleSeconds : null, qualityTier: tiers[qualityIndex], qualityIndex: qualityIndex, renders: renders, running: Boolean(frame) }; },
+      teardown: function () { stop("teardown", true); state.removers.splice(0).forEach(function (remove) { remove(); }); instances.delete(state.id); }
+    }));
+  }
+
   function lyricStage(options) {
     options = options || {};
     var state = commonState(options, "lyric-stage");
@@ -652,7 +768,7 @@
   }
 
   window.DanceMovesEffects = Object.freeze({
-    version: String(motion.version || ""), pointer: pointer, playbackPulse: playbackPulse, cueClass: cueClass, cueTimeline: cueTimeline, lyricStage: lyricStage, cooperativeArena: cooperativeArena, quality: quality,
+    version: String(motion.version || ""), pointer: pointer, playbackPulse: playbackPulse, cueClass: cueClass, cueTimeline: cueTimeline, spritePlayback: spritePlayback, lyricStage: lyricStage, cooperativeArena: cooperativeArena, quality: quality,
     get: function (id) { return instances.get(String(id)) || null; },
     snapshot: function () { return Array.from(instances.values()).map(function (instance) { return instance.snapshot(); }); },
     teardown: function (id) { var instance = instances.get(String(id)); if (instance) instance.teardown(); },

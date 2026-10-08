@@ -13,6 +13,13 @@ browser still permits sensor readings. If permission has expired, the enable
 button remains available. Browser permission is not stored or made permanent;
 see [phone-motion behaviour and verification](docs/phone-motion-preference.md).
 
+**3.1.12** adds `DanceMovesEffects.spritePlayback()`, a reusable media-clock
+sprite-atlas controller. Frame choice follows `audio.currentTime` across play,
+pause, seek, rate change, visibility and restoration; reduced motion, forced
+colours, ended media and teardown use a declared static pose, while adaptive
+tiers reduce update frequency without accumulating phase drift. See the
+[shared-effects reference](docs/api/effects.md#spriteplaybackoptions).
+
 ## Shared JavaScript library and WordPress
 
 `@kieransimkin/dancemoves` exports browser ESM/CommonJS, optional React hooks,
@@ -598,7 +605,7 @@ than treating historical release notes as the current API contract.
 | Reference | Contents |
 | --- | --- |
 | [Core JavaScript](docs/api/javascript.md) | All clock, interval, parser, cue, lyric, animation-scope and diagnostic methods; exact cue landings; immediate-next and next-visible lyric payloads. |
-| [Shared effects](docs/api/effects.md) | `pointer`, `playbackPulse`, `cueClass`, `cueTimeline`, `lyricStage`, `quality`; all options, callbacks, returned handles and registry methods. |
+| [Shared effects](docs/api/effects.md) | `pointer`, `playbackPulse`, `cueClass`, `cueTimeline`, `spritePlayback`, `lyricStage`, `cooperativeArena`, `quality`; all options, callbacks, returned handles and registry methods. |
 | [WordPress, PHP and REST](docs/api/wordpress.md) | Page metadata, helpers, editor validation, asset dependencies, hooks and full motion-capture request/response contract. |
 | [Signed MP3 downloads](docs/api/downloads.md) | All eight download helpers, anchor rewriting, signed GET/HEAD endpoint, response headers, errors and security limits. |
 | [Paper planes](docs/api/paper-planes.md) | Ambient-effect selection, hero markup, configuration, snapshot/teardown, compact mode and accessibility behaviour. |
@@ -649,6 +656,7 @@ DanceMoves 2.8.0 keeps repeated motion and playback mechanisms out of individual
 | Audio-phase pulse | `DanceMovesEffects.playbackPulse()` | play/pause/rate/seek listeners, BPM-derived duration and phase correction | a playing class plus CSS using the configured duration/delay properties, or a render callback |
 | Cue-local finite state | `DanceMovesEffects.cueClass()` | named DanceMoves cue subscription, bounded lifetime, retrigger and accessibility teardown | a class-styled subject or one finite render callback; never a full-frame repetitive colour layer |
 | Cue timeline and state restoration | `DanceMovesEffects.cueTimeline()` | crossing deduplication, seek/visibility/preference reconstruction, effect pause/resume | declarative cue objects and `onCue`/`render` callbacks; persistent state derives from active intervals |
+| Media-clock sprite atlas | `DanceMovesEffects.spritePlayback()` | frame mapping, play/pause/seek/rate listeners, visibility and preference restoration, quality throttling and teardown | an approved atlas, bounded stage, verified cycle/phase configuration and CSS consuming frame/row/column properties |
 | Recoverable quality tier | `DanceMovesEffects.quality()` | visibility-safe sampling, sustained downgrade, continued recovery checks and hysteresis | CSS keyed from `data-dance-moves-quality`, plus an optional tier-change callback |
 
 The runtime is page and release agnostic. It contains no release names, slugs, page IDs, song tempos, cue names, colours, images or drawing styles. It dispatches `dance-moves-effects-ready` after the API is installed so page-owned inline code can mount adapters even when WordPress prints the plugin in the footer.

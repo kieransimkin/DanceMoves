@@ -11,7 +11,7 @@ physical tests were executed in a restricted development environment.
 | CSS timing/control/lyric disclosure | Core properties + CSS | WordPress-style clock/shared timing demos; original CSS contracts |
 | Named cues, intervals, DOM events, animation ownership | Core methods | React cue panel; original 23-page gallery and core contracts |
 | Lyrics, clear entries, previous/next visible neighbours, master matching | Core + React useLyric | Canonical Arcadians player in both React apps; lyric payload and master demos |
-| Pointer, playbackPulse, cueClass, cueTimeline, lyricStage, quality | `runtime.effects` | React panels, actual transformed-registry tests, original effects/timeline tests and lyric-stage lifecycle contract |
+| Pointer, playbackPulse, cueClass, cueTimeline, spritePlayback, lyricStage, quality | `runtime.effects` | React panels, transformed-registry tests, original effects/timeline tests, lyric-stage lifecycle contract and sprite media-clock/lifecycle contract |
 | Catalogue CSS adoption | `catalogue:true` | Original catalogue demo now imports the module; original source test |
 | All ten named orientation adapters | `orientation.adapter`, orientationCore | All ten registered gallery layouts retained; adapter/scheduler tests and release-local harness contracts |
 | Generic orientation and recorder | `createOrientation`, `createRecorder` | React permission/capture panels; lifecycle/server tests; real-device permission still manual |

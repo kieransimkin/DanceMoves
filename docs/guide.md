@@ -236,7 +236,7 @@ Load after `dance-moves-effects`, or mount once in response to the document's
 `dance-moves-effects-ready` event. Select the smallest matching primitive:
 `pointer()` for bounded input, `playbackPulse()` for phase-aligned CSS,
 `cueClass()` for a short cue-triggered class, `cueTimeline()` for reconstructable
-playback state, `lyricStage()` for the shared three-line lyric lifecycle, and
+playback state, `spritePlayback()` for a media-clock sprite atlas, `lyricStage()` for the shared three-line lyric lifecycle, and
 `quality()` for a reusable quality controller. Stable IDs
 identify instances for `get()`, `snapshot()` and teardown. Each has explicit
 options, callback payloads and disposal semantics in the [shared API](api/effects.md).
