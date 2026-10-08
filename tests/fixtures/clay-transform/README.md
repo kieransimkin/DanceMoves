@@ -1,5 +1,7 @@
 # Clay/Stars PHP transform fixtures
 
+By [Kieran Simkin](https://kieransimkin.co.uk/), part of [DanceFlow](https://kieransimkin.co.uk/danceflow/).
+
 These are **synthetic unit-test inputs**, not a captured WordPress page, an approved
 release payload, or evidence that a live site renders correctly.
 

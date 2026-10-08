@@ -1,7 +1,7 @@
 {
   "name": "@kieransimkin/dancemoves",
-  "version": "3.1.13",
-  "description": "DanceFlow musical motion: a shared JavaScript runtime for browsers, React, Next.js and WordPress.",
+  "version": "3.1.14",
+  "description": "BPM-synchronised web motion, effects and media clocks for JavaScript, React, Next.js and WordPress. https://kieransimkin.co.uk/",
   "license": "GPL-2.0-or-later",
   "author": {
     "name": "Kieran Simkin",
@@ -43,7 +43,8 @@
     "LICENSE",
     "README.md",
     "RUDIMENTS-API.md",
-    "docs/"
+    "docs/",
+    "docs/branding/"
   ],
   "sideEffects": [
     "**/*.css",

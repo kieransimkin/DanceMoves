@@ -1,5 +1,7 @@
 # Arcadians / DanceMoves WordPress examples
 
+By [Kieran Simkin](https://kieransimkin.co.uk/), part of [DanceFlow](https://kieransimkin.co.uk/danceflow/).
+
 From the **complete DanceMoves source checkout**, run:
 
 ```sh

@@ -1,5 +1,7 @@
 # DanceMoves documentation
 
+By [Kieran Simkin](https://kieransimkin.co.uk/), part of [DanceFlow](https://kieransimkin.co.uk/danceflow/).
+
 **Implemented baseline:** DanceMoves **2.8.0**, release tag `v2.8.0`, commit
 `4cb6a71f60459b5579be87d7e55ac8b1426c578e` (28 September 2026).
 This reference was checked against that source on 29 September 2026. It documents

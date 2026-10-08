@@ -49,8 +49,9 @@ if (target!=='library') {
   for(const file of ['paper-dreams-plane-atlas.png','DanceRudiments-LICENSE','DanceRudiments-build-manifest.json']) fs.copyFileSync(path.join(lib,'assets',file),path.join(wp,'lib/assets',file));
   fs.mkdirSync(path.join(wp,'docs'),{recursive:true});
   for(const file of fs.readdirSync('docs').filter(name=>name.endsWith('.md'))) fs.copyFileSync(path.join('docs',file),path.join(wp,'docs',file));
+  fs.cpSync('docs/branding',path.join(wp,'docs/branding'),{recursive:true});
   fs.copyFileSync('RUDIMENTS-API.md',path.join(wp,'RUDIMENTS-API.md'));
-  fs.writeFileSync(path.join(wp,'README.md'),`# DanceMoves ${packageInfo.version} for WordPress\n\nHomepage: ${packageInfo.homepage}\n\n[WordPress setup and all six Page metadata fields](docs/wordpress-shared-runtime.md)\n\nThis archive imports the shared DanceMoves JavaScript library.\nSource, JavaScript/React/Next.js packages and release artifacts: https://github.com/kieransimkin/DanceMoves\n`);
+  fs.writeFileSync(path.join(wp,'README.md'),`# DanceMoves ${packageInfo.version} for WordPress\n\n[![DanceMoves logo](https://raw.githubusercontent.com/kieransimkin/DanceMoves/v${packageInfo.version}/docs/branding/logo.png)](https://kieransimkin.co.uk/danceflow/)\n\n${packageInfo.description}\n\nHomepage: ${packageInfo.homepage}\n\n[WordPress setup and all six Page metadata fields](docs/wordpress-shared-runtime.md)\n\nThis archive imports the shared DanceMoves JavaScript library.\nSource, JavaScript/React/Next.js packages and release artifacts: https://github.com/kieransimkin/DanceMoves\n`);
   fs.writeFileSync(path.join(wp,'library-manifest.json'),JSON.stringify({schema:'dancemoves-wordpress-library/v1',name:packageInfo.name,version:packageInfo.version,homepage:packageInfo.homepage,frontend:inventory(path.join(wp,'lib'))},null,2)+'\n');
 }
 console.log(`Built ${packageInfo.name}@${packageInfo.version}: ESM, CommonJS, React, Node, minified browser${target!=='library'?' and WordPress adapter':''}`);
