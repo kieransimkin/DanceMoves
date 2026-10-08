@@ -49,7 +49,7 @@ const document = Object.assign(emitter(documentListeners), {
   dispatchEvent() {}
 });
 const window = {
-  DanceMoves: { version: '3.1.12', durationMilliseconds(ticks) { return ticks * 10; }, onCue() { return () => {}; } },
+  DanceMoves: { version: '3.1.13', durationMilliseconds(ticks) { return ticks * 10; }, onCue() { return () => {}; } },
   matchMedia: mediaQuery,
   requestAnimationFrame(handler) { const record = { id: ++frameSerial, handler, cancelled: false }; frames.push(record); return record.id; },
   cancelAnimationFrame(id) { const record = frames.find(item => item.id === id); if (record) record.cancelled = true; },

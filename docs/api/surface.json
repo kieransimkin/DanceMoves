@@ -4,7 +4,7 @@
   "commit": "4cb6a71f60459b5579be87d7e55ac8b1426c578e",
   "version": "2.8.0",
   "reviewed_on": "2026-09-29",
-  "effects_version": "3.1.12",
+  "effects_version": "3.1.13",
   "effects_reviewed_on": "2026-10-08",
   "inventory_method": "Manual comparison with the pinned source exports and PHP declarations; symbol-presence validation is not runtime coverage.",
   "source_blobs": {

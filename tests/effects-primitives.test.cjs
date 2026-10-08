@@ -42,6 +42,7 @@ assert.match(js, /manual-restore/);
 assert.match(js, /sustained-low-fps/);
 assert.match(js, /sustained-recovery/);
 assert.match(js, /preference-restored/);
+assert.match(js, /if \(state\.reduced\.matches \|\| state\.forced\.matches\) preference\(\)/);
 assert.match(js, /prefers-reduced-motion: reduce/);
 assert.match(js, /forced-colors: active/);
 assert.doesNotMatch(js, /style\.(?:top|right|bottom|left|width|height)\s*=/);

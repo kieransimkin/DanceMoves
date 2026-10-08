@@ -13,6 +13,11 @@ browser still permits sensor readings. If permission has expired, the enable
 button remains available. Browser permission is not stored or made permanent;
 see [phone-motion behaviour and verification](docs/phone-motion-preference.md).
 
+**3.1.13** makes accessibility preferences authoritative at quality-controller
+startup as well as after change events, so a page loaded with reduced motion or
+forced colours already active begins in its minimal tier and restores its prior
+tier when the preference is removed.
+
 **3.1.12** adds `DanceMovesEffects.spritePlayback()`, a reusable media-clock
 sprite-atlas controller. Frame choice follows `audio.currentTime` across play,
 pause, seek, rate change, visibility and restoration; reduced motion, forced

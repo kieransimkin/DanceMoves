@@ -4,7 +4,7 @@
 [Release adapters](adapters.md) · [CSS/HTML](styling.md)
 
 Source: [assets/dance-moves-effects.js](../../assets/dance-moves-effects.js).
-Current shared-library baseline: **3.1.12**. Historical 2.7/2.8 notes below
+Current shared-library baseline: **3.1.13**. Historical 2.7/2.8 notes below
 identify when the earlier primitives were introduced.
 
 This is the reusable, page-independent layer introduced in 2.7 and extended with
@@ -496,7 +496,7 @@ It also receives `data-dance-moves-sprite-frame` and
 
 | Trigger | Behaviour |
 | --- | --- |
-| Construction | Publishes the current media-derived pose, or the static pose when ended/blocked. Starts one frame loop only when audio is already playing and eligible. |
+| Construction | Publishes the current media-derived pose, or the static pose when ended/blocked. Starts one frame loop only when audio is already playing and eligible. A quality controller created while reduced motion or forced colours is already active begins in its minimal tier; it does not wait for a later `change` event. |
 | `play`, `playing` | Reconstructs immediately from `currentTime`, then starts one animation-frame loop. |
 | Ordinary frame | Applies the tier's maximum update rate; each rendered frame is derived afresh from media time. |
 | `pause`, `seeking` | Cancels the frame loop and freezes the exact current media-derived pose. |

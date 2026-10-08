@@ -724,7 +724,7 @@
       if (sample) { state.root.dataset.danceMovesFps = sample.fps.toFixed(1); state.root.dataset.danceMovesReferenceFps = reference.toFixed(1); }
       if (typeof options.render === "function") options.render({ root: state.root, tier: tiers[index], index: index, reason: reason, sample: sample || null });
     }
-    function resetWindow(now) { start = now || performance.now(); frames = 0; }
+    function resetWindow(now) { start = now || window.performance.now(); frames = 0; }
     function tick(now) {
       if (!running) return;
       if (document.hidden || state.reduced.matches || state.forced.matches) { resetWindow(now); frame = window.requestAnimationFrame(tick); return; }
@@ -759,7 +759,9 @@
     listen(document, "visibilitychange", function () { resetWindow(); }, { passive: true }, state.removers);
     listen(state.reduced, "change", preference, undefined, state.removers);
     listen(state.forced, "change", preference, undefined, state.removers);
-    publish("initial"); frame = window.requestAnimationFrame(tick);
+    if (state.reduced.matches || state.forced.matches) preference();
+    else publish("initial");
+    frame = window.requestAnimationFrame(tick);
     return register(state.id, Object.freeze({
       id: state.id, type: "quality", setTier: function (value, reason) { index = clamp(Math.round(finite(value, index)), 0, tiers.length - 1); publish(reason || "manual"); },
       snapshot: function () { return { id: state.id, type: "quality", tier: tiers[index], index: index, referenceFps: reference, poorWindows: poor, healthyWindows: healthy }; },
