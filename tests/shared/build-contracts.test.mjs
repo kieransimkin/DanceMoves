@@ -8,7 +8,7 @@ test('WordPress has one imported frontend and an independently packaged archive'
  assert.match(read('tools/package-wordpress.py'),/WordPress frontend differs from the shared library artifact/);
 });
 test('publish jobs use the build commit, protected npm environment and tested tarball',()=>{
- const workflow=read('.github/workflows/release.yml');assert.match(workflow,/tags: \['v\*'\]/);
+ const workflow=read('.github/workflows/release.yml').replaceAll('\r\n','\n');assert.match(workflow,/tags: \['v\*'\]/);
  for(const name of ['npm','github','wordpress-org']){
   const block=workflow.split(`\n  ${name}:\n`)[1]?.split(/\n  [a-z][a-z-]*:\n/)[0];assert.ok(block,`Missing ${name} publisher`);
   assert.match(block,/ref: \$\{\{ needs\.build\.outputs\.commit \}\}/,`${name} must use the tested build commit`);
