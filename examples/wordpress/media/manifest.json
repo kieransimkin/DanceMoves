@@ -4,12 +4,12 @@
   "artist": "Kieran Simkin",
   "bpm": 145,
   "masterDurationMilliseconds": 273604.558,
-  "sourceCommit": "77c3c0c8115830a5fd26cd56bd59500c26f3ba86",
+  "sourceCommit": "a44045dd267b539f5d25445e2153f4cf2d8f43a8",
   "epk": "https://kieransimkin.co.uk/arcadians/",
   "assets": [
     {
       "name": "arcadians.mp3",
-      "url": "https://raw.githubusercontent.com/kieransimkin/stemlab/77c3c0c8115830a5fd26cd56bd59500c26f3ba86/examples/arcadians/Arcadians%20-%20320kbps.mp3",
+      "url": "https://raw.githubusercontent.com/kieransimkin/stemlab/a44045dd267b539f5d25445e2153f4cf2d8f43a8/examples/arcadians/Arcadians%20-%20320kbps.mp3",
       "sha256": "5a3d17d8b5b27d62a6bb9fa1f654c403db0341da826d650cc282dfa5758ee6de",
       "gitBlob": "6ebb71999eed9356c170c6e21c8f6ad0f6b84c5b",
       "bytes": 11708403,
@@ -17,7 +17,7 @@
     },
     {
       "name": "cover.jpg",
-      "url": "https://raw.githubusercontent.com/kieransimkin/stemlab/77c3c0c8115830a5fd26cd56bd59500c26f3ba86/examples/arcadians/cover.jpg",
+      "url": "https://raw.githubusercontent.com/kieransimkin/stemlab/a44045dd267b539f5d25445e2153f4cf2d8f43a8/examples/arcadians/cover.jpg",
       "sha256": "8bfeff939c1ffcba7529614263e05d4f1bb59a46e6c13501dbf12349edb047ee",
       "gitBlob": "5628b093281c989733ab2597dc00fe2341a16f9a",
       "bytes": 745386,

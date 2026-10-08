@@ -3,7 +3,7 @@
  * Plugin Name: DanceMoves
  * Plugin URI: https://kieransimkin.co.uk/my-songs/
  * Description: BPM-synchronised web motion, effects and media clocks for JavaScript, React, Next.js and WordPress. https://kieransimkin.co.uk/
- * Version: 3.1.15
+ * Version: 3.1.16
  * Author: Kieran Simkin
  * Author URI: https://kieransimkin.co.uk/my-songs/
  * Requires at least: 6.7
@@ -17,7 +17,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('DANCE_MOVES_VERSION', '3.1.15');
+define('DANCE_MOVES_VERSION', '3.1.16');
 define('KS_EPK_ORIENTATION_VERSION', DANCE_MOVES_VERSION);
 define('KS_EPK_MOTION_CAPTURE_TOKEN', 'e4c1d9a77fb446608e796a0f8fd8f576e59d2e67bca54a4d9f7fd06fbef3e1c2');
 
