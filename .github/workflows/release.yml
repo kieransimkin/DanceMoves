@@ -152,10 +152,12 @@ jobs:
           name: release-${{ env.TAG_NAME }}
           path: release-output/
       - name: Stage the exact tested package for its approved directory slug
+        id: directory
         shell: bash
         run: |
           [[ "$WPORG_SLUG" =~ ^[a-z0-9][a-z0-9-]*$ ]] || exit 1
           [[ "$TAG_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 1
+          echo "version=${TAG_NAME#v}" >> "$GITHUB_OUTPUT"
           node tools/verify-release-output.mjs
           python -c "import os,pathlib,zipfile; v=os.environ['TAG_NAME'][1:]; p=pathlib.Path('release-output')/('DanceMoves-wordpress-'+v+'.zip'); zipfile.ZipFile(p).extractall('wordpress-build')"
           test -f wordpress-build/kieran-epk-device-orientation/readme.txt
@@ -164,5 +166,5 @@ jobs:
           SVN_USERNAME: ${{ secrets.WPORG_SVN_USERNAME }}
           SVN_PASSWORD: ${{ secrets.WPORG_SVN_PASSWORD }}
           SLUG: ${{ env.WPORG_SLUG }}
-          VERSION: ${{ env.TAG_NAME }}
+          VERSION: ${{ steps.directory.outputs.version }}
           BUILD_DIR: wordpress-build/kieran-epk-device-orientation
