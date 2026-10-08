@@ -24,3 +24,12 @@ test('server handlers are not dependencies of the browser entry',()=>{
  assert.doesNotMatch(read('src/index.mjs'),/from ['"].*server/);assert.doesNotMatch(read('src/react.mjs'),/from ['"].*server/);
  const pkg=JSON.parse(read('package.json'));assert.equal(pkg.exports['./server'].import,'./lib/server.mjs');assert.ok(pkg.peerDependenciesMeta.react.optional);
 });
+test('production WordPress build contains directory metadata and keeps source guides below docs',()=>{
+ const root='.build/wordpress/';
+ const pkg=JSON.parse(read('package.json'));
+ assert.match(read(root+'readme.txt'),new RegExp('Stable tag: '+pkg.version.replaceAll('.','\\.')));
+ assert.ok(fs.existsSync(root+'docs/RUDIMENTS-API.md'));
+ assert.equal(fs.existsSync(root+'RUDIMENTS-API.md'),false);
+ assert.equal(fs.existsSync(root+'tests'),false);
+ assert.match(read(root+'kieran-epk-device-orientation.php'),/Text Domain: dancemoves/);
+});

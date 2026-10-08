@@ -3,17 +3,21 @@
  * Plugin Name: DanceMoves
  * Plugin URI: https://kieransimkin.co.uk/my-songs/
  * Description: BPM-synchronised web motion, effects and media clocks for JavaScript, React, Next.js and WordPress. https://kieransimkin.co.uk/
- * Version: 3.1.14
+ * Version: 3.1.15
  * Author: Kieran Simkin
  * Author URI: https://kieransimkin.co.uk/my-songs/
+ * Requires at least: 6.7
+ * Requires PHP: 8.0
+ * Text Domain: dancemoves
  * License: GPL-2.0-or-later
+ * License URI: https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  */
 
 if (!defined('ABSPATH')) {
     exit;
 }
 
-define('DANCE_MOVES_VERSION', '3.1.14');
+define('DANCE_MOVES_VERSION', '3.1.15');
 define('KS_EPK_ORIENTATION_VERSION', DANCE_MOVES_VERSION);
 define('KS_EPK_MOTION_CAPTURE_TOKEN', 'e4c1d9a77fb446608e796a0f8fd8f576e59d2e67bca54a4d9f7fd06fbef3e1c2');
 
@@ -218,6 +222,8 @@ function dance_moves_epk_download_serve() {
     header('X-Robots-Tag: noindex, nofollow');
 
     if ('HEAD' !== $method) {
+        // Stream the already validated, canonical local MP3 without loading it into memory.
+        // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile -- WP_Filesystem has no equivalent bounded binary download stream.
         readfile($file_path);
     }
     exit;

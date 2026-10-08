@@ -1,6 +1,6 @@
 {
   "name": "@kieransimkin/dancemoves",
-  "version": "3.1.14",
+  "version": "3.1.15",
   "description": "BPM-synchronised web motion, effects and media clocks for JavaScript, React, Next.js and WordPress. https://kieransimkin.co.uk/",
   "license": "GPL-2.0-or-later",
   "author": {
@@ -91,7 +91,7 @@
     "@kieransimkin/dance-rudiments": "0.2.0",
     "@types/react": "19.2.2",
     "esbuild-wasm": "0.28.2",
-    "next": "16.3.7",
+    "next": "16.3.8",
     "playwright-core": "1.57.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",

@@ -1,0 +1,21 @@
+name: Validate WordPress directory package
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  plugin-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - run: node tools/install-ci.mjs
+      - run: npm run build:wordpress
+      - uses: WordPress/plugin-check-action@005058d6dbd2942b6a58610836b981c2ee3cc19d
+        with:
+          build-dir: .build/wordpress
+          categories: plugin_repo
+          slug: dancemoves
+          wp-version: '7.1.3'

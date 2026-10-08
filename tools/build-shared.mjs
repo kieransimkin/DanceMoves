@@ -50,7 +50,10 @@ if (target!=='library') {
   fs.mkdirSync(path.join(wp,'docs'),{recursive:true});
   for(const file of fs.readdirSync('docs').filter(name=>name.endsWith('.md'))) fs.copyFileSync(path.join('docs',file),path.join(wp,'docs',file));
   fs.cpSync('docs/branding',path.join(wp,'docs/branding'),{recursive:true});
-  fs.copyFileSync('RUDIMENTS-API.md',path.join(wp,'RUDIMENTS-API.md'));
+  fs.mkdirSync(path.join(wp,'docs'),{recursive:true});
+  fs.copyFileSync('RUDIMENTS-API.md',path.join(wp,'docs/RUDIMENTS-API.md'));
+  fs.copyFileSync('readme.txt',path.join(wp,'readme.txt'));
+  fs.copyFileSync('docs/wordpress-org.md',path.join(wp,'docs/wordpress-org.md'));
   fs.writeFileSync(path.join(wp,'README.md'),`# DanceMoves ${packageInfo.version} for WordPress\n\n[![DanceMoves logo](https://raw.githubusercontent.com/kieransimkin/DanceMoves/v${packageInfo.version}/docs/branding/logo.png)](https://kieransimkin.co.uk/danceflow/)\n\n${packageInfo.description}\n\nHomepage: ${packageInfo.homepage}\n\n[WordPress setup and all six Page metadata fields](docs/wordpress-shared-runtime.md)\n\nThis archive imports the shared DanceMoves JavaScript library.\nSource, JavaScript/React/Next.js packages and release artifacts: https://github.com/kieransimkin/DanceMoves\n`);
   fs.writeFileSync(path.join(wp,'library-manifest.json'),JSON.stringify({schema:'dancemoves-wordpress-library/v1',name:packageInfo.name,version:packageInfo.version,homepage:packageInfo.homepage,frontend:inventory(path.join(wp,'lib'))},null,2)+'\n');
 }

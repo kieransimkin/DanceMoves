@@ -52,6 +52,12 @@ jobs:
       - run: npm test
       - run: python tests/shared/test_package_outputs.py
       - run: npm run test:legacy
+      - uses: WordPress/plugin-check-action@005058d6dbd2942b6a58610836b981c2ee3cc19d
+        with:
+          build-dir: .build/wordpress
+          categories: plugin_repo
+          slug: dancemoves
+          wp-version: '7.1.3'
       - run: npm run demo:prepare
       - run: npx playwright-core install --with-deps chromium
       - run: npm run test:browser
