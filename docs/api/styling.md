@@ -242,6 +242,7 @@ The runtime writes/resets them, so direct manual changes may be overwritten.
 | Dmitri My Talisman | Root `--mx`, `--my`, `--parallax-x`, `--parallax-y`, `--tilt-x`, `--tilt-y`. |
 | Clay/Stars | Delegates to `DanceMovesClayStars`; outputs below. |
 | California Screamin' | Root `--cs-x`, `--cs-y`; reset writes `0`. |
+| A Whole New Christmas | Cover frame `--awnc-tilt-x`, `--awnc-tilt-y`, `--awnc-shift-x`, `--awnc-shift-y`, `--awnc-light-x`, `--awnc-light-y`. |
 
 Most active orientation targets transition `transform` over
 `var(--dance-moves-2t, 62.5ms)` with the bundled easing. Light Will Win's hero

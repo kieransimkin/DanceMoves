@@ -3,7 +3,7 @@ const ASSET = '/lib/styles/';
 const ADAPTERS = {
   'dying-for-a-diagnosis':130, 'light-will-win':140, 'presents-and-chocolate':243,
   'clay-stars':252, 'fully-nocturnal':268, 'amnesty-honestly':270, 'walk-with-me':276,
-  'dmitri-my-talisman':298, 'california-screamin':839
+  'dmitri-my-talisman':298, 'california-screamin':839, 'a-whole-new-christmas':1359
 };
 const cleanup = [];
 // Core has no global unbind API. A BFCache return gets a fresh document rather

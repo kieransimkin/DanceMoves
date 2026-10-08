@@ -3,7 +3,7 @@
  * Plugin Name: DanceMoves
  * Plugin URI: https://kieransimkin.co.uk/my-songs/
  * Description: Adds BPM-synchronised motion, lyric and cue timing properties, reliable EPK downloads, named cue handlers, and permission-aware orientation control to EPK pages.
- * Version: 3.1.9
+ * Version: 3.1.10
  * Author: Kieran Simkin
  * Author URI: https://kieransimkin.co.uk/my-songs/
  * License: GPL-2.0-or-later
@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('DANCE_MOVES_VERSION', '3.1.9');
+define('DANCE_MOVES_VERSION', '3.1.10');
 define('KS_EPK_ORIENTATION_VERSION', DANCE_MOVES_VERSION);
 define('KS_EPK_MOTION_CAPTURE_TOKEN', 'e4c1d9a77fb446608e796a0f8fd8f576e59d2e67bca54a4d9f7fd06fbef3e1c2');
 
@@ -235,6 +235,7 @@ function dance_moves_orientation_adapters() {
         276 => 'walk-with-me',
         298 => 'dmitri-my-talisman',
         839 => 'california-screamin',
+        1359 => 'a-whole-new-christmas',
     );
 }
 
@@ -242,7 +243,7 @@ function dance_moves_shared_control_pages() {
     return array(
         250, 254, 260, 262, 264, 266, 272, 274, 278, 280,
         282, 284, 286, 288, 290, 292, 294, 296, 300, 302,
-        304, 306, 308, 312, 314, 316, 318, 320, 322,
+        304, 306, 308, 312, 314, 316, 318, 320, 322, 1359,
     );
 }
 

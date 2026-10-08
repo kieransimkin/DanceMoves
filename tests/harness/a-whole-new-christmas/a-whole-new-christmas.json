@@ -2,29 +2,32 @@
   "$schema": "../plugin-core/effect-harness.schema.json",
   "schemaVersion": 1,
   "effect": {
-    "slug": "california-screamin",
-    "title": "California Screamin'",
-    "pageId": 839,
-    "rootSelector": "#cs-epk.cs-epk[data-release=california-screamin]",
-    "candidate": "../../../qa/california-screamin-harness-candidate.html",
+    "slug": "a-whole-new-christmas",
+    "title": "A Whole New Christmas",
+    "pageId": 1359,
+    "rootSelector": ".ks-epk[data-release=a-whole-new-christmas]",
+    "candidate": "../../../qa/a-whole-new-christmas-unit-candidate.html",
     "propertyInventory": "property-inventory.json",
     "productionCss": ["../../../assets/dance-moves-core.css", "../../../assets/ks-epk-device-orientation.css"],
-    "productionJs": ["../../../assets/dance-moves-core.js", "../../../assets/dance-moves-catalogue-timing.js", "../../../assets/ks-epk-device-orientation-core.js", "../../../assets/ks-epk-device-orientation.js"],
+    "productionJs": ["../../../assets/dance-moves-core.js", "../../../assets/dance-moves-effects.js", "../../../assets/dance-moves-catalogue-timing.js", "../../../assets/ks-epk-device-orientation-core.js", "../../../assets/ks-epk-device-orientation.js", "../../../assets/vendor/dancerudiments/dancerudiments-native.js", "../../../assets/dance-moves-rudiments.js"],
     "productionHashes": {
       "../../../assets/dance-moves-core.css": "F7D353C4016512F720D3159CFE9D57ACA7F8526DAB870BF6EC4D7E4756EC7392",
       "../../../assets/ks-epk-device-orientation.css": "5E1C975673AC118BCC231BF2A06C2CA2E4854F45BD626E73F66730DA617F7A20",
       "../../../assets/dance-moves-core.js": "78C41A350B45D544BDC4E6F33D71D0B27B01EE2D5D43D3D98E3964AA8057681B",
+      "../../../assets/dance-moves-effects.js": "F41DE132AA8BC7CC1F4AB59D1AB8186E25DA1205543E9716E1D9CC0057A73862",
       "../../../assets/dance-moves-catalogue-timing.js": "F2C8232F019E304D8DDF7880D8EDB251A78C9125E9C4418FE53C324E4A7A2927",
       "../../../assets/ks-epk-device-orientation-core.js": "D49FB3D4170986A796CB7066AE5D514E089AD1A2897196742A1868A7A3466A86",
-      "../../../assets/ks-epk-device-orientation.js": "D534886A83714DA0FC8B457651059D9C0E22235E399DD30CA2C5F0ED123965C6"
+      "../../../assets/ks-epk-device-orientation.js": "D534886A83714DA0FC8B457651059D9C0E22235E399DD30CA2C5F0ED123965C6",
+      "../../../assets/vendor/dancerudiments/dancerudiments-native.js": "670860F2551F43115EB798B533F65DD451BCE9E650DE9586FE2FCE3F809F9152",
+      "../../../assets/dance-moves-rudiments.js": "935E570A61664562DF60C285FEF0DAFD0BC0A2F87F76831568C3935DD7382FFB"
     },
     "inputModes": ["pointer", "touch", "keyboard", "orientation"]
   },
   "release": {
-    "bpm": 110,
-    "bpmSource": "artist-confirmed",
-    "masterSha256": "E38FA7A90AF18A372EEDE57329DA5E98D968C6F66F8BEB8E309932F399BD4979",
-    "masterDurationMilliseconds": 212007.46
+    "bpm": 100,
+    "bpmSource": "explicit",
+    "masterSha256": "5F542CCFD8DD0013B7FCF3653401591011DC892A60C05814E5A8331B8DCA2221",
+    "masterDurationMilliseconds": 273485.147
   },
   "preview": {
     "viewports": [
@@ -38,23 +41,23 @@
     {
       "id": "effect-enabled", "group": "master", "label": "Effect enabled", "type": "checkbox", "default": true,
       "unit": "", "apply": "adapter", "target": "motion-paused", "performanceSensitive": true,
-      "description": "Uses the page's existing Pause visual effects state without changing WordPress content."
+      "description": "Exercises the page-owned motion composition without changing WordPress content."
     },
     {
-      "id": "production-bpm", "group": "timing", "label": "Verified master BPM", "type": "readonly", "default": 110,
+      "id": "production-bpm", "group": "timing", "label": "Measured master BPM", "type": "readonly", "default": 100,
       "unit": " BPM", "apply": "readonly", "target": "DanceMoves.bpm", "performanceSensitive": false,
-      "description": "The artist-confirmed page BPM; lab controls never write it back."
+      "description": "The release-local measured grid used by the staged EPK motion adapter."
     },
     {
       "id": "orientation-target-ticks", "group": "effect", "label": "Orientation target cadence", "type": "readonly", "default": 2,
       "unit": " ticks", "apply": "readonly", "target": "ksEpkOrientationConfig.transitionTargetTicks", "performanceSensitive": false,
-      "description": "The shared orientation runtime publishes targets at the configured two-tick cadence. This read-only reference does not add an effect setting or change production motion."
+      "description": "The shared orientation runtime publishes bounded targets every two ticks."
     }
   ],
   "cues": [],
   "selectors": {
-    "owned": ["#cs-epk", ".cs-cover-stage", ".cs-cover", ".cs-cables", ".cs-cover-glow"],
-    "stableControls": ["#cs-motion-toggle", "#cs-let-out", "#cs-audio"]
+    "owned": [".ks-epk[data-release=a-whole-new-christmas]", ".epk-cover-wrap", ".epk-cover"],
+    "stableControls": ["audio", ".epk-btn", ".epk-download"]
   },
   "budgets": {
     "orientationP95Milliseconds": 0.5,

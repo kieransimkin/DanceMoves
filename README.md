@@ -3,6 +3,10 @@
 **DanceFlow musical motion by Kieran Simkin.** One JavaScript runtime for plain
 websites, React, Next.js and the separately packaged WordPress adapter.
 
+**3.1.10** adds the explicit A Whole New Christmas orientation mapping and
+shared-control timing so its release-scoped pointer, phone-tilt and hover
+choreography can compose with the existing playback and DanceRudiments APIs.
+
 **3.1.8** remembers the visitor's phone-motion choice across same-origin pages.
 Tilt-enabled pages resume listening without another permission request when the
 browser still permits sensor readings. If permission has expired, the enable
@@ -862,7 +866,7 @@ The validator checks PHP and JavaScript syntax, unit/contract tests, strict UTF-
 
 After every authorised upload, arm browser exception capture before loading the public site and sweep every published EPK in the canonical catalogue. Block completion or roll back when any page emits a new syntax/uncaught exception, fails a required plugin asset, renders `&#038;&#038;` or `&amp;&amp;` inside executable inline code, or exposes only the shared cue-ready marker without its page adapter's initialization marker. This browser-native post-upload gate catches WordPress rendering corruption that local plugin-source parsing cannot see. A clean parse sweep is necessary but does not replace attended playback and motion QA.
 
-No WordPress upload, timing-media upload, page-meta save or legacy-plugin deactivation should occur until the exact ZIP and migration manifest have action-time approval. Public verification must cover signed-out desktop, tablet and mobile rendering, Unicode, reduced motion, audio/chapter controls, cue resets, named handlers and all nine registered orientation adapters.
+No WordPress upload, timing-media upload, page-meta save or legacy-plugin deactivation should occur until the exact ZIP and migration manifest have action-time approval. Public verification must cover signed-out desktop, tablet and mobile rendering, Unicode, reduced motion, audio/chapter controls, cue resets, named handlers and all ten registered orientation adapters.
 
 For the EPK download route, verify one rendered MP3 download anchor from each materially different markup pattern, require a signed DanceMoves URL, and capture its response headers. The download response must be HTTP 200 with `Content-Type: audio/mpeg`, `Content-Disposition: attachment` and the expected byte count. Independently reload at least one on-page player and require its direct media request to remain HTTP 206/200 `audio/mpeg` with no forced-attachment header. A successful WordPress plugin notice does not prove either behaviour.
 
@@ -892,6 +896,7 @@ shell errors or resolved development incidents.
 | An MP3 opens inline or its download returns 404 | Rewriting requires an explicit `<a download>` processed through main Page content and a supported local uploads URL. Check the signature and readable local MP3. Keep direct `<audio>`/`<source>` responses inline; do not force attachment headers site-wide. | [Download endpoint](docs/api/downloads.md) |
 | Validation fails in a fresh checkout | Use the documented Unit coordinator and check the named missing fixture or hash mismatch. Build required previews from approved canonical inputs; do not weaken a failing assertion or treat a missing browser/device run as a pass. | [Development prerequisites and gates](docs/development.md) |
 | Browser validation says the Playwright executable does not exist | Each Playwright version requires matching browser binaries. Install its pinned Chromium, or set `DANCEMOVES_BROWSER_CHANNEL=msedge` when stable Edge is already installed; record the channel in browser evidence. Do not report a browser pass from static checks. | [Playwright browser requirements](https://playwright.dev/docs/browsers) |
+| A local HTTP fixture test aborts once with `ConnectionAbortedError [WinError 10053]` on Windows | Record the exact failing fixture, keep the assertion unchanged, then rerun that focused test once. CPython defines 10053 as a locally aborted connection; if the focused test passes unchanged, record the original as a transient host/network-stack interruption and continue the remaining suite. Repeated failures are not transient and require diagnosis. Verified 2026-10-07 with the 16-case WordPress example test passing unchanged after the one abort. | [CPython Windows socket errors](https://docs.python.org/3/library/errno.html), [CPython `ConnectionAbortedError`](https://docs.python.org/3/library/exceptions.html#ConnectionAbortedError) |
 | A page-owned rudiment adapter waits forever when its inline script precedes the footer runtime | Native rudiment compilation is intentionally lazy, so `dance-moves-rudiments-ready` cannot bootstrap the first consumer. Listen once for the bubbling generic `dance-moves-ready` event, then call `animate()` or `ready()`; use the native-ready event only to observe compilation already in progress. | [Rudiment consumer integration](RUDIMENTS-API.md#consumer-owned-page-integration) |
 
 For a new issue, record the plugin commit/version, affected API or page root,

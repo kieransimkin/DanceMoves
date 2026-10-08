@@ -13,7 +13,7 @@ physical tests were executed in a restricted development environment.
 | Lyrics, clear entries, previous/next visible neighbours, master matching | Core + React useLyric | Canonical Arcadians player in both React apps; lyric payload and master demos |
 | Pointer, playbackPulse, cueClass, cueTimeline, lyricStage, quality | `runtime.effects` | React panels, actual transformed-registry tests, original effects/timeline tests and lyric-stage lifecycle contract |
 | Catalogue CSS adoption | `catalogue:true` | Original catalogue demo now imports the module; original source test |
-| All nine named orientation adapters | `orientation.adapter`, orientationCore | All nine original gallery layouts retained; original adapter/scheduler tests |
+| All ten named orientation adapters | `orientation.adapter`, orientationCore | All ten registered gallery layouts retained; adapter/scheduler tests and release-local harness contracts |
 | Generic orientation and recorder | `createOrientation`, `createRecorder` | React permission/capture panels; lifecycle/server tests; real-device permission still manual |
 | Retained Clay cover/lights/particles/quality | `clay:true`, getClay | React Clay panel and original Clay contracts |
 | Paper planes | `effect:'paper-planes'` | React/Next plane panel using the shipped atlas; original flight tests |

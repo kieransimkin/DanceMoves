@@ -45,6 +45,13 @@ the preference.
 
 ## Potential problems
 
+Local loopback harnesses must set `ksEpkOrientationConfig.harness=true`. In
+3.1.10 and later this bypasses both the mobile/sensor gate and the real
+permission-control branch on `localhost`/`127.0.0.1`, allowing synthetic
+orientation samples to reach the production adapter. It does not bypass
+permission or device checks on any non-loopback origin and does not count as a
+physical-device acceptance result.
+
 ### Every page shows the enable button although permission may still exist
 
 - Symptom: the old runtime selected the enable-button-only path whenever

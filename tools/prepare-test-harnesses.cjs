@@ -11,9 +11,15 @@ const CLAY_SOURCE = 'qa/prelive/clay-stars/canonical-live-2.3.2.html';
 const CLAY_SHA256 = '2F3EC40E763E712CCFD5F94C818E0D651F9F98EF8CA925FEB05A9F39D464B038';
 const UNIT_MARKER = '<meta name="dance-moves-fixture" content="unit-only">';
 const OUTPUTS = Object.freeze({
+  'a-whole-new-christmas': 'qa/a-whole-new-christmas-unit-candidate.html',
   'california-screamin': 'qa/california-screamin-unit-candidate.html',
   'clay-stars': 'qa/clay-stars-unit-candidate.html'
 });
+const UNIT_SOURCES = Object.freeze({
+  'a-whole-new-christmas': 'tests/fixtures/a-whole-new-christmas-unit.html',
+  'california-screamin': 'tests/fixtures/california-screamin-unit.html'
+});
+const PAGE_IDS = Object.freeze({ 'a-whole-new-christmas': 1359, 'california-screamin': 839, 'clay-stars': 252 });
 const COMMON_STYLES = ['dance-moves-core.css', 'ks-epk-device-orientation.css'];
 const COMMON_SCRIPTS = ['dance-moves-core.js', 'dance-moves-effects.js', 'dance-moves-catalogue-timing.js'];
 const RUDIMENT_SCRIPTS = ['vendor/dancerudiments/dancerudiments-native.js', 'dance-moves-rudiments.js'];
@@ -49,6 +55,10 @@ function assertIdentity(html, slug) {
   } else if (slug === 'california-screamin') {
     requireCount(html, /id="cs-epk"/g, 1, 'California release root');
     if (!/data-release="california-screamin"/.test(html)) throw new Error('California fixture has the wrong release.');
+  } else if (slug === 'a-whole-new-christmas') {
+    requireCount(html, /class="[^"]*ks-epk[^"]*"/g, 1, 'A Whole New Christmas release root');
+    requireCount(html, /class="epk-cover-wrap"/g, 1, 'A Whole New Christmas cover frame');
+    if (!/data-release="a-whole-new-christmas"/.test(html)) throw new Error('A Whole New Christmas fixture has the wrong release.');
   } else throw new Error(`Unknown harness: ${slug}`);
   if (/id=["']wpadminbar["']/.test(html)) throw new Error('Test snapshot must be signed out.');
   requireCount(html, /<\/head\s*>/gi, 1, 'HTML closing head');
@@ -81,11 +91,11 @@ function renderCandidate(source, slug, version, release) {
   const scripts = [...COMMON_SCRIPTS, ...(clay ? ['clay-stars-effects.js'] : []),
     'ks-epk-device-orientation-core.js'];
   const tail = [
-    inline('danceMovesConfig', { pageId: clay ? 252 : 839, version, bpm: release.bpm,
+    inline('danceMovesConfig', { pageId: PAGE_IDS[slug], version, bpm: release.bpm,
       bpmSource: 'explicit', lyricTimingUrl: '', cueTimingUrl: '',
       masterDurationMilliseconds: release.masterDurationMilliseconds, diagnostics: true }),
     ...scripts.map(name => script(asset(name))),
-    inline('ksEpkOrientationConfig', { adapter: slug, pageId: clay ? 252 : 839, version,
+    inline('ksEpkOrientationConfig', { adapter: slug, pageId: PAGE_IDS[slug], version,
       bpm: release.bpm, bpmSource: 'explicit', ticksPerBeat: 16, transitionTargetTicks: 2, harness: true }),
     script(asset('ks-epk-device-orientation.js')),
     ...RUDIMENT_SCRIPTS.map(name => script(asset(name))),
@@ -114,7 +124,7 @@ function planHarness(repoRoot, slug) {
   if (!Object.hasOwn(OUTPUTS, slug)) throw new Error(`Unknown harness: ${slug}`);
   const version = versionFor(repoRoot);
   const manifest = JSON.parse(readText(path.join(repoRoot, 'tests/harness', slug, `${slug}.json`)));
-  const sourcePath = path.join(repoRoot, slug === 'clay-stars' ? CLAY_SOURCE : 'tests/fixtures/california-screamin-unit.html');
+  const sourcePath = path.join(repoRoot, slug === 'clay-stars' ? CLAY_SOURCE : UNIT_SOURCES[slug]);
   if (slug === 'clay-stars') {
     // Check immutable snapshot bytes, including any BOM. Never repin automatically.
     if (!fs.existsSync(sourcePath)) throw new Error(`Tracked Clay snapshot missing: ${CLAY_SOURCE}. Restore it from Git; do not substitute another page.`);

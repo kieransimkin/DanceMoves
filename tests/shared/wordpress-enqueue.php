@@ -26,6 +26,7 @@ run_page();one_runtime();check(145.0===$localized['danceMovesConfig']['bpm'],'pa
 $ambient='paper-planes';run_page();one_runtime();check(isset($scripts['dance-moves-paper-dreams']),'paper dependency alias');check(str_contains($localized['danceMovesConfig']['atlasUrl'],'/lib/assets/'),'shared atlas URL');
 $ambient='';$page_id=252;run_page();one_runtime();check(true===$localized['danceMovesConfig']['clayEnabled'],'Clay opt in');check('clay-stars'===$localized['danceMovesConfig']['orientationAdapter'],'orientation metadata');check(!isset($styles['dance-moves-clay-rudiments']),'rudiment styling remains consumer-owned');
 $page_id=839;run_page();one_runtime();check('california-screamin'===$localized['danceMovesConfig']['orientationAdapter'],'California adapter selection');
+$page_id=1359;run_page();one_runtime();check('a-whole-new-christmas'===$localized['danceMovesConfig']['orientationAdapter'],'A Whole New Christmas adapter selection');check(8===$localized['danceMovesConfig']['sharedControlTicks'],'A Whole New Christmas shared control timing');
 $page_id=252;define('KS_CLAY_STARS_EFFECTS_VERSION','legacy');run_page();one_runtime();check(false===$localized['danceMovesConfig']['clayEnabled'],'legacy plugin suppresses shared Clay');check(!isset($styles['dance-moves-clay-rudiments']),'no plugin-owned Clay rudiment style');
 $page=false;run_page();check(!$scripts&&!$styles,'non-page context unchanged');
 $scripts=[];dance_moves_admin_assets('post.php');check(str_ends_with($scripts['dance-moves-admin']['src'],'/lib/admin.min.js'),'admin imports shared build');

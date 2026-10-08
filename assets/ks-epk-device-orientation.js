@@ -234,6 +234,31 @@
     };
   }
 
+  function aWholeNewChristmas() {
+    const root = document.querySelector('.ks-epk[data-release="a-whole-new-christmas"]');
+    if (!root) return null;
+    const cover = root.querySelector(".epk-cover-wrap");
+    if (!cover) return null;
+    const reset = () => [
+      "--awnc-tilt-x", "--awnc-tilt-y", "--awnc-shift-x", "--awnc-shift-y",
+      "--awnc-light-x", "--awnc-light-y",
+    ].forEach(name => cover.style.removeProperty(name));
+    return {
+      root,
+      apply(x, y) {
+        const displayX = perceptualAxis(x);
+        const displayY = perceptualAxis(y);
+        cover.style.setProperty("--awnc-tilt-x", `${(-displayY * 3.2).toFixed(2)}deg`);
+        cover.style.setProperty("--awnc-tilt-y", `${(displayX * 4).toFixed(2)}deg`);
+        cover.style.setProperty("--awnc-shift-x", `${(displayX * 7).toFixed(2)}px`);
+        cover.style.setProperty("--awnc-shift-y", `${(displayY * 6).toFixed(2)}px`);
+        cover.style.setProperty("--awnc-light-x", `${(50 + displayX * 34).toFixed(1)}%`);
+        cover.style.setProperty("--awnc-light-y", `${(42 + displayY * 30).toFixed(1)}%`);
+      },
+      reset,
+    };
+  }
+
   const factories = {
     "light-will-win": lightWillWin,
     "dying-for-a-diagnosis": dyingForADiagnosis,
@@ -244,6 +269,7 @@
     "dmitri-my-talisman": dmitriMyTalisman,
     "clay-stars": clayStars,
     "california-screamin": californiaScreamin,
+    "a-whole-new-christmas": aWholeNewChristmas,
   };
 
   function detectFactory() {
@@ -256,6 +282,7 @@
     if (document.querySelector(".dmt-epk")) return dmitriMyTalisman;
     if (document.querySelector(".ks-epk.ks-clay-stars-v2")) return clayStars;
     if (document.querySelector('#cs-epk.cs-epk[data-release="california-screamin"],#cs-epk.cs-epk')) return californiaScreamin;
+    if (document.querySelector('.ks-epk[data-release="a-whole-new-christmas"]')) return aWholeNewChristmas;
     return null;
   }
 
@@ -416,7 +443,8 @@
     const pageHidden = () => { controlFeedback?.clear(); stopListening(); };
     const pageShown = () => {
       if (destroyed || reducedMotion.matches) return;
-      if (Core.permissionRequired(window)) {
+      if (harnessMode) startListening();
+      else if (Core.permissionRequired(window)) {
         makePermissionControl();
         if (phonePreference.read() === "enabled") startListening();
       }

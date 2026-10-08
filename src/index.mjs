@@ -7,7 +7,7 @@ import {VERSION} from './version.mjs';
 export {validatePageConfig, fromWordPressMeta, PAGE_META_KEYS, createMemoryPageStore} from './config.mjs';
 export {VERSION};
 const mounted = new WeakMap();
-export const ORIENTATION_ADAPTERS = Object.freeze(['light-will-win','dying-for-a-diagnosis','presents-and-chocolate','fully-nocturnal','amnesty-honestly','walk-with-me','dmitri-my-talisman','clay-stars','california-screamin']);
+export const ORIENTATION_ADAPTERS = Object.freeze(['light-will-win','dying-for-a-diagnosis','presents-and-chocolate','fully-nocturnal','amnesty-honestly','walk-with-me','dmitri-my-talisman','clay-stars','california-screamin','a-whole-new-christmas']);
 /** Importing this module never reads window/document. Mount only after a DOM root exists. */
 export function createDanceMoves(options = {}) {
   const root = options.root;

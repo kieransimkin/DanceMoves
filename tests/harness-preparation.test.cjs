@@ -10,9 +10,12 @@ let checks = 0;
 function check(name, fn) { fn(); checks++; console.log(`PASS ${name}`); }
 const repo = path.resolve(__dirname, '..');
 const fixture = fs.readFileSync(path.join(repo, 'tests/fixtures/california-screamin-unit.html'), 'utf8');
+const christmasFixture = fs.readFileSync(path.join(repo, 'tests/fixtures/a-whole-new-christmas-unit.html'), 'utf8');
 const californiaTiming = { bpm: 110, masterDurationMilliseconds: 212007.46 };
+const christmasTiming = { bpm: 100, masterDurationMilliseconds: 273485.147 };
 const clayTiming = { bpm: 90, masterDurationMilliseconds: 359523.560091 };
 const california = prep.renderCandidate(fixture, 'california-screamin', '2.9.0', californiaTiming);
+const christmas = prep.renderCandidate(christmasFixture, 'a-whole-new-christmas', '2.9.0', christmasTiming);
 // Deliberately small DOM for testing the BUILDER, not a substituted canonical snapshot.
 const clayInput = `<!doctype html><html><head><title>Made from the clay and the stars (Anunnaki) - builder unit test</title>
 <link id="dance-moves-core-css" href="https://example.invalid/wp-content/plugins/kieran-epk-device-orientation/assets/dance-moves-core.css">
@@ -25,7 +28,7 @@ ${Array.from({ length: 5 }, (_, i) => `<button data-time="${i}">Chapter</button>
 <script src="https://example.invalid/wp-content/plugins/kieran-made-from-clay-stars-epk-effects/assets/old.js"></script></body></html>`;
 const clay = prep.renderCandidate(clayInput, 'clay-stars', '2.9.0', clayTiming);
 check('unit-only identity is explicit', () => {
-  assert.ok(california.includes(prep.UNIT_MARKER)); assert.ok(clay.includes(prep.UNIT_MARKER));
+  assert.ok(california.includes(prep.UNIT_MARKER)); assert.ok(christmas.includes(prep.UNIT_MARKER)); assert.ok(clay.includes(prep.UNIT_MARKER));
   assert.match(fixture, /synthetic/); assert.match(fixture, /not the published/);
 });
 check('current version replaces the old preview cache identity', () => {
@@ -37,7 +40,7 @@ check('clock values remain release-specific', () => {
   assert.match(california, /"bpm":110/);
 });
 check('probe and shared runtime precede consumers', () => {
-  for (const html of [california, clay]) {
+  for (const html of [california, christmas, clay]) {
     assert.ok(html.indexOf('harness-probe.js') < html.indexOf('dance-moves-core.js'));
     assert.ok(html.indexOf('dance-moves-core.js') < html.indexOf('dance-moves-effects.js'));
     assert.ok(html.indexOf('dance-moves-effects.js') < html.indexOf('dance-moves-catalogue-timing.js'));
@@ -51,13 +54,13 @@ check('remote and legacy plugin copies are removed, page code stays', () => {
   assert.doesNotMatch(clay, /wp-content\/plugins\//); assert.match(clay, /window.keepTheme=true/);
 });
 check('exactly one copy of every production script', () => {
-  for (const html of [california, clay]) {
+  for (const html of [california, christmas, clay]) {
     const sources = Array.from(html.matchAll(/<script src="([^"]+)"/g), m => m[1]);
     assert.equal(new Set(sources).size, sources.length);
   }
 });
 check('generated inline configuration parses', () => {
-  for (const html of [california, clay]) for (const m of html.matchAll(/<script\b(?![^>]*src=)[^>]*>([\s\S]*?)<\/script>/g)) new vm.Script(m[1]);
+  for (const html of [california, christmas, clay]) for (const m of html.matchAll(/<script\b(?![^>]*src=)[^>]*>([\s\S]*?)<\/script>/g)) new vm.Script(m[1]);
 });
 check('duplicate roots are rejected', () => assert.throws(() => prep.renderCandidate(fixture.replace('</body>', '<div id="cs-epk"></div></body>'), 'california-screamin', '2.9.0', californiaTiming), /release root/));
 check('wrong release is rejected', () => assert.throws(() => prep.renderCandidate(fixture.replace('data-release="california-screamin"', 'data-release="wrong"'), 'california-screamin', '2.9.0', californiaTiming), /wrong release/));
@@ -77,10 +80,12 @@ function put(relative, data) { const p = path.join(temp, relative); fs.mkdirSync
 try {
   put('kieran-epk-device-orientation.php', "<?php\n// Version: 2.9.0\ndefine('DANCE_MOVES_VERSION', '2.9.0');\n");
   put('tests/fixtures/california-screamin-unit.html', fixture);
+  put('tests/fixtures/a-whole-new-christmas-unit.html', christmasFixture);
   put('tests/harness/california-screamin/california-screamin.json', JSON.stringify({ release: californiaTiming }));
+  put('tests/harness/a-whole-new-christmas/a-whole-new-christmas.json', JSON.stringify({ release: christmasTiming }));
   put('tests/harness/clay-stars/clay-stars.json', JSON.stringify({ release: clayTiming }));
   // Test-only empty assets exercise path/existence checks, not runtime correctness.
-  for (const html of [california, clay]) for (const m of html.matchAll(/(?:src|href)="\.\.\/([^"?]+)(?:\?[^" ]*)?"/g)) put(m[1], '/* builder test asset */\n');
+  for (const html of [california, christmas, clay]) for (const m of html.matchAll(/(?:src|href)="\.\.\/([^"?]+)(?:\?[^" ]*)?"/g)) put(m[1], '/* builder test asset */\n');
   check('direct tests work without a prior generation command', () => {
     const result = prep.readUnitCandidate(temp, 'california-screamin');
     assert.equal(result, california); assert.ok(fs.existsSync(path.join(temp, prep.OUTPUTS['california-screamin'])));

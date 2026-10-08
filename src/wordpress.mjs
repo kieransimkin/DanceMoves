@@ -10,7 +10,7 @@ export function mountWordPress(host = window) {
   if (!root) return null;
   const runtime=createDanceMoves({...config,root,legacyGlobals:true,catalogue:true,
     clay:config.clayEnabled===true,
-    orientation:adapter?{adapter,transitionTargetTicks:2}:undefined,
+    orientation:adapter?{adapter,transitionTargetTicks:2,harness:host.ksEpkOrientationConfig?.harness===true}:undefined,
     paperPlanes:{...host.danceMovesPaperDreamsConfig,atlasUrl:config.atlasUrl,planeCount:12,compactPlaneCount:5}});
   host.__danceMovesMount=runtime;
   return runtime;

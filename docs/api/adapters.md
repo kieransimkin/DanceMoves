@@ -114,8 +114,9 @@ Sources: [PHP map](../../kieran-epk-device-orientation.php),
 | 276 | `walk-with-me` | `.ks-epk[data-release="walk-with-me"]` and `.wwm-cover-stage` or `.epk-cover-wrap` | Cover tilt/shift and moving glow position. |
 | 298 | `dmitri-my-talisman` | `.dmt-epk` | Light/parallax/tilt; resets with the `reduce-motion` class. |
 | 839 | `california-screamin` | `#cs-epk.cs-epk` (release attribute optional) | Writes `--cs-x`/`--cs-y`; resets with `motion-paused`. |
+| 1359 | `a-whole-new-christmas` | `.ks-epk[data-release="a-whole-new-christmas"]` and `.epk-cover-wrap` | Bounded cover tilt/shift and local light-position targets for the rain-window treatment. |
 
-The original seven adapters are joined by Clay/Stars and California Screamin'.
+The original seven adapters are joined by Clay/Stars, California Screamin' and A Whole New Christmas.
 The wrapper can detect several roots when `config.adapter` is absent, but PHP
 still controls which Pages receive its assets. There is no public
 `registerAdapter()` or Page-ID filter. Adding a new production mapping requires

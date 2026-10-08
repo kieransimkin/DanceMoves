@@ -45,7 +45,7 @@ check(()=>assert.equal(sections[4].time,104.01));check(()=>assert.equal(sections
 for(let i=0;i<sections.length;i++){check(()=>assert(sections[i].end>sections[i].time));if(i)check(()=>assert.equal(sections[i-1].end,sections[i].time));}
 const boot=read('shared/boot.mjs');
 for(const adapter of coverage.orientationAdapters)check(()=>assert(boot.includes(adapter)));
-check(()=>assert.equal(coverage.orientationAdapters.length,9));
+check(()=>assert.equal(coverage.orientationAdapters.length,10));
 const context={window:{}};vm.runInNewContext(fs.readFileSync(path.join(root,'assets/vendor/dancerudiments/dancerudiments-native.js'),'utf8'),context);
 check(()=>assert.deepEqual(Array.from(context.window.danceMovesRudimentsNative.catalogue,x=>x.name).sort(),[...coverage.rudiments].sort()));
 check(()=>assert.equal(coverage.rudiments.length,15));
@@ -59,4 +59,4 @@ const readme=fs.readFileSync(path.join(root,'README.md'),'utf8');
 for(const f of manifest.features)check(()=>assert(readme.includes(`examples/wordpress/${f.page}`),f.id+' missing README recipe link'));
 check(()=>assert(readme.includes('RELEASING.md')));
 check(()=>assert(!/current.*main.*2\.4\.0/i.test(readme.slice(0,1200))));
-console.log(JSON.stringify({status:'PASS',scope:'static coverage and metadata/media contracts only',checks,featurePages:23,apiExampleReferences:coverage.apiExamples.length,rudiments:15,orientationAdapters:9},null,2));
+console.log(JSON.stringify({status:'PASS',scope:'static coverage and metadata/media contracts only',checks,featurePages:23,apiExampleReferences:coverage.apiExamples.length,rudiments:15,orientationAdapters:10},null,2));

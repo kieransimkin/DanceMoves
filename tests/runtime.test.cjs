@@ -9,7 +9,7 @@ const runtime = fs.readFileSync(
   "utf8"
 );
 
-function createEnvironment({ mobile = true, permission = false, adapter = "dmitri-my-talisman", storage = new Map(), reduced = false, permissionResult = "granted" } = {}) {
+function createEnvironment({ mobile = true, permission = false, adapter = "dmitri-my-talisman", storage = new Map(), reduced = false, permissionResult = "granted", harness = false } = {}) {
   const windowListeners = {};
   const raf = [];
   const timers = new Map();
@@ -27,7 +27,7 @@ function createEnvironment({ mobile = true, permission = false, adapter = "dmitr
   const root = {
     classList: { contains: () => false },
     dataset: {},
-    querySelector: selector => selector.includes("wwm-cover-stage") ? cover : null,
+    querySelector: selector => selector.includes("wwm-cover-stage") || selector === ".epk-cover-wrap" ? cover : null,
     style: {
       setProperty: (name, value) => properties.set(name, value),
       removeProperty: name => properties.delete(name),
@@ -50,7 +50,8 @@ function createEnvironment({ mobile = true, permission = false, adapter = "dmitr
     DeviceOrientationEvent: OrientationEvent,
     localStorage: { getItem: key => storage.get(key), setItem: (key, value) => storage.set(key, value) },
     KSEpkOrientationCore: Core,
-    ksEpkOrientationConfig: { adapter, pageId: adapter === "walk-with-me" ? 276 : 298 },
+    ksEpkOrientationConfig: { adapter, pageId: adapter === "walk-with-me" ? 276 : adapter === "a-whole-new-christmas" ? 1359 : 298, harness },
+    location: { hostname: harness ? "127.0.0.1" : "example.test" },
     navigator: {
       userAgent: mobile ? "Mozilla/5.0 (iPhone) Mobile" : "Mozilla/5.0 (Windows NT 10.0)",
       maxTouchPoints: mobile ? 5 : 0,
@@ -80,6 +81,7 @@ function createEnvironment({ mobile = true, permission = false, adapter = "dmitr
     querySelector: selector => {
       if (adapter === "dmitri-my-talisman" && selector === ".dmt-epk") return root;
       if (adapter === "walk-with-me" && selector === '.ks-epk[data-release="walk-with-me"]') return root;
+      if (adapter === "a-whole-new-christmas" && selector === '.ks-epk[data-release="a-whole-new-christmas"]') return root;
       return null;
     },
     createElement: () => {
@@ -120,6 +122,11 @@ function createEnvironment({ mobile = true, permission = false, adapter = "dmitr
 
 const desktop = createEnvironment({ mobile: false });
 assert.equal(desktop.windowListeners.deviceorientation, undefined);
+
+const loopbackHarness = createEnvironment({ mobile: false, permission: true, harness: true, adapter: "a-whole-new-christmas" });
+assert.equal(typeof loopbackHarness.windowListeners.deviceorientation, "function", "loopback harness starts without a physical sensor gate");
+assert.equal(loopbackHarness.controls.length, 0, "loopback harness does not enter the real permission-control branch");
+assert.equal(loopbackHarness.permissionCalls(), 0, "loopback harness never requests physical-device permission");
 
 const automatic = createEnvironment({ mobile: true, permission: false });
 assert.equal(typeof automatic.windowListeners.deviceorientation, "function");
@@ -193,6 +200,22 @@ const walkTiltY = Math.abs(parseFloat(walk.coverProperties.get("--wwm-tilt-y")))
 assert.ok(walkTiltX >= 3 && walkTiltX <= 6, `Walk vertical tilt is perceptible and bounded: ${walkTiltX}deg`);
 assert.ok(walkTiltY >= 3.5 && walkTiltY <= 7, `Walk horizontal tilt is perceptible and bounded: ${walkTiltY}deg`);
 assert.match(runtime, /Math\.sqrt\(Math\.abs\(bounded\)\)/);
+
+const christmas = createEnvironment({ mobile: true, permission: false, adapter: "a-whole-new-christmas" });
+christmas.advance(0);
+christmas.windowListeners.deviceorientation({ beta: 0, gamma: 0 });
+christmas.flush();
+christmas.advance(1000);
+christmas.windowListeners.deviceorientation({ beta: 8, gamma: 12 });
+christmas.flush();
+christmas.advance(2000);
+christmas.windowListeners.deviceorientation({ beta: 8, gamma: 12 });
+christmas.flush();
+assert.match(christmas.coverProperties.get("--awnc-tilt-y"), /deg$/);
+assert.match(christmas.coverProperties.get("--awnc-shift-x"), /px$/);
+assert.match(christmas.coverProperties.get("--awnc-light-x"), /%$/);
+assert.ok(Math.abs(parseFloat(christmas.coverProperties.get("--awnc-tilt-y"))) <= 4, "Christmas tilt remains bounded");
+assert.ok(Math.abs(parseFloat(christmas.coverProperties.get("--awnc-shift-x"))) <= 7, "Christmas shift remains bounded");
 
 (async () => {
   const gated = createEnvironment({ mobile: true, permission: true });

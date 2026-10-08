@@ -11,6 +11,7 @@
     "_dance_moves_effect"
   ],
   "orientationAdapters": [
+    "a-whole-new-christmas",
     "dying-for-a-diagnosis",
     "light-will-win",
     "presents-and-chocolate",
@@ -754,7 +755,7 @@
       "metadata": "features.json#orientation",
       "provenance": "Supplementary",
       "acceptance": [
-        "Each of nine mappings mounts with its required fixture",
+        "Each of ten mappings mounts with its required fixture",
         "Synthetic readings remain isTrusted=false",
         "Native phone permission remains a separate check"
       ]

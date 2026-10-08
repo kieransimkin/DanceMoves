@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "pageId": 1359,
+  "adapter": "a-whole-new-christmas",
+  "verifiedAgainst": "staged page payload 4F08686D80DBEB5B6A7C72DDE82B89FD27BA57BC1D69F5208A9E0B5890591A70 and DanceMoves 3.1.10 candidate",
+  "writes": [
+    {
+      "properties": ["--awnc-tilt-x", "--awnc-tilt-y", "--awnc-shift-x", "--awnc-shift-y"],
+      "selector": ".ks-epk[data-release=a-whole-new-christmas] .epk-cover",
+      "consumer": "transform",
+      "classification": "compositor-candidate",
+      "applicable": true
+    },
+    {
+      "properties": ["--awnc-light-x", "--awnc-light-y"],
+      "selector": ".ks-epk[data-release=a-whole-new-christmas] .epk-cover-wrap::after",
+      "consumer": "background-position",
+      "classification": "paint-review",
+      "applicable": true
+    }
+  ]
+}

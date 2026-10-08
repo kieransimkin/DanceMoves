@@ -248,7 +248,7 @@ bounded by `.epk-hero`, with `.epk-cover-wrap` and `.epk-heading` for stacking.
 Use `effect:'paper-planes'` and a valid atlas URL. Reduced motion, forced colours,
 compact mode, visibility and resize behaviour remain in that implementation.
 
-`orientation.adapter` accepts all nine names exported by `ORIENTATION_ADAPTERS`.
+`orientation.adapter` accepts all ten names exported by `ORIENTATION_ADAPTERS`.
 Their original DOM/CSS selectors and mobile/permission policy remain unchanged;
 selecting another adapter does not fabricate its required DOM. `getOrientation()`
 returns its existing snapshot/reset/teardown API. The unmodified orientation
