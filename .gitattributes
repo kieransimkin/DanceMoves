@@ -18,3 +18,7 @@ assets/vendor/dancerudiments/LICENSE text eol=lf
 # Shared library declarations and public package licence are text, with stable builds.
 *.d.ts text eol=lf
 LICENSE text eol=lf
+
+# Keep original DanceFlow artwork byte-identical across platform packages.
+**/branding/*.svg text eol=lf
+**/branding/*.png binary
