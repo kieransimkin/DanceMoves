@@ -8,8 +8,16 @@ test('WordPress has one imported frontend and an independently packaged archive'
  assert.match(read('tools/package-wordpress.py'),/WordPress frontend differs from the shared library artifact/);
 });
 test('publish jobs use the build commit, protected npm environment and tested tarball',()=>{
- const workflow=read('.github/workflows/release.yml');assert.match(workflow,/tags: \['v\*'\]/);
- assert.equal((workflow.match(/ref: \$\{\{ needs\.build\.outputs\.commit \}\}/g)||[]).length,2);
+ const workflow=read('.github/workflows/release.yml').replaceAll('\r\n','\n');assert.match(workflow,/tags: \['v\*'\]/);
+ for(const name of ['npm','github','wordpress-org']){
+  const block=workflow.split(`\n  ${name}:\n`)[1]?.split(/\n  [a-z][a-z-]*:\n/)[0];assert.ok(block,`Missing ${name} publisher`);
+  assert.match(block,/ref: \$\{\{ needs\.build\.outputs\.commit \}\}/,`${name} must use the tested build commit`);
+  assert.match(block,/node tools\/verify-release-output\.mjs/,`${name} must verify the tested distributions`);
+ }
+ const directory=workflow.split('\n  wordpress-org:\n')[1];
+ assert.match(directory,/needs: \[build, github\]/);assert.match(directory,/if: vars\.WPORG_PLUGIN_APPROVED == 'true'/);
+ assert.match(directory,/WPORG_SLUG: \$\{\{ vars\.WPORG_PLUGIN_SLUG \}\}/);assert.match(directory,/BUILD_DIR: wordpress-build\/kieran-epk-device-orientation/);
+ assert.match(directory,/VERSION: \$\{\{ steps\.directory\.outputs\.version \}\}/);assert.match(directory,/version=\$\{TAG_NAME#v\}/);
  for(const text of ["REQUIRE_LOCK: '1'",'environment: npm','id-token: write','npm run test:browser','npm run test:next:smoke','node tools/verify-release-output.mjs'])assert.ok(workflow.includes(text),text);
  assert.match(read('tools/publish-npm.mjs'),/--provenance/);assert.match(read('tools/publish-npm.mjs'),/\?'next':'latest'/);
  assert.match(read('tools/publish-npm.mjs'),/DIFFERENT bytes/);assert.doesNotMatch(read('tools/publish-github.mjs'),/--clobber/);

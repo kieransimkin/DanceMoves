@@ -127,3 +127,44 @@ jobs:
       - run: node tools/publish-github.mjs
         env:
           GH_TOKEN: ${{ github.token }}
+
+  wordpress-org:
+    needs: [build, github]
+    if: vars.WPORG_PLUGIN_APPROVED == 'true'
+    runs-on: ubuntu-latest
+    environment: wordpress-org
+    env:
+      TAG_NAME: ${{ github.event.release.tag_name || inputs.tag || github.ref_name }}
+      WPORG_SLUG: ${{ vars.WPORG_PLUGIN_SLUG }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.build.outputs.commit }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-${{ env.TAG_NAME }}
+          path: release-output/
+      - name: Stage the exact tested package for its approved directory slug
+        id: directory
+        shell: bash
+        run: |
+          [[ "$WPORG_SLUG" =~ ^[a-z0-9][a-z0-9-]*$ ]] || exit 1
+          [[ "$TAG_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 1
+          echo "version=${TAG_NAME#v}" >> "$GITHUB_OUTPUT"
+          node tools/verify-release-output.mjs
+          python -c "import os,pathlib,zipfile; v=os.environ['TAG_NAME'][1:]; p=pathlib.Path('release-output')/('DanceMoves-wordpress-'+v+'.zip'); zipfile.ZipFile(p).extractall('wordpress-build')"
+          test -f wordpress-build/kieran-epk-device-orientation/readme.txt
+      - uses: 10up/action-wordpress-plugin-deploy@54bd289b8525fd23a5c365ec369185f2966529c2
+        env:
+          SVN_USERNAME: ${{ secrets.WPORG_SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.WPORG_SVN_PASSWORD }}
+          SLUG: ${{ env.WPORG_SLUG }}
+          VERSION: ${{ steps.directory.outputs.version }}
+          BUILD_DIR: wordpress-build/kieran-epk-device-orientation
