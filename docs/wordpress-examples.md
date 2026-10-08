@@ -9,7 +9,7 @@ media attachments, settings or releases. `examples/wordpress` is a local teachin
 environment; it is deliberately absent from the distributable plugin ZIP.
 
 The native plugin source is 2.9.0 at `c4252556774f38cad6d75b1a52de7917d2c65af0`.
-StemLab media is pinned at `77c3c0c8115830a5fd26cd56bd59500c26f3ba86`.
+StemLab media is pinned at `a44045dd267b539f5d25445e2153f4cf2d8f43a8`.
 The live EPK’s rendered text and chapters were inspected on 29 September 2026.
 Its raw JavaScript and private WordPress metadata were not available through that
 rendered-page read. The checked-in `tools/stage-central-effects-migrations.js`
@@ -200,7 +200,7 @@ and sustained-device performance must be checked separately before release.
 ## Primary sources
 
 - [Arcadians live EPK](https://kieransimkin.co.uk/arcadians/), rendered content checked 29 September 2026.
-- [StemLab reference](https://github.com/kieransimkin/stemlab/blob/77c3c0c8115830a5fd26cd56bd59500c26f3ba86/examples/arcadians/reference.json).
+- [StemLab reference](https://github.com/kieransimkin/stemlab/blob/a44045dd267b539f5d25445e2153f4cf2d8f43a8/examples/arcadians/reference.json).
 - [Arcadians migration source](../tools/stage-central-effects-migrations.js).
 - [WordPress metadata commands](https://developer.wordpress.org/cli/commands/post/meta/update/).
 - [WordPress REST metadata](https://developer.wordpress.org/rest-api/extending-the-rest-api/modifying-responses/).
