@@ -5,7 +5,7 @@ export function createOrientationController(scope,{render,windowMilliseconds=200
   for(const [name,value] of Object.entries({windowMilliseconds,minimumSpanDegrees,smoothingTimeConstantMilliseconds}))if(!Number.isFinite(value)||value<=0)throw new RangeError(name);
   const w=scope.window,core=w.KSEpkOrientationCore;
   const preference=core.createOrientationPreference(w);
-  let enabled=core.sensorSupported(w)&&preference.read()==='enabled',listening=false,destroyed=false,pending=false;
+  let enabled=core.sensorSupported(w)&&preference.read()==='enabled',listening=false,destroyed=false,pending=false,active=true,pageHidden=false;
   const reduced=w.matchMedia('(prefers-reduced-motion: reduce)'),forced=w.matchMedia('(forced-colors: active)');
   const scheduler=core.createLatestSampleRafScheduler({requestFrame:w.requestAnimationFrame,cancelFrame:w.cancelAnimationFrame,
     now:()=>w.performance.now(),mapper:core.createRollingMapper(windowMilliseconds,minimumSpanDegrees),smoothingTimeConstantMilliseconds,
@@ -13,16 +13,21 @@ export function createOrientationController(scope,{render,windowMilliseconds=200
   const receive=event=>scheduler.receive(event,core.screenAngle(w),w.performance.now());
   const reset=()=>{scheduler.reset();if(!destroyed)render({x:0,y:0,reason:'reset'});};
   const reconcile=()=>{
-    const active=enabled&&!destroyed&&!scope.disposed&&!scope.document.hidden&&!reduced.matches&&!forced.matches;
-    if(active&&!listening){scope.listen(w,'deviceorientation',receive,{passive:true});listening=true;}
-    if(!active&&listening){scope.unlisten(w,'deviceorientation',receive);listening=false;reset();}
+    const allowed=active&&enabled&&!destroyed&&!scope.disposed&&!pageHidden&&!scope.document.hidden&&!reduced.matches&&!forced.matches;
+    if(allowed&&!listening){scope.listen(w,'deviceorientation',receive,{passive:true});listening=true;}
+    if(!allowed&&listening){scope.unlisten(w,'deviceorientation',receive);listening=false;reset();}
   };
+  const hide=()=>{pageHidden=true;reconcile();};
+  const show=()=>{pageHidden=false;reset();reconcile();};
   const disposers=[
     ()=>scope.unlisten(scope.document,'visibilitychange',reconcile),
     ()=>scope.unlisten(reduced,'change',reconcile),()=>scope.unlisten(forced,'change',reconcile),
-    ()=>scope.unlisten(w,'orientationchange',reset)
+    ()=>scope.unlisten(w,'orientationchange',reset),
+    ()=>scope.unlisten(w.screen?.orientation,'change',reset),
+    ()=>scope.unlisten(w,'pagehide',hide),()=>scope.unlisten(w,'pageshow',show)
   ];
   scope.listen(scope.document,'visibilitychange',reconcile);scope.listen(reduced,'change',reconcile);scope.listen(forced,'change',reconcile);scope.listen(w,'orientationchange',reset);
+  scope.listen(w.screen?.orientation,'change',reset);scope.listen(w,'pagehide',hide);scope.listen(w,'pageshow',show);
   function destroy(){if(destroyed)return;enabled=false;reconcile();destroyed=true;pending=false;scheduler.teardown();disposers.forEach(fn=>fn());removeDispose();}
   const removeDispose=scope.onDispose(destroy);
   reconcile();
@@ -33,6 +38,7 @@ export function createOrientationController(scope,{render,windowMilliseconds=200
       if(!core.sensorSupported(w))throw new Error('Device orientation is unavailable in this browser or insecure context');
       pending=true;
       try{
+        if(!active||pageHidden||scope.document.hidden||reduced.matches||forced.matches)throw new Error('Phone motion is currently paused');
         if(core.permissionRequired(w)&&await w.DeviceOrientationEvent.requestPermission()!=='granted'){
           if(!destroyed&&!scope.disposed){preference.write(false);enabled=false;reconcile();}
           throw new Error('Motion permission denied');
@@ -41,7 +47,8 @@ export function createOrientationController(scope,{render,windowMilliseconds=200
         preference.write(true);enabled=true;reconcile();return true;
       }finally{pending=false;}
     },
-    disable(){preference.write(false);enabled=false;reconcile();},reset,destroy,
-    snapshot:()=>({enabled,listening,destroyed,pending,reducedMotion:reduced.matches,forcedColors:forced.matches,framePending:scheduler.pending()})
+    disable(){preference.write(false);enabled=false;reconcile();},
+    setActive(value){active=value===true;reconcile();},reset,destroy,
+    snapshot:()=>({enabled,listening,destroyed,pending,active,pageHidden,reducedMotion:reduced.matches,forcedColors:forced.matches,framePending:scheduler.pending()})
   });
 }

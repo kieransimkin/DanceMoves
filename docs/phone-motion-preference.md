@@ -16,6 +16,9 @@ request permission. A denied request stops listening and records disabled.
 Pages without a tilt adapter do not acquire a new effect.
 
 The reusable `createOrientation()` controller follows the same stored choice.
+Use [`connectPhoneMotion()`](phone-motion-connections.md) to attach suitable existing
+pointer handles and appearance callbacks with shared permission UI and lifecycle
+gates. It reuses an existing orientation provider when one is already mounted.
 Its `enabled` and `listening` snapshot fields describe local intent/listener
 state, not verified browser permission or sensor delivery. Applications retain
 ownership of their enable UI. Reduced motion, forced colours and hidden-page
