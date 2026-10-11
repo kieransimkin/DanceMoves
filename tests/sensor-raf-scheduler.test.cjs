@@ -364,6 +364,8 @@ assert.deepEqual(JSON.parse(JSON.stringify(clay.window.__ksEpkOrientationRuntime
   destroyed: false,
   latest: { x: 0, y: 0 },
   reducedMotion: false,
+  forcedColors: false,
+  suspended: false,
   documentHidden: false,
 });
 clay.emitWindow("deviceorientation", { beta: 0, gamma: 0 });

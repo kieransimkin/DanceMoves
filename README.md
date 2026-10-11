@@ -1,5 +1,10 @@
 # DanceMoves
 
+`connectPhoneMotion()` attaches suitable existing spatial effects to one shared
+phone input route, preserving desktop pointer input. See the
+[connection guide](docs/phone-motion-connections.md) for permission UI, consumer
+fan-out, motion switches and lifecycle verification.
+
 [![DanceMoves logo](https://raw.githubusercontent.com/kieransimkin/DanceMoves/v3.1.14/docs/branding/logo.png)](https://kieransimkin.co.uk/danceflow/)
 
 By **[Kieran Simkin](https://kieransimkin.co.uk/)** · [DanceFlow ecosystem](https://kieransimkin.co.uk/danceflow/) · [Vector logo and usage guide](docs/branding/README.md).

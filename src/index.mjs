@@ -2,6 +2,7 @@ import installers from './runtime/index.mjs';
 import {createScope} from './scope.mjs';
 import {validatePageConfig} from './config.mjs';
 import {createOrientationController} from './orientation.mjs';
+import {connectPhoneMotion} from './phone-motion.mjs';
 import {createMotionRecorder} from './recorder.mjs';
 import {VERSION} from './version.mjs';
 export {validatePageConfig, fromWordPressMeta, PAGE_META_KEYS, createMemoryPageStore} from './config.mjs';
@@ -54,6 +55,7 @@ export function createDanceMoves(options = {}) {
       getPaperPlanes: () => w.DanceMovesPaperDreams || null,
       createRecorder: settings => createMotionRecorder(scope, settings),
       createOrientation: settings => createOrientationController(scope, settings), destroy,
+      connectPhoneMotion: settings => connectPhoneMotion(scope, settings),
       resources: () => scope.snapshot(),
       on(type, callback) {scope.listen(scope.document,type,callback); return () => scope.unlisten(scope.document,type,callback);}
     });

@@ -42,6 +42,17 @@ try{
   assert.equal(await page.locator('.dm-control-spark').count(),18,'burst outlives disappearing control');
   await page.evaluate(()=>document.querySelectorAll('.dm-control-spark').forEach(n=>n.getAnimations()[0].play()));
   await page.waitForTimeout(1250);assert.equal(await page.locator('.dm-control-spark').count(),0);
+  await page.evaluate(()=>runtime.effects.quality({id:'standalone-budget',root:runtime.root}).setTier(2,'test-static'));
+  await page.waitForFunction(()=>!runtime.getOrientation().snapshot().listening);
+  await page.evaluate(()=>runtime.effects.get('standalone-budget').setTier(0,'test-recovery'));
+  await page.waitForFunction(()=>runtime.getOrientation().snapshot().listening);
+  assert.equal(await page.evaluate(()=>window.permissionCalls),1);
+  await page.evaluate(()=>runtime.root.dataset.danceMovesPerformance='minimal');
+  await page.waitForFunction(()=>!runtime.getOrientation().snapshot().listening);
+  await page.evaluate(()=>runtime.root.dataset.danceMovesPerformance='full');
+  await page.waitForFunction(()=>runtime.getOrientation().snapshot().listening);
+  await page.evaluate(()=>window.dispatchEvent(Object.assign(new Event('deviceorientation'),{beta:0,gamma:0})));
+  await page.waitForFunction(()=>document.querySelectorAll('.ks-epk-orientation-control').length===0);
   const extents=[];
   for(const viewport of [{width:390,height:844},{width:900,height:1100},{width:1440,height:1000}]){
     await page.setViewportSize(viewport);
@@ -57,7 +68,10 @@ try{
     }
   }
   await page.emulateMedia({forcedColors:'active'});await page.reload();await page.waitForFunction(()=>window.runtime);
-  await page.getByRole('button',{name:'Use phone motion',exact:true}).click();assert.equal(await page.locator('.dm-control-spark').count(),0);
+  assert.equal(await page.locator('button').count(),0);
+  assert.equal(await page.evaluate(()=>window.permissionCalls),0);
+  assert.equal(await page.evaluate(()=>window.runtime.getOrientation().snapshot().listening),false);
+  assert.equal(await page.locator('.dm-control-spark').count(),0);
   await page.emulateMedia({forcedColors:'none',reducedMotion:'reduce'});await page.reload();await page.waitForFunction(()=>window.runtime);assert.equal(await page.locator('button').count(),0);
   await page.emulateMedia({reducedMotion:'no-preference'});await page.reload();await page.waitForFunction(()=>window.runtime);await page.getByRole('button',{name:'Use phone motion',exact:true}).click();await page.evaluate(()=>window.runtime.destroy());assert.equal(await page.locator('.dm-control-spark').count(),0);
   assert.deepEqual(errors,[]);

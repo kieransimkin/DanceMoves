@@ -40,7 +40,9 @@ export interface Effects {
  get(id:string):Controller|null;snapshot():Record<string,unknown>[];teardown(id:string):void;teardownAll():void;
 }
 export interface EffectOptions {id?:string;root?:Element|string;[key:string]:unknown}
-export interface OrientationController {enable():Promise<boolean>;disable():void;reset():void;destroy():void;snapshot():Record<string,unknown>}
+export interface OrientationController {enable():Promise<boolean>;disable():void;setActive(value:boolean):void;reset():void;destroy():void;snapshot():Record<string,unknown>}
+export interface PhoneMotionConnection {enable():Promise<boolean>;reconcile():void;destroy():void;snapshot():Record<string,unknown>}
+export interface PhoneMotionOptions {render?:(point:Offset & {reason:string})=>void;pointers?:string[];enabled?:()=>boolean;controlParent?:HTMLElement;watchAttributes?:string[];windowMilliseconds?:number}
 export interface Recorder {start():Promise<MotionCapture>;stop(reason?:string):MotionCapture;snapshot():Record<string,unknown>;upload(endpoint:string,options?:{headers?:Record<string,string>;signal?:AbortSignal}):Promise<Record<string,unknown>>}
 export interface MotionCapture {schema:'ks-epk-motion-recording/v1';samples:Array<{milliseconds:number;beta:number;gamma:number;alpha?:number|null;[key:string]:unknown}>;[key:string]:unknown}
 export interface DanceMoves {
@@ -66,6 +68,7 @@ export interface DanceMoves {
  orientationCore:Record<string,(...args:any[])=>any>;
  getOrientation():(Controller & {reset():void})|null;getClay():(Controller & Record<string,any>)|null;getPaperPlanes():Controller|null;
  createOrientation(options:{render:(point:Offset & Record<string,unknown>)=>void;windowMilliseconds?:number;minimumSpanDegrees?:number;smoothingTimeConstantMilliseconds?:number}):OrientationController;
+  connectPhoneMotion(options?:PhoneMotionOptions):PhoneMotionConnection;
  createRecorder(options?:{durationMilliseconds?:number;maxSamples?:number}):Recorder;
  on(type:string,callback:EventListener):Remove;resources():{id:string;disposed:boolean;listeners:number;timers:number;frames:number;observers:number;created:number};destroy():void;
 }

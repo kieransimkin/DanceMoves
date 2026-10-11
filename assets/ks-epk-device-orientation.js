@@ -7,6 +7,7 @@
   if (!Core || (!harnessMode && (!Core.isMobileDevice(window) || !Core.sensorSupported(window)))) return;
 
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const forcedColours = window.matchMedia("(forced-colors: active)");
 
   const perceptualAxis = value => {
     const bounded = Core.clamp(value, -1, 1);
@@ -305,6 +306,10 @@
     let destroyed = false;
     let controlFeedback = null;
     const phonePreference = Core.createOrientationPreference(window);
+    const subscribers = new Set();
+    let suspended = false;
+    const qualityLimited = () => ["minimal", "static"].includes(adapter.root.dataset.danceMovesQuality) || adapter.root.dataset.danceMovesPerformance === "minimal" || document.body?.dataset?.epkAdaptiveTier === "static";
+    const notify = reason => subscribers.forEach(callback => callback({ ...latest, reason }));
 
     adapter.root.dataset.ksOrientation = "supported";
     adapter.root.dataset.ksOrientationAdapter = config.adapter || "detected";
@@ -337,6 +342,7 @@
           removeControl();
         }
         adapter.apply(x, y);
+        notify("phone");
         window.EPKEffectHarnessProbe?.noteCommit?.(detail.sampleAge);
       },
     });
@@ -362,10 +368,11 @@
       active = false;
       adapter.root.dataset.ksOrientation = "supported";
       adapter.reset();
+      notify("reset");
     };
 
     const onOrientation = event => {
-      if (reducedMotion.matches) return;
+      if (reducedMotion.matches || forcedColours.matches || suspended || qualityLimited()) return;
       if (!Core.hasMotionData(event)) {
         window.EPKEffectHarnessProbe?.noteRejected?.();
         return;
@@ -374,7 +381,7 @@
     };
 
     const startListening = () => {
-      if (listening || reducedMotion.matches || document.hidden || destroyed) return;
+      if (listening || reducedMotion.matches || forcedColours.matches || suspended || qualityLimited() || document.hidden || destroyed) return;
       listening = true;
       window.addEventListener("deviceorientation", onOrientation, { passive: true });
       availabilityTimer = window.setTimeout(() => {
@@ -393,7 +400,7 @@
     };
 
     const makePermissionControl = () => {
-      if (control || destroyed) return;
+      if (control || destroyed || active) return;
       control = document.createElement("button");
       control.type = "button";
       control.className = "ks-epk-orientation-control";
@@ -408,7 +415,7 @@
         button.disabled = true;
         button.textContent = "Checking motion…";
         try {
-          const result = await window.DeviceOrientationEvent.requestPermission();
+          const result = Core.permissionRequired(window) ? await window.DeviceOrientationEvent.requestPermission() : "granted";
           if (destroyed || control !== button) return;
           if (result !== "granted") {
             phonePreference.write(false);
@@ -442,13 +449,16 @@
 
     const pageHidden = () => { controlFeedback?.clear(); stopListening(); };
     const pageShown = () => {
-      if (destroyed || reducedMotion.matches) return;
+      if (destroyed || reducedMotion.matches || forcedColours.matches || suspended || qualityLimited()) return;
       if (harnessMode) startListening();
       else if (Core.permissionRequired(window)) {
         makePermissionControl();
         if (phonePreference.read() === "enabled") startListening();
       }
-      else if (phonePreference.read() !== "disabled") startListening();
+      else {
+        makePermissionControl();
+        if (phonePreference.read() !== "disabled") startListening();
+      }
     };
 
     window.addEventListener("orientationchange", recalibrate, { passive: true });
@@ -460,7 +470,7 @@
     window.addEventListener("pageshow", pageShown);
 
     const preferenceChanged = () => {
-      if (reducedMotion.matches) {
+      if (reducedMotion.matches || forcedColours.matches || suspended || qualityLimited()) {
         controlFeedback?.clear();
         stopListening();
         removeControl();
@@ -470,6 +480,8 @@
     };
     if (typeof reducedMotion.addEventListener === "function") reducedMotion.addEventListener("change", preferenceChanged);
     else reducedMotion.addListener(preferenceChanged);
+    if (typeof forcedColours.addEventListener === "function") forcedColours.addEventListener("change", preferenceChanged);
+    else if (typeof forcedColours.addListener === "function") forcedColours.addListener(preferenceChanged);
 
     const teardown = () => {
       if (destroyed) return;
@@ -482,6 +494,8 @@
       latest = { x: 0, y: 0 };
       active = false;
       adapter.reset();
+      notify("teardown");
+      subscribers.clear();
       controlFeedback?.destroy();
       removeControl();
       window.removeEventListener("orientationchange", recalibrate);
@@ -493,6 +507,8 @@
       }
       if (typeof reducedMotion.removeEventListener === "function") reducedMotion.removeEventListener("change", preferenceChanged);
       else if (typeof reducedMotion.removeListener === "function") reducedMotion.removeListener(preferenceChanged);
+      if (typeof forcedColours.removeEventListener === "function") forcedColours.removeEventListener("change", preferenceChanged);
+      else if (typeof forcedColours.removeListener === "function") forcedColours.removeListener(preferenceChanged);
       observer?.disconnect();
       observer = null;
       if (window.__ksEpkOrientationRuntime?.teardown === teardown) delete window.__ksEpkOrientationRuntime;
@@ -505,14 +521,20 @@
       destroyed,
       latest: { ...latest },
       reducedMotion: reducedMotion.matches,
+      forcedColors: forcedColours.matches,
+      suspended,
       documentHidden: document.hidden,
     });
-    window.__ksEpkOrientationRuntime = Object.freeze({ reset, teardown, snapshot });
+    window.__ksEpkOrientationRuntime = Object.freeze({ reset, teardown, snapshot,
+      subscribe(callback) { if (typeof callback !== "function") throw new TypeError("Orientation callback required"); subscribers.add(callback); callback({ ...latest, reason: active ? "phone" : "reset" }); return () => subscribers.delete(callback); },
+      suspend(value) { suspended = value === true; preferenceChanged(); },
+    });
     if (typeof window.MutationObserver === "function" && document.documentElement) {
-      observer = new window.MutationObserver(() => {
+      observer = new window.MutationObserver(records => {
         if (adapter.root.isConnected === false) teardown();
+        else if (records?.some(record => record.type === "attributes")) preferenceChanged();
       });
-      observer.observe(document.documentElement, { childList: true, subtree: true });
+      observer.observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ["data-dance-moves-quality", "data-dance-moves-performance", "data-epk-adaptive-tier"] });
     }
 
     pageShown();
