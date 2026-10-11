@@ -727,7 +727,11 @@
     function resetWindow(now) { start = now || window.performance.now(); frames = 0; }
     function tick(now) {
       if (!running) return;
-      if (document.hidden || state.reduced.matches || state.forced.matches) { resetWindow(now); frame = window.requestAnimationFrame(tick); return; }
+      // Recover the saved quality tier promptly even if a browser coalesces
+      // media change notifications while the frame reads live preferences.
+      var preferenceBlocked = state.reduced.matches || state.forced.matches;
+      if (preferenceBlocked !== preferenceLimited) preference();
+      if (document.hidden || preferenceBlocked) { resetWindow(now); frame = window.requestAnimationFrame(tick); return; }
       frames += 1;
       if (!start) start = now;
       if (now - start >= sampleMs) {

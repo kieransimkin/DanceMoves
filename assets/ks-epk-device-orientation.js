@@ -308,6 +308,7 @@
     const phonePreference = Core.createOrientationPreference(window);
     const subscribers = new Set();
     let suspended = false;
+    const qualityLimited = () => ["minimal", "static"].includes(adapter.root.dataset.danceMovesQuality) || document.body?.dataset.epkAdaptiveTier === "static";
     const notify = reason => subscribers.forEach(callback => callback({ ...latest, reason }));
 
     adapter.root.dataset.ksOrientation = "supported";
@@ -371,7 +372,7 @@
     };
 
     const onOrientation = event => {
-      if (reducedMotion.matches || forcedColours.matches || suspended) return;
+      if (reducedMotion.matches || forcedColours.matches || suspended || qualityLimited()) return;
       if (!Core.hasMotionData(event)) {
         window.EPKEffectHarnessProbe?.noteRejected?.();
         return;
@@ -380,7 +381,7 @@
     };
 
     const startListening = () => {
-      if (listening || reducedMotion.matches || forcedColours.matches || suspended || document.hidden || destroyed) return;
+      if (listening || reducedMotion.matches || forcedColours.matches || suspended || qualityLimited() || document.hidden || destroyed) return;
       listening = true;
       window.addEventListener("deviceorientation", onOrientation, { passive: true });
       availabilityTimer = window.setTimeout(() => {
@@ -448,7 +449,7 @@
 
     const pageHidden = () => { controlFeedback?.clear(); stopListening(); };
     const pageShown = () => {
-      if (destroyed || reducedMotion.matches || forcedColours.matches || suspended) return;
+      if (destroyed || reducedMotion.matches || forcedColours.matches || suspended || qualityLimited()) return;
       if (harnessMode) startListening();
       else if (Core.permissionRequired(window)) {
         makePermissionControl();
@@ -469,7 +470,7 @@
     window.addEventListener("pageshow", pageShown);
 
     const preferenceChanged = () => {
-      if (reducedMotion.matches || forcedColours.matches || suspended) {
+      if (reducedMotion.matches || forcedColours.matches || suspended || qualityLimited()) {
         controlFeedback?.clear();
         stopListening();
         removeControl();
@@ -529,10 +530,11 @@
       suspend(value) { suspended = value === true; preferenceChanged(); },
     });
     if (typeof window.MutationObserver === "function" && document.documentElement) {
-      observer = new window.MutationObserver(() => {
+      observer = new window.MutationObserver(records => {
         if (adapter.root.isConnected === false) teardown();
+        else if (records.some(record => record.type === "attributes")) preferenceChanged();
       });
-      observer.observe(document.documentElement, { childList: true, subtree: true });
+      observer.observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ["data-dance-moves-quality", "data-epk-adaptive-tier"] });
     }
 
     pageShown();
