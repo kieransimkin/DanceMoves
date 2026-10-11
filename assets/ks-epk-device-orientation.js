@@ -308,7 +308,7 @@
     const phonePreference = Core.createOrientationPreference(window);
     const subscribers = new Set();
     let suspended = false;
-    const qualityLimited = () => ["minimal", "static"].includes(adapter.root.dataset.danceMovesQuality) || document.body?.dataset.epkAdaptiveTier === "static";
+    const qualityLimited = () => ["minimal", "static"].includes(adapter.root.dataset.danceMovesQuality) || document.body?.dataset?.epkAdaptiveTier === "static";
     const notify = reason => subscribers.forEach(callback => callback({ ...latest, reason }));
 
     adapter.root.dataset.ksOrientation = "supported";
@@ -532,7 +532,7 @@
     if (typeof window.MutationObserver === "function" && document.documentElement) {
       observer = new window.MutationObserver(records => {
         if (adapter.root.isConnected === false) teardown();
-        else if (records.some(record => record.type === "attributes")) preferenceChanged();
+        else if (records?.some(record => record.type === "attributes")) preferenceChanged();
       });
       observer.observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ["data-dance-moves-quality", "data-epk-adaptive-tier"] });
     }
