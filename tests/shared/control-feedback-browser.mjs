@@ -57,7 +57,10 @@ try{
     }
   }
   await page.emulateMedia({forcedColors:'active'});await page.reload();await page.waitForFunction(()=>window.runtime);
-  await page.getByRole('button',{name:'Use phone motion',exact:true}).click();assert.equal(await page.locator('.dm-control-spark').count(),0);
+  assert.equal(await page.locator('button').count(),0);
+  assert.equal(await page.evaluate(()=>window.permissionCalls),0);
+  assert.equal(await page.evaluate(()=>window.runtime.getOrientation().snapshot().listening),false);
+  assert.equal(await page.locator('.dm-control-spark').count(),0);
   await page.emulateMedia({forcedColors:'none',reducedMotion:'reduce'});await page.reload();await page.waitForFunction(()=>window.runtime);assert.equal(await page.locator('button').count(),0);
   await page.emulateMedia({reducedMotion:'no-preference'});await page.reload();await page.waitForFunction(()=>window.runtime);await page.getByRole('button',{name:'Use phone motion',exact:true}).click();await page.evaluate(()=>window.runtime.destroy());assert.equal(await page.locator('.dm-control-spark').count(),0);
   assert.deepEqual(errors,[]);
