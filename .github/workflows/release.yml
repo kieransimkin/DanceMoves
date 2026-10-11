@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   build:
-    if: github.repository == 'kieransimkin/DanceMoves'
+    if: github.repository == 'kieransimkin/DanceMoves' && startsWith(github.event.release.tag_name || inputs.tag || github.ref_name, 'v')
     runs-on: ubuntu-latest
     outputs:
       commit: ${{ steps.source.outputs.commit }}
