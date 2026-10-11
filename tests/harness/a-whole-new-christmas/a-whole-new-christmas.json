@@ -11,7 +11,7 @@
     "productionCss": ["../../../assets/dance-moves-core.css", "../../../assets/ks-epk-device-orientation.css"],
     "productionJs": ["../../../assets/dance-moves-core.js", "../../../assets/dance-moves-effects.js", "../../../assets/dance-moves-catalogue-timing.js", "../../../assets/ks-epk-device-orientation-core.js", "../../../assets/ks-epk-device-orientation.js", "../../../assets/vendor/dancerudiments/dancerudiments-native.js", "../../../assets/dance-moves-rudiments.js"],
     "productionHashes": {
-      "../../../assets/dance-moves-core.css": "F7D353C4016512F720D3159CFE9D57ACA7F8526DAB870BF6EC4D7E4756EC7392",
+      "../../../assets/dance-moves-core.css": "C4790396B723B383CBA65D6EA62E78AF93FAB81A8FEBD9443E578EAF5E677D7D",
       "../../../assets/ks-epk-device-orientation.css": "5E1C975673AC118BCC231BF2A06C2CA2E4854F45BD626E73F66730DA617F7A20",
       "../../../assets/dance-moves-core.js": "78C41A350B45D544BDC4E6F33D71D0B27B01EE2D5D43D3D98E3964AA8057681B",
       "../../../assets/dance-moves-effects.js": "BEB0074C9092C9207CD700ABDD87C04128223D20D5B4CA2EDB57734BFDBCB217",
