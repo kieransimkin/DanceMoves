@@ -47,6 +47,10 @@ try{
   await page.evaluate(()=>runtime.effects.get('standalone-budget').setTier(0,'test-recovery'));
   await page.waitForFunction(()=>runtime.getOrientation().snapshot().listening);
   assert.equal(await page.evaluate(()=>window.permissionCalls),1);
+  await page.evaluate(()=>runtime.root.dataset.danceMovesPerformance='minimal');
+  await page.waitForFunction(()=>!runtime.getOrientation().snapshot().listening);
+  await page.evaluate(()=>runtime.root.dataset.danceMovesPerformance='full');
+  await page.waitForFunction(()=>runtime.getOrientation().snapshot().listening);
   await page.evaluate(()=>window.dispatchEvent(Object.assign(new Event('deviceorientation'),{beta:0,gamma:0})));
   await page.waitForFunction(()=>document.querySelectorAll('.ks-epk-orientation-control').length===0);
   const extents=[];
