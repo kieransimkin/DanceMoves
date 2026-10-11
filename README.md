@@ -946,3 +946,12 @@ back into this section. Existing release and deployment history remains in Git,
 ## WordPress.org publication
 
 The release workflow can update the WordPress.org directory automatically after a validated release tag. Initial directory submission and human approval remain required. After approval, configure repository variables `WPORG_PLUGIN_APPROVED=true` and `WPORG_PLUGIN_SLUG` with the directory-assigned slug, plus `WPORG_SVN_USERNAME` and `WPORG_SVN_PASSWORD` secrets in the `wordpress-org` environment. The job verifies the exact tested release artifacts after the matching GitHub release exists, then uploads the packaged plugin through SVN. It remains disabled while the initial submission is queued; it does not install the plugin on a website. Website: https://kieransimkin.co.uk/danceflow/
+
+## Agent guidance releases
+
+Source-only agent guidance releases use `readme-policy-vMAJOR.MINOR.PATCH` tags
+and contain the updated instructions with a source manifest and checksums.
+They version the documentation policy independently of the runtime packages.
+The runtime release workflow accepts tags starting with `v` and then verifies
+the exact semantic version and immutable source before building and publishing
+packages. Guidance release events skip that workflow's build and publishing jobs.
