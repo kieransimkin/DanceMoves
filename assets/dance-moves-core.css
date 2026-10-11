@@ -1,3 +1,34 @@
+/* Phone permission controls are shared by generic and legacy sensor owners. */
+.ks-epk-orientation-control {
+  position: fixed;
+  z-index: 999998;
+  /* Reserve transparent room for the outer glow before the viewport edge. */
+  left: max(2rem, env(safe-area-inset-left));
+  bottom: max(2rem, env(safe-area-inset-bottom));
+  min-height: 2.75rem;
+  padding: .65rem .9rem;
+  border: 1px solid rgba(255, 255, 255, .72);
+  border-radius: 999px;
+  color: #fff;
+  background: rgba(12, 12, 16, .88);
+  box-shadow: 0 .5rem 2rem rgba(0, 0, 0, .42);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  font: 700 .72rem/1 system-ui, sans-serif;
+  letter-spacing: .05em;
+  cursor: pointer;
+}
+
+.ks-epk-orientation-control:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+
+.ks-epk-orientation-control:disabled {
+  cursor: default;
+  opacity: .72;
+}
+
 /* Elements with a declarative start interval stay on their first frame until DanceMoves releases them. */
 [data-dance-moves-start-interval]:not([data-dance-moves-started="true"]),
 [data-dance-moves-start-interval]:not([data-dance-moves-started="true"])::before,
