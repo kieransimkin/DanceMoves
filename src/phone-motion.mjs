@@ -55,7 +55,13 @@ export function connectPhoneMotion(scope, {render=()=>{}, pointers=[], enabled=(
     if(existing?.subscribe){source=existing;unsubscribe=existing.subscribe(apply);}
     else source=createOrientationController(scope,{render:apply,windowMilliseconds});
   }
-  if(w.MutationObserver){observer=new w.MutationObserver(records=>{if(w.DanceMoves.root.isConnected===false){destroy();return;}if(records.some(r=>r.type==='attributes'))reconcile();});observer.observe(scope.window.DanceMoves.root,{attributes:true,attributeFilter:watchAttributes});if(scope.document.body!==w.DanceMoves.root)observer.observe(scope.document.body,{attributes:true,attributeFilter:watchAttributes});observer.observe(scope.document.documentElement,{childList:true,subtree:true});}
+  if(w.MutationObserver){
+    const root=w.DanceMoves.root,document=root.ownerDocument;
+    observer=new w.MutationObserver(records=>{if(root.isConnected===false){destroy();return;}if(records.some(r=>r.type==='attributes'))reconcile();});
+    observer.observe(root,{attributes:true,attributeFilter:watchAttributes,childList:true,subtree:true});
+    if(document.body!==root)observer.observe(document.body,{attributes:true,attributeFilter:watchAttributes});
+    if(document.documentElement!==root)observer.observe(document.documentElement,{childList:true,subtree:true});
+  }
   function destroy(){if(destroyed)return;removeButton();apply({x:0,y:0,reason:'teardown'});destroyed=true;unsubscribe?.();if(!source?.subscribe)source?.destroy();observer?.disconnect();signals.forEach(([target,type,handler])=>scope.unlisten(target,type,handler));removeDispose();connections.delete(scope);}
   const removeDispose=scope.onDispose(destroy);
   reconcile();

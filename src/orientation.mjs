@@ -28,7 +28,9 @@ export function createOrientationController(scope,{render,windowMilliseconds=200
   ];
   scope.listen(scope.document,'visibilitychange',reconcile);scope.listen(reduced,'change',reconcile);scope.listen(forced,'change',reconcile);scope.listen(w,'orientationchange',reset);
   scope.listen(w.screen?.orientation,'change',reset);scope.listen(w,'pagehide',hide);scope.listen(w,'pageshow',show);
-  function destroy(){if(destroyed)return;enabled=false;reconcile();destroyed=true;pending=false;scheduler.teardown();disposers.forEach(fn=>fn());removeDispose();}
+  let observer;
+  if(w.MutationObserver){observer=new w.MutationObserver(()=>{if(w.DanceMoves?.root?.isConnected===false)destroy();});observer.observe(w.DanceMoves?.root?.ownerDocument.documentElement||scope.document.documentElement,{childList:true,subtree:true});}
+  function destroy(){if(destroyed)return;enabled=false;reconcile();destroyed=true;pending=false;scheduler.teardown();observer?.disconnect();disposers.forEach(fn=>fn());removeDispose();}
   const removeDispose=scope.onDispose(destroy);
   reconcile();
   return Object.freeze({
