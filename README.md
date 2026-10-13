@@ -5,6 +5,13 @@ YouTube players. Full-master players drive the existing musical effects; Shorts
 map their offset and duration onto the master clock. See
 [playback sources](docs/playback-sources.md) for provenance, controls and lifecycle.
 
+**3.1.21** adds `publishPlayback()` and `receiveChildPlayback()` to connect an explicitly selected
+child watch page to its parent runtime. The parent retains its existing cues,
+lyrics and effect owners; closing or losing the child stops its clock. The
+integration composes with the shared player API and requires its verified
+master/excerpt mapping. See [child-page playback](docs/child-playback.md) and the
+[standalone/modal example](examples/child-playback/README.md).
+
 `connectPhoneMotion()` attaches suitable existing spatial effects to one shared
 phone input route, preserving desktop pointer input. See the
 [connection guide](docs/phone-motion-connections.md) for permission UI, consumer

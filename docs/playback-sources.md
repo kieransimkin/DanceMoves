@@ -76,3 +76,10 @@ reduced-motion, forced-colour, quality and visibility policies. Physical-device
 performance still needs physical evidence.
 
 Reference: [YouTube IFrame Player API](https://developers.google.com/youtube/iframe_api_reference).
+
+`registerPlaybackProvider()` registers an explicit non-DOM, event-driven player
+with the same verified master and excerpt mapping. It accepts the
+media-compatible player produced by the [child-page receiver](child-playback.md).
+Native DOM players retain `registerPlayer()` and its runtime-root checks.
+Provider registrations share ownership, cue/lyric dispatch and teardown; no
+additional timing engine or hidden media element is created.

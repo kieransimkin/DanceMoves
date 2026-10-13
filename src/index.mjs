@@ -5,6 +5,9 @@ import {createOrientationController} from './orientation.mjs';
 import {connectPhoneMotion} from './phone-motion.mjs';
 import {createMotionRecorder} from './recorder.mjs';
 import {installPlayback} from './playback.mjs';
+
+import {installChildPlayback} from './child-playback.mjs';
+export {createPlaybackPublisher, createPlaybackReceiver} from './child-playback.mjs';
 import {VERSION} from './version.mjs';
 export {validatePageConfig, fromWordPressMeta, PAGE_META_KEYS, createMemoryPageStore} from './config.mjs';
 export {VERSION};
@@ -62,6 +65,7 @@ export function createDanceMoves(options = {}) {
       on(type, callback) {scope.listen(scope.document,type,callback); return () => scope.unlisten(scope.document,type,callback);}
     });
     Object.defineProperty(api,'destroyed',{get:() => scope.disposed});
+    installChildPlayback(scope, api, ownerDocument.defaultView);
     api.ready = Promise.resolve(api.ready).then(() => {
       if (!scope.disposed) scope.document.dispatchEvent(new w.CustomEvent('dance-moves-ready', {
         bubbles: true, detail: {runtime: api, version: VERSION}
