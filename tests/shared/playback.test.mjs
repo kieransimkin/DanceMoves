@@ -49,6 +49,10 @@ test('an unloaded native master and its verified reference keep one stable trans
   const env=fixture();env.api.config.masterDurationMilliseconds=0;env.master.duration=NaN;const source=env.api.playbackSource(env.master),v=video(env);
   const reference={id:'synthetic-master:v1',duration:120,element:env.master};const owner=env.api.registerPlayer({master:reference,player:v,masterVerified:true,offset:48,duration:20});assert.equal(owner.source,source);assert.equal(source.duration,120);v.currentTime=2;v.play();assert.equal(source.currentTime,50);assert.throws(()=>env.api.playbackSource({...reference,duration:121}),/Conflicting/);env.scope.dispose();
 });
+test('the verified PCM duration remains the master boundary despite small container padding differences',()=>{
+  const env=fixture();env.master.duration=119.9;const reference={id:'synthetic-master:v1',duration:120,element:env.master},v=video(env);
+  const owner=env.api.registerPlayer({master:reference,player:v,masterVerified:true,offset:100,duration:20});assert.equal(owner.source.duration,120);assert.throws(()=>env.api.playbackSource({...reference,duration:121}),/Conflicting/);env.scope.dispose();
+});
 test('YouTube states, seeks, buffering, rate and cleanup use the same source',async()=>{
   const env=fixture();let callbacks,time=0,rate=1,destroyed=false;
   env.host.YT={Player:class {constructor(iframe,options){callbacks=options.events;queueMicrotask(()=>callbacks.onReady());}getVideoUrl(){return 'https://www.youtube.com/watch?v=ABCDEFGHIJK';}getCurrentTime(){return time;}getPlaybackRate(){return rate;}pauseVideo(){callbacks.onStateChange({data:2});}playVideo(){callbacks.onStateChange({data:1});}seekTo(value){time=value;}destroy(){destroyed=true;}}};

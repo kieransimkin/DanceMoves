@@ -49,7 +49,7 @@ export function installPlayback(scope, api, host = scope.document.defaultView) {
     let declaredDuration=declared||0;
     function setDuration(value){if(value===undefined)return;if(typeof value!=='number'||!Number.isFinite(value)||value<=0)throw new RangeError('Declared master duration must be positive and finite');if(declaredDuration&&Math.abs(declaredDuration-value)>.001)throw new RangeError('Conflicting master durations');if(isNative&&Number(master.duration)>0&&Math.abs(Number(master.duration)-value)>.25)throw new RangeError('Declared master duration does not match its native reference');declaredDuration=value;}
     setDuration(declared);
-    const duration = () => Number(master.duration)>0 && Number.isFinite(Number(master.duration)) ? Number(master.duration) : declaredDuration || Number(api.config?.masterDurationMilliseconds || 0) / 1000;
+    const duration = () => declaredDuration || (Number(master.duration)>0 && Number.isFinite(Number(master.duration)) ? Number(master.duration) : Number(api.config?.masterDurationMilliseconds || 0) / 1000);
     const target=isNative?master:scope.root;
     const native = {element:isNative?master:null,read:()=>({time:Number(master.currentTime)||0,paused:isNative?master.paused:true,ended:master.ended||false,rate:master.playbackRate||1,seeking:master.seeking||false,error:master.error}),pause:()=>master.pause?.(),play:()=>master.play?.(),seek:time=>{if(isNative)master.currentTime=time;},mapping:null};
     active = native;
