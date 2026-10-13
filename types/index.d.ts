@@ -19,7 +19,7 @@ export interface ChildPlaybackPlayer extends EventTarget {
 export interface ChildPlaybackIdentity {origin:string;channel:string;assetId:string}
 export interface ChildPlaybackPublisherOptions extends ChildPlaybackIdentity {source:Pick<HTMLMediaElement,'currentTime'|'duration'|'playbackRate'|'paused'|'ended'|'seeking'|'pause'|'play'|'addEventListener'|'removeEventListener'> & {readonly error?:unknown};targetWindow?:Window;allowPlayCommands?:boolean;notifyEscape?:boolean;window?:Window}
 export interface ChildPlaybackReceiverOptions extends ChildPlaybackIdentity {iframe:HTMLIFrameElement;staleAfterMilliseconds?:number;window?:Window}
-export interface ChildPlaybackReceiver extends Controller {player:ChildPlaybackPlayer;ready:Promise<ChildPlaybackReceiver>;reconnect():void}
+export interface ChildPlaybackReceiver extends Controller {player:ChildPlaybackPlayer;readonly ready:Promise<ChildPlaybackReceiver>;reconnect():Promise<ChildPlaybackReceiver>}
 export interface ChildPlaybackRegistration extends ChildPlaybackReceiverOptions, PlayerRegistration {}
 export interface ChildPlaybackPublisher extends Controller {requestClose():void}
 export function createPlaybackPublisher(options:ChildPlaybackPublisherOptions):ChildPlaybackPublisher;

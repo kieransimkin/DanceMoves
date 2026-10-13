@@ -103,3 +103,10 @@ test('high-frequency source position updates are coalesced while pause remains i
  env.source.pause();await flush();assert.equal(env.receiver.player.paused,true);
  env.receiver.teardown();env.sender.teardown();
 });
+test('readiness timeout rejects late data and explicit reconnect has a fresh promise',async()=>{
+ const env=setup();await flush();env.sender.teardown();env.receiver.reconnect();const failed=env.receiver.ready;
+ env.parent.advance(10001);await assert.rejects(failed,/did not become ready/);
+ const sender=createPlaybackPublisher({source:env.source,window:env.child,targetWindow:env.parentProxy,origin,channel,assetId});
+ const fresh=env.receiver.reconnect();assert.notEqual(fresh,failed);await flush();await fresh;assert.equal(env.receiver.snapshot().connected,true);
+ env.receiver.teardown();sender.teardown();
+});

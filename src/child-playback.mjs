@@ -98,8 +98,9 @@ export function createPlaybackReceiver(options = {}) {
   const owned=resources(host), player=new host.EventTarget(), pending=new Map();
   let session='',sequence=0,commands=0,lastWall=0,timer=0,connectTimer=0,destroyed=false,connected=false,status='connecting';
   let state={time:0,duration:0,rate:1,paused:true,ended:false,seeking:false,buffering:false,error:false};
-  let resolveReady,rejectReady;
-  const ready=new Promise((resolve,reject)=>{resolveReady=resolve;rejectReady=reject;});ready.catch(()=>{});
+  let resolveReady,rejectReady,ready,readySettled=false;
+  function prepareReady() {readySettled=false;ready=new Promise((resolve,reject)=>{resolveReady=value=>{readySettled=true;resolve(value);};rejectReady=error=>{readySettled=true;reject(error);};});ready.catch(()=>{});}
+  prepareReady();
   const emit=event=>player.dispatchEvent(new host.Event(event));
   const envelope=(type,extra={})=>({protocol:PROTOCOL,channel,assetId,session,type,...extra});
   function send(type,extra) {iframe.contentWindow?.postMessage(envelope(type,extra),origin);}
@@ -110,11 +111,12 @@ export function createPlaybackReceiver(options = {}) {
     state={...state,time:player.currentTime,paused:true,buffering:false};connected=false;status=reason;cancelPending();if(playing)emit('pause');
   }
   function connect() {
-    if(destroyed)return;stop('connecting');session=host.crypto.randomUUID();sequence=0;
+    if(destroyed)return ready;if(readySettled)prepareReady();stop('connecting');session=host.crypto.randomUUID();sequence=0;
     send('connect');
     const started=host.performance.now();
-    const retry=()=>{if(destroyed||connected)return;if(host.performance.now()-started>=10000){stop('unavailable');rejectReady(new Error('Child playback did not become ready'));return;}send('connect');connectTimer=owned.later(retry,500);};
+    const retry=()=>{if(destroyed||connected)return;if(host.performance.now()-started>=10000){send('disconnect');stop('unavailable');session='';rejectReady(new Error('Child playback did not become ready'));return;}send('connect');connectTimer=owned.later(retry,500);};
     connectTimer=owned.later(retry,500);
+    return ready;
   }
   function command(name,time) {
     if(destroyed||!connected)return Promise.reject(new Error('Child playback is unavailable'));
@@ -167,7 +169,7 @@ export function createPlaybackReceiver(options = {}) {
   owned.listen(host,'pageshow',connect);
   owned.listen(host.document,'visibilitychange',()=>{if(host.document.hidden){send('command',{sequence:++commands,command:'pause'});stop('hidden');session='';}else connect();});
   const observer=new host.MutationObserver(()=>{if(!iframe.isConnected)controller.teardown();});observer.observe(host.document.documentElement,{childList:true,subtree:true});
-  const controller={player,ready,reconnect:connect,teardown(){if(destroyed)return;send('command',{sequence:++commands,command:'pause'});send('disconnect');stop('destroyed');destroyed=true;session='';rejectReady(new Error('Child playback owner removed'));observer.disconnect();owned.dispose();},snapshot(){return {kind:'child-receiver',status,connected,destroyed,time:player.currentTime,paused:player.paused,assetId,...owned.snapshot()};}};
+  const controller={player,get ready(){return ready;},reconnect:connect,teardown(){if(destroyed)return;send('command',{sequence:++commands,command:'pause'});send('disconnect');stop('destroyed');destroyed=true;session='';rejectReady(new Error('Child playback owner removed'));observer.disconnect();owned.dispose();},snapshot(){return {kind:'child-receiver',status,connected,destroyed,time:player.currentTime,paused:player.paused,assetId,...owned.snapshot()};}};
   connect();return controller;
 }
 
@@ -182,6 +184,6 @@ export function installChildPlayback(scope, api, host) {
     const receiver=createPlaybackReceiver({...options,window:host});
     let registration;
     try {registration=api.registerPlaybackProvider({...options,player:receiver.player});}catch(error){receiver.teardown();throw error;}
-    return own({source:registration.source,player:receiver.player,ready:receiver.ready,mapping:registration.mapping,reconnect:receiver.reconnect,teardown(){receiver.teardown();registration.teardown();},snapshot(){return {...receiver.snapshot(),mapping:registration.mapping};}});
+    return own({source:registration.source,player:receiver.player,get ready(){return receiver.ready;},mapping:registration.mapping,reconnect:receiver.reconnect,teardown(){receiver.teardown();registration.teardown();},snapshot(){return {...receiver.snapshot(),mapping:registration.mapping};}});
   };
 }

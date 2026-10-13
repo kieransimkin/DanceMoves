@@ -56,8 +56,9 @@ remain immediate. The receiver interpolates between samples for
 at most 500 ms and stops a playing source after 1500 ms without data. The
 `staleAfterMilliseconds` option accepts 750–10000 ms. Native media events can
 arrive sooner. No independent cue/beat parser or animation scheduler is added.
-After a stale connection, call `reconnect()` to start a fresh session; late
-packets from a disconnected session cannot restart it.
+After a stale connection, call `reconnect()` to start a fresh session and await
+its returned readiness promise; late packets from a disconnected session cannot
+restart it. `ready` exposes the current connection attempt.
 
 Parent pause and seek commands reach the child; parent play is rejected unless
 the publisher explicitly enables `allowPlayCommands:true`. Browser autoplay
