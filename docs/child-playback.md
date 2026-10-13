@@ -47,6 +47,8 @@ Supply an exact HTTP(S) origin including its port, never `*` or an opaque
 origin. Source Window, channel, asset ID, a fresh receiver session, monotonic
 sequence and finite bounded numeric state are checked on both sides. The asset
 ID is a caller-selected identity, not runtime proof of soundtrack provenance.
+Each frame has one receiver and each explicit route has one publisher until
+teardown; reuse their transports for additional effect consumers.
 Preserve verified published player IDs, render/source hashes and master mappings
 outside the runtime. Do not bind unrelated edits using equal titles/durations.
 

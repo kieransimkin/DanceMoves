@@ -110,3 +110,12 @@ test('readiness timeout rejects late data and explicit reconnect has a fresh pro
  const fresh=env.receiver.reconnect();assert.notEqual(fresh,failed);await flush();await fresh;assert.equal(env.receiver.snapshot().connected,true);
  env.receiver.teardown();sender.teardown();
 });
+test('one route has one publisher and one frame has one receiver until teardown',async()=>{
+ const env=setup();await flush();
+ assert.throws(()=>createPlaybackPublisher({source:env.source,window:env.child,targetWindow:env.parentProxy,origin,channel,assetId}),/already/);
+ assert.throws(()=>createPlaybackReceiver({iframe:env.iframe,window:env.parent,origin,channel,assetId}),/already/);
+ env.sender.teardown();env.receiver.teardown();
+ const sender=createPlaybackPublisher({source:env.source,window:env.child,targetWindow:env.parentProxy,origin,channel,assetId});
+ const receiver=createPlaybackReceiver({iframe:env.iframe,window:env.parent,origin,channel,assetId});await flush();await receiver.ready;
+ receiver.teardown();sender.teardown();
+});

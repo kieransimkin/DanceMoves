@@ -2,6 +2,7 @@
 const PROTOCOL = 'dancemoves.child-playback.v1';
 const EVENTS = new Set(['snapshot','loadedmetadata','durationchange','play','playing','pause','ended','seeking','seeked','ratechange','timeupdate','waiting','error']);
 const MAX_SECONDS = 86400;
+const publisherOwners = new WeakMap(), receiverOwners = new WeakMap();
 function identity(value, name) {
   if (typeof value !== 'string' || !value.trim() || value.length > 200) throw new TypeError(`${name} must be a nonempty string of at most 200 characters`);
   return value;
@@ -42,6 +43,9 @@ export function createPlaybackPublisher(options = {}) {
   const {host,channel,assetId,origin}=context(options), source=options.source;
   const target=options.targetWindow || host.parent;
   if (!source?.addEventListener || !source?.pause || !target?.postMessage || target===host) throw new TypeError('A playback source and distinct target Window are required');
+  const owners=publisherOwners.get(host)||new Map(), key=JSON.stringify([origin,channel,assetId]);
+  const routes=owners.get(target)||new Set();
+  if(routes.has(key))throw new Error('Child playback route already has a publisher');
   const owned=resources(host);
   let session=null, sequence=0, commandSequence=0, timer=0, destroyed=false, suspended=false, lastPublished=null;
   const envelope=(type,extra={})=>({protocol:PROTOCOL,channel,assetId,session,type,...extra});
@@ -85,14 +89,15 @@ export function createPlaybackPublisher(options = {}) {
   owned.listen(host.document,'visibilitychange',()=>{if(host.document.hidden){stop();if(session){sample('waiting');stop();}}else sample();});
   owned.listen(host,'pagehide',()=>{suspended=true;disconnect('pagehide');});
   owned.listen(host,'pageshow',()=>{if(!destroyed){suspended=false;send('available');}});
-  send('available');
-  return {requestClose,teardown(){if(destroyed)return;disconnect('teardown');destroyed=true;owned.dispose();},snapshot(){return {kind:'child-publisher',connected:!!session,destroyed,suspended,...owned.snapshot()};}};
+  routes.add(key);owners.set(target,routes);publisherOwners.set(host,owners);send('available');
+  return {requestClose,teardown(){if(destroyed)return;disconnect('teardown');destroyed=true;owned.dispose();routes.delete(key);if(!routes.size)owners.delete(target);},snapshot(){return {kind:'child-publisher',connected:!!session,destroyed,suspended,...owned.snapshot()};}};
 }
 
 /** Receive one explicitly selected iframe's state as a media-compatible player. */
 export function createPlaybackReceiver(options = {}) {
   const {host,channel,assetId,origin}=context(options), iframe=options.iframe;
   if(iframe?.tagName!=='IFRAME'||!iframe.contentWindow)throw new TypeError('An attached iframe is required');
+  if(receiverOwners.has(iframe))throw new Error('The child frame already has a playback receiver');
   const staleAfter=options.staleAfterMilliseconds ?? 1500;
   if(typeof staleAfter!=='number'||!Number.isFinite(staleAfter)||staleAfter<750||staleAfter>10000)throw new RangeError('staleAfterMilliseconds must be between 750 and 10000');
   const owned=resources(host), player=new host.EventTarget(), pending=new Map();
@@ -169,8 +174,8 @@ export function createPlaybackReceiver(options = {}) {
   owned.listen(host,'pageshow',connect);
   owned.listen(host.document,'visibilitychange',()=>{if(host.document.hidden){send('command',{sequence:++commands,command:'pause'});stop('hidden');session='';}else connect();});
   const observer=new host.MutationObserver(()=>{if(!iframe.isConnected)controller.teardown();});observer.observe(host.document.documentElement,{childList:true,subtree:true});
-  const controller={player,get ready(){return ready;},reconnect:connect,teardown(){if(destroyed)return;send('command',{sequence:++commands,command:'pause'});send('disconnect');stop('destroyed');destroyed=true;session='';rejectReady(new Error('Child playback owner removed'));observer.disconnect();owned.dispose();},snapshot(){return {kind:'child-receiver',status,connected,destroyed,time:player.currentTime,paused:player.paused,assetId,...owned.snapshot()};}};
-  connect();return controller;
+  const controller={player,get ready(){return ready;},reconnect:connect,teardown(){if(destroyed)return;send('command',{sequence:++commands,command:'pause'});send('disconnect');stop('destroyed');destroyed=true;session='';rejectReady(new Error('Child playback owner removed'));observer.disconnect();owned.dispose();receiverOwners.delete(iframe);},snapshot(){return {kind:'child-receiver',status,connected,destroyed,time:player.currentTime,paused:player.paused,assetId,...owned.snapshot()};}};
+  receiverOwners.set(iframe,controller);connect();return controller;
 }
 
 /** Scoped integration with the shared native/YouTube player ownership API. */
