@@ -1,5 +1,10 @@
 # DanceMoves
 
+**3.1.22** fixes WordPress.org submission metadata: the Author URI points to
+[Kieran's website](https://kieransimkin.co.uk/), separately from the plugin
+homepage. The release checker rejects duplicate plugin/author URLs before
+packaging. The plugin name remains **DanceMoves**.
+
 **3.1.20** adds a shared playback transport for explicitly verified native and
 YouTube players. Full-master players drive the existing musical effects; Shorts
 map their offset and duration onto the master clock. See
