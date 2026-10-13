@@ -1,0 +1,11 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Watch synthetic excerpt</title>
+<style>body{font:18px system-ui;background:#152b39;color:#edf3f7;margin:0}main{max-width:900px;padding:1rem;margin:auto}video{width:100%;aspect-ratio:16/9;display:block}button{font:inherit;padding:.7rem}a{color:#8ed9ff}</style>
+<main><h1>Watch synthetic excerpt</h1><video id="video" controls playsinline preload="metadata" src="../playback-sources/media/clip.mp4"></video><p><button id="play">Play video</button> <button id="pause">Pause video</button> <button id="rate">Use 1.5× speed</button></p><p><a href="index.html" target="_top">Return to parent EPK fixture</a></p><p id="status" role="status">Original synthetic fixture; no campaign media.</p></main>
+<script type="module">
+import {createPlaybackPublisher} from '../../lib/index.mjs';
+const video=document.querySelector('video');
+if(window.parent!==window)createPlaybackPublisher({source:video,targetWindow:window.parent,origin:location.origin,channel:'watch-fixture',assetId:'original-synthetic-clip',notifyEscape:true});
+document.querySelector('#play').addEventListener('click',()=>video.play().catch(()=>{document.querySelector('#status').textContent='Playback unavailable';}));
+document.querySelector('#pause').addEventListener('click',()=>video.pause());
+document.querySelector('#rate').addEventListener('click',()=>{video.playbackRate=1.5;});
+</script></html>

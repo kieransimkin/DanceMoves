@@ -7,6 +7,7 @@ physical tests were executed in a restricted development environment.
 
 | Feature | Shared entry/API | Demo/test coverage |
 |---|---|---|
+| Child watch-page playback | `publishPlayback`, `receiveChildPlayback`, low-level receiver/publisher | Origin/session/state and lifecycle contracts; standalone/modal synthetic-media browser example |
 | BPM, ticks, duration quantization, boundaries | Main factory/core methods | Existing clock/scheduling/interval gallery; original core tests |
 | CSS timing/control/lyric disclosure | Core properties + CSS | WordPress-style clock/shared timing demos; original CSS contracts |
 | Named cues, intervals, DOM events, animation ownership | Core methods | React cue panel; original 23-page gallery and core contracts |
