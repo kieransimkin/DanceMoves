@@ -17,10 +17,10 @@ export interface ChildPlaybackPlayer extends EventTarget {
  play():Promise<void>;pause():void;
 }
 export interface ChildPlaybackIdentity {origin:string;channel:string;assetId:string}
-export interface ChildPlaybackPublisherOptions extends ChildPlaybackIdentity {source:Pick<HTMLMediaElement,'currentTime'|'duration'|'playbackRate'|'paused'|'ended'|'seeking'|'error'|'pause'|'play'|'addEventListener'|'removeEventListener'>;targetWindow?:Window;allowPlayCommands?:boolean;notifyEscape?:boolean;window?:Window}
+export interface ChildPlaybackPublisherOptions extends ChildPlaybackIdentity {source:Pick<HTMLMediaElement,'currentTime'|'duration'|'playbackRate'|'paused'|'ended'|'seeking'|'pause'|'play'|'addEventListener'|'removeEventListener'> & {readonly error?:unknown};targetWindow?:Window;allowPlayCommands?:boolean;notifyEscape?:boolean;window?:Window}
 export interface ChildPlaybackReceiverOptions extends ChildPlaybackIdentity {iframe:HTMLIFrameElement;staleAfterMilliseconds?:number;window?:Window}
 export interface ChildPlaybackReceiver extends Controller {player:ChildPlaybackPlayer;ready:Promise<ChildPlaybackReceiver>;reconnect():void}
-export interface ChildPlaybackRegistration extends ChildPlaybackReceiverOptions {master:HTMLMediaElement|Readonly<{id:string;duration:number}>;masterVerified:true;offset?:number;duration?:number;playerStart?:number}
+export interface ChildPlaybackRegistration extends ChildPlaybackReceiverOptions, PlayerRegistration {}
 export interface ChildPlaybackPublisher extends Controller {requestClose():void}
 export function createPlaybackPublisher(options:ChildPlaybackPublisherOptions):ChildPlaybackPublisher;
 export function createPlaybackReceiver(options:ChildPlaybackReceiverOptions):ChildPlaybackReceiver;
@@ -72,6 +72,7 @@ export interface MotionCapture {schema:'ks-epk-motion-recording/v1';samples:Arra
 export interface DanceMoves {
  playbackSource(master:MasterReference|PlaybackSource):PlaybackSource;
  registerPlayer(options:PlayerRegistration & {player:HTMLMediaElement}):PlaybackController;
+ registerPlaybackProvider(options:PlayerRegistration & {player:ChildPlaybackPlayer}):PlaybackController;
  registerYouTube(options:PlayerRegistration & {iframe:HTMLIFrameElement}):PlaybackController & {ready:Promise<PlaybackController>};
  readonly version:string;readonly bpm:number;readonly bpmSource:string;readonly ticksPerBeat:16;readonly root:HTMLElement;readonly config:Readonly<PageConfig>;
  readonly destroyed:boolean;ready:Promise<DanceMoves>;

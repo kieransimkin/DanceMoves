@@ -51,8 +51,8 @@ Preserve verified published player IDs, render/source hashes and master mappings
 outside the runtime. Do not bind unrelated edits using equal titles/durations.
 
 Playback state includes position, duration, rate, pause, seek, buffering, end and
-error. Active senders publish at most four heartbeat samples per second in
-addition to actual media events. The receiver interpolates between samples for
+error. Position updates are coalesced to four per second; transport changes
+remain immediate. The receiver interpolates between samples for
 at most 500 ms and stops a playing source after 1500 ms without data. The
 `staleAfterMilliseconds` option accepts 750–10000 ms. Native media events can
 arrive sooner. No independent cue/beat parser or animation scheduler is added.

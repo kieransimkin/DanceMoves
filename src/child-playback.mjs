@@ -43,15 +43,16 @@ export function createPlaybackPublisher(options = {}) {
   const target=options.targetWindow || host.parent;
   if (!source?.addEventListener || !source?.pause || !target?.postMessage || target===host) throw new TypeError('A playback source and distinct target Window are required');
   const owned=resources(host);
-  let session=null, sequence=0, commandSequence=0, timer=0, destroyed=false, suspended=false;
+  let session=null, sequence=0, commandSequence=0, timer=0, destroyed=false, suspended=false, lastPublished=null;
   const envelope=(type,extra={})=>({protocol:PROTOCOL,channel,assetId,session,type,...extra});
   function send(type,extra) {target.postMessage(envelope(type,extra),origin);}
   function stop() {owned.cancel(timer);timer=0;}
   function sample(event='snapshot') {
+    if(event==='timeupdate'&&lastPublished!==null&&host.performance.now()-lastPublished<250)return;
     stop();if(destroyed||suspended||!session)return;
     const state={time:Number(source.currentTime),duration:Number(source.duration),rate:Number(source.playbackRate),paused:!!source.paused,ended:!!source.ended,seeking:!!source.seeking,buffering:event==='waiting',error:!!source.error};
     if (!validState(state)) return; // No fabricated metadata or unknown duration.
-    send('state',{sequence:++sequence,event,state});
+    lastPublished=host.performance.now();send('state',{sequence:++sequence,event,state});
     if(!state.paused&&!state.ended&&!state.error&&!state.buffering&&!host.document.hidden)timer=owned.later(()=>sample(),250);
   }
   function disconnect(reason) {stop();source.pause();if(session)send('disconnect',{reason});session=null;}
@@ -59,7 +60,7 @@ export function createPlaybackPublisher(options = {}) {
     const data=event.data;
     if(destroyed||suspended||event.source!==target||event.origin!==origin||!packet(data,channel,assetId))return;
     if(data.type==='connect' && typeof data.session==='string' && /^[0-9a-f-]{36}$/i.test(data.session)) {
-      if(session!==data.session){session=data.session;sequence=0;commandSequence=0;}
+      if(session!==data.session){session=data.session;sequence=0;commandSequence=0;lastPublished=null;}
       sample();return;
     }
     if(data.session!==session||!session)return;

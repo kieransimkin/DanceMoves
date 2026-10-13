@@ -5,7 +5,7 @@ YouTube players. Full-master players drive the existing musical effects; Shorts
 map their offset and duration onto the master clock. See
 [playback sources](docs/playback-sources.md) for provenance, controls and lifecycle.
 
-`publishPlayback()` and `receiveChildPlayback()` connect an explicitly selected
+**3.1.21** adds `publishPlayback()` and `receiveChildPlayback()` to connect an explicitly selected
 child watch page to its parent runtime. The parent retains its existing cues,
 lyrics and effect owners; closing or losing the child stops its clock. The
 integration composes with the shared player API and requires its verified

@@ -96,3 +96,10 @@ test('child can request modal dismissal without a playback event',async()=>{
  env.sender.requestClose();await flush();assert.equal(dismissed,1);assert.equal(env.receiver.player.paused,true);
  env.receiver.teardown();env.sender.teardown();
 });
+test('high-frequency source position updates are coalesced while pause remains immediate',async()=>{
+ const env=setup();await flush();await playing(env);const before=env.messages.length;
+ for(let i=0;i<2000;i++)env.source.dispatchEvent(new Event('timeupdate'));
+ await flush();assert.equal(env.messages.length,before);
+ env.source.pause();await flush();assert.equal(env.receiver.player.paused,true);
+ env.receiver.teardown();env.sender.teardown();
+});

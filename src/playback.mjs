@@ -104,24 +104,28 @@ export function installPlayback(scope, api, host = scope.document.defaultView) {
     };
     groups.set(master,group);return group;
   }
-  function registerPlayer(options) {
+  function registerEndpoint(options, provider = false) {
     if (!options || options.masterVerified!==true) throw new TypeError('An explicitly verified master association is required');
     const group=groupFor(options.master), mapping=validatePlaybackMapping(options,group.duration());
     const element=options.player;
     if(!element?.addEventListener || !['AUDIO','VIDEO'].includes(element.tagName))throw new TypeError('player must be native audio or video');
-    if(element.ownerDocument!==host.document || !scope.legacyGlobals && !scope.root.contains(element))throw new TypeError('The player must belong to this runtime root');
+    if(element.ownerDocument!==host.document || !provider && !scope.legacyGlobals && !scope.root.contains(element))throw new TypeError('The player must belong to this runtime root');
+    if(provider && (!element.removeEventListener || typeof element.play!=='function' || typeof element.pause!=='function'))throw new TypeError('An event-driven playback provider is required');
+    if(provider && typeof host.Node==='function' && element instanceof host.Node)throw new TypeError('Use registerPlayer for native DOM players');
     if(registered.has(element))throw new Error('Player already has a playback owner');
     if(element===options.master||element===group.transport.element)throw new TypeError('The master is already registered');
     const previousGroup=groups.get(element);
     if(previousGroup&&previousGroup!==group){if([...controllers].some(owner=>owner.source===previousGroup.transport))throw new Error('This player already owns a different master group');api.unregisterPlaybackSource?.(previousGroup.transport);previousGroup.aliasTo(group.transport);for(const [key,value] of groups)if(value===previousGroup)groups.set(key,group);}
     const source=group.bindNative(element,mapping);
     let destroyed=false;
-    const controller={source:group.transport,mapping,teardown(){if(destroyed)return;destroyed=true;source.removers.splice(0).forEach(remove=>remove());group.remove(source);registered.delete(element);controllers.delete(controller);},snapshot(){return {kind:'native',mapping,active:group.isActive(source),destroyed};}};
+    const controller={source:group.transport,mapping,teardown(){if(destroyed)return;destroyed=true;source.removers.splice(0).forEach(remove=>remove());group.remove(source);registered.delete(element);controllers.delete(controller);},snapshot(){return {kind:provider?'provider':'native',mapping,active:group.isActive(source),destroyed};}};
     registered.set(element,controller);
     if(!element.paused&&!element.ended)group.forward(source,'playing');
     Promise.resolve(api.ready).then(()=>{if(!destroyed&&!disposed)api.registerPlaybackSource?.(group.transport);});
     controllers.add(controller);return controller;
   }
+  const registerPlayer=options=>registerEndpoint(options);
+  const registerPlaybackProvider=options=>registerEndpoint(options,true);
   function registerYouTube(options) {
     if(!options || options.masterVerified!==true)throw new TypeError('An explicitly verified master association is required');
     const group=groupFor(options.master),mapping=validatePlaybackMapping(options,group.duration());
@@ -185,6 +189,6 @@ export function installPlayback(scope, api, host = scope.document.defaultView) {
     controller.ready.catch(()=>{});
     return controller;
   }
-  Object.assign(api,{playbackSource:master=>{let source=transports.has(master)?master:groupFor(master).transport;while(aliases.has(source))source=aliases.get(source);return source;},registerPlayer,registerYouTube});
+  Object.assign(api,{playbackSource:master=>{let source=transports.has(master)?master:groupFor(master).transport;while(aliases.has(source))source=aliases.get(source);return source;},registerPlayer,registerPlaybackProvider,registerYouTube});
   scope.onDispose(()=>{disposed=true;for(const controller of [...controllers])controller.teardown();for(const group of new Set(groups.values()))group.destroy();groups.clear();});
 }
