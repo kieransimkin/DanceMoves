@@ -146,7 +146,7 @@ export function createScope(root, config, {legacyGlobals = false, nonce, orienta
     map.get(name).last = style.getPropertyValue(name); map.get(name).lastPriority = style.getPropertyPriority(name);
   }
   const api = {
-    id, window, document, get disposed() {return disposed;}, get config() {return config;},
+    id, root, legacyGlobals, window, document, get disposed() {return disposed;}, get config() {return config;},
     listen, unlisten,
     onDispose(fn) { if (disposed) {fn(); return () => {};} cleanups.add(fn); return () => cleanups.delete(fn); },
     chain(promise, method, ...callbacks) {

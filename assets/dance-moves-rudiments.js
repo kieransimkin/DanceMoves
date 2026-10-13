@@ -158,8 +158,9 @@
     if (root !== target && !root.contains(target)) throw new TypeError('target must be inside root');
     const clock = options.clock === undefined ? 'page' : options.clock;
     if (!['page', 'audio', 'auto'].includes(clock)) throw new TypeError('clock must be page, audio or auto');
-    const audio = clock === 'page' ? null : element(options.audio, 'audio');
-    if (audio && String(audio.tagName).toLowerCase() !== 'audio') throw new TypeError('audio must be an HTMLAudioElement');
+    let audio = clock === 'page' ? null : element(options.audio, 'audio');
+    if (audio && motion.playbackSource) audio = motion.playbackSource(audio);
+    if (audio && !['audio','video'].includes(String(audio.tagName).toLowerCase())) throw new TypeError('audio must be an HTMLAudioElement');
     const rate = options.rate === undefined ? 1 : number(options.rate, 'rate');
     if (rate <= 0 || rate > 64) throw new RangeError('rate must be in (0, 64]');
     const phasePips = options.phasePips === undefined ? 0 : integer(options.phasePips, 'phasePips');

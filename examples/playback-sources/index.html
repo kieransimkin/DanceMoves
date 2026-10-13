@@ -1,0 +1,24 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>DanceMoves shared playback source</title>
+<style>body{margin:2rem;background:#15151a;color:#fff;font:16px system-ui}main{max-width:900px;margin:auto}video{width:320px;max-width:100%}audio{display:block;width:100%}.stage{width:80px;height:80px;background:#dca940;margin:2rem;border-radius:50%}.is-playing .stage{animation:pulse var(--dance-moves-pulse-duration) linear infinite;animation-delay:var(--dance-moves-pulse-delay)}@keyframes pulse{50%{transform:scale(.8)}}button{min-height:44px;margin:.4rem}output{display:block;white-space:pre-wrap}@media(prefers-reduced-motion:reduce){.stage{animation:none!important}}</style>
+<main id="example"><h1>One master, several players</h1><p>This original synthetic fixture demonstrates a full master and a 20-second excerpt starting at master second 48. Play one player to hand the shared effects to it.</p>
+<audio id="master" controls preload="auto" src="media/master.wav"></audio>
+<video id="full" controls preload="metadata" src="media/full.mp4"></video>
+<video id="clip" controls preload="metadata" src="media/clip.mp4"></video>
+<p><button id="play-master">Play audio</button><button id="play-full">Play full video</button><button id="play-clip">Play excerpt</button><button id="pause">Pause active player</button><button id="seek">Seek to master second 60</button><button id="rate">Use 1.5× speed</button><button id="destroy">Destroy runtime</button></p>
+<div class="stage" aria-hidden="true"></div><output id="state" aria-live="off">Loading generated fixture</output><output id="lyrics"></output><output id="cues"></output></main>
+<script type="module">
+import {createDanceMoves} from '../../lib/index.mjs';
+const root=document.querySelector('#example'),master=document.querySelector('#master'),full=document.querySelector('#full'),clip=document.querySelector('#clip');
+const motion=createDanceMoves({root,bpm:120,masterDurationMilliseconds:120000,lyricTimingUrl:'media/lyrics.lrc',cueTimingUrl:'media/sections.cue'});
+await motion.ready;
+const source=motion.playbackSource(master);
+const fullOwner=motion.registerPlayer({master,player:full,masterVerified:true,duration:120});
+const clipOwner=motion.registerPlayer({master,player:clip,masterVerified:true,offset:48,duration:20});
+motion.effects.playbackPulse({root,audio:master,ticks:32,className:'is-playing'});
+motion.effects.cueTimeline({root,audio:master,cues:[],render:()=>{document.querySelector('#state').textContent=JSON.stringify({time:source.currentTime,paused:source.paused,player:source.activePlayer.id,rate:source.playbackRate,destroyed:motion.destroyed});}});
+motion.onLyric(detail=>{document.querySelector('#lyrics').textContent=detail.text;});
+motion.onCue('*',detail=>{document.querySelector('#cues').textContent=detail.name;});
+document.querySelector('#play-master').onclick=()=>master.play();document.querySelector('#play-full').onclick=()=>full.play();document.querySelector('#play-clip').onclick=()=>clip.play();
+document.querySelector('#pause').onclick=()=>source.pause();document.querySelector('#seek').onclick=()=>{source.currentTime=60;};document.querySelector('#rate').onclick=()=>{source.activePlayer.playbackRate=1.5;};
+document.querySelector('#destroy').onclick=()=>{source.pause();motion.destroy();document.querySelector('#state').textContent=JSON.stringify({destroyed:motion.destroyed,resources:motion.resources()});};
+</script></html>

@@ -1,5 +1,10 @@
 # DanceMoves
 
+**3.1.20** adds a shared playback transport for explicitly verified native and
+YouTube players. Full-master players drive the existing musical effects; Shorts
+map their offset and duration onto the master clock. See
+[playback sources](docs/playback-sources.md) for provenance, controls and lifecycle.
+
 `connectPhoneMotion()` attaches suitable existing spatial effects to one shared
 phone input route, preserving desktop pointer input. See the
 [connection guide](docs/phone-motion-connections.md) for permission UI, consumer

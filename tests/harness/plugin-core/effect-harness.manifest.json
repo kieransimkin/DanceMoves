@@ -11,7 +11,7 @@
     "productionJs": ["../../../assets/dance-moves-core.js", "../../../assets/dance-moves-catalogue-timing.js"],
     "productionHashes": {
       "../../../assets/dance-moves-core.css": "C4790396B723B383CBA65D6EA62E78AF93FAB81A8FEBD9443E578EAF5E677D7D",
-      "../../../assets/dance-moves-core.js": "78C41A350B45D544BDC4E6F33D71D0B27B01EE2D5D43D3D98E3964AA8057681B",
+      "../../../assets/dance-moves-core.js": "79454C2A1F95DA4AF588684DEEC3F1D377707AC6FCDDB5B8165E69B453FCAB2A",
     "../../../assets/dance-moves-catalogue-timing.js": "F2C8232F019E304D8DDF7880D8EDB251A78C9125E9C4418FE53C324E4A7A2927"
     },
     "inputModes": ["pointer", "keyboard", "cue"]

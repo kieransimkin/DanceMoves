@@ -96,12 +96,15 @@
 
   function currentTick(options) {
     var settings = options || {};
-    var audio = settings.audio || (settings.clock === "audio" ? activeAudio : null);
+    var audio = playbackAudio(settings.audio) || (settings.clock === "audio" ? activeAudio : null);
     if (audio && !audio.paused && !audio.ended && Number.isFinite(Number(audio.currentTime))) {
       return Number(audio.currentTime) * effectiveBpm(settings.bpm || bpm) * TICKS_PER_BEAT / 60;
     }
     var now = window.performance && typeof window.performance.now === "function" ? window.performance.now() : Date.now();
     return Math.max(0, now - pageClockStarted) * effectiveBpm(settings.bpm || bpm) * TICKS_PER_BEAT / 60000;
+  }
+  function playbackAudio(audio) {
+    return audio && api && api.playbackSource ? api.playbackSource(audio) : audio;
   }
 
   function nextIntervalTick(intervalTicks, fromTick, strictlyFuture) {
@@ -156,7 +159,7 @@
       var sourceAudio = null;
       var pollAudio = function () {
         if (cancelled) return;
-        var candidate = settings.audio || activeAudio;
+        var candidate = playbackAudio(settings.audio) || activeAudio;
         if (!candidate || candidate.paused || candidate.ended) {
           if (sourceAudio && sourceAudio.ended) {
             cancel();
@@ -676,6 +679,7 @@
   }
 
   function bindAudio(audio) {
+    if (api.playbackSource) audio = api.playbackSource(audio);
     if (boundAudio.has(audio) || !matchesMasterDuration(audio)) return;
     boundAudio.add(audio);
     audio.dataset.danceMovesTiming = "master-length";
@@ -695,7 +699,7 @@
 
     function tick() {
       state.frame = 0;
-      if (audio.paused || audio.ended || state.seeking) return;
+      if (audio.paused || audio.ended || state.seeking || document.hidden) return;
       var diagnosticStartedAt = diagnosticsSink ? diagnosticNow() : 0;
       var firedCount = 0;
       var now = 0;
@@ -730,6 +734,7 @@
 
     function start() {
       stopFrame();
+      if (document.hidden) return;
       activeAudio = audio;
       state.last = positiveNumber(audio.currentTime);
       state.next = firstCueAfter(state.last);
@@ -757,6 +762,8 @@
     });
     audio.addEventListener("ratechange", function () { setOwnedPlaybackRate(audio.playbackRate); });
     audio.addEventListener("timeupdate", function () { if (!audio.paused && !state.frame && !state.seeking) tick(); });
+    document.addEventListener("visibilitychange", function () { if (document.hidden) { stopFrame(); if (lyricRenderer) lyricRenderer.hide(); } else if (!audio.paused && !audio.ended && !state.seeking) { state.pendingCue = null; start(); } });
+    if (!audio.paused && !audio.ended) start();
   }
 
   function discoverAudio() {
@@ -867,6 +874,7 @@
     registerAnimationScope: registerAnimationScope,
     resetRunningAnimations: resetRunningAnimations,
     discoverAudio: discoverAudio,
+    registerPlaybackSource: function (source) { if (!referenceDurationSeconds) referenceDurationSeconds = positiveNumber(source.duration); bindAudio(source); },
     setDiagnosticsSink: setDiagnosticsSink,
     diagnosticsEnabled: function () { return diagnosticsAllowed && Boolean(diagnosticsSink); }
   };
