@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {installPlayback,validatePlaybackMapping} from '../../src/playback.mjs';
 import {createScope} from '../../src/scope.mjs';
 import {environment,Element} from './fake-dom.mjs';
+import {createDanceMoves} from '../../lib/index.mjs';
 function fixture(){
   const env=environment();
   const master=new Element(env.doc,'audio');
@@ -53,6 +54,18 @@ test('the verified PCM duration remains the master boundary despite small contai
   const env=fixture();env.master.duration=119.9;const reference={id:'synthetic-master:v1',duration:120,element:env.master},v=video(env);
   const owner=env.api.registerPlayer({master:reference,player:v,masterVerified:true,offset:100,duration:20});assert.equal(owner.source.duration,120);assert.throws(()=>env.api.playbackSource({...reference,duration:121}),/Conflicting/);env.scope.dispose();
 });
+test('an already discovered associated audio source keeps existing consumers and one cue owner',()=>{
+  const env=fixture(),second=video(env);second.tagName='AUDIO';second.duration=120;const prior=env.api.playbackSource(second);let unregistered=null,plays=0;
+  env.api.unregisterPlaybackSource=source=>{unregistered=source;};prior.addEventListener('play',()=>plays++);
+  const owner=env.api.registerPlayer({master:env.master,player:second,masterVerified:true,duration:120});assert.equal(unregistered,prior);second.currentTime=12;second.play();assert.equal(prior.currentTime,12);assert.equal(env.api.playbackSource(prior),owner.source);assert.equal(plays,1);assert.equal(env.api.playbackSource(second),owner.source);env.scope.dispose();assert.equal(env.scope.snapshot().listeners,0);
+});
+test('the actual cue engine ignores preroll and re-arms the excerpt start rather than master zero on replay',async()=>{
+  const env=environment();env.host.fetch=async()=>new Response('[00:00.00]INTRO\n[00:48.00]CLIP\n[01:00.00]MIDDLE');
+  const motion=createDanceMoves({root:env.root,bpm:120,masterDurationMilliseconds:120000,cueTimingUrl:'/synthetic.cue'});await motion.ready;
+  const v=video(env),reference={id:'synthetic-master:v1',duration:120};motion.registerPlayer({master:reference,player:v,masterVerified:true,offset:48,duration:20,playerStart:2});await Promise.resolve();let cues=[];motion.onCue('*',cue=>cues.push(cue.name));
+  v.play();env.advance();assert.deepEqual(cues,[]);v.currentTime=2;v.dispatchEvent(new Event('timeupdate'));env.advance();assert.deepEqual(cues,['CLIP']);
+  v.currentTime=24;v.ended=true;v.paused=true;v.dispatchEvent(new Event('ended'));v.currentTime=0;v.ended=false;v.play();env.advance();assert.deepEqual(cues,['CLIP']);v.currentTime=2;v.dispatchEvent(new Event('timeupdate'));env.advance();assert.deepEqual(cues,['CLIP','CLIP']);motion.destroy();assert.equal(motion.resources().frames,0);
+});
 test('YouTube states, seeks, buffering, rate and cleanup use the same source',async()=>{
   const env=fixture();let callbacks,time=0,rate=1,destroyed=false;
   env.host.YT={Player:class {constructor(iframe,options){callbacks=options.events;queueMicrotask(()=>callbacks.onReady());}getVideoUrl(){return 'https://www.youtube.com/watch?v=ABCDEFGHIJK';}getCurrentTime(){return time;}getPlaybackRate(){return rate;}pauseVideo(){callbacks.onStateChange({data:2});}playVideo(){callbacks.onStateChange({data:1});}seekTo(value){time=value;}destroy(){destroyed=true;}}};
@@ -72,4 +85,12 @@ test('a different YouTube asset never continues the master clock and hidden page
   callbacks.onStateChange({data:1});assert.equal(handle.snapshot().polling,true);env.doc.hidden=true;env.doc.dispatchEvent(new Event('visibilitychange'));assert.equal(handle.snapshot().polling,false);env.doc.hidden=false;env.doc.dispatchEvent(new Event('visibilitychange'));assert.equal(handle.snapshot().polling,true);
   env.host.dispatchEvent(new Event('pagehide'));assert.equal(handle.snapshot().polling,false);env.host.dispatchEvent(new Event('pageshow'));assert.equal(handle.snapshot().polling,true);
   id='LMNOPQRSTUV';callbacks.onStateChange({data:1});assert.equal(handle.source.paused,true);assert.equal(handle.snapshot().polling,false);assert.match(handle.snapshot().error.message,/verified soundtrack/);env.scope.dispose();
+});
+
+test('an already playing Short acquires the verified clock when the API becomes ready',async()=>{
+  const env=fixture();
+  env.host.YT={Player:class {constructor(iframe,options){queueMicrotask(()=>options.events.onReady());}getPlayerState(){return 1;}getVideoUrl(){return 'https://www.youtube.com/shorts/ABCDEFGHIJK';}getDuration(){return 20;}getCurrentTime(){return 3;}getPlaybackRate(){return 1;}pauseVideo(){}destroy(){}}};
+  const iframe=new Element(env.doc,'iframe');iframe.src='https://www.youtube.com/embed/ABCDEFGHIJK';env.root.append(iframe);
+  const handle=env.api.registerYouTube({iframe,master:env.master,masterVerified:true,offset:48,duration:20});await handle.ready;
+  assert.equal(handle.source.currentTime,51);assert.equal(handle.source.paused,false);assert.equal(handle.snapshot().polling,true);env.scope.dispose();assert.equal(env.scope.snapshot().frames,0);
 });

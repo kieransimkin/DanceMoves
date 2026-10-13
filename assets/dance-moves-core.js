@@ -13,6 +13,7 @@
   var lyricList = [];
   var lyricRenderer = null;
   var boundAudio = new WeakSet();
+  var playbackBindings = new Map();
   var activeAudio = null;
   var pageClockStarted = window.performance && typeof window.performance.now === "function" ? window.performance.now() : Date.now();
   var referenceDurationSeconds = positiveNumber(rawConfig.masterDurationMilliseconds) / 1000;
@@ -682,6 +683,8 @@
     if (api.playbackSource) audio = api.playbackSource(audio);
     if (boundAudio.has(audio) || !matchesMasterDuration(audio)) return;
     boundAudio.add(audio);
+    var removers = [];
+    function listen(target, name, handler) { target.addEventListener(name, handler); removers.push(function () { target.removeEventListener(name, handler); }); }
     audio.dataset.danceMovesTiming = "master-length";
     var state = {
       next: firstCueAfter(audio.currentTime || 0),
@@ -689,7 +692,8 @@
       last: audio.currentTime || 0,
       seeking: false,
       frame: 0,
-      pendingCue: cueAtLanding(audio.currentTime || 0)
+      pendingCue: cueAtLanding(audio.currentTime || 0),
+      endedPending: false
     };
 
     function stopFrame() {
@@ -734,9 +738,10 @@
 
     function start() {
       stopFrame();
-      if (document.hidden) return;
+      if (document.hidden || audio.paused || audio.ended) return;
       activeAudio = audio;
       state.last = positiveNumber(audio.currentTime);
+      if (state.endedPending) { state.pendingCue = cueAtLanding(state.last); state.endedPending = false; }
       state.next = firstCueAfter(state.last);
       state.lyric = -2;
       if (state.pendingCue) {
@@ -747,22 +752,23 @@
       state.frame = window.requestAnimationFrame(tick);
     }
 
-    audio.addEventListener("play", start);
-    audio.addEventListener("playing", start);
-    audio.addEventListener("pause", function () { stopFrame(); if (activeAudio === audio) activeAudio = null; if (lyricRenderer) lyricRenderer.hide(); });
-    audio.addEventListener("ended", function () { stopFrame(); if (activeAudio === audio) activeAudio = null; state.last = 0; state.next = 0; state.lyric = -2; state.pendingCue = cueAtLanding(0); if (lyricRenderer) lyricRenderer.hide(); });
-    audio.addEventListener("seeking", function () { state.seeking = true; state.pendingCue = null; stopFrame(); });
-    audio.addEventListener("seeked", function () {
+    listen(audio, "play", start);
+    listen(audio, "playing", start);
+    listen(audio, "pause", function () { stopFrame(); if (activeAudio === audio) activeAudio = null; if (lyricRenderer) lyricRenderer.hide(); });
+    listen(audio, "ended", function () { stopFrame(); if (activeAudio === audio) activeAudio = null; state.last = 0; state.next = 0; state.lyric = -2; state.pendingCue = null; state.endedPending = true; if (lyricRenderer) lyricRenderer.hide(); });
+    listen(audio, "seeking", function () { state.seeking = true; state.pendingCue = null; stopFrame(); });
+    listen(audio, "seeked", function () {
       state.seeking = false;
       state.last = positiveNumber(audio.currentTime);
       state.next = firstCueAfter(state.last);
       state.lyric = -2;
       state.pendingCue = cueAtLanding(state.last);
-      if (!audio.paused && !audio.ended) start();
+      playbackBindings.set(audio, function () { stopFrame(); removers.splice(0).forEach(function (remove) { remove(); }); boundAudio.delete(audio); if (activeAudio === audio) activeAudio = null; playbackBindings.delete(audio); });
+    if (!audio.paused && !audio.ended) start();
     });
-    audio.addEventListener("ratechange", function () { setOwnedPlaybackRate(audio.playbackRate); });
-    audio.addEventListener("timeupdate", function () { if (!audio.paused && !state.frame && !state.seeking) tick(); });
-    document.addEventListener("visibilitychange", function () { if (document.hidden) { stopFrame(); if (lyricRenderer) lyricRenderer.hide(); } else if (!audio.paused && !audio.ended && !state.seeking) { state.pendingCue = null; start(); } });
+    listen(audio, "ratechange", function () { setOwnedPlaybackRate(audio.playbackRate); });
+    listen(audio, "timeupdate", function () { if (!audio.paused && !state.frame && !state.seeking) tick(); });
+    listen(document, "visibilitychange", function () { if (document.hidden) { stopFrame(); if (lyricRenderer) lyricRenderer.hide(); } else if (!audio.paused && !audio.ended && !state.seeking) { state.pendingCue = null; start(); } });
     if (!audio.paused && !audio.ended) start();
   }
 
@@ -874,6 +880,7 @@
     registerAnimationScope: registerAnimationScope,
     resetRunningAnimations: resetRunningAnimations,
     discoverAudio: discoverAudio,
+    unregisterPlaybackSource: function (source) { var remove = playbackBindings.get(source); if (remove) remove(); },
     registerPlaybackSource: function (source) { if (!referenceDurationSeconds) referenceDurationSeconds = positiveNumber(source.duration); bindAudio(source); },
     setDiagnosticsSink: setDiagnosticsSink,
     diagnosticsEnabled: function () { return diagnosticsAllowed && Boolean(diagnosticsSink); }

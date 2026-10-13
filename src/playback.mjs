@@ -33,7 +33,7 @@ export function loadYouTubeAPI(host) {
   return pending;
 }
 export function installPlayback(scope, api, host = scope.document.defaultView) {
-  const groups = new Map(), transports = new WeakSet(), controllers = new Set(), registered = new WeakMap();
+  const groups = new Map(), transports = new WeakSet(), aliases = new WeakMap(), controllers = new Set(), registered = new WeakMap();
   let disposed = false;
   function emit(target,type) {target.dispatchEvent(new host.Event(type));}
   function groupFor(reference) {
@@ -45,15 +45,16 @@ export function installPlayback(scope, api, host = scope.document.defaultView) {
     if (groups.has(master)) {const group=groups.get(master);group.setDuration(declared);return group;}
     const transport = new host.EventTarget();
     transports.add(transport);
-    let active = null, lastPaused = true;
+    let active = null, lastPaused = true, delegate = null;
     let declaredDuration=declared||0;
     function setDuration(value){if(value===undefined)return;if(typeof value!=='number'||!Number.isFinite(value)||value<=0)throw new RangeError('Declared master duration must be positive and finite');if(declaredDuration&&Math.abs(declaredDuration-value)>.001)throw new RangeError('Conflicting master durations');if(isNative&&Number(master.duration)>0&&Math.abs(Number(master.duration)-value)>.25)throw new RangeError('Declared master duration does not match its native reference');declaredDuration=value;}
     setDuration(declared);
-    const duration = () => declaredDuration || (Number(master.duration)>0 && Number.isFinite(Number(master.duration)) ? Number(master.duration) : Number(api.config?.masterDurationMilliseconds || 0) / 1000);
+    const duration = () => delegate?.duration || declaredDuration || (Number(master.duration)>0 && Number.isFinite(Number(master.duration)) ? Number(master.duration) : Number(api.config?.masterDurationMilliseconds || 0) / 1000);
     const target=isNative?master:scope.root;
     const native = {element:isNative?master:null,read:()=>({time:Number(master.currentTime)||0,paused:isNative?master.paused:true,ended:master.ended||false,rate:master.playbackRate||1,seeking:master.seeking||false,error:master.error}),pause:()=>master.pause?.(),play:()=>master.play?.(),seek:time=>{if(isNative)master.currentTime=time;},mapping:null};
     active = native;
     function read() {
+      if(delegate)return {time:delegate.currentTime,paused:delegate.paused,ended:delegate.ended,rate:delegate.playbackRate,seeking:delegate.seeking,error:delegate.error};
       const raw = active.read(), map = active.mapping || {offset:0,playerStart:0,duration:duration()};
       const local = raw.time-map.playerStart, outside = local < -0.001 || local > map.duration + 0.001;
       return {...raw,time:map.offset+Math.max(0,Math.min(map.duration,local)),paused:raw.paused||outside,ended:raw.ended||local>map.duration+0.001};
@@ -61,16 +62,16 @@ export function installPlayback(scope, api, host = scope.document.defaultView) {
     Object.defineProperties(transport,{
       nodeType:{value:1},tagName:{get:()=>isNative?master.tagName:'VIDEO'},ownerDocument:{get:()=>target.ownerDocument},
       dataset:{get:()=>target.dataset},id:{get:()=>master.id},isConnected:{get:()=>target.isConnected},
-      currentTime:{get:()=>read().time,set:value=>{const map=active.mapping||{offset:0,playerStart:0,duration:duration()};active.seek(map.playerStart+Math.max(0,Math.min(map.duration,Number(value)-map.offset)));}},
+      currentTime:{get:()=>read().time,set:value=>{if(delegate){delegate.currentTime=value;return;}const map=active.mapping||{offset:0,playerStart:0,duration:duration()};active.seek(map.playerStart+Math.max(0,Math.min(map.duration,Number(value)-map.offset)));}},
       duration:{get:duration},paused:{get:()=>read().paused},ended:{get:()=>read().ended},seeking:{get:()=>read().seeking||false},
       playbackRate:{get:()=>read().rate},error:{get:()=>read().error||null},element:{value:isNative?master:null},
-      activePlayer:{get:()=>active.element},masterId:{get:()=>master.currentSrc||master.src||master.id}
+      activePlayer:{get:()=>delegate?delegate.activePlayer:active.element},masterId:{get:()=>delegate?delegate.masterId:master.currentSrc||master.src||master.id}
     });
     transport.matches=selector=>target.matches(selector);
     transport.getAttribute=name=>target.getAttribute(name);
     transport.setAttribute=(name,value)=>target.setAttribute(name,value);
     transport.removeAttribute=name=>target.removeAttribute(name);
-    transport.play=()=>active.play();transport.pause=()=>active.pause();
+    transport.play=()=>delegate?delegate.play():active.play();transport.pause=()=>delegate?delegate.pause():active.pause();
     function activate(source) {
       if (active!==source) {
         const previous=active;active=source;
@@ -96,6 +97,7 @@ export function installPlayback(scope, api, host = scope.document.defaultView) {
     }
     if(isNative)bindNative(master,null);
     const group={transport,duration,setDuration,activate,forward,bindNative,isActive:source=>active===source,
+      aliasTo(target){removers.splice(0).forEach(remove=>remove());delegate=target;aliases.set(transport,target);for(const type of events){const relay=()=>emit(transport,type);scope.listen(target,type,relay);removers.push(()=>scope.unlisten(target,type,relay));}},
       reconcile(source){if(active!==source)return;const paused=read().paused;if(paused!==lastPaused){lastPaused=paused;emit(transport,paused?'pause':'playing');}emit(transport,'timeupdate');},
       remove(source){if(active===source){source.pause();active=native;lastPaused=true;emit(transport,'pause');emit(transport,'seeking');emit(transport,'seeked');}},
       destroy(){removers.splice(0).forEach(remove=>remove());emit(transport,'pause');}
@@ -109,11 +111,14 @@ export function installPlayback(scope, api, host = scope.document.defaultView) {
     if(!element?.addEventListener || !['AUDIO','VIDEO'].includes(element.tagName))throw new TypeError('player must be native audio or video');
     if(element.ownerDocument!==host.document || !scope.legacyGlobals && !scope.root.contains(element))throw new TypeError('The player must belong to this runtime root');
     if(registered.has(element))throw new Error('Player already has a playback owner');
-    if(element===options.master)throw new TypeError('The master is already registered');
+    if(element===options.master||element===group.transport.element)throw new TypeError('The master is already registered');
+    const previousGroup=groups.get(element);
+    if(previousGroup&&previousGroup!==group){if([...controllers].some(owner=>owner.source===previousGroup.transport))throw new Error('This player already owns a different master group');api.unregisterPlaybackSource?.(previousGroup.transport);previousGroup.aliasTo(group.transport);for(const [key,value] of groups)if(value===previousGroup)groups.set(key,group);}
     const source=group.bindNative(element,mapping);
     let destroyed=false;
     const controller={source:group.transport,mapping,teardown(){if(destroyed)return;destroyed=true;source.removers.splice(0).forEach(remove=>remove());group.remove(source);registered.delete(element);controllers.delete(controller);},snapshot(){return {kind:'native',mapping,active:group.isActive(source),destroyed};}};
     registered.set(element,controller);
+    if(!element.paused&&!element.ended)group.forward(source,'playing');
     Promise.resolve(api.ready).then(()=>{if(!destroyed&&!disposed)api.registerPlaybackSource?.(group.transport);});
     controllers.add(controller);return controller;
   }
@@ -161,21 +166,25 @@ export function installPlayback(scope, api, host = scope.document.defaultView) {
           onReady(){if(destroyed)return;if(readyTimer)scope.window.clearTimeout(readyTimer);readyTimer=0;rejectReady=null;
             const actual=Number(player.getDuration?.());
             if(actual>0 && actual+.25<mapping.playerStart+mapping.duration){error=new Error('The mapped soundtrack window exceeds the video duration');reject(error);return;}
-            group.forward(source,'loadedmetadata');resolve(controller);},
-          onStateChange(event){if(destroyed)return;state=event.data;stop();if(state===1){
-            let actualId;try{actualId=new URL(player.getVideoUrl()).searchParams.get('v');}catch{}
-            if(actualId!==expectedVideoId){error=new Error('YouTube switched away from the verified soundtrack asset');state=-1;group.forward(source,'pause');group.forward(source,'error');return;}
-            const actualDuration=Number(player.getDuration?.());
-            if(actualDuration>0&&actualDuration+.25<mapping.playerStart+mapping.duration){error=new Error('The mapped soundtrack window exceeds the video duration');state=-1;group.forward(source,'pause');group.forward(source,'error');return;}
-            group.forward(source,'play');group.forward(source,'playing');resume();}else group.forward(source,state===0?'ended':state===3?'waiting':'pause');if(state===3)group.forward(source,'pause');},
+            group.forward(source,'loadedmetadata');
+            const initialState=player.getPlayerState?.();
+            if(initialState===1)controllerState({data:initialState});
+            resolve(controller);},
+          onStateChange:controllerState,
           onPlaybackRateChange(){if(!destroyed)group.forward(source,'ratechange');},
           onError(event){if(destroyed)return;error=new Error('YouTube playback error '+event.data);state=-1;stop();if(readyTimer)scope.window.clearTimeout(readyTimer);readyTimer=0;rejectReady=null;group.forward(source,'pause');group.forward(source,'error');reject(error);}
         }});
+        function controllerState(event){if(destroyed)return;state=event.data;stop();if(state===1){
+            let actualId;try{const actualUrl=new URL(player.getVideoUrl());actualId=actualUrl.searchParams.get('v')||actualUrl.pathname.match(/^\/(?:shorts|embed)\/([A-Za-z0-9_-]{11})\/?$/)?.[1];}catch{}
+            if(actualId!==expectedVideoId){error=new Error('YouTube switched away from the verified soundtrack asset');state=-1;group.forward(source,'pause');group.forward(source,'error');return;}
+            const actualDuration=Number(player.getDuration?.());
+            if(actualDuration>0&&actualDuration+.25<mapping.playerStart+mapping.duration){error=new Error('The mapped soundtrack window exceeds the video duration');state=-1;group.forward(source,'pause');group.forward(source,'error');return;}
+            group.forward(source,'play');group.forward(source,'playing');resume();}else group.forward(source,state===0?'ended':state===3?'waiting':'pause');if(state===3)group.forward(source,'pause');}
       });
     });
     controller.ready.catch(()=>{});
     return controller;
   }
-  Object.assign(api,{playbackSource:master=>transports.has(master)?master:groupFor(master).transport,registerPlayer,registerYouTube});
-  scope.onDispose(()=>{disposed=true;for(const controller of [...controllers])controller.teardown();for(const group of groups.values())group.destroy();groups.clear();});
+  Object.assign(api,{playbackSource:master=>{let source=transports.has(master)?master:groupFor(master).transport;while(aliases.has(source))source=aliases.get(source);return source;},registerPlayer,registerYouTube});
+  scope.onDispose(()=>{disposed=true;for(const controller of [...controllers])controller.teardown();for(const group of new Set(groups.values()))group.destroy();groups.clear();});
 }

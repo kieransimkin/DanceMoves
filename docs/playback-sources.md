@@ -57,6 +57,9 @@ and `duration`, actual playback state/rate, `activePlayer` and native `element`.
 Mapped source seeks are clamped to the selected excerpt. Switching players
 reconciles a seek without replaying skipped cues. Buffering pauses the source;
 seek/rate/loop changes use the same existing effect lifecycle.
+Preroll and postroll stay outside the song clock. Replaying an excerpt re-arms
+its actual starting cue. Existing consumers of another associated native audio
+element retain a stable source while the group keeps one cue dispatcher.
 
 YouTube uses the official IFrame API, adds `enablejsapi=1` and the current origin,
 and preserves an existing API-ready callback. Register after the visitor/consent

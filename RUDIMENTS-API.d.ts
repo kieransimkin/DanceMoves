@@ -1,4 +1,5 @@
-import type {PlaybackMedia} from "./index";
+export interface RudimentMediaClock extends EventTarget {readonly nodeType:number;readonly tagName:string;readonly currentTime:number;readonly paused:boolean;readonly ended:boolean;readonly seeking:boolean;readonly playbackRate:number}
+export type RudimentPlaybackMedia = HTMLMediaElement | RudimentMediaClock;
 /** DanceMoves rudiment animation API v1.1; available on WordPress Page requests. */
 export type RudimentName = 'bounce' | 'sway' | 'circle' | 'figure_eight' | 'step_touch' |
   'box_step' | 'helix' | 'clay_background' | 'single_stroke_roll' | 'double_stroke_roll' |
@@ -20,7 +21,7 @@ export interface RudimentFrame {
   readonly id: string;
   readonly root: Element;
   readonly target: Element;
-  readonly audio: PlaybackMedia | null;
+  readonly audio: RudimentPlaybackMedia | null;
   readonly rudiment: RudimentName;
   readonly clock: 'page' | 'audio';
   readonly sourceBeats: number;
@@ -44,7 +45,7 @@ export interface RudimentOptions {
   readonly target: Element | string;
   readonly root?: Element | string;
   readonly clock?: RudimentClock;
-  readonly audio?: PlaybackMedia | string;
+  readonly audio?: RudimentPlaybackMedia | string;
   readonly rate?: number;
   readonly phasePips?: number;
   readonly amplitude?: number | Partial<Offset3>;

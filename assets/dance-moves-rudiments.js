@@ -160,7 +160,7 @@
     if (!['page', 'audio', 'auto'].includes(clock)) throw new TypeError('clock must be page, audio or auto');
     let audio = clock === 'page' ? null : element(options.audio, 'audio');
     if (audio && motion.playbackSource) audio = motion.playbackSource(audio);
-    if (audio && !['audio','video'].includes(String(audio.tagName).toLowerCase())) throw new TypeError('audio must be an HTMLAudioElement');
+    if (audio && !['audio','video'].includes(String(audio.tagName).toLowerCase())) throw new TypeError('audio must resolve to native media or a shared playback source');
     const rate = options.rate === undefined ? 1 : number(options.rate, 'rate');
     if (rate <= 0 || rate > 64) throw new RangeError('rate must be in (0, 64]');
     const phasePips = options.phasePips === undefined ? 0 : integer(options.phasePips, 'phasePips');
@@ -292,7 +292,7 @@
       listen(audio, 'seeked', () => { seekPending = false; refresh(); }, disposers);
     }
     if (options.resetOnCue) disposers.push(motion.onCue(typeof options.resetOnCue === 'string' ? options.resetOnCue : '*', detail => {
-      if (!detail.audio || !audio || detail.audio === audio) reset();
+      if (!detail.audio || !audio || detail.audio === audio || motion.playbackSource && motion.playbackSource(detail.audio) === motion.playbackSource(audio)) reset();
     }, { id: id + ':cue-reset' }));
     if (options.offscreen !== false && window.IntersectionObserver) {
       const observer = new window.IntersectionObserver(entries => { visible = Boolean(entries[0] && entries[0].isIntersecting); refresh(); });
