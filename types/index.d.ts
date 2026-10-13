@@ -1,5 +1,15 @@
 export * from './rudiments';
 export type Remove = () => void;
+export type PlaybackMedia = HTMLMediaElement | PlaybackSource;
+export interface PlaybackMapping {offset?:number;duration?:number;playerStart?:number}
+export type MasterReference = HTMLMediaElement | Readonly<{id:string;duration:number;element?:HTMLMediaElement}>;
+export interface PlaybackSource extends EventTarget {
+ readonly nodeType:1;readonly tagName:string;readonly element:HTMLMediaElement|null;readonly activePlayer:HTMLMediaElement|HTMLIFrameElement|null;
+ currentTime:number;readonly duration:number;readonly paused:boolean;readonly ended:boolean;readonly seeking:boolean;readonly playbackRate:number;
+ play():Promise<void>|void;pause():void;
+}
+export interface PlayerRegistration extends PlaybackMapping {master:MasterReference;masterVerified:true}
+export interface PlaybackController extends Controller {source:PlaybackSource;mapping:Readonly<PlaybackMapping>;ready?:Promise<PlaybackController>}
 export type Offset = Readonly<{x:number;y:number;z?:number}>;
 export type Metadata = string | {id?:string;handlerId?:string};
 export interface PageConfig {
@@ -13,10 +23,10 @@ export interface Options extends PageConfig {
  paperPlanes?:{atlasUrl:string;planeCount?:number;compactPlaneCount?:number};
 }
 export type OrientationAdapter = 'light-will-win'|'dying-for-a-diagnosis'|'presents-and-chocolate'|'fully-nocturnal'|'amnesty-honestly'|'walk-with-me'|'dmitri-my-talisman'|'clay-stars'|'california-screamin';
-export interface Cue {time:number;type:string;name:string;label?:string;normalisedType?:string;normalisedName?:string;normalisedLabel?:string;audio?:HTMLAudioElement|null}
-export interface Lyric {time:number;text:string;normalisedText?:string;audio?:HTMLAudioElement|null;previousVisibleTime?:number|null;previousVisibleText?:string;previousVisibleNormalisedText?:string;previousVisibleIndex?:number;nextTime?:number|null;nextText?:string;nextVisibleTime?:number|null;nextVisibleText?:string;nextVisibleNormalisedText?:string;nextVisibleIndex?:number;[field:string]:unknown}
-export interface Clock {clock?:'page'|'audio';audio?:HTMLAudioElement;bpm?:number;strictlyFuture?:boolean;handlerId?:string}
-export interface IntervalDetail {intervalTicks:number;boundaryTick:number;audio:HTMLAudioElement|null;clock:'page'|'audio'}
+export interface Cue {time:number;type:string;name:string;label?:string;normalisedType?:string;normalisedName?:string;normalisedLabel?:string;audio?:PlaybackMedia|null}
+export interface Lyric {time:number;text:string;normalisedText?:string;audio?:PlaybackMedia|null;previousVisibleTime?:number|null;previousVisibleText?:string;previousVisibleNormalisedText?:string;previousVisibleIndex?:number;nextTime?:number|null;nextText?:string;nextVisibleTime?:number|null;nextVisibleText?:string;nextVisibleNormalisedText?:string;nextVisibleIndex?:number;[field:string]:unknown}
+export interface Clock {clock?:'page'|'audio';audio?:PlaybackMedia;bpm?:number;strictlyFuture?:boolean;handlerId?:string}
+export interface IntervalDetail {intervalTicks:number;boundaryTick:number;audio:PlaybackMedia|null;clock:'page'|'audio'}
 export interface Controller {id?:string;teardown():void;snapshot():Record<string,unknown>}
 export interface PointerController extends Controller {set(x:number,y:number,reason?:string):void;reset(reason?:string):void}
 export interface QualityController extends Controller {setTier(index:number,reason?:string):void}
@@ -25,16 +35,16 @@ export interface SpritePlaybackController extends Controller {restore(reason?:st
 export interface LyricStageController extends Controller {restore(reason?:string):void}
 export interface CooperativeArenaController extends Controller {setEnabled(value:boolean,reason?:string):void;setDensity(ships:number,hazards:number):void}
 export interface LyricStageSlots {previous:HTMLElement;current:HTMLElement;next:HTMLElement;viewport:HTMLElement;track:HTMLElement}
-export interface LyricStageState {root:Element;popover:HTMLElement;audio:HTMLAudioElement;slots:LyricStageSlots;detail?:Lyric|null;phase?:string;progress?:number;reason?:string;playing?:boolean;reducedMotion:boolean;forcedColours:boolean;[field:string]:unknown}
+export interface LyricStageState {root:Element;popover:HTMLElement;audio:PlaybackMedia;slots:LyricStageSlots;detail?:Lyric|null;phase?:string;progress?:number;reason?:string;playing?:boolean;reducedMotion:boolean;forcedColours:boolean;[field:string]:unknown}
 export type LyricStageCleanup = void | (()=>void) | {durationTicks?:number;cleanup?:()=>void};
 export interface Effects {
  version:string;
  pointer(options:EffectOptions & {target?:Element|string;bounds?:Element|string;render?:(point:{x:number;y:number;reason?:string})=>void}):PointerController;
- playbackPulse(options:EffectOptions & {audio?:HTMLAudioElement|string;ticks?:number;className?:string;propertyPrefix?:string;render?:(state:Record<string,unknown> & {audio:HTMLAudioElement})=>void}):Controller & {sync():void};
+ playbackPulse(options:EffectOptions & {audio?:PlaybackMedia|string;ticks?:number;className?:string;propertyPrefix?:string;render?:(state:Record<string,unknown> & {audio:PlaybackMedia})=>void}):Controller & {sync():void};
  cueClass(options:EffectOptions & {cue?:string;className?:string;durationTicks?:number;render?:(state:Record<string,unknown>)=>void}):Controller & {fire(cue?:Cue):void;clear(reason?:string):void};
- cueTimeline(options:EffectOptions & {audio?:HTMLAudioElement|string;cues:Array<{id?:string;time:number;end?:number;[key:string]:unknown}>;onCue?:(event:Record<string,unknown>)=>void;render?:(state:Record<string,unknown>)=>void}):CueTimelineController;
- spritePlayback(options:EffectOptions & {audio?:HTMLAudioElement|string;target?:HTMLElement|string;frameCount?:number;columns?:number;framesPerRow?:number;columnOffset?:number;rowOffset?:number;frameMap?:number[];cycleTicks?:number;phaseOffsetSeconds?:number;staticFrame?:number;propertyPrefix?:string;qualityTiers?:string[];qualityFramesPerSecond?:number[];initialQuality?:number;render?:(state:Record<string,unknown> & {audio:HTMLAudioElement;target:HTMLElement;frame:number;localFrame:number;column:number;row:number;phase:number;cycleSeconds:number;playing:boolean})=>void}):SpritePlaybackController;
- lyricStage(options:EffectOptions & {audio?:HTMLAudioElement|string;popover?:HTMLElement|string;travelTicks?:number;cueDurationTicks?:number;render?:(state:LyricStageState)=>void;renderLyric?:(state:LyricStageState & {previousDetail?:Lyric|null;previousText?:string})=>LyricStageCleanup;renderCue?:(state:LyricStageState & {detail:Cue;count:number})=>LyricStageCleanup}):LyricStageController|Controller;
+ cueTimeline(options:EffectOptions & {audio?:PlaybackMedia|string;cues:Array<{id?:string;time:number;end?:number;[key:string]:unknown}>;onCue?:(event:Record<string,unknown>)=>void;render?:(state:Record<string,unknown>)=>void}):CueTimelineController;
+ spritePlayback(options:EffectOptions & {audio?:PlaybackMedia|string;target?:HTMLElement|string;frameCount?:number;columns?:number;framesPerRow?:number;columnOffset?:number;rowOffset?:number;frameMap?:number[];cycleTicks?:number;phaseOffsetSeconds?:number;staticFrame?:number;propertyPrefix?:string;qualityTiers?:string[];qualityFramesPerSecond?:number[];initialQuality?:number;render?:(state:Record<string,unknown> & {audio:PlaybackMedia;target:HTMLElement;frame:number;localFrame:number;column:number;row:number;phase:number;cycleSeconds:number;playing:boolean})=>void}):SpritePlaybackController;
+ lyricStage(options:EffectOptions & {audio?:PlaybackMedia|string;popover?:HTMLElement|string;travelTicks?:number;cueDurationTicks?:number;render?:(state:LyricStageState)=>void;renderLyric?:(state:LyricStageState & {previousDetail?:Lyric|null;previousText?:string})=>LyricStageCleanup;renderCue?:(state:LyricStageState & {detail:Cue;count:number})=>LyricStageCleanup}):LyricStageController|Controller;
  cooperativeArena(options:EffectOptions & {stage?:HTMLElement|string;shipSources:string[];hazardSources:string[];shipCount?:number;hazardCount?:number;speed?:number;bpm?:number;shotIntervalTicks?:number;enabled?:boolean;onHit?:(state:Record<string,unknown>)=>void;onCollision?:(state:Record<string,unknown>)=>void;render?:(state:Record<string,unknown>)=>void}):CooperativeArenaController;
  quality(options:EffectOptions & {tiers?:string[];render?:(state:{tier:string;index:number;reason:string;sample?:{fps:number}})=>void;[key:string]:unknown}):QualityController;
  get(id:string):Controller|null;snapshot():Record<string,unknown>[];teardown(id:string):void;teardownAll():void;
@@ -46,6 +56,9 @@ export interface PhoneMotionOptions {render?:(point:Offset & {reason:string})=>v
 export interface Recorder {start():Promise<MotionCapture>;stop(reason?:string):MotionCapture;snapshot():Record<string,unknown>;upload(endpoint:string,options?:{headers?:Record<string,string>;signal?:AbortSignal}):Promise<Record<string,unknown>>}
 export interface MotionCapture {schema:'ks-epk-motion-recording/v1';samples:Array<{milliseconds:number;beta:number;gamma:number;alpha?:number|null;[key:string]:unknown}>;[key:string]:unknown}
 export interface DanceMoves {
+ playbackSource(master:MasterReference|PlaybackSource):PlaybackSource;
+ registerPlayer(options:PlayerRegistration & {player:HTMLMediaElement}):PlaybackController;
+ registerYouTube(options:PlayerRegistration & {iframe:HTMLIFrameElement}):PlaybackController & {ready:Promise<PlaybackController>};
  readonly version:string;readonly bpm:number;readonly bpmSource:string;readonly ticksPerBeat:16;readonly root:HTMLElement;readonly config:Readonly<PageConfig>;
  readonly destroyed:boolean;ready:Promise<DanceMoves>;
  quantizeTicks(value:number):number;durationMilliseconds(ticks:number,bpmOverride?:number):number;currentTick(options?:Clock):number;
@@ -61,7 +74,7 @@ export interface DanceMoves {
  parseTimingFile(text:string):Cue[];parseLyricTimingFile(text:string):Lyric[];normaliseCueName(name:string):string;
  onCue(name:string,callback:(cue:Cue)=>void,metadata?:Metadata):Remove;onLyric(callback:(lyric:Lyric)=>void,metadata?:Metadata):Remove;
  fireCue(cue:Partial<Cue> & {name:string}):Cue;registerAnimationScope(root:HTMLElement,selectors:string[]):Remove;
- resetRunningAnimations(audio?:HTMLAudioElement):number;discoverAudio():void;
+ resetRunningAnimations(audio?:PlaybackMedia):number;discoverAudio():void;registerPlaybackSource(source:PlaybackSource):void;unregisterPlaybackSource(source:PlaybackSource):void;
  setDiagnosticsSink(callback:((record:Record<string,unknown>)=>void)|null):boolean;diagnosticsEnabled():boolean;
  applyCatalogueTiming?():Record<string,unknown>;catalogueTimingSnapshot?():Record<string,unknown>;removeCatalogueAnimationScope?():void;
  effects:Effects;rudiments:import('./rudiments').RudimentApi;

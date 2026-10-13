@@ -4,6 +4,7 @@ import {validatePageConfig} from './config.mjs';
 import {createOrientationController} from './orientation.mjs';
 import {connectPhoneMotion} from './phone-motion.mjs';
 import {createMotionRecorder} from './recorder.mjs';
+import {installPlayback} from './playback.mjs';
 import {VERSION} from './version.mjs';
 export {validatePageConfig, fromWordPressMeta, PAGE_META_KEYS, createMemoryPageStore} from './config.mjs';
 export {VERSION};
@@ -35,6 +36,7 @@ export function createDanceMoves(options = {}) {
   }
   try {
     installers.core(scope);
+    installPlayback(scope, w.DanceMoves, root.ownerDocument.defaultView);
     installers.effects(scope);
     installers.orientationCore(scope);
     installers.native(scope);

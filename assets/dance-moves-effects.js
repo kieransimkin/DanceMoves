@@ -12,6 +12,10 @@
     if (typeof value === "string") return document.querySelector(value);
     return fallback || null;
   }
+  function playbackElement(value, fallback) {
+    var target = element(value, fallback);
+    return target && motion.playbackSource ? motion.playbackSource(target) : target;
+  }
   function media(query) { return window.matchMedia(query); }
   function listen(target, name, callback, options, removers) {
     target.addEventListener(name, callback, options);
@@ -93,7 +97,7 @@
   function playbackPulse(options) {
     options = options || {};
     var state = commonState(options, "pulse");
-    var audio = element(options.audio, state.root.querySelector("audio"));
+    var audio = playbackElement(options.audio, state.root.querySelector("audio"));
     if (!audio) throw new Error("DanceMovesEffects pulse requires an audio element");
     var ticks = Math.max(1, Math.round(finite(options.ticks, 16)));
     var className = String(options.className || "dance-moves-playing");
@@ -156,7 +160,7 @@
   function cueTimeline(options) {
     options = options || {};
     var state = commonState(options, "cue-timeline");
-    var audio = element(options.audio, state.root.querySelector("audio"));
+    var audio = playbackElement(options.audio, state.root.querySelector("audio"));
     if (!audio) throw new Error("DanceMovesEffects cueTimeline requires an audio element");
     var cues = (Array.isArray(options.cues) ? options.cues : []).map(function (cue, index) {
       var time = finite(cue && cue.time, NaN);
@@ -227,7 +231,7 @@
   function spritePlayback(options) {
     options = options || {};
     var state = commonState(options, "sprite-playback");
-    var audio = element(options.audio, state.root.querySelector("audio"));
+    var audio = playbackElement(options.audio, state.root.querySelector("audio"));
     var target = element(options.target, state.root);
     if (!audio) throw new Error("DanceMovesEffects spritePlayback requires an audio element");
     if (!target) throw new Error("DanceMovesEffects spritePlayback requires a target element");
@@ -343,7 +347,7 @@
   function lyricStage(options) {
     options = options || {};
     var state = commonState(options, "lyric-stage");
-    var audio = element(options.audio, state.root.querySelector("audio"));
+    var audio = playbackElement(options.audio, state.root.querySelector("audio"));
     var popover = element(options.popover, document.querySelector(".dance-moves-lyric-popover"));
     if (!audio) throw new Error("DanceMovesEffects lyricStage requires an audio element");
     if (!popover) {

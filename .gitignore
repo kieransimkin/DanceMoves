@@ -3,6 +3,7 @@ qa/*.html
 .DS_Store
 Thumbs.db
 node_modules/
+examples/playback-sources/media/
 lib/
 .build/
 .next/
