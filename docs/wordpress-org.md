@@ -1,5 +1,11 @@
 # WordPress.org publication
 
+The plugin and author URI headers must identify different pages. The author
+header uses https://kieransimkin.co.uk/; the plugin retains its published My Songs
+homepage. `npm run check:release` rejects duplicate URLs (including a trailing
+slash variation), matching the directory upload validation. Keep the public
+plugin name **DanceMoves** and its existing compatibility identifiers.
+
 Run the official Plugin Check against the exact production ZIP with the intended directory slug. Do not scan tests as installed runtime code, ignore an entire category or treat a passing static scan as a security audit. Review all warnings and document each contextual finding. Keep the readme stable tag, main PHP version and GitHub release aligned. After directory approval, publish the same verified source through the assigned SVN repository; verify the downloaded directory ZIP independently. No directory password belongs in source.
 
 ## Potential problems
