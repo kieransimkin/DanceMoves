@@ -53,12 +53,14 @@
   <script>
     window.ksMotionCaptureConfig = {
       endpoint: "/wp-json/ks-epk-motion/v1/capture",
-      token: "e4c1d9a77fb446608e796a0f8fd8f576e59d2e67bca54a4d9f7fd06fbef3e1c2"
+      // Supply a fresh wp_rest nonce from the signed-in administrator session.
+      // Never commit a real nonce or credential to this development fixture.
+      restNonce: ""
     };
   </script>
-  <script src="../assets/ks-epk-device-orientation-core.js?ver=3.1.22"></script>
-  <script src="simulated-device-orientation-event.js?ver=3.1.22"></script>
-  <script src="motion-capture-policy.js?ver=3.1.22"></script>
-  <script src="mobile-api-conformance.js?ver=3.1.22"></script>
+  <script src="../assets/ks-epk-device-orientation-core.js?ver=3.1.23"></script>
+  <script src="simulated-device-orientation-event.js?ver=3.1.23"></script>
+  <script src="motion-capture-policy.js?ver=3.1.23"></script>
+  <script src="mobile-api-conformance.js?ver=3.1.23"></script>
 </body>
 </html>

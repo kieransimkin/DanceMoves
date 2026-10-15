@@ -3,7 +3,7 @@
  * Plugin Name: DanceMoves
  * Plugin URI: https://kieransimkin.co.uk/my-songs/
  * Description: BPM-synchronised web motion, effects and media clocks for JavaScript, React, Next.js and WordPress. https://kieransimkin.co.uk/
- * Version: 3.1.22
+ * Version: 3.1.23
  * Author: Kieran Simkin
  * Author URI: https://kieransimkin.co.uk/
  * Requires at least: 6.7
@@ -17,9 +17,8 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('DANCE_MOVES_VERSION', '3.1.22');
+define('DANCE_MOVES_VERSION', '3.1.23');
 define('KS_EPK_ORIENTATION_VERSION', DANCE_MOVES_VERSION);
-define('KS_EPK_MOTION_CAPTURE_TOKEN', 'e4c1d9a77fb446608e796a0f8fd8f576e59d2e67bca54a4d9f7fd06fbef3e1c2');
 
 define('DANCE_MOVES_META_BPM', '_dance_moves_bpm');
 define('DANCE_MOVES_META_LYRIC_TIMING', '_dance_moves_lyric_timing_id');
@@ -453,15 +452,22 @@ function ks_epk_motion_register_capture_type() {
         'show_in_menu' => 'tools.php',
         'show_in_rest' => false,
         'supports' => array('title', 'editor'),
-        'map_meta_cap' => true,
+        'capabilities' => array_fill_keys(array(
+            'edit_post', 'read_post', 'delete_post', 'edit_posts', 'edit_others_posts',
+            'publish_posts', 'read_private_posts', 'delete_posts', 'delete_private_posts',
+            'delete_published_posts', 'delete_others_posts', 'edit_private_posts',
+            'edit_published_posts', 'create_posts', 'read',
+        ), 'manage_options'),
+        'map_meta_cap' => false,
     ));
 }
 add_action('init', 'ks_epk_motion_register_capture_type');
 
 function ks_epk_motion_capture_permission(WP_REST_Request $request) {
-    $provided = (string) $request->get_header('X-KS-Motion-Token');
-    if ($provided === '' || !hash_equals(KS_EPK_MOTION_CAPTURE_TOKEN, $provided)) {
-        return new WP_Error('ks_motion_forbidden', 'Invalid motion-capture token.', array('status' => 403));
+    // WordPress authenticates the request (including cookie REST nonces) first.
+    // A value distributed in plugin source must never authorize private writes.
+    if (!current_user_can('manage_options')) {
+        return new WP_Error('ks_motion_forbidden', 'Administrator authorization is required for motion capture.', array('status' => rest_authorization_required_code()));
     }
 
     $origin = get_http_origin();
@@ -469,8 +475,7 @@ function ks_epk_motion_capture_permission(WP_REST_Request $request) {
         return new WP_Error('ks_motion_origin', 'Motion captures must come from this site.', array('status' => 403));
     }
 
-    $address = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'])) : 'unknown';
-    $rate_key = 'ks_motion_' . md5($address);
+    $rate_key = 'ks_motion_user_' . get_current_user_id();
     $attempts = (int) get_transient($rate_key);
     if ($attempts >= 8) {
         return new WP_Error('ks_motion_rate', 'Too many motion captures. Try again later.', array('status' => 429));
@@ -573,6 +578,7 @@ function ks_epk_motion_store_capture(WP_REST_Request $request) {
     $post_id = wp_insert_post(array(
         'post_type' => 'ks_motion_capture',
         'post_status' => 'private',
+        'post_author' => get_current_user_id(),
         'post_title' => 'Phone motion capture ' . current_time('Y-m-d H:i:s'),
         'post_content' => $encoded,
     ), true);

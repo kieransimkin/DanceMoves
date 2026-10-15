@@ -9,6 +9,48 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
+  wordpress-capture:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: capture-ci-only
+          MYSQL_DATABASE: capture_ci
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -pcapture-ci-only"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mysqli
+          coverage: none
+      - run: node tools/install-ci.mjs
+      - run: npm run build:wordpress
+      - name: Verify pinned official WP-CLI and exercise a disposable WordPress site
+        shell: bash
+        run: |
+          curl --fail --location --silent --show-error https://github.com/wp-cli/wp-cli/releases/download/v2.12.0/wp-cli-2.12.0.phar -o "$RUNNER_TEMP/wp-cli.phar"
+          echo "ce34ddd838f7351d6759068d09793f26755463b4a4610a5a5c0a97b68220d85c  $RUNNER_TEMP/wp-cli.phar" | sha256sum --check
+          wp=(php "$RUNNER_TEMP/wp-cli.phar" --path="$RUNNER_TEMP/capture-wordpress")
+          # Native ZIP extraction retains long core filenames; the older PHAR
+          # tar extractor truncates current php-ai-client paths.
+          curl --fail --location --silent --show-error https://wordpress.org/wordpress-7.1.3.zip -o "$RUNNER_TEMP/wordpress-7.1.3.zip"
+          unzip -q "$RUNNER_TEMP/wordpress-7.1.3.zip" -d "$RUNNER_TEMP/capture-core"
+          mv "$RUNNER_TEMP/capture-core/wordpress" "$RUNNER_TEMP/capture-wordpress"
+          "${wp[@]}" core verify-checksums --version=7.1.3
+          "${wp[@]}" config create --dbname=capture_ci --dbuser=root --dbpass=capture-ci-only --dbhost=127.0.0.1:3306
+          "${wp[@]}" core install --url=http://127.0.0.1 --title='Capture CI fixture' --admin_user=capture_admin --admin_password=capture-ci-only --admin_email=ci@example.invalid --skip-email
+          cp -R .build/wordpress "$RUNNER_TEMP/capture-wordpress/wp-content/plugins/dancemoves"
+          "${wp[@]}" plugin activate dancemoves
+          "${wp[@]}" eval-file "$GITHUB_WORKSPACE/tests/wordpress-capture-integration.php"
   contracts:
     strategy:
       fail-fast: false

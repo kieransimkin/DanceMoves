@@ -4,7 +4,7 @@ Tags: animation, music, accessibility
 Requires at least: 6.7
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 3.1.22
+Stable tag: 3.1.23
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 
@@ -14,9 +14,9 @@ BPM-synchronised web motion with media clocks, cue timing and accessible fallbac
 
 A shared runtime for BPM-, cue- and lyric-timed creative effects, orientation inputs, playback lifecycle and adaptive quality. Pages explicitly connect the required effects; installing the plugin alone does not choreograph a page. Reduced-motion and forced-colour fallbacks are supported.
 
-No external service is required and no external executable code is downloaded. Device orientation is used locally when explicitly connected. The optional motion-lab capture feature stores submitted samples only after a participant actively chooses to record and upload; it is not analytics and does not run automatically on ordinary pages. Its fixed public capture token is an anti-spam marker, not a secret or permission to upload private data. Site owners must review capture consent and retention before enabling a lab.
+No external service is required and no external executable code is downloaded. Device orientation is used locally when explicitly connected. The optional motion-lab capture feature stores submitted samples only after a participant actively chooses to record and upload; it is not analytics and does not run automatically on ordinary pages. Uploads and the private capture administration UI require an authenticated WordPress administrator with manage_options. Browser uploads use a fresh WordPress REST nonce and same-origin credentials; no published token authorizes uploads. Site owners must review capture consent and retention before enabling a lab. Local recording/download does not require an upload.
 
-Human-readable JavaScript source and reproducible build instructions for bundled scripts and WebAssembly: https://github.com/kieransimkin/DanceMoves/tree/v3.1.22/src and https://github.com/kieransimkin/DanceMoves/tree/v3.1.22/tools . Run npm ci and npm run build. Rhythmic function source: https://github.com/kieransimkin/DanceRudiments .
+Human-readable JavaScript source and reproducible build instructions for bundled scripts and WebAssembly: https://github.com/kieransimkin/DanceMoves/tree/v3.1.23/src and https://github.com/kieransimkin/DanceMoves/tree/v3.1.23/tools . Run npm ci and npm run build. Rhythmic function source: https://github.com/kieransimkin/DanceRudiments .
 
 Author and ecosystem: https://kieransimkin.co.uk/ and https://kieransimkin.co.uk/danceflow/
 
@@ -42,6 +42,11 @@ No. Search engines and sharing services decide how to present a page.
 
 == Changelog ==
 
+= 3.1.23 =
+* Require authenticated administrator authorization for private motion captures and their administration UI.
+* Replace the public capture token with standard WordPress REST authentication and per-user upload quotas.
+* Keep local recording downloads available and reject capture uploads to other origins.
+
 = 3.1.22 =
 * Give the author and plugin separate URLs for WordPress.org submission.
 * Reject duplicate author/plugin URLs during release validation.
@@ -61,6 +66,10 @@ No. Search engines and sharing services decide how to present a page.
 * Address the reviewed Plugin Check findings while preserving runtime behavior.
 
 == Upgrade Notice ==
+
+= 3.1.23 =
+
+Private captures now require WordPress administrator authorization. Refresh the REST nonce in a signed-in capture harness; published tokens no longer work. Local recording/download remains available.
 
 = 3.1.15 =
 

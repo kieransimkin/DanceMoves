@@ -1,5 +1,12 @@
 # DanceMoves
 
+**3.1.23** secures WordPress motion-capture writes with authenticated
+`manage_options` authorization. The private capture administration UI uses the
+same capability. Published tokens no longer authorize uploads; cookie clients
+send a fresh WordPress REST nonce and same-origin credentials, and administrators
+have separate bounded upload quotas. Local recording/download stays available
+without upload authorization. See the [capture contract](docs/api/wordpress.md#motion-capture-rest-api).
+
 **3.1.22** fixes WordPress.org submission metadata: the Author URI points to
 [Kieran's website](https://kieransimkin.co.uk/), separately from the plugin
 homepage. The release checker rejects duplicate plugin/author URLs before
@@ -602,7 +609,8 @@ const example = {schema:'ks-epk-motion-recording/v1', samples:[{t:0,beta:10,gamm
 inspect(example);
 // The local simulator uses /examples/wordpress/api/capture, never /wp-json/… .
 // For actual captures, follow docs/api/wordpress.md and the private sensor harness.
-// The existing source token is not strong authentication; never embed it in public examples.
+// Uploads require administrator authorization and a fresh WordPress REST nonce.
+// Keep real session nonces out of static examples and source control.
 ```
 
 [Run the example](examples/wordpress/capture.html) · [Read its complete source](examples/wordpress/demos/capture.mjs).
