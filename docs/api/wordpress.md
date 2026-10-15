@@ -15,7 +15,7 @@ registration, rendering or save callbacks manually.
 | --- | --- |
 | `DANCE_MOVES_VERSION` | `2.8.0` |
 | `KS_EPK_ORIENTATION_VERSION` | Alias of `DANCE_MOVES_VERSION`. |
-| `KS_EPK_MOTION_CAPTURE_TOKEN` | Existing fixed capture submission token; deliberately not reproduced here. It is in public source and is **not a deployment secret**. See the capture security section. |
+| `KS_EPK_MOTION_CAPTURE_TOKEN` | Removed in 3.1.23. No fixed/published token authorizes capture writes. See the current capture security section. |
 | `DANCE_MOVES_META_BPM` | `_dance_moves_bpm` |
 | `DANCE_MOVES_META_LYRIC_TIMING` | `_dance_moves_lyric_timing_id` |
 | `DANCE_MOVES_META_CUE_TIMING` | `_dance_moves_cue_timing_id` |
@@ -172,7 +172,7 @@ The full validator runs when the Page editor saves the selected attachment.
 ```text
 POST <WordPress REST root>/ks-epk-motion/v1/capture
 Content-Type: application/json
-X-KS-Motion-Token: <operator-supplied value; not reproduced here>
+X-WP-Nonce: <fresh wp_rest nonce for the signed-in administrator session>
 ```
 
 Implemented by `ks_epk_motion_register_rest_route()` using
@@ -180,23 +180,48 @@ Implemented by `ks_epk_motion_register_rest_route()` using
 `ks_epk_motion_capture_permission(WP_REST_Request $request)` and handler
 `ks_epk_motion_store_capture(WP_REST_Request $request)`.
 
-Permission processing, in order:
+In 3.1.23, permission processing is:
 
-1. Compare the supplied header with the fixed token using `hash_equals()`.
-2. When `get_http_origin()` returns an origin, require it to equal `home_url()`
-   after trailing-slash removal. A missing Origin is **not rejected**.
-3. Rate-limit by a transient keyed from MD5 of `REMOTE_ADDR` (or `'unknown'`).
-   Eight accepted permission checks are allowed before a 429. Each allowed check
-   writes a new ten-minute expiry; this is not a rigorously sliding-window quota.
-   A later-invalid payload still consumes a permission-check attempt.
+1. WordPress authenticates the request before the permission callback. Cookie
+   clients send same-origin credentials and a fresh `wp_rest` nonce in
+   `X-WP-Nonce`; WordPress validates that nonce. Missing/expired cookie nonces
+   cannot establish administrator authorization. Standard WordPress Application
+   Password authentication over HTTPS may also establish the current user;
+   this plugin does not create or store those credentials.
+2. Require `current_user_can('manage_options')`. Anonymous requests return 401;
+   authenticated callers lacking that capability return 403. The former
+   `X-KS-Motion-Token` header is ignored and its public constant is removed.
+3. When `get_http_origin()` supplies an origin, require it to equal `home_url()`
+   after trailing-slash removal. A missing Origin is allowed only after genuine
+   WordPress authentication/authorization, for example an authorized API client.
+4. Rate-limit by authenticated user ID, using `ks_motion_user_<id>`. Eight
+   accepted permission checks are allowed before 429. Each allowed check writes
+   a ten-minute expiry; a later-invalid payload still consumes a check. Denied
+   callers and other administrators cannot exhaust an administrator's quota.
 
-**Security limitation:** the token is embedded in this public repository. The
-endpoint does not require a logged-in user, a WordPress capability or a WordPress
-nonce. Origin checking and a shared IP transient do not turn a published constant
-into authentication. Do not document this as a secure secret-protected upload
-service. Restrict/disable access or implement genuine authenticated capture
-submission before relying on it in a new deployment. This documentation patch
-does not change the endpoint's security model or rotate its constant.
+The development lab's static HTML carries no real nonce. Populate its
+`ksMotionCaptureConfig.restNonce` from the current administrator session, not a
+committed value. A registered harness on an authenticated WordPress admin screen
+can use the normal script configuration route:
+
+```php
+if (current_user_can('manage_options')) {
+    // Run after registering/enqueuing your own capture harness script.
+    wp_localize_script('your-capture-harness', 'ksMotionCaptureConfig', array(
+        'endpoint' => esc_url_raw(rest_url('ks-epk-motion/v1/capture')),
+        'restNonce' => wp_create_nonce('wp_rest'),
+    ));
+}
+```
+
+The capture client sends `credentials: 'same-origin'` and rejects a different
+endpoint origin before transmitting a nonce or recording. A missing nonce leaves
+local recording/download available and displays an accurate upload hold. After
+a session/nonce expires, reload the authorized configuration before retrying.
+Sensor consent and the explicit upload button remain separate requirements.
+See WordPress's [REST authentication](https://developer.wordpress.org/rest-api/using-the-rest-api/authentication/)
+and [permission callback](https://developer.wordpress.org/rest-api/extending-the-rest-api/adding-custom-endpoints/#permissions-callback)
+documentation. No custom authentication mechanism is added.
 
 ### Request shape
 
@@ -275,9 +300,9 @@ Success returns a normal REST response (no explicit 201 status is set):
 
 | HTTP status | Error code | Meaning |
 | --- | --- | --- |
-| 403 | `ks_motion_forbidden` | Missing/wrong token. |
+| 401 / 403 | `ks_motion_forbidden` | WordPress caller is anonymous / lacks `manage_options`. |
 | 403 | `ks_motion_origin` | Supplied origin does not match the site. |
-| 429 | `ks_motion_rate` | Permission-check quota exhausted. |
+| 429 | `ks_motion_rate` | This administrator's permission-check quota exhausted. |
 | 400 | `ks_motion_schema` | Missing/wrong schema or nonarray JSON payload. |
 | 400 | `ks_motion_samples` | Missing/nonarray samples or input count outside 1–500. |
 | 400 | `ks_motion_invalid_samples` | At least one required sample field is invalid. |
@@ -292,9 +317,12 @@ A successful record is a `private` post of type `ks_motion_capture`, titled
 `Phone motion capture <site-local date/time>`, with the cleaned JSON in
 `post_content`. Extra metadata: `_ks_motion_passed` (`'1'`/`'0'`),
 `_ks_motion_sample_count`, and `_ks_motion_sha256` (hash of stored encoded JSON).
-The post type has a Tools-menu UI, title/editor support, `public: false`,
-`show_in_rest: false`, and default mapped post capabilities; no custom
-administrator-only capability scheme is defined.
+The post author is the authenticated administrator ID. The post type has a
+Tools-menu UI, title/editor support, `public: false`, and `show_in_rest: false`.
+In 3.1.23 its read, create, edit and delete capabilities all require
+`manage_options`, with generic post meta-capability mapping disabled. Ordinary
+editors/authors cannot acquire access to private sensor captures through their
+normal post-editing capabilities. Retention remains an explicit operator duty.
 
 There is **no plugin GET/list/delete capture REST route, retention job, automatic
 capture upload, or cryptographic proof of native sensor provenance**. Private
@@ -322,6 +350,24 @@ it with `array('dance-moves-core')` for core-only consumers or
 available. Do not assume a root exists merely because the shared script loaded.
 
 ## Registered hooks and callback reference
+
+### Project prefixes and compatibility
+
+Production PHP declarations use `dance_moves_` / `ks_epk_` functions and
+`DANCE_MOVES_` / `KS_EPK_` constants. Plugin-owned metadata, transients, post
+types, REST namespaces and asset handles use the existing `dance_moves`,
+`dance-moves`, `ks_motion`, `ks-epk-motion` or `ks-epk-device-orientation`
+prefixes. Localized JavaScript configuration uses the named `danceMoves*` and
+`ksEpkOrientationConfig` objects. WordPress core hook names in the table below
+are consumed hooks; they must retain their core names.
+
+These names remain for installed-site compatibility. In 3.1.23 the obsolete
+public token constant is removed and the authenticated quota uses the prefixed
+`ks_motion_user_<id>` transient. The declaration-prefix regression and capture
+authorization/client tests run in the existing legacy test gate. Hosted CI also
+exercises real WordPress core nonce validation, roles, REST dispatch, database
+storage and capability mapping on a disposable site. It does not use a live
+installation or claim physical phone acceptance.
 
 These are WordPress hooks **consumed** by the plugin, not plugin-defined extension
 hooks. Default priority is 10 unless shown. No `apply_filters('dance_moves_...')`

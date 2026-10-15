@@ -88,20 +88,35 @@
 
   async function uploadRecording() {
     const config = window.ksMotionCaptureConfig || {};
-    if (!completedPayload || !config.endpoint || !config.token) {
+    if (!completedPayload || !config.endpoint) {
       setResult("upload-status", "No completed recording is ready to upload.", "fail");
+      return;
+    }
+    if (!config.restNonce) {
+      setResult("upload-status", "Sign in as a WordPress administrator and supply a fresh REST nonce. The recording can still be downloaded.", "fail");
+      return;
+    }
+    let endpoint;
+    try {
+      endpoint = new URL(config.endpoint, window.location.href);
+    } catch {
+      setResult("upload-status", "The WordPress capture endpoint is invalid.", "fail");
+      return;
+    }
+    if (endpoint.origin !== window.location.origin) {
+      setResult("upload-status", "Private capture uploads must use this site's WordPress endpoint.", "fail");
       return;
     }
     const button = $("upload-recording");
     button.disabled = true;
     setResult("upload-status", "Uploading private capture…", "warn");
     try {
-      const response = await fetch(config.endpoint, {
+      const response = await fetch(endpoint.href, {
         method: "POST",
-        credentials: "omit",
+        credentials: "same-origin",
         headers: {
           "Content-Type": "application/json",
-          "X-KS-Motion-Token": config.token,
+          "X-WP-Nonce": config.restNonce,
         },
         body: JSON.stringify(completedPayload),
       });

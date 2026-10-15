@@ -9,10 +9,8 @@ const css = fs.readFileSync(path.join(__dirname, "../assets/ks-epk-device-orient
 
 const { assertPluginVersion } = require('./helpers/plugin-version.cjs');
 const pluginVersion = assertPluginVersion(plugin);
-const phpToken = plugin.match(/KS_EPK_MOTION_CAPTURE_TOKEN',\s*'([a-f0-9]{64})'/)?.[1];
-const pageToken = page.match(/token:\s*"([a-f0-9]{64})"/)?.[1];
-assert.ok(phpToken, "WordPress endpoint token is present");
-assert.equal(pageToken, phpToken, "Unlisted page and endpoint tokens match");
+assert.doesNotMatch(plugin, /KS_EPK_MOTION_CAPTURE_TOKEN|X-KS-Motion-Token/, "public tokens cannot authorize capture writes");
+assert.match(page, /restNonce:\s*""/, "development fixture carries no session nonce");
 assert.match(page, /noindex,nofollow,noarchive,nosnippet,noimageindex/);
 assert.match(page, /\/wp-json\/ks-epk-motion\/v1\/capture/);
 assert.match(page, /full 30-second recording/);
@@ -35,9 +33,10 @@ assert.match(plugin, /\$orientation_dependencies\[\]\s*=\s*'dance-moves-clay-sta
 assert.match(plugin, /'post_status'\s*=>\s*'private'/);
 assert.match(plugin, /count\(\$samples\)\s*>\s*500/);
 assert.match(plugin, /strlen\(\$encoded\)\s*>\s*262144/);
-assert.match(plugin, /hash_equals\(KS_EPK_MOTION_CAPTURE_TOKEN,\s*\$provided\)/);
-assert.match(runtime, /credentials:\s*"omit"/);
-assert.match(runtime, /X-KS-Motion-Token/);
+assert.match(plugin, /current_user_can\('manage_options'\)/);
+assert.match(runtime, /credentials:\s*"same-origin"/);
+assert.match(runtime, /X-WP-Nonce/);
+assert.doesNotMatch(runtime, /X-KS-Motion-Token/);
 assert.match(runtime, /targetDurationMilliseconds:\s*targetDuration/);
 assert.match(runtime, /sampleStrategy:\s*"time-decimated"/);
 assert.match(runtime, /window\.setTimeout\(finish,\s*targetDuration\)/);

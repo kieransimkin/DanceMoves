@@ -7,6 +7,16 @@
   "effects_version": "3.1.13",
   "effects_reviewed_on": "2026-10-08",
   "inventory_method": "Manual comparison with the pinned source exports and PHP declarations; symbol-presence validation is not runtime coverage.",
+  "wordpress_capture_security": {
+    "version": "3.1.23",
+    "reviewed_on": "2026-10-15",
+    "scope": "Current capture contract supersedes the historical 2.8.0 capture authorization, quota and post-type capability description; pinned baseline symbols and source hashes below remain historical evidence.",
+    "authorization": "WordPress-authenticated current_user_can('manage_options'); cookie REST nonces are checked by WordPress core",
+    "removed_constants": ["KS_EPK_MOTION_CAPTURE_TOKEN"],
+    "quota": "ks_motion_user_<authenticated user ID>, eight accepted checks per ten-minute expiry",
+    "private_capture_capability": "manage_options",
+    "reference": "wordpress.md#motion-capture-rest-api"
+  },
   "source_blobs": {
     "kieran-epk-device-orientation.php": "b374690a0c141aa1f870bf1084a0a0b34c25abe5",
     "assets/dance-moves-core.js": "3d975c7a3b380f9c99a62f7deade14df4b746929",
