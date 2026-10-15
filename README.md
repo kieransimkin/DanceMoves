@@ -6,6 +6,8 @@ same capability. Published tokens no longer authorize uploads; cookie clients
 send a fresh WordPress REST nonce and same-origin credentials, and administrators
 have separate bounded upload quotas. Local recording/download stays available
 without upload authorization. See the [capture contract](docs/api/wordpress.md#motion-capture-rest-api).
+The real WordPress integration test reports its executed assertion count;
+CI rejects a missing or zero-count summary as well as any failed check.
 
 **3.1.22** fixes WordPress.org submission metadata: the Author URI points to
 [Kieran's website](https://kieransimkin.co.uk/), separately from the plugin

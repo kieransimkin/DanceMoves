@@ -1,11 +1,10 @@
 <?php
 /** Run with wp eval-file on a disposable real WordPress installation. No production site. */
 if (!defined('WP_CLI') || !WP_CLI) { exit(1); }
-$checks = 0;
+$GLOBALS['dancem_capture_checks'] = 0;
 function dancem_capture_check($condition, $message) {
-    global $checks;
     if (!$condition) { WP_CLI::error($message); }
-    ++$checks;
+    ++$GLOBALS['dancem_capture_checks'];
 }
 function dancem_capture_request($legacy_header = false) {
     $request = new WP_REST_Request('POST', '/ks-epk-motion/v1/capture');
@@ -57,4 +56,4 @@ wp_set_current_user($second);
 dancem_capture_check(dancem_capture_request()->get_status() === 200, 'second administrator has independent quota');
 wp_set_current_user(0);
 dancem_capture_check(dancem_capture_request(true)->get_status() === 401, 'authorization still precedes quota after valid captures');
-WP_CLI::success("WordPress capture core nonce, role, REST, database and quota integration ($checks checks)");
+WP_CLI::success('WordPress capture core nonce, role, REST, database and quota integration (' . $GLOBALS['dancem_capture_checks'] . ' checks)');
