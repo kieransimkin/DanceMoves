@@ -50,7 +50,8 @@ jobs:
           "${wp[@]}" core install --url=http://127.0.0.1 --title='Capture CI fixture' --admin_user=capture_admin --admin_password=capture-ci-only --admin_email=ci@example.invalid --skip-email
           cp -R .build/wordpress "$RUNNER_TEMP/capture-wordpress/wp-content/plugins/dancemoves"
           "${wp[@]}" plugin activate dancemoves
-          "${wp[@]}" eval-file "$GITHUB_WORKSPACE/tests/wordpress-capture-integration.php"
+          "${wp[@]}" eval-file "$GITHUB_WORKSPACE/tests/wordpress-capture-integration.php" | tee "$RUNNER_TEMP/capture-core-evidence.log"
+          grep -Eq 'WordPress capture core.*\([1-9][0-9]* checks\)' "$RUNNER_TEMP/capture-core-evidence.log"
   contracts:
     strategy:
       fail-fast: false
