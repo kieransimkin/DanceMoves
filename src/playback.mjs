@@ -65,7 +65,8 @@ export function installPlayback(scope, api, host = scope.document.defaultView) {
       currentTime:{get:()=>read().time,set:value=>{if(delegate){delegate.currentTime=value;return;}const map=active.mapping||{offset:0,playerStart:0,duration:duration()};active.seek(map.playerStart+Math.max(0,Math.min(map.duration,Number(value)-map.offset)));}},
       duration:{get:duration},paused:{get:()=>read().paused},ended:{get:()=>read().ended},seeking:{get:()=>read().seeking||false},
       playbackRate:{get:()=>read().rate},error:{get:()=>read().error||null},element:{value:isNative?master:null},
-      activePlayer:{get:()=>delegate?delegate.activePlayer:active.element},masterId:{get:()=>delegate?delegate.masterId:master.currentSrc||master.src||master.id}
+      activePlayer:{get:()=>delegate?delegate.activePlayer:active.element},masterId:{get:()=>delegate?delegate.masterId:master.currentSrc||master.src||master.id},
+      masterSourceUrl:{get:()=>delegate?delegate.masterSourceUrl:reference?.sourceUrl||master.currentSrc||master.src||''}
     });
     transport.matches=selector=>target.matches(selector);
     transport.getAttribute=name=>target.getAttribute(name);

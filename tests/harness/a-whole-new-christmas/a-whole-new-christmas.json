@@ -13,13 +13,13 @@
     "productionHashes": {
       "../../../assets/dance-moves-core.css": "C4790396B723B383CBA65D6EA62E78AF93FAB81A8FEBD9443E578EAF5E677D7D",
       "../../../assets/ks-epk-device-orientation.css": "5E1C975673AC118BCC231BF2A06C2CA2E4854F45BD626E73F66730DA617F7A20",
-      "../../../assets/dance-moves-core.js": "D5DAEF868AC84FE8932B5AF485F1370C735F0B694A2AA04025325F4CCEA0AD3C",
-      "../../../assets/dance-moves-effects.js": "EB88908054C40369A8F81C9767D058FC006FEFE9EACB223D036EDA05F72BF891",
+      "../../../assets/dance-moves-core.js": "786E07421BA6A975C16DE7FF1CE9C6F41A11FCE6F380D785D13F4A2D89E1DED7",
+      "../../../assets/dance-moves-effects.js": "2D29026545325D0169C147DFF3E57C2815597FC94B5F05013C51C64FE3DF0D63",
       "../../../assets/dance-moves-catalogue-timing.js": "F2C8232F019E304D8DDF7880D8EDB251A78C9125E9C4418FE53C324E4A7A2927",
       "../../../assets/ks-epk-device-orientation-core.js": "D49FB3D4170986A796CB7066AE5D514E089AD1A2897196742A1868A7A3466A86",
       "../../../assets/ks-epk-device-orientation.js": "6CD1014A882D61A2AD603FB73FCA02C868FE869433736CA64C41CE651B3CB010",
       "../../../assets/vendor/dancerudiments/dancerudiments-native.js": "670860F2551F43115EB798B533F65DD451BCE9E650DE9586FE2FCE3F809F9152",
-      "../../../assets/dance-moves-rudiments.js": "11C1A0A6E2C44B682BB013F1A3FE9B956766A2E8341962D3D3AB6C905C37E1B2"
+      "../../../assets/dance-moves-rudiments.js": "8565D2ED3BAE0DBFB6B6D7DC38D36930D36F3C9EA4C75A719200F164498D048F"
     },
     "inputModes": ["pointer", "touch", "keyboard", "orientation"]
   },

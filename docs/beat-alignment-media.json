@@ -1,0 +1,99 @@
+{
+  "context": "DanceMoves 3.3.0 source-bound beat alignment example in actual Edge browser",
+  "input": "Original synthetic 120 BPM click fixture; first beat 0.125 s; offset -16 pips",
+  "screenshot": "Paused first-beat seek: blue source 0.125 s, amber rhythmic tick zero",
+  "video": "Silent actual browser screenshots at retained wall-clock capture cadence; not frame-accurate performance evidence",
+  "transcription": "The native DanceRudiments bounce, playback pulse, source-time and rhythmic-time readings advance during playback. Lyric text remains attached to original source timestamps.",
+  "frame_count": 16,
+  "frame_ledger": [
+    {
+      "frame": 0,
+      "wallMilliseconds": 1792120075634,
+      "sourceSeconds": 1.235186
+    },
+    {
+      "frame": 1,
+      "wallMilliseconds": 1792120075772,
+      "sourceSeconds": 1.365459
+    },
+    {
+      "frame": 2,
+      "wallMilliseconds": 1792120075897,
+      "sourceSeconds": 1.499385
+    },
+    {
+      "frame": 3,
+      "wallMilliseconds": 1792120076076,
+      "sourceSeconds": 1.632385
+    },
+    {
+      "frame": 4,
+      "wallMilliseconds": 1792120076224,
+      "sourceSeconds": 1.765944
+    },
+    {
+      "frame": 5,
+      "wallMilliseconds": 1792120076271,
+      "sourceSeconds": 1.882867
+    },
+    {
+      "frame": 6,
+      "wallMilliseconds": 1792120076411,
+      "sourceSeconds": 1.999107
+    },
+    {
+      "frame": 7,
+      "wallMilliseconds": 1792120076534,
+      "sourceSeconds": 2.13241
+    },
+    {
+      "frame": 8,
+      "wallMilliseconds": 1792120076675,
+      "sourceSeconds": 2.268592
+    },
+    {
+      "frame": 9,
+      "wallMilliseconds": 1792120076800,
+      "sourceSeconds": 2.39849
+    },
+    {
+      "frame": 10,
+      "wallMilliseconds": 1792120076945,
+      "sourceSeconds": 2.532626
+    },
+    {
+      "frame": 11,
+      "wallMilliseconds": 1792120077074,
+      "sourceSeconds": 2.66667
+    },
+    {
+      "frame": 12,
+      "wallMilliseconds": 1792120077212,
+      "sourceSeconds": 2.797329
+    },
+    {
+      "frame": 13,
+      "wallMilliseconds": 1792120077331,
+      "sourceSeconds": 2.931918
+    },
+    {
+      "frame": 14,
+      "wallMilliseconds": 1792120077472,
+      "sourceSeconds": 3.068549
+    },
+    {
+      "frame": 15,
+      "wallMilliseconds": 1792120077613,
+      "sourceSeconds": 3.197775
+    }
+  ],
+  "generated_illustration_omission": "Actual interface captures explain this clock contract; a generated illustration adds no useful evidence.",
+  "browser_cleanup": {
+    "connected": false,
+    "contexts": 0
+  },
+  "files": {
+    "docs\\screenshots\\beat-alignment-first-beat.png": "c2c0d9e92706ce594a326c23e372064004e3b534971764dab2bf99fb0b942d0a",
+    "docs\\videos\\beat-alignment-browser.mp4": "8115f23dece23fc6c21e1c76f48ebc13e3594a360f464f676445ff1a2f373acf"
+  }
+}

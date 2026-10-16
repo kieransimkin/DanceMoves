@@ -3,7 +3,7 @@
  * Plugin Name: DanceMoves
  * Plugin URI: https://kieransimkin.co.uk/my-songs/
  * Description: BPM-synchronised web motion, effects and media clocks for JavaScript, React, Next.js and WordPress. https://kieransimkin.co.uk/
- * Version: 3.2.0
+ * Version: 3.3.0
  * Author: Kieran Simkin
  * Author URI: https://kieransimkin.co.uk/
  * Requires at least: 6.7
@@ -17,7 +17,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('DANCE_MOVES_VERSION', '3.2.0');
+define('DANCE_MOVES_VERSION', '3.3.0');
 define('KS_EPK_ORIENTATION_VERSION', DANCE_MOVES_VERSION);
 
 define('DANCE_MOVES_META_BPM', '_dance_moves_bpm');
@@ -29,6 +29,7 @@ define('DANCE_MOVES_META_EFFECT', '_dance_moves_effect');
 define('DANCE_MOVES_CLAY_STARS_PAGE_ID', 252);
 
 require_once __DIR__ . '/dance-moves-rudiments.php';
+require_once __DIR__ . '/dance-moves-beat-alignment.php';
 
 define('DANCE_MOVES_DOWNLOAD_QUERY_VAR', 'dance_moves_download');
 define('DANCE_MOVES_DOWNLOAD_SIGNATURE_QUERY_VAR', 'dance_moves_download_signature');
@@ -280,6 +281,18 @@ function dance_moves_get_page_config($page_id) {
         $source = 'fallback';
     }
 
+    $alignment = dance_moves_resolve_beat_alignment(
+        (string) get_post_meta($page_id, DANCE_MOVES_META_BEAT_ALIGNMENT, true),
+        get_post_meta($page_id, DANCE_MOVES_META_ALIGNMENT_AUDIO, true),
+        $source === 'explicit' ? $bpm : ''
+    );
+    $alignment_status = is_wp_error($alignment) ? 'invalid' : ($alignment ? $alignment['phase_status'] : 'unconfigured');
+    if (is_wp_error($alignment)) { $alignment = null; }
+    if ($alignment) {
+        $bpm = $alignment['bpm'];
+        if ($source !== 'explicit') { $source = 'analysis'; }
+    }
+
     $master_duration = get_post_meta($page_id, DANCE_MOVES_META_MASTER_DURATION, true);
     $master_duration = is_numeric($master_duration) && (float) $master_duration > 0 ? (float) $master_duration : 0.0;
 
@@ -288,6 +301,8 @@ function dance_moves_get_page_config($page_id) {
         'version' => DANCE_MOVES_VERSION,
         'bpm' => $bpm,
         'bpmSource' => $source,
+        'beatAlignment' => $alignment,
+        'beatAlignmentStatus' => $alignment_status,
         'fallbackBpm' => 120,
         'lyricTimingUrl' => dance_moves_attachment_url(get_post_meta($page_id, DANCE_MOVES_META_LYRIC_TIMING, true)),
         'lyricPopupsEnabled' => '1' === (string) get_post_meta($page_id, DANCE_MOVES_META_LYRIC_POPUPS, true),
@@ -641,6 +656,16 @@ function dance_moves_meta_auth($allowed, $meta_key, $post_id) {
 }
 
 function dance_moves_register_page_meta() {
+    register_post_meta('page', DANCE_MOVES_META_BEAT_ALIGNMENT, array(
+        'type' => 'string', 'single' => true, 'default' => '',
+        'sanitize_callback' => 'dance_moves_sanitize_beat_alignment', 'auth_callback' => 'dance_moves_meta_auth',
+        'show_in_rest' => true, 'revisions_enabled' => true,
+    ));
+    register_post_meta('page', DANCE_MOVES_META_ALIGNMENT_AUDIO, array(
+        'type' => 'integer', 'single' => true, 'default' => 0,
+        'sanitize_callback' => 'dance_moves_sanitize_attachment_id', 'auth_callback' => 'dance_moves_meta_auth',
+        'show_in_rest' => true, 'revisions_enabled' => true,
+    ));
     register_post_meta('page', DANCE_MOVES_META_BPM, array(
         'type' => 'number',
         'single' => true,
@@ -701,6 +726,8 @@ add_action('init', 'dance_moves_register_page_meta');
 function dance_moves_revision_meta_keys($keys) {
     return array_values(array_unique(array_merge($keys, array(
         DANCE_MOVES_META_BPM,
+        DANCE_MOVES_META_BEAT_ALIGNMENT,
+        DANCE_MOVES_META_ALIGNMENT_AUDIO,
         DANCE_MOVES_META_LYRIC_TIMING,
         DANCE_MOVES_META_CUE_TIMING,
         DANCE_MOVES_META_LYRIC_POPUPS,
@@ -755,6 +782,19 @@ function dance_moves_render_meta_box($post) {
         <span class="description"><?php echo $display_bpm === '' ? 'Unknown; DanceMoves currently uses the 120 BPM fallback.' : 'Stored as the page BPM property.'; ?></span>
     </p>
     <?php
+    $alignment_json = (string) get_post_meta($post->ID, DANCE_MOVES_META_BEAT_ALIGNMENT, true);
+    ?>
+    <p>
+        <label for="dance_moves_beat_alignment"><strong>Beat alignment reading (StemLab JSON)</strong></label>
+        <textarea class="widefat" rows="7" id="dance_moves_beat_alignment" name="dance_moves_beat_alignment" aria-describedby="dance-moves-alignment-help"><?php echo esc_textarea($alignment_json); ?></textarea>
+        <span class="description" id="dance-moves-alignment-help">Paste beat-alignment.json exported with --audio. Retains fractional signed pips (64 per beat), selected BPM, first beat, detector, source hashes and authority. Estimated phase remains estimated. Blank means unverified phase, not a confirmed zero offset. Lyrics and cues keep their original timestamps.</span>
+    </p>
+    <?php
+    dance_moves_file_field($post->ID, 'Analysed Master Audio', 'dance_moves_alignment_audio_id', DANCE_MOVES_META_ALIGNMENT_AUDIO, array('mp3', 'wav', 'flac', 'm4a', 'ogg'));
+    $reading = dance_moves_parse_beat_alignment($alignment_json);
+    if ($reading && !is_wp_error($reading)) {
+        echo '<p class="description">' . esc_html(sprintf('%.7f BPM; first beat %.7f s; %s pips; %s / %s; phase %s.', $reading['bpm'], $reading['first_beat_seconds'], $reading['exact_offset_pips'], $reading['bpm_basis'], $reading['analysis_id'], $reading['phase_status'])) . '</p>';
+    }
     dance_moves_file_field($post->ID, 'Lyric Timing File', 'dance_moves_lyric_timing_id', DANCE_MOVES_META_LYRIC_TIMING, array('lrc'));
     dance_moves_file_field($post->ID, 'Cue Timing File', 'dance_moves_cue_timing_id', DANCE_MOVES_META_CUE_TIMING, array('lrc', 'cue'));
     $lyric_popups_enabled = '1' === (string) get_post_meta($post->ID, DANCE_MOVES_META_LYRIC_POPUPS, true);
@@ -885,6 +925,22 @@ function dance_moves_save_page_meta($post_id) {
     }
 
     $raw_bpm = isset($_POST['dance_moves_bpm']) ? trim((string) wp_unslash($_POST['dance_moves_bpm'])) : '';
+    if (isset($_POST['dance_moves_beat_alignment'])) {
+        $alignment_json = (string) wp_unslash($_POST['dance_moves_beat_alignment']);
+        $alignment_audio = isset($_POST['dance_moves_alignment_audio_id']) ? absint($_POST['dance_moves_alignment_audio_id']) : 0;
+        $alignment = dance_moves_resolve_beat_alignment($alignment_json, $alignment_audio, $raw_bpm);
+        if (is_wp_error($alignment)) {
+            dance_moves_queue_admin_error($alignment->get_error_message() . ' Previous EPK timing metadata was preserved.');
+            return;
+        }
+        if ($alignment) {
+            update_post_meta($post_id, DANCE_MOVES_META_BEAT_ALIGNMENT, dance_moves_sanitize_beat_alignment($alignment_json));
+            update_post_meta($post_id, DANCE_MOVES_META_ALIGNMENT_AUDIO, $alignment_audio);
+        } else {
+            delete_post_meta($post_id, DANCE_MOVES_META_BEAT_ALIGNMENT);
+            delete_post_meta($post_id, DANCE_MOVES_META_ALIGNMENT_AUDIO);
+        }
+    }
     if ($raw_bpm === '') {
         delete_post_meta($post_id, DANCE_MOVES_META_BPM);
     } else {

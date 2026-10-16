@@ -11,7 +11,7 @@ def main():
     version=pkg['version']
     if not re.search(r'Version:\s*'+re.escape(version)+r'\s*\n',php):raise SystemExit('Built PHP/library versions differ; rebuild before packaging')
     if not re.search(r"define\('DANCE_MOVES_VERSION',\s*'"+re.escape(version)+r"'\)",php):raise SystemExit('Built runtime constant differs from package version')
-    for name in ['kieran-epk-device-orientation.php','dance-moves-rudiments.php']:
+    for name in ['kieran-epk-device-orientation.php','dance-moves-rudiments.php','dance-moves-beat-alignment.php']:
         if (source/name).read_bytes()!=(ROOT/name).read_bytes():raise SystemExit('PHP changed after build: '+name)
     if any(p.is_symlink() for p in source.rglob('*')):raise SystemExit('Symlinks are not accepted in package staging')
     files=sorted(p for p in source.rglob('*') if p.is_file())

@@ -34,7 +34,8 @@ assert.match(js, /ResizeObserver/);
 assert.match(js, /--dance-moves-x/);
 assert.match(js, /--dance-moves-y/);
 assert.match(js, /motion\.durationMilliseconds\(ticks\)/);
-assert.match(js, /audio\.currentTime, 0\) \/ rate/);
+// Playback phase is exercised against the compiled runtime in the shared beat
+// alignment browser test; it may now differ from unshifted source time.
 assert.match(js, /motion\.onCue\(cue, fire/);
 assert.match(js, /resume-after-seek/);
 assert.match(js, /resume-after-visible/);

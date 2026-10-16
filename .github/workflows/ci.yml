@@ -52,6 +52,14 @@ jobs:
           "${wp[@]}" plugin activate dancemoves
           "${wp[@]}" eval-file "$GITHUB_WORKSPACE/tests/wordpress-capture-integration.php" | tee "$RUNNER_TEMP/capture-core-evidence.log"
           grep -Eq 'WordPress capture core.*\([1-9][0-9]* checks\)' "$RUNNER_TEMP/capture-core-evidence.log"
+          DANCEMOVES_ALIGNMENT_EVIDENCE="$GITHUB_WORKSPACE/.build/browser-evidence" "${wp[@]}" eval-file "$GITHUB_WORKSPACE/tests/wordpress-beat-alignment-integration.php" | tee "$RUNNER_TEMP/alignment-core-evidence.log"
+          grep -Eq 'WordPress beat alignment core.*\([1-9][0-9]* checks\)' "$RUNNER_TEMP/alignment-core-evidence.log"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: wordpress-beat-alignment-evidence
+          path: .build/browser-evidence/
+          if-no-files-found: error
   contracts:
     strategy:
       fail-fast: false
@@ -75,6 +83,7 @@ jobs:
       - run: npm run check:release
       - run: npm run build
       - run: npm test
+      - run: php tests/shared/beat-alignment.php
       - run: python tests/shared/test_package_outputs.py
       - run: npm run test:legacy
       - run: python tools/package-wordpress.py
@@ -109,6 +118,8 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - run: python examples/playback-sources/generate-fixture.py
       - run: node tests/shared/playback-browser.mjs
+      - run: python examples/beat-alignment/generate-fixture.py
+      - run: node tests/shared/beat-alignment-browser.mjs
       - run: node tests/shared/child-playback-browser.mjs
       - run: npm run test:next
       - run: npm run test:next:smoke

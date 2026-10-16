@@ -105,7 +105,8 @@
     function sync() {
       var rate = Math.max(.01, finite(audio.playbackRate, 1));
       var duration = motion.durationMilliseconds(ticks) / 1000 / rate;
-      var phase = -((finite(audio.currentTime, 0) / rate) % duration);
+      var rhythmicSeconds = motion.rhythmicTime ? motion.rhythmicTime(audio) : finite(audio.currentTime, 0);
+      var phase = -(((rhythmicSeconds / rate) % duration + duration) % duration);
       state.root.style.setProperty(prefix + "-duration", duration.toFixed(6) + "s");
       state.root.style.setProperty(prefix + "-delay", phase.toFixed(6) + "s");
       state.root.dataset.danceMovesPulse = state.reduced.matches || state.forced.matches ? "inactive" : (audio.paused ? "paused" : "playing");
@@ -263,7 +264,8 @@
     function calculate(reason, staticFallback) {
       var cycleSeconds = Math.max(.001, finite(motion.durationMilliseconds(cycleTicks), 1) / 1000);
       var time = Math.max(0, finite(audio.currentTime, 0));
-      var phase = ((time - phaseOffsetSeconds) % cycleSeconds + cycleSeconds) % cycleSeconds / cycleSeconds;
+      var rhythmicSeconds = motion.rhythmicTime ? motion.rhythmicTime(audio) : time;
+      var phase = ((rhythmicSeconds - phaseOffsetSeconds) % cycleSeconds + cycleSeconds) % cycleSeconds / cycleSeconds;
       var localFrame = staticFallback ? staticFrame : Math.min(frameCount - 1, Math.floor(phase * frameCount + 1e-9));
       var mapped = mappedFrame(localFrame);
       return {

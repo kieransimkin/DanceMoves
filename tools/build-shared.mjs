@@ -42,7 +42,7 @@ fs.writeFileSync(path.join(lib,'build-manifest.json'),JSON.stringify({schema:'da
 if (target!=='library') {
   const wp=path.join(ROOT,'.build/wordpress');fs.rmSync(wp,{recursive:true,force:true});fs.mkdirSync(path.join(wp,'lib/assets'),{recursive:true});
   fs.mkdirSync(path.join(wp,'lib/styles'),{recursive:true});
-  for(const file of ['kieran-epk-device-orientation.php','dance-moves-rudiments.php','LICENSE','AGENTS.md','CONTRIBUTING.md']) fs.copyFileSync(file,path.join(wp,file));
+  for(const file of ['kieran-epk-device-orientation.php','dance-moves-rudiments.php','dance-moves-beat-alignment.php','LICENSE','AGENTS.md','CONTRIBUTING.md']) fs.copyFileSync(file,path.join(wp,file));
   // Exactly the library build: no raw assets/ sources or second engine in WordPress.
   for (const file of ['wordpress.js','admin.min.js']) fs.copyFileSync(path.join(lib,file),path.join(wp,'lib',file));
   for(const file of cssFiles) fs.copyFileSync(path.join(lib,'styles',file),path.join(wp,'lib/styles',file));

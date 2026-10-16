@@ -1,7 +1,9 @@
+import {validateBeatAlignment} from './beat-alignment.mjs';
 /** Host-neutral page properties. WordPress attachment IDs remain a host concern. */
 export const PAGE_META_KEYS = Object.freeze({
   bpm: '_dance_moves_bpm', lyric: '_dance_moves_lyric_timing_id', cue: '_dance_moves_cue_timing_id',
-  popups: '_dance_moves_lyric_popups_enabled', duration: '_dance_moves_master_duration_ms', effect: '_dance_moves_effect'
+  popups: '_dance_moves_lyric_popups_enabled', duration: '_dance_moves_master_duration_ms', effect: '_dance_moves_effect',
+  alignment: '_dance_moves_beat_alignment', alignmentAudio: '_dance_moves_beat_alignment_audio_id'
 });
 const object = value => value && typeof value === 'object' && !Array.isArray(value);
 function finite(value, name, min, max) {
@@ -20,7 +22,11 @@ function url(value, name) {
 export function validatePageConfig(input = {}) {
   if (!object(input)) throw new TypeError('Page configuration must be an object');
   const explicit = input.bpm !== undefined && input.bpm !== null && input.bpm !== '';
-  const bpm = explicit ? Math.round(finite(input.bpm, 'bpm', 20, 400) * 1000) / 1000 : 120;
+  const beatAlignment=validateBeatAlignment(input.beatAlignment);
+  const canonicalExplicit=explicit && !['fallback','analysis'].includes(input.bpmSource);
+  if (canonicalExplicit && beatAlignment && Math.abs(input.bpm-beatAlignment.bpm)>0.000500001) throw new RangeError('Stored BPM and selected beat alignment disagree; select a matching BPM basis');
+  const bpm = beatAlignment ? beatAlignment.bpm : explicit ? Math.round(finite(input.bpm, 'bpm', 20, 400) * 1000) / 1000 : 120;
+  if (explicit) finite(input.bpm, 'bpm', 20, 400);
   const effect = input.effect ?? '';
   if (!['', 'paper-planes'].includes(effect)) throw new RangeError('effect must be empty or paper-planes');
   if (input.lyricPopupsEnabled !== undefined && typeof input.lyricPopupsEnabled !== 'boolean') throw new TypeError('lyricPopupsEnabled must be boolean');
@@ -30,7 +36,8 @@ export function validatePageConfig(input = {}) {
   const pageId = input.pageId ?? 0;
   if (!Number.isSafeInteger(pageId) || pageId < 0) throw new RangeError('pageId must be a non-negative safe integer');
   return Object.freeze({pageId, bpm,
-    bpmSource: explicit && input.bpmSource !== 'fallback' ? 'explicit' : 'fallback', fallbackBpm: 120,
+    bpmSource: canonicalExplicit ? 'explicit' : beatAlignment ? 'analysis' : 'fallback', fallbackBpm: 120,
+    beatAlignment,
     ticksPerBeat: 16, tickDefinition: 'sixteenth-of-beat', longDurationQuantumTicks: 16,
     cueTimingUrl: url(input.cueTimingUrl, 'cueTimingUrl'), lyricTimingUrl: url(input.lyricTimingUrl, 'lyricTimingUrl'),
     lyricPopupsEnabled: input.lyricPopupsEnabled === true, masterDurationMilliseconds: Math.round(duration * 1000) / 1000,
@@ -50,7 +57,13 @@ export async function fromWordPressMeta(meta, resolveAttachment) {
     return (await resolveAttachment(id)) || '';
   };
   const duration = Number(meta[PAGE_META_KEYS.duration]);
-  return validatePageConfig({bpm, lyricTimingUrl: await resolve(PAGE_META_KEYS.lyric), cueTimingUrl: await resolve(PAGE_META_KEYS.cue),
+  let beatAlignment=meta[PAGE_META_KEYS.alignment] || null;
+  if (typeof beatAlignment==='string') {
+    if (beatAlignment.length>16384) throw new RangeError('Beat alignment exceeds 16 KiB');
+    beatAlignment=JSON.parse(beatAlignment);
+  }
+  if (beatAlignment) beatAlignment={...beatAlignment,source_url:await resolve(PAGE_META_KEYS.alignmentAudio)};
+  return validatePageConfig({bpm, beatAlignment, lyricTimingUrl: await resolve(PAGE_META_KEYS.lyric), cueTimingUrl: await resolve(PAGE_META_KEYS.cue),
     lyricPopupsEnabled: meta[PAGE_META_KEYS.popups] === true || String(meta[PAGE_META_KEYS.popups]) === '1',
     masterDurationMilliseconds: Number.isFinite(duration) && duration > 0 && duration <= 86400000 ? duration : 0,
     effect: meta[PAGE_META_KEYS.effect] === 'paper-planes' ? 'paper-planes' : ''});

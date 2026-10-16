@@ -2,7 +2,7 @@ export * from './rudiments';
 export type Remove = () => void;
 export type PlaybackMedia = HTMLMediaElement | PlaybackSource;
 export interface PlaybackMapping {offset?:number;duration?:number;playerStart?:number}
-export type MasterReference = HTMLMediaElement | Readonly<{id:string;duration:number;element?:HTMLMediaElement}>;
+export type MasterReference = HTMLMediaElement | Readonly<{id:string;duration:number;element?:HTMLMediaElement;sourceUrl?:string}>;
 export interface PlaybackSource extends EventTarget {
  readonly nodeType:1;readonly tagName:string;readonly element:HTMLMediaElement|null;readonly activePlayer:HTMLMediaElement|HTMLIFrameElement|null;
  currentTime:number;readonly duration:number;readonly paused:boolean;readonly ended:boolean;readonly seeking:boolean;readonly playbackRate:number;
@@ -26,8 +26,15 @@ export function createPlaybackPublisher(options:ChildPlaybackPublisherOptions):C
 export function createPlaybackReceiver(options:ChildPlaybackReceiverOptions):ChildPlaybackReceiver;
 export type Offset = Readonly<{x:number;y:number;z?:number}>;
 export type Metadata = string | {id?:string;handlerId?:string};
+export interface BeatAlignment {
+ schema:'stemlab.beat-alignment.v1';source_sha256:string;source_url:string;source_audio_verified:true;
+ source_audio:Readonly<{sample_rate:number;num_frames:number;num_channels?:number;duration_seconds?:number}>;
+ bpm:number;exact_bpm:string;bpm_basis:string;bpm_status:'canonical'|'estimated';phase_status:'estimated'|'confirmed'|'synthetic';
+ analysis_id:string;evidence_sha256:string;report_sha256:string;first_beat_seconds:number;first_beat_exact_seconds:string;
+ offset_pips:number;exact_offset_pips:string;pips_per_beat:64;canonical_first_beat_pip:0;
+}
 export interface PageConfig {
- pageId?:number;bpm?:number|null;bpmSource?:'explicit'|'fallback';lyricTimingUrl?:string;cueTimingUrl?:string;
+ pageId?:number;bpm?:number|null;bpmSource?:'explicit'|'fallback'|'analysis';beatAlignment?:BeatAlignment|null;lyricTimingUrl?:string;cueTimingUrl?:string;
  lyricPopupsEnabled?:boolean;masterDurationMilliseconds?:number;sharedControlTicks?:number;lyricDisclosureTicks?:number;
  effect?:''|'paper-planes';diagnostics?:boolean;
 }
@@ -77,6 +84,8 @@ export interface DanceMoves {
  readonly version:string;readonly bpm:number;readonly bpmSource:string;readonly ticksPerBeat:16;readonly root:HTMLElement;readonly config:Readonly<PageConfig>;
  readonly destroyed:boolean;ready:Promise<DanceMoves>;
  quantizeTicks(value:number):number;durationMilliseconds(ticks:number,bpmOverride?:number):number;currentTick(options?:Clock):number;
+ sourceTick(audio:PlaybackMedia,bpmOverride?:number):number;rhythmicTime(audio:PlaybackMedia):number;
+ beatAlignmentState(audio:PlaybackMedia):Readonly<{status:string;applied:boolean;firstBeatSeconds?:number;offsetPips?:number;sourceSha256?:string;bpmStatus?:string}>;
  nextIntervalTick(interval:number,fromTick:number,strictlyFuture?:boolean):number;
  scheduleAtInterval(interval:number,callback:(detail:IntervalDetail)=>void,options?:Clock):Remove;
  deferStart(target:HTMLElement,interval:number,options?:Clock & {start?:(detail:IntervalDetail)=>void}):Remove;
@@ -104,7 +113,8 @@ export interface DanceMoves {
 }
 export const VERSION:string;
 export const ORIENTATION_ADAPTERS:readonly OrientationAdapter[];
-export const PAGE_META_KEYS:Readonly<{bpm:string;lyric:string;cue:string;popups:string;duration:string;effect:string}>;
+export const PAGE_META_KEYS:Readonly<{bpm:string;lyric:string;cue:string;popups:string;duration:string;effect:string;alignment:string;alignmentAudio:string}>;
+export function validateBeatAlignment(input?:BeatAlignment|null):Readonly<BeatAlignment>|null;
 export function createDanceMoves(options:Options):DanceMoves;
 export function validatePageConfig(input?:PageConfig):Readonly<PageConfig>;
 export function fromWordPressMeta(meta:Record<string,unknown>,resolveAttachment?:(id:number)=>string|Promise<string>):Promise<Readonly<PageConfig>>;
