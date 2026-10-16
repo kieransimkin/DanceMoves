@@ -92,7 +92,7 @@ export interface DanceMoves {
  resetRunningAnimations(audio?:PlaybackMedia):number;discoverAudio():void;registerPlaybackSource(source:PlaybackSource):void;unregisterPlaybackSource(source:PlaybackSource):void;
  setDiagnosticsSink(callback:((record:Record<string,unknown>)=>void)|null):boolean;diagnosticsEnabled():boolean;
  applyCatalogueTiming?():Record<string,unknown>;catalogueTimingSnapshot?():Record<string,unknown>;removeCatalogueAnimationScope?():void;
- effects:Effects;rudiments:import('./rudiments').RudimentApi;
+ effects:Effects;rudiments:import('./rudiments').RudimentApi;recordings:RecordingService;
  orientationCore:Record<string,(...args:any[])=>any>;
  getOrientation():(Controller & {reset():void})|null;getClay():(Controller & Record<string,any>)|null;getPaperPlanes():Controller|null;
  createOrientation(options:{render:(point:Offset & Record<string,unknown>)=>void;windowMilliseconds?:number;minimumSpanDegrees?:number;smoothingTimeConstantMilliseconds?:number}):OrientationController;
@@ -111,3 +111,7 @@ export function fromWordPressMeta(meta:Record<string,unknown>,resolveAttachment?
 export interface Revision {revision:number;config:PageConfig;savedAt:string}
 export interface PageStore {read(id:string):Revision|null;revisions(id:string):Revision[];save(id:string,input:PageConfig,options?:{expectedRevision?:number}):Revision;restore(id:string,revision:number,options?:{expectedRevision?:number}):Revision;delete(id:string):boolean}
 export function createMemoryPageStore(options?:{maxPages?:number;maxRevisions?:number}):PageStore;
+export interface AudioRecording {format:'dancerudiments.recording';schema_version:1;pips_per_beat:64;sample_dtype:'float64';name:string;dimensions:string[];samples:number[][];clock:{bpm:number;bpm_source:string;bpm_status:'confirmed'|'estimated';beat_zero_seconds:number;phase_status:'unverified'|'estimated'|'supplied';start_pip:number};provenance?:Record<string,unknown>}
+export interface RecordingFrame {recording:string;dimensions:readonly string[];values:number[];position:{x:number;y:number;z:number};pip:number;positionPips:number;sourceBeats:number;loopProgress:null;reason:string}
+export interface RecordingController {id:string;ready:Promise<RecordingController>;setEnabled(value:boolean):void;pause():void;resume():void;refresh():void;destroy():void;teardown():void;snapshot():Record<string,unknown>}
+export interface RecordingService {load(url:string):Promise<AudioRecording>;animate(options:{id:string;root:HTMLElement;target:HTMLElement;audio:PlaybackMedia;recording:AudioRecording;offscreen?:boolean;enabled?:boolean;render:(frame:RecordingFrame)=>void}):RecordingController;get(id:string):RecordingController|null;destroyAll():void;snapshot():Record<string,unknown>}
