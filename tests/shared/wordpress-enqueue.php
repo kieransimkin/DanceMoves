@@ -8,6 +8,7 @@ function add_filter(...$args): void {}
 function absint($value): int {return abs((int)$value);}
 function sanitize_key($value): string {return preg_replace('/[^a-z0-9_\-]/','',strtolower((string)$value));}
 function esc_url_raw($value): string {return (string)$value;}
+function is_wp_error($value): bool {return $value instanceof WP_Error;}
 function wp_get_attachment_url($id): string {return '';}
 function get_queried_object_id(): int {global $page_id;return $page_id;}
 function is_page($id=0): bool {global $page;return $page;}

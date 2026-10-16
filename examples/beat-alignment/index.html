@@ -1,0 +1,28 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>DanceMoves beat alignment</title>
+<link rel="stylesheet" href="/lib/dancemoves.css"><style>body{margin:0;background:#191127;color:#f7f2ed;font:18px/1.5 system-ui}main{max-width:950px;margin:auto;padding:2rem}h1{line-height:1.1}button{font:inherit;margin:.3rem;padding:.6rem;border-radius:.4rem}audio{display:block;width:100%;margin:1rem 0}.stage{height:150px;display:grid;place-items:center;border:1px solid #51405e}.dot{width:42px;height:42px;background:#bff7df;border-radius:50%}.readings{display:grid;grid-template-columns:1fr 1fr;gap:1rem}.original{color:#80bfff}.aligned{color:#ffcc66}output{display:block;font:24px monospace}pre{font:14px monospace;white-space:pre-wrap}a{color:#bff7df}@media(max-width:550px){.readings{grid-template-columns:1fr}}</style>
+<main><p>DanceMoves · actual shared runtime · original synthetic click track</p><h1>First beat at pip zero</h1>
+<p>120 BPM. The first click is at 0.125 seconds: the signed offset is −16 native pips, or −4 DanceMoves ticks. The original song timestamps stay unchanged.</p>
+<audio id="master" src="media/master.wav" controls preload="auto"></audio>
+<button id="first">Seek first beat</button><button id="later">Seek later lyric/cue</button><button id="destroy">Destroy runtime</button>
+<div class="readings"><section class="original"><h2>Original song clock</h2><output id="source">Loading</output></section><section class="aligned"><h2>Aligned rhythmic clock</h2><output id="aligned">Loading</output></section></div>
+<div class="stage"><div class="dot" id="dot"></div></div><p id="lyric" aria-live="polite">Lyrics retain their source timestamps.</p><pre id="state"></pre>
+<p>The movement uses native DanceRudiments through DanceMoves. This synthetic example demonstrates clock composition; it is not evidence of detector accuracy or a production WordPress deployment.</p>
+<script type="module">
+import {createDanceMoves} from '/lib/index.mjs';
+const audio=document.querySelector('audio'),root=document.querySelector('main');
+const reading=await (await fetch('media/alignment.json')).json();reading.source_url=audio.src;
+const runtime=window.runtime=createDanceMoves({root,beatAlignment:reading,masterDurationMilliseconds:8000,
+  lyricTimingUrl:new URL('media/lyrics.lrc',location).href,cueTimingUrl:new URL('media/cues.cue',location).href});
+const controller=runtime.rudiments.animate({id:'aligned-native-dot',rudiment:'bounce',clock:'audio',audio,target:document.querySelector('#dot'),amplitude:45});
+runtime.effects.playbackPulse({id:'aligned-pulse',root,audio});
+runtime.onLyric(event=>{document.querySelector('#lyric').textContent=event.text;});
+document.querySelector('#first').onclick=()=>{audio.pause();audio.currentTime=.125;};
+document.querySelector('#later').onclick=()=>{audio.pause();audio.currentTime=2.125;};
+document.querySelector('#destroy').onclick=()=>{runtime.destroy();draw();};
+function draw(){if(runtime.destroyed){document.querySelector('#state').textContent=JSON.stringify({destroyed:true,resources:runtime.resources()},null,2);return;}
+ document.querySelector('#source').textContent=audio.currentTime.toFixed(3)+' seconds';
+ document.querySelector('#aligned').textContent=runtime.sourceTick(audio).toFixed(3)+' ticks';
+ document.querySelector('#state').textContent=JSON.stringify({version:runtime.version,alignment:runtime.beatAlignmentState(audio),native:controller.snapshot(),destroyed:runtime.destroyed,resources:runtime.resources()},null,2);
+ if(!runtime.destroyed)requestAnimationFrame(draw);}
+await runtime.ready;draw();
+</script></main></html>

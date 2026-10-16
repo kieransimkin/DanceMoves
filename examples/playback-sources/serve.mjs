@@ -1,7 +1,7 @@
 /** Local-only fixture server with byte ranges required by native media seeking. */
 import http from 'node:http';import fs from 'node:fs';import path from 'node:path';
 const root=path.resolve(import.meta.dirname,'../..'),port=Number(process.env.PORT||8768);
-const allowed=[path.join(root,'lib'),path.join(root,'examples/playback-sources'),path.join(root,'examples/child-playback')];
+const allowed=[path.join(root,'lib'),path.join(root,'examples/playback-sources'),path.join(root,'examples/child-playback'),path.join(root,'examples/beat-alignment')];
 const mime={'.html':'text/html','.mjs':'text/javascript','.js':'text/javascript','.css':'text/css','.wav':'audio/wav','.mp4':'video/mp4','.lrc':'text/plain','.cue':'text/plain','.json':'application/json'};
 export function response(req,res){
  if(!['GET','HEAD'].includes(req.method)){res.writeHead(405);res.end();return;}

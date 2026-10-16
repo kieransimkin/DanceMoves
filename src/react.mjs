@@ -64,14 +64,16 @@ export function Rudiment({runtime,options,children,...attributes}) {
 /** Reusable editor; persistence and authorisation belong to the host application. */
 export function PageMetadataEditor({value=EMPTY,onSave}) {
   const [draft,setDraft]=useState(()=>({...value})),[message,setMessage]=useState(''),[busy,setBusy]=useState(false);
-  useEffect(()=>setDraft({...value}),[value]);
+  const [alignmentText,setAlignmentText]=useState(()=>value.beatAlignment?JSON.stringify(value.beatAlignment,null,2):'');
+  useEffect(()=>{setDraft({...value});setAlignmentText(value.beatAlignment?JSON.stringify(value.beatAlignment,null,2):'');},[value]);
   const input=(key,label,type='text')=>h('label',{key},label,h('input',{type,value:draft[key] ?? '',step:type==='number'?'0.001':undefined,
     onChange:e=>setDraft({...draft,[key]:type==='number'?(e.target.value===''?undefined:Number(e.target.value)):e.target.value})}));
   return h('form',{onSubmit:async event=>{
     event.preventDefault();setBusy(true);setMessage('');
-    try {await onSave(validatePageConfig(draft));setMessage('Saved');}catch(error){setMessage(error.message);}finally{setBusy(false);}
+    try {await onSave(validatePageConfig({...draft,beatAlignment:alignmentText.trim()?JSON.parse(alignmentText):null}));setMessage('Saved');}catch(error){setMessage(error.message);}finally{setBusy(false);}
   }},
     input('bpm','BPM','number'),input('lyricTimingUrl','Lyric timing URL'),input('cueTimingUrl','Cue timing URL'),
+    h('label',null,'Beat alignment reading (JSON)',h('textarea',{rows:7,value:alignmentText,onChange:e=>setAlignmentText(e.target.value)})),
     input('masterDurationMilliseconds','Master duration (milliseconds)','number'),
     h('label',null,h('input',{type:'checkbox',checked:!!draft.lyricPopupsEnabled,onChange:e=>setDraft({...draft,lyricPopupsEnabled:e.target.checked})}),'Timed lyric pop-ups'),
     h('label',null,'Ambient effect',h('select',{value:draft.effect || '',onChange:e=>setDraft({...draft,effect:e.target.value})},

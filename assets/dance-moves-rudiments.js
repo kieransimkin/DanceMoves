@@ -193,9 +193,10 @@
       if (lastClock !== null && lastClock !== mode) anchor = 0;
       lastClock = mode;
       const tempo = bpm();
-      const beats = useAudio ? Math.max(0, Number.isFinite(audio.currentTime) ? audio.currentTime : 0) * tempo / 60
+      const sourceBeats = useAudio ? Math.max(0, Number.isFinite(audio.currentTime) ? audio.currentTime : 0) * tempo / 60
         : motion.currentTick({ clock: 'page' }) / 16;
-      return { beats, mode, tempo };
+      const beats = useAudio && motion.sourceTick ? motion.sourceTick(audio) / 16 : sourceBeats;
+      return { beats, sourceBeats, mode, tempo };
     }
     function blocked() {
       if (!enabled) return 'disabled';
@@ -219,7 +220,7 @@
       const position = { x: offset.x * amplitude.x, y: offset.y * amplitude.y, z: offset.z * amplitude.z };
       const detail = {
         id, root, target, audio: s.mode === 'audio' ? audio : null, rudiment: row.name,
-        clock: s.mode, sourceBeats: s.beats, bpm: s.tempo, rate,
+        clock: s.mode, sourceBeats: s.sourceBeats, rhythmicBeats: s.beats, bpm: s.tempo, rate,
         pip: neutral ? null : pip, positionPips: neutral ? null : positionPips,
         loopProgress: neutral ? 0 : modulo(precise, row.periodPips) / row.periodPips,
         durationMilliseconds: row.periodPips / 64 / rate * 60000 / s.tempo,

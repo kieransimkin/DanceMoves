@@ -12,8 +12,8 @@
       var field = $(this).closest(".dance-moves-file-field");
       var allowed = String(field.data("allowed-extensions") || "").split(",").filter(Boolean);
       var frame = wp.media({
-        title: "Choose timing file",
-        button: { text: "Use timing file" },
+        title: "Choose " + field.find("label").text(),
+        button: { text: "Use selected file" },
         multiple: false
       });
 
@@ -21,7 +21,7 @@
         var attachment = frame.state().get("selection").first().toJSON();
         var extension = extensionOf(attachment.filename);
         if (allowed.indexOf(extension) === -1) {
-          window.alert("Choose a ." + allowed.join(" or .") + " timing file.");
+          window.alert("Choose a ." + allowed.join(" or .") + " file.");
           return;
         }
         field.find("input[type=hidden]").val(attachment.id);

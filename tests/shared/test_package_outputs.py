@@ -10,7 +10,7 @@ class PackageTests(unittest.TestCase):
   (self.root/'package.json').write_text(json.dumps({'name':'@kieransimkin/dancemoves','version':'3.0.0'}))
   self.stage=self.root/'.build/wordpress';self.stage.mkdir(parents=True)
   php="<?php\n/**\n * Version: 3.0.0\n */\ndefine('DANCE_MOVES_VERSION', '3.0.0');\n"
-  for name,content in [('kieran-epk-device-orientation.php',php),('dance-moves-rudiments.php','<?php // test fixture\n')]:
+  for name,content in [('kieran-epk-device-orientation.php',php),('dance-moves-rudiments.php','<?php // test fixture\n'),('dance-moves-beat-alignment.php','<?php // synthetic metadata adapter\n')]:
    (self.root/name).write_text(content);(self.stage/name).write_text(content)
   (self.root/'LICENSE').write_text('Test fixture, not a distributed library')
   self.front=[]

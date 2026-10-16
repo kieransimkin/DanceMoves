@@ -90,6 +90,32 @@
   }
 
   var bpm = effectiveBpm(rawConfig.bpm);
+  var bpmSource = ["explicit", "analysis"].indexOf(rawConfig.bpmSource) >= 0 ? rawConfig.bpmSource : "fallback";
+
+  function beatAlignmentState(audio) {
+    var reading = rawConfig.beatAlignment;
+    if (!reading) return { status: rawConfig.beatAlignmentStatus === "invalid" ? "invalid" : "unconfigured", applied: false };
+    var source = playbackAudio(audio);
+    var identity = source && (source.masterSourceUrl || source.masterId || source.currentSrc || source.src);
+    try {
+      if (!identity || new URL(String(identity), document.baseURI).href !== new URL(reading.source_url).href) {
+        return { status: "source-mismatch", applied: false };
+      }
+    } catch (error) { return { status: "source-mismatch", applied: false }; }
+    return { status: reading.phase_status, applied: true, firstBeatSeconds: reading.first_beat_seconds,
+      offsetPips: reading.offset_pips, sourceSha256: reading.source_sha256, bpmStatus: reading.bpm_status };
+  }
+
+  function rhythmicTime(audio) {
+    var source = playbackAudio(audio);
+    var seconds = source && Number.isFinite(Number(source.currentTime)) ? Number(source.currentTime) : 0;
+    var state = beatAlignmentState(source);
+    return seconds - (state.applied ? state.firstBeatSeconds : 0);
+  }
+
+  function sourceTick(audio, bpmOverride) {
+    return rhythmicTime(audio) * effectiveBpm(bpmOverride || bpm) * TICKS_PER_BEAT / 60;
+  }
 
   function durationMilliseconds(ticks, bpmOverride) {
     return (3750 / effectiveBpm(bpmOverride || bpm)) * quantizeTicks(ticks);
@@ -99,7 +125,7 @@
     var settings = options || {};
     var audio = playbackAudio(settings.audio) || (settings.clock === "audio" ? activeAudio : null);
     if (audio && !audio.paused && !audio.ended && Number.isFinite(Number(audio.currentTime))) {
-      return Number(audio.currentTime) * effectiveBpm(settings.bpm || bpm) * TICKS_PER_BEAT / 60;
+      return sourceTick(audio, settings.bpm);
     }
     var now = window.performance && typeof window.performance.now === "function" ? window.performance.now() : Date.now();
     return Math.max(0, now - pageClockStarted) * effectiveBpm(settings.bpm || bpm) * TICKS_PER_BEAT / 60000;
@@ -379,7 +405,7 @@
       delete document.documentElement.dataset.danceMovesSharedControls;
     }
     document.documentElement.dataset.danceMovesBpm = String(bpm);
-    document.documentElement.dataset.danceMovesBpmSource = rawConfig.bpmSource === "explicit" ? "explicit" : "fallback";
+    document.documentElement.dataset.danceMovesBpmSource = bpmSource;
     document.documentElement.dataset.danceMovesVersion = String(rawConfig.version || "");
   }
 
@@ -832,7 +858,7 @@
     var root = document.querySelector(".ks-epk");
     if (root) {
       root.dataset.danceMovesBpm = String(bpm);
-      root.dataset.danceMovesBpmSource = rawConfig.bpmSource === "explicit" ? "explicit" : "fallback";
+      root.dataset.danceMovesBpmSource = bpmSource;
       if (rawConfig.lyricTimingUrl) root.dataset.danceMovesLyricTiming = String(rawConfig.lyricTimingUrl);
       if (rawConfig.cueTimingUrl) root.dataset.danceMovesCueTiming = String(rawConfig.cueTimingUrl);
       var sharedSelectors = [".ks-epk-lyrics-track summary span[aria-hidden]"];
@@ -857,11 +883,14 @@
   var api = {
     version: String(rawConfig.version || ""),
     bpm: bpm,
-    bpmSource: rawConfig.bpmSource === "explicit" ? "explicit" : "fallback",
+    bpmSource: bpmSource,
     ticksPerBeat: TICKS_PER_BEAT,
     quantizeTicks: quantizeTicks,
     durationMilliseconds: durationMilliseconds,
     currentTick: currentTick,
+    sourceTick: sourceTick,
+    rhythmicTime: rhythmicTime,
+    beatAlignmentState: beatAlignmentState,
     nextIntervalTick: nextIntervalTick,
     scheduleAtInterval: scheduleAtInterval,
     deferStart: deferStart,

@@ -10,7 +10,7 @@ run(process.execPath,['tools/prepare-test-harnesses.cjs']);
 const all=files(root).filter(p=>!p.split(path.sep).join('/').includes('/tests/fixtures/failing/'));
 for(const p of all){if(p.endsWith('.php'))run('php',['-l',p]);else if(/\.(?:js|cjs|mjs)$/.test(p))run(process.execPath,['--check',p]);}
 for(const name of fs.readdirSync('tests').filter(n=>n.endsWith('.test.cjs')).sort())run(process.execPath,['tests/'+name]);
-for(const name of ['validate-clay-transform.php','validate-clay-legacy-collision.php','validate-epk-download-paths.php','rudiments-wordpress.php','wordpress-examples-configure.test.php','shared/wordpress-enqueue.php'])run('php',['tests/'+name]);
+for(const name of ['validate-clay-transform.php','validate-clay-legacy-collision.php','validate-epk-download-paths.php','rudiments-wordpress.php','wordpress-examples-configure.test.php','shared/wordpress-enqueue.php','shared/beat-alignment.php'])run('php',['tests/'+name]);
 run('python',['-X','utf8','tools/validate-effect-harness.py','tests/harness/plugin-core','--mode','scaffold']);
 for(const name of ['clay-stars','california-screamin','a-whole-new-christmas'])run('python',['-X','utf8','tools/validate-effect-harness.py',`tests/harness/${name}`,'--mode','scaffold','--manifest-file',`tests/harness/${name}/${name}.json`,'--shared-root','tests/harness/plugin-core','--candidate-file',`qa/${name}-unit-candidate.html`]);
 for(const name of ['test-harness-candidate-selection.py','test-wordpress-examples.py','shared/test_package_outputs.py'])run('python',['-X','utf8','tests/'+name]);

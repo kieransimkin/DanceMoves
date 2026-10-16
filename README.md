@@ -1,7 +1,22 @@
 # DanceMoves
 
-**3.2.0** adds native, non-looping playback of StemLab/DanceRudiments audio-derived movement recordings.  `runtime.recordings` composes the existing audio clock, shared player mapping, accessibility preferences and lifecycle. Captured BPM must match page metadata; samples retain their original integer-pip clock and never wrap. See [recording playback](docs/audio-recording-playback.md).
+**3.3.0** adds source-bound beat alignment, connecting saved StemLab BPM/first-beat readings
+to the shared audio clock. WordPress's **EPK Timing** panel stores the reading
+and verifies its selected master attachment by SHA-256. Procedural rudiments,
+audio interval starts, pulses and sprite cycles use its fractional phase after
+clip/preroll mapping; audio and lyric/cue timestamps keep their original clock.
+Detector phase and fitted BPM remain labelled estimates. See
+[beat-alignment setup, APIs and verification](docs/beat-alignment.md).
 
+![Actual DanceMoves 3.3.0 example paused on the first beat: source time 0.125 seconds and rhythmic position zero](docs/screenshots/beat-alignment-first-beat.png)
+
+The original synthetic click example starts its first beat at 0.125 seconds.
+The blue source clock and amber rhythmic clock remain separately inspectable.
+[Watch the actual browser demonstration](docs/videos/beat-alignment-browser.mp4)
+(silent; native bounce, pulse and clock readings advance while lyric timestamps
+retain source time). Capture context and hashes: [media receipt](docs/beat-alignment-media.json).
+
+**3.2.0** adds native, non-looping playback of StemLab/DanceRudiments audio-derived movement recordings.  `runtime.recordings` composes the existing audio clock, shared player mapping, accessibility preferences and lifecycle. Captured BPM must match page metadata; samples retain their original integer-pip clock and never wrap. See [recording playback](docs/audio-recording-playback.md).
 
 **3.1.23** secures WordPress motion-capture writes with authenticated
 `manage_options` authorization. The private capture administration UI uses the
