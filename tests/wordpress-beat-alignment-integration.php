@@ -45,6 +45,7 @@ try {
     ob_start();dance_moves_render_meta_box(get_post($id));$html=ob_get_clean();
     $check(str_contains($html,'Beat alignment reading (StemLab JSON)') && str_contains($html,'Analysed Master Audio'),'real metabox renders both fields');
     $check(str_contains($html,'phase estimated'),'real metabox exposes authority');
+    $check(str_contains($html,'source-bound analysis estimate 120.0000000 BPM') && !str_contains($html,'currently uses the 120 BPM fallback'),'metabox describes the active analysis BPM accurately');
     $evidence=getenv('DANCEMOVES_ALIGNMENT_EVIDENCE');
     if ($evidence) {
         wp_mkdir_p($evidence);

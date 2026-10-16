@@ -66,6 +66,9 @@ confirmation. Estimated phase stays estimated; an analysis-derived working BPM
 has `bpmSource: 'analysis'`, separate from artist-confirmed canonical metadata.
 An explicit stored BPM must agree with the selected reading (within its existing
 three-decimal storage precision); the reading's full tempo precision is used.
+The editor describes an active analysis-derived BPM explicitly; it does not
+label that reading as the 120 BPM fallback. An invalid saved master association
+shows an unavailable reading while retaining its metadata for correction.
 A single page reading applies to its exact master only. Distinct tracks need
 their own verified source association and scope; a title or equal duration is
 insufficient. A constant grid is not proof of variable-tempo or whole-song fit.

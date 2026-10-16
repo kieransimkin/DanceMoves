@@ -775,11 +775,16 @@ function dance_moves_render_meta_box($post) {
     wp_nonce_field('dance_moves_save_epk_timing', 'dance_moves_epk_timing_nonce');
     $stored_bpm = get_post_meta($post->ID, DANCE_MOVES_META_BPM, true);
     $display_bpm = is_numeric($stored_bpm) && (float) $stored_bpm >= 20 && (float) $stored_bpm <= 400 ? $stored_bpm : '';
+    $clock_config = dance_moves_get_page_config($post->ID);
+    $bpm_description = $display_bpm === '' ? 'Unknown; DanceMoves currently uses the 120 BPM fallback.' : 'Stored as the page BPM property.';
+    if ($display_bpm === '' && $clock_config['bpmSource'] === 'analysis') {
+        $bpm_description = sprintf('Canonical BPM unknown; using the source-bound analysis estimate %.7f BPM.', $clock_config['bpm']);
+    }
     ?>
     <p>
         <label for="dance_moves_bpm"><strong>BPM</strong></label>
         <input class="widefat" type="number" min="20" max="400" step="0.001" id="dance_moves_bpm" name="dance_moves_bpm" value="<?php echo esc_attr($display_bpm); ?>" placeholder="120">
-        <span class="description"><?php echo $display_bpm === '' ? 'Unknown; DanceMoves currently uses the 120 BPM fallback.' : 'Stored as the page BPM property.'; ?></span>
+        <span class="description"><?php echo esc_html($bpm_description); ?></span>
     </p>
     <?php
     $alignment_json = (string) get_post_meta($post->ID, DANCE_MOVES_META_BEAT_ALIGNMENT, true);
@@ -791,9 +796,11 @@ function dance_moves_render_meta_box($post) {
     </p>
     <?php
     dance_moves_file_field($post->ID, 'Analysed Master Audio', 'dance_moves_alignment_audio_id', DANCE_MOVES_META_ALIGNMENT_AUDIO, array('mp3', 'wav', 'flac', 'm4a', 'ogg'));
-    $reading = dance_moves_parse_beat_alignment($alignment_json);
-    if ($reading && !is_wp_error($reading)) {
+    $reading = $clock_config['beatAlignment'];
+    if ($reading) {
         echo '<p class="description">' . esc_html(sprintf('%.7f BPM; first beat %.7f s; %s pips; %s / %s; phase %s.', $reading['bpm'], $reading['first_beat_seconds'], $reading['exact_offset_pips'], $reading['bpm_basis'], $reading['analysis_id'], $reading['phase_status'])) . '</p>';
+    } elseif ($clock_config['beatAlignmentStatus'] === 'invalid') {
+        echo '<p class="description">The saved reading cannot be applied: its values or selected master no longer validate. Existing timing metadata is retained.</p>';
     }
     dance_moves_file_field($post->ID, 'Lyric Timing File', 'dance_moves_lyric_timing_id', DANCE_MOVES_META_LYRIC_TIMING, array('lrc'));
     dance_moves_file_field($post->ID, 'Cue Timing File', 'dance_moves_cue_timing_id', DANCE_MOVES_META_CUE_TIMING, array('lrc', 'cue'));
