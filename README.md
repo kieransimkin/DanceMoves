@@ -1,5 +1,8 @@
 # DanceMoves
 
+**3.2.0** adds native, non-looping playback of StemLab/DanceRudiments audio-derived movement recordings.  `runtime.recordings` composes the existing audio clock, shared player mapping, accessibility preferences and lifecycle. Captured BPM must match page metadata; samples retain their original integer-pip clock and never wrap. See [recording playback](docs/audio-recording-playback.md).
+
+
 **3.1.23** secures WordPress motion-capture writes with authenticated
 `manage_options` authorization. The private capture administration UI uses the
 same capability. Published tokens no longer authorize uploads; cookie clients

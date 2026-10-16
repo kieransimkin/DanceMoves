@@ -5,6 +5,7 @@ import {createOrientationController} from './orientation.mjs';
 import {connectPhoneMotion} from './phone-motion.mjs';
 import {createMotionRecorder} from './recorder.mjs';
 import {installPlayback} from './playback.mjs';
+import {createRecordingService} from './recordings.mjs';
 
 import {installChildPlayback} from './child-playback.mjs';
 export {createPlaybackPublisher, createPlaybackReceiver} from './child-playback.mjs';
@@ -54,6 +55,7 @@ export function createDanceMoves(options = {}) {
     api = w.DanceMoves;
     Object.assign(api, {
       root, config, effects: w.DanceMovesEffects, rudiments: w.DanceMovesRudiments,
+      recordings: createRecordingService(scope,w.DanceMovesRudiments,config),
       orientationCore: w.KSEpkOrientationCore,
       getOrientation: () => w.__ksEpkOrientationRuntime || null,
       getClay: () => w.DanceMovesClayStars || null,
