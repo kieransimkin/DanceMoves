@@ -19,7 +19,7 @@
       "../../../assets/ks-epk-device-orientation-core.js": "D49FB3D4170986A796CB7066AE5D514E089AD1A2897196742A1868A7A3466A86",
       "../../../assets/ks-epk-device-orientation.js": "6CD1014A882D61A2AD603FB73FCA02C868FE869433736CA64C41CE651B3CB010",
       "../../../assets/vendor/dancerudiments/dancerudiments-native.js": "670860F2551F43115EB798B533F65DD451BCE9E650DE9586FE2FCE3F809F9152",
-      "../../../assets/dance-moves-rudiments.js": "E0338CB91D65B72B1B3F79A87BEBE767B57D0416AEB55551050596C73D495FD9"
+      "../../../assets/dance-moves-rudiments.js": "8565D2ED3BAE0DBFB6B6D7DC38D36930D36F3C9EA4C75A719200F164498D048F"
     },
     "inputModes": ["pointer", "touch", "keyboard", "orientation"]
   },
