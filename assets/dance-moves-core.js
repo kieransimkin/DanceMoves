@@ -1049,7 +1049,7 @@
     onCue: onCue,
     onLyric: onLyric,
     onWord: onWord,
-    parseWordTimingFile: parseWordTimingFile,
+    parseWordTimingFile: typeof parseWordTimingFile === 'function' ? parseWordTimingFile : null,
     fireCue: fireCue,
     registerAnimationScope: registerAnimationScope,
     resetRunningAnimations: resetRunningAnimations,
