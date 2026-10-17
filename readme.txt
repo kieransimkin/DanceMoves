@@ -4,7 +4,7 @@ Tags: animation, music, accessibility
 Requires at least: 6.7
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 3.3.0
+Stable tag: 3.4.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 
@@ -16,7 +16,7 @@ A shared runtime for BPM-, cue- and lyric-timed creative effects, orientation in
 
 No external service is required and no external executable code is downloaded. Device orientation is used locally when explicitly connected. The optional motion-lab capture feature stores submitted samples only after a participant actively chooses to record and upload; it is not analytics and does not run automatically on ordinary pages. Uploads and the private capture administration UI require an authenticated WordPress administrator with manage_options. Browser uploads use a fresh WordPress REST nonce and same-origin credentials; no published token authorizes uploads. Site owners must review capture consent and retention before enabling a lab. Local recording/download does not require an upload.
 
-Human-readable JavaScript source and reproducible build instructions for bundled scripts and WebAssembly: https://github.com/kieransimkin/DanceMoves/tree/v3.3.0/src and https://github.com/kieransimkin/DanceMoves/tree/v3.3.0/tools . Run npm ci and npm run build. Rhythmic function source: https://github.com/kieransimkin/DanceRudiments .
+Human-readable JavaScript source and reproducible build instructions for bundled scripts and WebAssembly: https://github.com/kieransimkin/DanceMoves/tree/v3.4.0/src and https://github.com/kieransimkin/DanceMoves/tree/v3.4.0/tools . Run npm ci and npm run build. Rhythmic function source: https://github.com/kieransimkin/DanceRudiments .
 
 Author and ecosystem: https://kieransimkin.co.uk/ and https://kieransimkin.co.uk/danceflow/
 
