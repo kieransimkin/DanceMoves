@@ -33,8 +33,18 @@ export interface BeatAlignment {
  analysis_id:string;evidence_sha256:string;report_sha256:string;first_beat_seconds:number;first_beat_exact_seconds:string;
  offset_pips:number;exact_offset_pips:string;pips_per_beat:64;canonical_first_beat_pip:0;
 }
+export interface BeatTimelineAnchor {beat:number;frame:number;source:'consensus'|'corrected'|'manual';reference_frame:number|null}
+export interface BeatTimeline {
+ schema:'stemlab.beat-timeline.v1';pips_per_beat:64;consensus_sha256:string;origin_beat:number;
+ review_status:'estimated'|'artist_confirmed';source_url?:string;
+ source_audio:{sha256:string;sample_rate:number;num_frames:number;num_channels:number;duration_seconds?:number};
+ beats:BeatTimelineAnchor[];
+ sync?:{beat_1_index:number;beat_1_source_frame:number;beat_1_start_seconds:number;beat_1_start_pips:number;sync_phase_offset_pips:number;exact_phase_offset_pips:string;pips_per_beat:64;canonical_first_beat_pip:0};
+ beat_timeline?:Array<{beat:number;source_frame:number;pip:number;time_seconds:number;consensus_reference_frame:number|null}>;
+ tempo_segments?:Array<{start_frame:number;end_frame:number;bpm:number}>;
+}
 export interface PageConfig {
- pageId?:number;bpm?:number|null;bpmSource?:'explicit'|'fallback'|'analysis';beatAlignment?:BeatAlignment|null;lyricTimingUrl?:string;cueTimingUrl?:string;
+ pageId?:number;bpm?:number|null;bpmSource?:'explicit'|'fallback'|'analysis';beatAlignment?:BeatAlignment|null;beatTimeline?:BeatTimeline|null;lyricTimingUrl?:string;cueTimingUrl?:string;
  lyricPopupsEnabled?:boolean;masterDurationMilliseconds?:number;sharedControlTicks?:number;lyricDisclosureTicks?:number;
  effect?:''|'paper-planes';diagnostics?:boolean;
 }
@@ -85,7 +95,9 @@ export interface DanceMoves {
  readonly destroyed:boolean;ready:Promise<DanceMoves>;
  quantizeTicks(value:number):number;durationMilliseconds(ticks:number,bpmOverride?:number):number;currentTick(options?:Clock):number;
  sourceTick(audio:PlaybackMedia,bpmOverride?:number):number;rhythmicTime(audio:PlaybackMedia):number;
- beatAlignmentState(audio:PlaybackMedia):Readonly<{status:string;applied:boolean;firstBeatSeconds?:number;offsetPips?:number;sourceSha256?:string;bpmStatus?:string}>;
+ tempoAt(audio:PlaybackMedia,bpmOverride?:number):number;durationMillisecondsAt(audio:PlaybackMedia,ticks:number):number;
+ beatTimelineState(audio:PlaybackMedia):Readonly<{status:string;applied:boolean;mode:'constant'|'variable';firstBeatSeconds?:number;offsetPips?:number;sourceSha256?:string}>;
+ beatAlignmentState(audio:PlaybackMedia):Readonly<{status:string;applied:boolean;mode?:'constant'|'variable';firstBeatSeconds?:number;offsetPips?:number;sourceSha256?:string;bpmStatus?:string}>;
  nextIntervalTick(interval:number,fromTick:number,strictlyFuture?:boolean):number;
  scheduleAtInterval(interval:number,callback:(detail:IntervalDetail)=>void,options?:Clock):Remove;
  deferStart(target:HTMLElement,interval:number,options?:Clock & {start?:(detail:IntervalDetail)=>void}):Remove;
@@ -113,8 +125,12 @@ export interface DanceMoves {
 }
 export const VERSION:string;
 export const ORIENTATION_ADAPTERS:readonly OrientationAdapter[];
-export const PAGE_META_KEYS:Readonly<{bpm:string;lyric:string;cue:string;popups:string;duration:string;effect:string;alignment:string;alignmentAudio:string}>;
+export const PAGE_META_KEYS:Readonly<{bpm:string;lyric:string;cue:string;popups:string;duration:string;effect:string;alignment:string;alignmentAudio:string;beatTimeline:string;useBeatTimeline:string}>;
 export function validateBeatAlignment(input?:BeatAlignment|null):Readonly<BeatAlignment>|null;
+export function validateBeatTimeline(input?:BeatTimeline|null,options?:{requireSourceUrl?:boolean}):Readonly<BeatTimeline>|null;
+export function phasePipsAtSeconds(map:BeatTimeline,sourceSeconds:number):number;
+export function tempoAtSeconds(map:BeatTimeline,sourceSeconds:number):number;
+export function tickAtSeconds(map:BeatTimeline,sourceSeconds:number):number;
 export function createDanceMoves(options:Options):DanceMoves;
 export function validatePageConfig(input?:PageConfig):Readonly<PageConfig>;
 export function fromWordPressMeta(meta:Record<string,unknown>,resolveAttachment?:(id:number)=>string|Promise<string>):Promise<Readonly<PageConfig>>;

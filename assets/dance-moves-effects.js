@@ -104,9 +104,10 @@
     var prefix = String(options.propertyPrefix || "--dance-moves-pulse").replace(/-+$/, "");
     function sync() {
       var rate = Math.max(.01, finite(audio.playbackRate, 1));
-      var duration = motion.durationMilliseconds(ticks) / 1000 / rate;
-      var rhythmicSeconds = motion.rhythmicTime ? motion.rhythmicTime(audio) : finite(audio.currentTime, 0);
-      var phase = -(((rhythmicSeconds / rate) % duration + duration) % duration);
+      var duration = (motion.durationMillisecondsAt ? motion.durationMillisecondsAt(audio,ticks) : motion.durationMilliseconds(ticks)) / 1000 / rate;
+      var nowTick = motion.sourceTick ? motion.sourceTick(audio) : finite(audio.currentTime, 0) * motion.bpm * 16 / 60;
+      var progress = ((nowTick % ticks) + ticks) % ticks / ticks;
+      var phase = -progress * duration;
       state.root.style.setProperty(prefix + "-duration", duration.toFixed(6) + "s");
       state.root.style.setProperty(prefix + "-delay", phase.toFixed(6) + "s");
       state.root.dataset.danceMovesPulse = state.reduced.matches || state.forced.matches ? "inactive" : (audio.paused ? "paused" : "playing");
@@ -145,8 +146,8 @@
       clear("restart"); count += 1;
       state.root.classList.add(className);
       state.root.dataset.danceMovesCueEffect = "active";
-      if (typeof options.render === "function") options.render({ root: state.root, detail: detail, count: count, durationMilliseconds: motion.durationMilliseconds(durationTicks) });
-      timer = window.setTimeout(function () { clear("complete"); }, motion.durationMilliseconds(durationTicks));
+      if (typeof options.render === "function") options.render({ root: state.root, detail: detail, count: count, durationMilliseconds: motion.durationMillisecondsAt ? motion.durationMillisecondsAt(detail?.audio,durationTicks) : motion.durationMilliseconds(durationTicks) });
+      timer = window.setTimeout(function () { clear("complete"); }, motion.durationMillisecondsAt ? motion.durationMillisecondsAt(detail?.audio,durationTicks) : motion.durationMilliseconds(durationTicks));
     }
     var unsubscribe = motion.onCue(cue, fire, { id: state.id });
     listen(state.reduced, "change", function () { if (state.reduced.matches) clear("reduced-motion"); }, undefined, state.removers);
@@ -262,10 +263,12 @@
       return { sourceFrame: sourceFrame, column: sourceFrame % columns, row: Math.floor(sourceFrame / columns) };
     }
     function calculate(reason, staticFallback) {
-      var cycleSeconds = Math.max(.001, finite(motion.durationMilliseconds(cycleTicks), 1) / 1000);
+      var cycleSeconds = Math.max(.001, finite(motion.durationMillisecondsAt ? motion.durationMillisecondsAt(audio,cycleTicks) : motion.durationMilliseconds(cycleTicks), 1) / 1000);
       var time = Math.max(0, finite(audio.currentTime, 0));
-      var rhythmicSeconds = motion.rhythmicTime ? motion.rhythmicTime(audio) : time;
-      var phase = ((rhythmicSeconds - phaseOffsetSeconds) % cycleSeconds + cycleSeconds) % cycleSeconds / cycleSeconds;
+      var localBpm = motion.tempoAt ? motion.tempoAt(audio) : motion.bpm;
+      var currentTicks = motion.sourceTick ? motion.sourceTick(audio) : time * motion.bpm * 16 / 60;
+      var secondsOffsetTicks = phaseOffsetSeconds * localBpm * 16 / 60;
+      var phase = ((currentTicks - secondsOffsetTicks) % cycleTicks + cycleTicks) % cycleTicks / cycleTicks;
       var localFrame = staticFallback ? staticFrame : Math.min(frameCount - 1, Math.floor(phase * frameCount + 1e-9));
       var mapped = mappedFrame(localFrame);
       return {

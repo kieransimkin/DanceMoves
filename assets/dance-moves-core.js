@@ -90,31 +90,78 @@
   }
 
   var bpm = effectiveBpm(rawConfig.bpm);
+  var adoptedTicks=[];
+  function beatDurationVariable(ticks) {
+    var count=Math.round(Number(ticks));
+    if(!Number.isSafeInteger(count)||count<1||count>65536)throw new RangeError('CSS tempo ticks must be 1..65536');
+    if(adoptedTicks.indexOf(count)<0)adoptedTicks.push(count);
+    var key='--dance-moves-adopted-'+count+'t';
+    document.documentElement.style.setProperty(key,(3750*count/(displayedTempo||bpm)).toFixed(6)+'ms');
+    return key;
+  }
   var bpmSource = ["explicit", "analysis"].indexOf(rawConfig.bpmSource) >= 0 ? rawConfig.bpmSource : "fallback";
 
-  function beatAlignmentState(audio) {
-    var reading = rawConfig.beatAlignment;
-    if (!reading) return { status: rawConfig.beatAlignmentStatus === "invalid" ? "invalid" : "unconfigured", applied: false };
-    var source = playbackAudio(audio);
+  // Source time -> variable rhythmic phase is never an affine BPM approximation.
+  // Inputs are validated by the shared config layer and bound to the selected master.
+  var timelineOrigin=rawConfig.beatTimeline ? rawConfig.beatTimeline.beats.find(function(row){return row.beat===rawConfig.beatTimeline.origin_beat;}) : null;
+  function matchesBeatMaster(source, reading) {
     var identity = source && (source.masterSourceUrl || source.masterId || source.currentSrc || source.src);
-    try {
-      if (!identity || new URL(String(identity), document.baseURI).href !== new URL(reading.source_url).href) {
-        return { status: "source-mismatch", applied: false };
-      }
-    } catch (error) { return { status: "source-mismatch", applied: false }; }
-    return { status: reading.phase_status, applied: true, firstBeatSeconds: reading.first_beat_seconds,
-      offsetPips: reading.offset_pips, sourceSha256: reading.source_sha256, bpmStatus: reading.bpm_status };
+    try { return Boolean(identity && reading && new URL(String(identity), document.baseURI).href === new URL(reading.source_url).href); }
+    catch (error) { return false; }
   }
-
+  function timelineInterval(map, sourceSeconds) {
+    var beats=map.beats, frame=sourceSeconds*map.source_audio.sample_rate;
+    var low=0,high=beats.length-1;
+    while(low<high){var mid=Math.floor((low+high)/2);if(beats[mid].frame<=frame)low=mid+1;else high=mid;}
+    var i=Math.max(0,Math.min(beats.length-2,beats[low].frame<=frame?low:low-1));
+    return {index:i,frame:frame,left:beats[i],right:beats[i+1]};
+  }
+  function timelinePips(map, seconds) {
+    var s=timelineInterval(map,seconds);
+    return 64*((s.left.beat-map.origin_beat)+(s.frame-s.left.frame)*(s.right.beat-s.left.beat)/(s.right.frame-s.left.frame));
+  }
+  function beatTimelineState(audio) {
+    var reading=rawConfig.beatTimeline;
+    if (!reading) return {status:rawConfig.beatTimelineStatus==='invalid'?'invalid':'unconfigured',applied:false,mode:'constant'};
+    var source=playbackAudio(audio);
+    if(!matchesBeatMaster(source,reading))return {status:'source-mismatch',applied:false,mode:'constant'};
+    var origin=timelineOrigin;
+    return {status:reading.review_status==='artist_confirmed'?'confirmed':'estimated',applied:true,mode:'variable',
+      firstBeatSeconds:origin.frame/reading.source_audio.sample_rate,offsetPips:timelinePips(reading,0),
+      sourceSha256:reading.source_audio.sha256,bpmStatus:reading.review_status};
+  }
+  function beatAlignmentState(audio) {
+    var timeline=beatTimelineState(audio);
+    if(timeline.applied)return timeline;
+    var reading=rawConfig.beatAlignment;
+    if (!reading) return { status: rawConfig.beatAlignmentStatus === 'invalid' ? 'invalid' : 'unconfigured', applied: false, mode:'constant' };
+    var source=playbackAudio(audio);
+    if (!matchesBeatMaster(source,reading)) return {status:'source-mismatch',applied:false,mode:'constant'};
+    return {status:reading.phase_status,applied:true,mode:'constant',firstBeatSeconds:reading.first_beat_seconds,
+      offsetPips:reading.offset_pips,sourceSha256:reading.source_sha256,bpmStatus:reading.bpm_status};
+  }
   function rhythmicTime(audio) {
-    var source = playbackAudio(audio);
-    var seconds = source && Number.isFinite(Number(source.currentTime)) ? Number(source.currentTime) : 0;
-    var state = beatAlignmentState(source);
-    return seconds - (state.applied ? state.firstBeatSeconds : 0);
+    var source=playbackAudio(audio);
+    var seconds=source && Number.isFinite(Number(source.currentTime))?Number(source.currentTime):0;
+    var state=beatAlignmentState(source);
+    return seconds-(state.applied?state.firstBeatSeconds:0);
   }
-
+  function tempoAt(audio, fallback) {
+    var source=playbackAudio(audio),map=rawConfig.beatTimeline;
+    if(map&&matchesBeatMaster(source,map)&&Number.isFinite(Number(source.currentTime))) {
+      var s=timelineInterval(map,Number(source.currentTime));
+      return 60*map.source_audio.sample_rate*(s.right.beat-s.left.beat)/(s.right.frame-s.left.frame);
+    }
+    return effectiveBpm(fallback||bpm);
+  }
   function sourceTick(audio, bpmOverride) {
-    return rhythmicTime(audio) * effectiveBpm(bpmOverride || bpm) * TICKS_PER_BEAT / 60;
+    var source=playbackAudio(audio),map=rawConfig.beatTimeline;
+    if(map&&matchesBeatMaster(source,map)&&Number.isFinite(Number(source.currentTime)))
+      return timelinePips(map,Number(source.currentTime))/4;
+    return rhythmicTime(source)*effectiveBpm(bpmOverride||bpm)*TICKS_PER_BEAT/60;
+  }
+  function durationMillisecondsAt(audio, ticks) {
+    return 3750*quantizeTicks(ticks)/tempoAt(audio);
   }
 
   function durationMilliseconds(ticks, bpmOverride) {
@@ -384,29 +431,50 @@
       .sort(function (left, right) { return left.time - right.time; });
   }
 
-  function setTimingProperties() {
+  function setTimingProperties(localTempo) {
     var style = document.documentElement.style;
+    var timingBpm = Number.isFinite(Number(localTempo)) && Number(localTempo)>0 ? Number(localTempo) : bpm;
+    var localDuration = function(ticks){return 3750*quantizeTicks(ticks)/timingBpm;};
     var sharedControlTicks = Number(rawConfig.sharedControlTicks) || 0;
     var lyricDisclosureTicks = quantizeTicks(Number(rawConfig.lyricDisclosureTicks) || 6);
-    style.setProperty("--dance-moves-beat", (60000 / bpm).toFixed(6) + "ms");
-    style.setProperty("--dance-moves-tick", (3750 / bpm).toFixed(6) + "ms");
+    style.setProperty("--dance-moves-beat", (60000 / timingBpm).toFixed(6) + "ms");
+    style.setProperty("--dance-moves-tick", (3750 / timingBpm).toFixed(6) + "ms");
     CSS_TICKS.forEach(function (ticks) {
-      style.setProperty("--dance-moves-" + ticks + "t", durationMilliseconds(ticks).toFixed(6) + "ms");
+      style.setProperty("--dance-moves-" + ticks + "t", localDuration(ticks).toFixed(6) + "ms");
     });
-    style.setProperty("--dance-moves-neg-64t", (-durationMilliseconds(64)).toFixed(6) + "ms");
-    style.setProperty("--dance-moves-lyric-disclosure-duration", durationMilliseconds(lyricDisclosureTicks).toFixed(6) + "ms");
+    style.setProperty("--dance-moves-neg-64t", (-localDuration(64)).toFixed(6) + "ms");
+    style.setProperty("--dance-moves-lyric-disclosure-duration", localDuration(lyricDisclosureTicks).toFixed(6) + "ms");
+    adoptedTicks.forEach(function(ticks){style.setProperty('--dance-moves-adopted-'+ticks+'t',(3750*ticks/timingBpm).toFixed(6)+'ms');});
     style.setProperty("--dance-moves-lyric-disclosure-ticks", String(lyricDisclosureTicks));
     if (sharedControlTicks > 0) {
       sharedControlTicks = quantizeTicks(sharedControlTicks);
-      style.setProperty("--dance-moves-shared-control-duration", durationMilliseconds(sharedControlTicks).toFixed(6) + "ms");
+      style.setProperty("--dance-moves-shared-control-duration", localDuration(sharedControlTicks).toFixed(6) + "ms");
       style.setProperty("--dance-moves-shared-control-ticks", String(sharedControlTicks));
       document.documentElement.dataset.danceMovesSharedControls = "true";
     } else {
       delete document.documentElement.dataset.danceMovesSharedControls;
     }
     document.documentElement.dataset.danceMovesBpm = String(bpm);
+    style.setProperty("--dance-moves-local-bpm", String(timingBpm));
     document.documentElement.dataset.danceMovesBpmSource = bpmSource;
     document.documentElement.dataset.danceMovesVersion = String(rawConfig.version || "");
+  }
+
+  var displayedTempo=null;
+  function syncVariableTempo(audio) {
+    // Audio effects use sourceTick (exact phase). These CSS variables cover
+    // BPM-length timing on owned page styles without touching unrelated pages.
+    if (!rawConfig.beatTimeline) return;
+    var state=beatTimelineState(audio),local=state.applied?tempoAt(audio):bpm;
+    if (displayedTempo===null || Math.abs(local-displayedTempo)>1e-7) {
+      displayedTempo=local;setTimingProperties(local);
+    }
+    if (state.applied) {
+      var ticks=sourceTick(audio),style=document.documentElement.style;
+      style.setProperty('--dance-moves-rhythmic-ticks',String(ticks));
+      style.setProperty('--dance-moves-rhythmic-pips',String(ticks*4));
+      style.setProperty('--dance-moves-beat-phase',String(((ticks/16)%1+1)%1));
+    }
   }
 
   function registerAnimationScope(root, selectors) {
@@ -735,6 +803,7 @@
       var now = 0;
       try {
         now = positiveNumber(audio.currentTime);
+        syncVariableTempo(audio);
         if (now + 0.001 < state.last) state.next = firstCueAfter(now);
         var lyricIndex = lyricAtOrBefore(now);
         if (lyricIndex !== state.lyric) {
@@ -775,6 +844,7 @@
         state.pendingCue = null;
       }
       setOwnedPlaybackRate(audio.playbackRate);
+      syncVariableTempo(audio);
       state.frame = window.requestAnimationFrame(tick);
     }
 
@@ -789,6 +859,7 @@
       state.next = firstCueAfter(state.last);
       state.lyric = -2;
       state.pendingCue = cueAtLanding(state.last);
+      syncVariableTempo(audio);
       playbackBindings.set(audio, function () { stopFrame(); removers.splice(0).forEach(function (remove) { remove(); }); boundAudio.delete(audio); if (activeAudio === audio) activeAudio = null; playbackBindings.delete(audio); });
     if (!audio.paused && !audio.ended) start();
     });
@@ -887,6 +958,10 @@
     ticksPerBeat: TICKS_PER_BEAT,
     quantizeTicks: quantizeTicks,
     durationMilliseconds: durationMilliseconds,
+    durationMillisecondsAt: durationMillisecondsAt,
+    tempoAt: tempoAt,
+    beatDurationVariable: beatDurationVariable,
+    beatTimelineState: beatTimelineState,
     currentTick: currentTick,
     sourceTick: sourceTick,
     rhythmicTime: rhythmicTime,

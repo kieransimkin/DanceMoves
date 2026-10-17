@@ -13,3 +13,16 @@
 - Whenever a feature is added or changed, update the relevant README.md in the same change to reflect the resulting behaviour. This applies to every feature addition or modification, including APIs, commands, configuration, defaults, integrations and removals.
 - Update affected feature descriptions, usage instructions, options, examples and limitations. For tools or packages with their own README.md, update that README as well as the repository README when its overview or usage is affected.
 - Check the README against the implemented and verified behaviour before committing, opening or merging a PR, publishing a release or handing off the work. A feature change is incomplete until its README documentation is current; a changelog or other documentation does not replace this requirement.
+
+## Optional source-bound variable-tempo clocks
+
+The StemLab beat-timeline.v1 consumer is explicitly opt-in, without disturbing
+fixed-BPM beat-alignment.v1 or existing WordPress pages. `beats[].frame` and
+`beats[].beat`, not rounded seconds, are authoritative; phase is piecewise
+linear at 64 pips/beat and 16 DanceMoves ticks/beat. Verify SHA-256 of the
+selected master and require strict monotonic sample frames/beat indices. Never
+rewrite the source audio, cue/lyric timestamps or native recording capture clock.
+Keep exact source-identity checks on excerpts, seeking and media switches;
+failed identity must not result in guessed alignment. Disallow silent downgrade
+to constant tempo when the map is enabled. Validate and sanitize user-imported
+JSON before committing WordPress REST/admin metadata and use source-bound tests.

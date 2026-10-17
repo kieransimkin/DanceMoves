@@ -229,6 +229,9 @@
   };
 
   var durationMilliseconds = function (ticks) {
+    var audio=root.querySelector('audio');
+    if(audio && motion && motion.beatTimelineState && motion.beatTimelineState(audio).applied && motion.durationMillisecondsAt)
+      return motion.durationMillisecondsAt(audio,ticks);
     return motion && typeof motion.durationMilliseconds === "function"
       ? motion.durationMilliseconds(ticks)
       : ticks * (3750 / 90);

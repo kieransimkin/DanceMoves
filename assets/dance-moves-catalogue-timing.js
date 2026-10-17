@@ -94,6 +94,10 @@
       if (options && options.viewTimeline && Math.abs(milliseconds) <= VIEW_TIMELINE_SENTINEL_MILLISECONDS) return literal;
       var quantized = quantizeSignedMilliseconds(milliseconds);
       conversions.push(quantized);
+      if(config.beatTimeline && motion.beatDurationVariable) {
+        var token='var('+motion.beatDurationVariable(Math.abs(quantized.ticks))+')';
+        return quantized.ticks<0 ? 'calc(-1 * '+token+')' : token;
+      }
       return quantized.milliseconds.toFixed(6) + "ms";
     });
     return { value: converted, conversions: conversions };

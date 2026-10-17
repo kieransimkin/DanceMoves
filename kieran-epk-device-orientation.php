@@ -30,6 +30,7 @@ define('DANCE_MOVES_CLAY_STARS_PAGE_ID', 252);
 
 require_once __DIR__ . '/dance-moves-rudiments.php';
 require_once __DIR__ . '/dance-moves-beat-alignment.php';
+require_once __DIR__ . '/dance-moves-beat-timeline.php';
 
 define('DANCE_MOVES_DOWNLOAD_QUERY_VAR', 'dance_moves_download');
 define('DANCE_MOVES_DOWNLOAD_SIGNATURE_QUERY_VAR', 'dance_moves_download_signature');
@@ -293,6 +294,21 @@ function dance_moves_get_page_config($page_id) {
         if ($source !== 'explicit') { $source = 'analysis'; }
     }
 
+    $timeline_enabled = '1' === (string)get_post_meta($page_id,DANCE_MOVES_META_USE_BEAT_TIMELINE,true);
+    $timeline = $timeline_enabled ? dance_moves_resolve_beat_timeline(
+        (string)get_post_meta($page_id,DANCE_MOVES_META_BEAT_TIMELINE,true),
+        get_post_meta($page_id,DANCE_MOVES_META_ALIGNMENT_AUDIO,true)) : null;
+    $timeline_status = !$timeline_enabled ? 'disabled' : (is_wp_error($timeline) || !$timeline ? 'invalid' : $timeline['review_status']);
+    if (is_wp_error($timeline)) { $timeline=null; }
+    if ($timeline && $source !== 'explicit' && !$alignment) {
+        // A variable map has no single canonical BPM. This is only the initial
+        // *nominal* UI value; audio-driven effects use its actual local tempo.
+        $anchors=$timeline['beats'];
+        $first=$anchors[0];$second=$anchors[1];
+        $initial=60.0*$timeline['source_audio']['sample_rate']*($second['beat']-$first['beat'])/($second['frame']-$first['frame']);
+        $bpm=max(20.0,min(400.0,$initial));$source='analysis';
+    }
+
     $master_duration = get_post_meta($page_id, DANCE_MOVES_META_MASTER_DURATION, true);
     $master_duration = is_numeric($master_duration) && (float) $master_duration > 0 ? (float) $master_duration : 0.0;
 
@@ -303,6 +319,8 @@ function dance_moves_get_page_config($page_id) {
         'bpmSource' => $source,
         'beatAlignment' => $alignment,
         'beatAlignmentStatus' => $alignment_status,
+        'beatTimeline' => $timeline,
+        'beatTimelineStatus' => $timeline_status,
         'fallbackBpm' => 120,
         'lyricTimingUrl' => dance_moves_attachment_url(get_post_meta($page_id, DANCE_MOVES_META_LYRIC_TIMING, true)),
         'lyricPopupsEnabled' => '1' === (string) get_post_meta($page_id, DANCE_MOVES_META_LYRIC_POPUPS, true),
@@ -656,6 +674,16 @@ function dance_moves_meta_auth($allowed, $meta_key, $post_id) {
 }
 
 function dance_moves_register_page_meta() {
+    register_post_meta('page', DANCE_MOVES_META_BEAT_TIMELINE, array(
+        'type'=>'string','single'=>true,'default'=>'',
+        'sanitize_callback'=>'dance_moves_sanitize_beat_timeline','auth_callback'=>'dance_moves_meta_auth',
+        'show_in_rest'=>true,'revisions_enabled'=>true,
+    ));
+    register_post_meta('page', DANCE_MOVES_META_USE_BEAT_TIMELINE, array(
+        'type'=>'boolean','single'=>true,'default'=>false,
+        'sanitize_callback'=>'rest_sanitize_boolean','auth_callback'=>'dance_moves_meta_auth',
+        'show_in_rest'=>true,'revisions_enabled'=>true,
+    ));
     register_post_meta('page', DANCE_MOVES_META_BEAT_ALIGNMENT, array(
         'type' => 'string', 'single' => true, 'default' => '',
         'sanitize_callback' => 'dance_moves_sanitize_beat_alignment', 'auth_callback' => 'dance_moves_meta_auth',
@@ -727,6 +755,8 @@ function dance_moves_revision_meta_keys($keys) {
     return array_values(array_unique(array_merge($keys, array(
         DANCE_MOVES_META_BPM,
         DANCE_MOVES_META_BEAT_ALIGNMENT,
+        DANCE_MOVES_META_BEAT_TIMELINE,
+        DANCE_MOVES_META_USE_BEAT_TIMELINE,
         DANCE_MOVES_META_ALIGNMENT_AUDIO,
         DANCE_MOVES_META_LYRIC_TIMING,
         DANCE_MOVES_META_CUE_TIMING,
@@ -796,6 +826,24 @@ function dance_moves_render_meta_box($post) {
     </p>
     <?php
     dance_moves_file_field($post->ID, 'Analysed Master Audio', 'dance_moves_alignment_audio_id', DANCE_MOVES_META_ALIGNMENT_AUDIO, array('mp3', 'wav', 'flac', 'm4a', 'ogg'));
+    $timeline_json=(string)get_post_meta($post->ID,DANCE_MOVES_META_BEAT_TIMELINE,true);
+    $timeline_enabled='1'===(string)get_post_meta($post->ID,DANCE_MOVES_META_USE_BEAT_TIMELINE,true);
+    ?>
+    <p><label><input type="checkbox" name="dance_moves_use_beat_timeline" value="1"<?php checked($timeline_enabled); ?>>
+      <strong>Use corrected variable-tempo beat map (optional)</strong></label>
+      <span class="description">Overrides fixed-BPM motion timing only for the matching verified master. Leave unchecked for the existing BPM/offset behaviour.</span></p>
+    <p><label for="dance_moves_beat_timeline"><strong>StemLab full beat timeline JSON</strong></label>
+      <textarea class="widefat" rows="7" id="dance_moves_beat_timeline" name="dance_moves_beat_timeline" aria-describedby="dance-moves-timeline-help"><?php echo esc_textarea($timeline_json); ?></textarea>
+      <span class="description" id="dance-moves-timeline-help">Paste the complete beat-timeline.v1 JSON from StemLab. Uses the same Analysed Master Audio attachment; validates its SHA-256. Beat 1, variable BPM and sync phase are reconstructed from precise source frames. Uncheck to use the original fixed BPM and offset.</span></p>
+    <?php
+    if ($clock_config['beatTimelineStatus']==='invalid') {
+        echo '<p class="description">The selected variable-tempo map is invalid; it will not be applied. Fixed BPM timing remains available.</p>';
+    } elseif ($clock_config['beatTimeline']) {
+        $map=$clock_config['beatTimeline'];
+        echo '<p class="description">Variable tempo active: '.esc_html((string)count($map['beats'])).
+            ' beat anchors; Beat 1 #'.esc_html((string)$map['origin_beat']).'; '.
+            esc_html($map['review_status']).'. Original fixed-BPM reading retained.</p>';
+    }
     $reading = $clock_config['beatAlignment'];
     if ($reading) {
         echo '<p class="description">' . esc_html(sprintf('%.7f BPM; first beat %.7f s; %s pips; %s / %s; phase %s.', $reading['bpm'], $reading['first_beat_seconds'], $reading['exact_offset_pips'], $reading['bpm_basis'], $reading['analysis_id'], $reading['phase_status'])) . '</p>';
@@ -932,10 +980,25 @@ function dance_moves_save_page_meta($post_id) {
     }
 
     $raw_bpm = isset($_POST['dance_moves_bpm']) ? trim((string) wp_unslash($_POST['dance_moves_bpm'])) : '';
+    $timeline_enabled=isset($_POST['dance_moves_use_beat_timeline']);
+    $timeline_json=isset($_POST['dance_moves_beat_timeline']) ? (string)wp_unslash($_POST['dance_moves_beat_timeline'])
+        : (string)get_post_meta($post_id,DANCE_MOVES_META_BEAT_TIMELINE,true);
+    $timeline_audio=isset($_POST['dance_moves_alignment_audio_id']) ? absint($_POST['dance_moves_alignment_audio_id'])
+        : absint(get_post_meta($post_id,DANCE_MOVES_META_ALIGNMENT_AUDIO,true));
+    // Verify BEFORE modifying any page timing metadata; errors preserve prior state.
+    $timeline_check=dance_moves_resolve_beat_timeline($timeline_json,$timeline_audio);
+    // Disabled maps are not active: permit disabling a stale/invalid map.
+    if (!$timeline_enabled && is_wp_error($timeline_check)) { $timeline_check=null; $timeline_json=''; }
+    if (is_wp_error($timeline_check) || ($timeline_enabled && !$timeline_check)) {
+        $message=is_wp_error($timeline_check) ? $timeline_check->get_error_message() : 'Enable variable tempo only with a valid map.';
+        dance_moves_queue_admin_error($message . ' Previous EPK timing metadata was preserved.');
+        return;
+    }
     if (isset($_POST['dance_moves_beat_alignment'])) {
         $alignment_json = (string) wp_unslash($_POST['dance_moves_beat_alignment']);
         $alignment_audio = isset($_POST['dance_moves_alignment_audio_id']) ? absint($_POST['dance_moves_alignment_audio_id']) : 0;
-        $alignment = dance_moves_resolve_beat_alignment($alignment_json, $alignment_audio, $raw_bpm);
+        $alignment = dance_moves_resolve_beat_alignment($alignment_json, $alignment_audio,
+            $timeline_enabled && $timeline_check ? '' : $raw_bpm);
         if (is_wp_error($alignment)) {
             dance_moves_queue_admin_error($alignment->get_error_message() . ' Previous EPK timing metadata was preserved.');
             return;
@@ -948,6 +1011,14 @@ function dance_moves_save_page_meta($post_id) {
             delete_post_meta($post_id, DANCE_MOVES_META_ALIGNMENT_AUDIO);
         }
     }
+    // Save the opt-in map separately; never overwrite the v1 constant-tempo reading.
+    if ($timeline_check) {
+        update_post_meta($post_id,DANCE_MOVES_META_BEAT_TIMELINE,dance_moves_sanitize_beat_timeline($timeline_json));
+        update_post_meta($post_id,DANCE_MOVES_META_ALIGNMENT_AUDIO,$timeline_audio);
+    } else {
+        delete_post_meta($post_id,DANCE_MOVES_META_BEAT_TIMELINE);
+    }
+    update_post_meta($post_id,DANCE_MOVES_META_USE_BEAT_TIMELINE,$timeline_enabled ? '1' : '0');
     if ($raw_bpm === '') {
         delete_post_meta($post_id, DANCE_MOVES_META_BPM);
     } else {

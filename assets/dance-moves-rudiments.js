@@ -192,8 +192,9 @@
       const mode = useAudio ? 'audio' : 'page';
       if (lastClock !== null && lastClock !== mode) anchor = 0;
       lastClock = mode;
-      const tempo = bpm();
-      const sourceBeats = useAudio ? Math.max(0, Number.isFinite(audio.currentTime) ? audio.currentTime : 0) * tempo / 60
+      const baseTempo = bpm();
+      const tempo = useAudio && motion.tempoAt ? motion.tempoAt(audio,baseTempo) : baseTempo;
+      const sourceBeats = useAudio ? Math.max(0, Number.isFinite(audio.currentTime) ? audio.currentTime : 0) * baseTempo / 60
         : motion.currentTick({ clock: 'page' }) / 16;
       const beats = useAudio && motion.sourceTick ? motion.sourceTick(audio) / 16 : sourceBeats;
       return { beats, sourceBeats, mode, tempo };
