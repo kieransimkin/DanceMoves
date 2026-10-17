@@ -2,7 +2,7 @@ import {validateBeatAlignment} from './beat-alignment.mjs';
 import {validateBeatTimeline, tempoAtSeconds} from './beat-timeline.mjs';
 /** Host-neutral page properties. WordPress attachment IDs remain a host concern. */
 export const PAGE_META_KEYS = Object.freeze({
-  bpm: '_dance_moves_bpm', lyric: '_dance_moves_lyric_timing_id', cue: '_dance_moves_cue_timing_id',
+  bpm: '_dance_moves_bpm', lyric: '_dance_moves_lyric_timing_id', word: '_dance_moves_word_timing_id', cue: '_dance_moves_cue_timing_id',
   popups: '_dance_moves_lyric_popups_enabled', duration: '_dance_moves_master_duration_ms', effect: '_dance_moves_effect',
   alignment: '_dance_moves_beat_alignment', alignmentAudio: '_dance_moves_beat_alignment_audio_id',
   beatTimeline: '_dance_moves_beat_timeline', useBeatTimeline: '_dance_moves_use_beat_timeline'
@@ -46,6 +46,7 @@ export function validatePageConfig(input = {}) {
     beatAlignment, beatTimeline,
     ticksPerBeat: 16, tickDefinition: 'sixteenth-of-beat', longDurationQuantumTicks: 16,
     cueTimingUrl: url(input.cueTimingUrl, 'cueTimingUrl'), lyricTimingUrl: url(input.lyricTimingUrl, 'lyricTimingUrl'),
+    wordTimingUrl: url(input.wordTimingUrl,'wordTimingUrl'),
     lyricPopupsEnabled: input.lyricPopupsEnabled === true, masterDurationMilliseconds: Math.round(duration * 1000) / 1000,
     sharedControlTicks: ticks, lyricDisclosureTicks: disclosure, effect, diagnostics: input.diagnostics === true});
 }
@@ -76,7 +77,7 @@ export async function fromWordPressMeta(meta, resolveAttachment) {
     beatTimeline=JSON.parse(beatTimeline);
   }
   if (beatTimeline) beatTimeline={...beatTimeline,source_url:await resolve(PAGE_META_KEYS.alignmentAudio)};
-  return validatePageConfig({bpm, beatAlignment, beatTimeline, lyricTimingUrl: await resolve(PAGE_META_KEYS.lyric), cueTimingUrl: await resolve(PAGE_META_KEYS.cue),
+  return validatePageConfig({bpm, beatAlignment, beatTimeline, lyricTimingUrl: await resolve(PAGE_META_KEYS.lyric), wordTimingUrl: await resolve(PAGE_META_KEYS.word), cueTimingUrl: await resolve(PAGE_META_KEYS.cue),
     lyricPopupsEnabled: meta[PAGE_META_KEYS.popups] === true || String(meta[PAGE_META_KEYS.popups]) === '1',
     masterDurationMilliseconds: Number.isFinite(duration) && duration > 0 && duration <= 86400000 ? duration : 0,
     effect: meta[PAGE_META_KEYS.effect] === 'paper-planes' ? 'paper-planes' : ''});

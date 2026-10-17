@@ -1,0 +1,24 @@
+/* Optional multi-song page. Individual roots own independent media/tempo effects. */
+.dance-moves-song-collection {display:grid;gap:1rem;max-width:100%;margin:1.5rem 0;color:inherit;}
+.dance-moves-song-collection>label {display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;}
+.dance-moves-song-collection select {max-width:100%;min-width:12rem;}
+.dance-moves-song[hidden] {display:none!important;}
+.dance-moves-song {padding:1rem;border:1px solid color-mix(in srgb,currentColor 20%,transparent);border-radius:.75rem;max-width:100%;}
+.dance-moves-song audio {width:100%;max-width:100%;}
+.dance-moves-song-now {margin:.75rem 0;overflow-wrap:anywhere;}
+.dance-moves-song-timeline {position:relative;margin:1rem 0;min-height:128px;border:1px solid color-mix(in srgb,currentColor 30%,transparent);overflow:hidden;}
+.dance-moves-song-lane {position:relative;height:31px;border-bottom:1px solid color-mix(in srgb,currentColor 20%,transparent);}
+.dance-moves-song-lane::before {content:attr(aria-label);font-size:.7rem;position:absolute;left:.25rem;top:0;opacity:.7;pointer-events:none;}
+.dance-moves-song-marker {position:absolute;top:13px;width:2px;height:16px;padding:0;border:0;background:currentColor;opacity:.6;cursor:pointer;}
+.dance-moves-song-lane[data-dance-moves-lane="word"] .dance-moves-song-marker {background:#d4a5ff;}
+.dance-moves-song-lane[data-dance-moves-lane="cue"] .dance-moves-song-marker {background:#ffbb77;}
+.dance-moves-song-marker:focus-visible {width:5px;opacity:1;outline:2px solid currentColor;}
+.dance-moves-song-playhead {position:absolute;left:0;top:0;bottom:0;width:2px;background:#49c5f5;z-index:4;pointer-events:none;}
+.dance-moves-song-row {border:1px solid #9ba3a8;border-radius:5px;padding:12px;margin:8px 0;display:grid;gap:6px;}
+.dance-moves-song-row>label {display:flex;flex-wrap:wrap;align-items:center;gap:8px;}
+.dance-moves-song-row textarea {width:100%;font-family:monospace;}
+.dance-moves-song-row .dance-moves-file-field {border-left:2px solid #ccc;padding-left:8px;}
+@media (prefers-reduced-motion:reduce) {.dance-moves-song-playhead {transition:none!important;}}
+@media (forced-colors:active) {.dance-moves-song-marker,.dance-moves-song-playhead {background:CanvasText;}}
+
+.dance-moves-song-lane[data-dance-moves-lane="beat"] .dance-moves-song-marker {background:#54e2a6;}

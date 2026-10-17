@@ -16,6 +16,19 @@ export function readWordPressConfig(input = {}) {
       reference_frame:row.reference_frame===null||row.reference_frame===undefined?null:Number(row.reference_frame)}));
     out.beatTimeline=t;
   }
+  // WordPress scalar localization can stringify numbers inside nested song maps too.
+  if (Array.isArray(out.songs)) {
+    out.songs=out.songs.map(song=>{
+      const row={...song};
+      for(const field of ['bpm','pageId','masterDurationMilliseconds'])if(row[field]!==undefined&&row[field]!==null)row[field]=Number(row[field]);
+      for(const field of ['beatAlignment','beatTimeline'])if(row[field]){
+        const nested=readWordPressConfig({[field]:row[field]});
+        row[field]=nested[field];
+      }
+      return row;
+    });
+  }
+  out.songCollectionEnabled=out.songCollectionEnabled===true||out.songCollectionEnabled===1||out.songCollectionEnabled==='1';
   for (const key of ['bpm','masterDurationMilliseconds','sharedControlTicks','lyricDisclosureTicks','pageId']) {
     if (out[key] !== undefined && out[key] !== '') out[key] = Number(out[key]);
   }

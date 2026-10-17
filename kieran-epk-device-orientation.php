@@ -31,6 +31,7 @@ define('DANCE_MOVES_CLAY_STARS_PAGE_ID', 252);
 require_once __DIR__ . '/dance-moves-rudiments.php';
 require_once __DIR__ . '/dance-moves-beat-alignment.php';
 require_once __DIR__ . '/dance-moves-beat-timeline.php';
+require_once __DIR__ . '/dance-moves-song-collection.php';
 
 define('DANCE_MOVES_DOWNLOAD_QUERY_VAR', 'dance_moves_download');
 define('DANCE_MOVES_DOWNLOAD_SIGNATURE_QUERY_VAR', 'dance_moves_download_signature');
@@ -323,8 +324,11 @@ function dance_moves_get_page_config($page_id) {
         'beatTimelineStatus' => $timeline_status,
         'fallbackBpm' => 120,
         'lyricTimingUrl' => dance_moves_attachment_url(get_post_meta($page_id, DANCE_MOVES_META_LYRIC_TIMING, true)),
+        'wordTimingUrl' => dance_moves_attachment_url(get_post_meta($page_id, DANCE_MOVES_META_WORD_TIMING, true)),
         'lyricPopupsEnabled' => '1' === (string) get_post_meta($page_id, DANCE_MOVES_META_LYRIC_POPUPS, true),
         'cueTimingUrl' => dance_moves_attachment_url(get_post_meta($page_id, DANCE_MOVES_META_CUE_TIMING, true)),
+        'songCollectionEnabled' => get_post_meta($page_id,DANCE_MOVES_META_SONG_PAGE_TYPE,true)==='collection',
+        'songs' => (function($report){return is_array($report)?$report['songs']:array();})(dance_moves_song_collection_config($page_id)),
         'masterDurationMilliseconds' => $master_duration,
         'tickDefinition' => 'sixteenth-of-beat',
         'ticksPerBeat' => 16,
@@ -852,6 +856,7 @@ function dance_moves_render_meta_box($post) {
     }
     dance_moves_file_field($post->ID, 'Lyric Timing File', 'dance_moves_lyric_timing_id', DANCE_MOVES_META_LYRIC_TIMING, array('lrc'));
     dance_moves_file_field($post->ID, 'Cue Timing File', 'dance_moves_cue_timing_id', DANCE_MOVES_META_CUE_TIMING, array('lrc', 'cue'));
+    dance_moves_file_field($post->ID, 'Per-word Lyric Timing File', 'dance_moves_word_timing_id', DANCE_MOVES_META_WORD_TIMING, array('lrc','tsv','json'));
     $lyric_popups_enabled = '1' === (string) get_post_meta($post->ID, DANCE_MOVES_META_LYRIC_POPUPS, true);
     $effect = dance_moves_sanitize_effect(get_post_meta($post->ID, DANCE_MOVES_META_EFFECT, true));
     ?>
@@ -979,6 +984,10 @@ function dance_moves_save_page_meta($post_id) {
         return;
     }
 
+    if (isset($_POST['dance_moves_word_timing_id'])) {
+        $word_check=dance_moves_validate_word_timing_attachment(absint($_POST['dance_moves_word_timing_id']));
+        if (is_wp_error($word_check)) {dance_moves_queue_admin_error($word_check->get_error_message().' Previous EPK timing metadata was preserved.');return;}
+    }
     $raw_bpm = isset($_POST['dance_moves_bpm']) ? trim((string) wp_unslash($_POST['dance_moves_bpm'])) : '';
     $timeline_enabled=isset($_POST['dance_moves_use_beat_timeline']);
     $timeline_json=isset($_POST['dance_moves_beat_timeline']) ? (string)wp_unslash($_POST['dance_moves_beat_timeline'])
@@ -1033,6 +1042,7 @@ function dance_moves_save_page_meta($post_id) {
     $fields = array(
         'dance_moves_lyric_timing_id' => array(DANCE_MOVES_META_LYRIC_TIMING, 'lyric'),
         'dance_moves_cue_timing_id' => array(DANCE_MOVES_META_CUE_TIMING, 'cue'),
+        'dance_moves_word_timing_id' => array(DANCE_MOVES_META_WORD_TIMING, 'word'),
     );
     foreach ($fields as $field => $definition) {
         $attachment_id = isset($_POST[$field]) ? absint($_POST[$field]) : 0;
@@ -1040,7 +1050,7 @@ function dance_moves_save_page_meta($post_id) {
             delete_post_meta($post_id, $definition[0]);
             continue;
         }
-        $valid = dance_moves_validate_timing_attachment($attachment_id, $definition[1]);
+        $valid = $definition[1] === 'word' ? dance_moves_validate_word_timing_attachment($attachment_id) : dance_moves_validate_timing_attachment($attachment_id, $definition[1]);
         if (is_wp_error($valid)) {
             dance_moves_queue_admin_error($valid->get_error_message() . ' The previous timing-file selection was preserved.');
             continue;

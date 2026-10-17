@@ -43,8 +43,11 @@ export interface BeatTimeline {
  beat_timeline?:Array<{beat:number;source_frame:number;pip:number;time_seconds:number;consensus_reference_frame:number|null}>;
  tempo_segments?:Array<{start_frame:number;end_frame:number;bpm:number}>;
 }
+export interface WordTimingEvent {index:number;time:number;start:number;end:number|null;word:string;text:string}
+export interface SongCollectionEntry extends PageConfig {id:string;title:string;audioSrc:string}
+export interface SongCollectionController {readonly destroyed:boolean;readonly current:string|null;readonly runtime:DanceMoves|null;readonly songs:readonly SongCollectionEntry[];readonly ready:Promise<DanceMoves>;select(id:string):DanceMoves;destroy():void}
 export interface PageConfig {
- pageId?:number;bpm?:number|null;bpmSource?:'explicit'|'fallback'|'analysis';beatAlignment?:BeatAlignment|null;beatTimeline?:BeatTimeline|null;lyricTimingUrl?:string;cueTimingUrl?:string;
+ pageId?:number;bpm?:number|null;bpmSource?:'explicit'|'fallback'|'analysis';beatAlignment?:BeatAlignment|null;beatTimeline?:BeatTimeline|null;lyricTimingUrl?:string;wordTimingUrl?:string;cueTimingUrl?:string;
  lyricPopupsEnabled?:boolean;masterDurationMilliseconds?:number;sharedControlTicks?:number;lyricDisclosureTicks?:number;
  effect?:''|'paper-planes';diagnostics?:boolean;
 }
@@ -109,6 +112,7 @@ export interface DanceMoves {
  onEveryBar(callback:(detail:IntervalDetail)=>void,metadata?:Metadata):Remove;
  parseTimingFile(text:string):Cue[];parseLyricTimingFile(text:string):Lyric[];normaliseCueName(name:string):string;
  onCue(name:string,callback:(cue:Cue)=>void,metadata?:Metadata):Remove;onLyric(callback:(lyric:Lyric)=>void,metadata?:Metadata):Remove;
+ onWord(callback:(word:WordTimingEvent & {audio?:PlaybackMedia|null;previousWord?:string|null;nextWord?:string|null})=>void,metadata?:Metadata):Remove;parseWordTimingFile(text:string):readonly WordTimingEvent[];
  fireCue(cue:Partial<Cue> & {name:string}):Cue;registerAnimationScope(root:HTMLElement,selectors:string[]):Remove;
  resetRunningAnimations(audio?:PlaybackMedia):number;discoverAudio():void;registerPlaybackSource(source:PlaybackSource):void;unregisterPlaybackSource(source:PlaybackSource):void;
  setDiagnosticsSink(callback:((record:Record<string,unknown>)=>void)|null):boolean;diagnosticsEnabled():boolean;
@@ -125,13 +129,16 @@ export interface DanceMoves {
 }
 export const VERSION:string;
 export const ORIENTATION_ADAPTERS:readonly OrientationAdapter[];
-export const PAGE_META_KEYS:Readonly<{bpm:string;lyric:string;cue:string;popups:string;duration:string;effect:string;alignment:string;alignmentAudio:string;beatTimeline:string;useBeatTimeline:string}>;
+export const PAGE_META_KEYS:Readonly<{bpm:string;lyric:string;cue:string;popups:string;duration:string;effect:string;alignment:string;alignmentAudio:string;word:string;beatTimeline:string;useBeatTimeline:string}>;
 export function validateBeatAlignment(input?:BeatAlignment|null):Readonly<BeatAlignment>|null;
 export function validateBeatTimeline(input?:BeatTimeline|null,options?:{requireSourceUrl?:boolean}):Readonly<BeatTimeline>|null;
 export function phasePipsAtSeconds(map:BeatTimeline,sourceSeconds:number):number;
 export function tempoAtSeconds(map:BeatTimeline,sourceSeconds:number):number;
 export function tickAtSeconds(map:BeatTimeline,sourceSeconds:number):number;
 export function createDanceMoves(options:Options):DanceMoves;
+export function parseWordTimingFile(text:string,options?:{format?:'auto'|'json'|'tsv'|'lrc'}):readonly WordTimingEvent[];
+export function validateSongCollection(input:readonly SongCollectionEntry[]|{schema:'dancemoves.song-collection.v1';songs:SongCollectionEntry[]}):readonly SongCollectionEntry[];
+export function createSongCollection(options:{root:HTMLElement;songs:readonly SongCollectionEntry[];mount:(config:Options)=>DanceMoves;host?:Window}):SongCollectionController;
 export function validatePageConfig(input?:PageConfig):Readonly<PageConfig>;
 export function fromWordPressMeta(meta:Record<string,unknown>,resolveAttachment?:(id:number)=>string|Promise<string>):Promise<Readonly<PageConfig>>;
 export interface Revision {revision:number;config:PageConfig;savedAt:string}

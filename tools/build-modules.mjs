@@ -63,14 +63,20 @@ export function buildModules({root=ROOT, out=path.join(root,'.build/modules')}={
     let source = fs.readFileSync(filename,'utf8');
     // Only mounting/lifetime integration changes; musical definitions remain in their canonical sources.
     if (name === 'core') {
-      source = once(source,'Promise.all([loadCueFile(), loadLyricFile()]).then(function () {','api.ready = Promise.all([loadCueFile(), loadLyricFile()]).then(function () {',relative);
+      source = once(source,'Promise.all([loadCueFile(), loadLyricFile(), loadWordFile()]).then(function () {','api.ready = Promise.all([loadCueFile(), loadLyricFile(), loadWordFile()]).then(function () {',relative);
     }
     if (name === 'rudiments') source = once(source,'const token = String(++serial);', 'const token = __dmScope.id + "-" + String(++serial);',relative);
     if (name === 'catalogue') {
       source = once(source,'String(pseudoElementCounter)', '__dmScope.id + "-" + String(pseudoElementCounter)',relative);
       source = once(source,'pseudoStyle.id = "dance-moves-catalogue-pseudo-timing";', 'pseudoStyle.id = "dance-moves-catalogue-pseudo-timing-" + __dmScope.id;',relative);
     }
-    const code = transformOwnedOperations(source,relative);
+    let code = transformOwnedOperations(source,relative);
+    if (name === 'core') {
+      // One canonical word parser serves the public ESM helper and core browser runtime.
+      const words = fs.readFileSync(path.join(root,'src/word-timing.mjs'),'utf8')
+        .replace(/^export /gm,'');
+      code = words + '\n' + code;
+    }
     const header = `// GENERATED from ${relative}; do not edit.\nexport default function install(__dmScope) {\nconst window = __dmScope.window, document = __dmScope.document;\nconst module = undefined;\nconst {CustomEvent, MutationObserver, ResizeObserver, IntersectionObserver, getComputedStyle, matchMedia, performance, setTimeout, clearTimeout, requestAnimationFrame, cancelAnimationFrame} = window;\n`;
     fs.writeFileSync(path.join(out,'runtime',`${name}.mjs`),header + code + '\n}\n');
     imports.push(`import ${name} from './${name}.mjs';`);

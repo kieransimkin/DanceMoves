@@ -13,6 +13,8 @@ import {VERSION} from './version.mjs';
 export {validatePageConfig, fromWordPressMeta, PAGE_META_KEYS, createMemoryPageStore} from './config.mjs';
 export {VERSION};
 export {validateBeatAlignment} from './beat-alignment.mjs';
+export {parseWordTimingFile} from './word-timing.mjs';
+export {validateSongCollection,createSongCollection} from './song-collection.mjs';
 export {validateBeatTimeline, phasePipsAtSeconds, tickAtSeconds, tempoAtSeconds} from './beat-timeline.mjs';
 const mounted = new WeakMap();
 export const ORIENTATION_ADAPTERS = Object.freeze(['light-will-win','dying-for-a-diagnosis','presents-and-chocolate','fully-nocturnal','amnesty-honestly','walk-with-me','dmitri-my-talisman','clay-stars','california-screamin','a-whole-new-christmas']);

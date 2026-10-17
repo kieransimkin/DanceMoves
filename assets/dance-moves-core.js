@@ -8,9 +8,11 @@
   var CSS_TICKS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 32, 64, 128, 192, 432, 1584, 2208];
   var handlers = new Map();
   var lyricHandlers = new Map();
+  var wordHandlers = new Map();
   var animationScopes = [];
   var cueList = [];
   var lyricList = [];
+  var wordList = [];
   var lyricRenderer = null;
   var boundAudio = new WeakSet();
   var playbackBindings = new Map();
@@ -561,6 +563,40 @@
     return function () { lyricHandlers.delete(handler); };
   }
 
+  function onWord(handler, metadata) {
+    if (typeof handler !== "function") throw new TypeError("DanceMoves word handler must be a function.");
+    wordHandlers.set(handler, {callback:handler, id:diagnosticHandlerId(metadata, "word")});
+    return function () {wordHandlers.delete(handler);};
+  }
+
+  function wordAtOrBefore(time) {
+    var lo=0,hi=wordList.length;
+    while(lo<hi) {var mid=(lo+hi)>>1;if(wordList[mid].start<=time+0.001)lo=mid+1;else hi=mid;}
+    var found=lo-1;
+    if(found>=0 && wordList[found].end!==null && time>wordList[found].end+0.001)return -1;
+    return found;
+  }
+  function dispatchWord(entry, audio, index) {
+    var detail={pageId:Number(rawConfig.pageId)||0,
+      time:entry?entry.start:0, start:entry?entry.start:null, end:entry?entry.end:null,
+      word:entry?entry.word:'',text:entry?entry.text:'',index:index,
+      previousWord:index>0?wordList[index-1].word:null,
+      nextWord:index>=0&&index+1<wordList.length?wordList[index+1].word:null,
+      audio:audio||null};
+    Array.from(wordHandlers.values()).forEach(function (registered) {
+      try {if(diagnosticsSink)runDiagnosticSpan("word-handler",{handlerId:registered.id,wordIndex:index},function(){return registered.callback(detail);});
+        else registered.callback(detail);}
+      catch(error){if(window.console && window.console.error)window.console.error("DanceMoves word handler failed",error);}
+    });
+    document.dispatchEvent(new CustomEvent("dance-moves-word",{bubbles:true,detail:detail}));
+    return detail;
+  }
+  function syncCurrentWord(time,audio,state) {
+    if(!wordList.length)return;
+    var index=wordAtOrBefore(time);
+    if(index!==state.word) {state.word=index;dispatchWord(index>=0?wordList[index]:null,audio,index);}
+  }
+
   function dispatchLyric(entry, audio, index) {
     var previousVisibleIndex = -1;
     var previousVisibleEntry = null;
@@ -783,6 +819,7 @@
     var state = {
       next: firstCueAfter(audio.currentTime || 0),
       lyric: -2,
+      word: -2,
       last: audio.currentTime || 0,
       seeking: false,
       frame: 0,
@@ -805,6 +842,7 @@
         now = positiveNumber(audio.currentTime);
         syncVariableTempo(audio);
         if (now + 0.001 < state.last) state.next = firstCueAfter(now);
+        syncCurrentWord(now,audio,state);
         var lyricIndex = lyricAtOrBefore(now);
         if (lyricIndex !== state.lyric) {
           state.lyric = lyricIndex;
@@ -839,6 +877,8 @@
       if (state.endedPending) { state.pendingCue = cueAtLanding(state.last); state.endedPending = false; }
       state.next = firstCueAfter(state.last);
       state.lyric = -2;
+      state.word = -2;
+      syncCurrentWord(state.last,audio,state);
       if (state.pendingCue) {
         dispatchCue(state.pendingCue, audio);
         state.pendingCue = null;
@@ -851,15 +891,17 @@
     listen(audio, "play", start);
     listen(audio, "playing", start);
     listen(audio, "pause", function () { stopFrame(); if (activeAudio === audio) activeAudio = null; if (lyricRenderer) lyricRenderer.hide(); });
-    listen(audio, "ended", function () { stopFrame(); if (activeAudio === audio) activeAudio = null; state.last = 0; state.next = 0; state.lyric = -2; state.pendingCue = null; state.endedPending = true; if (lyricRenderer) lyricRenderer.hide(); });
+    listen(audio, "ended", function () { stopFrame(); if (activeAudio === audio) activeAudio = null; state.last = 0; state.next = 0; state.lyric = -2; state.word = -2; state.pendingCue = null; state.endedPending = true; if (lyricRenderer) lyricRenderer.hide(); });
     listen(audio, "seeking", function () { state.seeking = true; state.pendingCue = null; stopFrame(); });
     listen(audio, "seeked", function () {
       state.seeking = false;
       state.last = positiveNumber(audio.currentTime);
       state.next = firstCueAfter(state.last);
       state.lyric = -2;
+      state.word = -2;
       state.pendingCue = cueAtLanding(state.last);
       syncVariableTempo(audio);
+      syncCurrentWord(state.last,audio,state);
       playbackBindings.set(audio, function () { stopFrame(); removers.splice(0).forEach(function (remove) { remove(); }); boundAudio.delete(audio); if (activeAudio === audio) activeAudio = null; playbackBindings.delete(audio); });
     if (!audio.paused && !audio.ended) start();
     });
@@ -924,6 +966,30 @@
       });
   }
 
+  function loadWordFile() {
+    var url=String(rawConfig.wordTimingUrl||'');
+    if(!url)return Promise.resolve([]);
+    return window.fetch(url,{credentials:"same-origin",cache:"no-cache"}).then(async function(response){
+      if(!response.ok)throw new Error("Word timing HTTP "+response.status);
+      if(Number(response.headers?.get('content-length'))>1048576)throw new RangeError('Word timing exceeds 1 MiB');
+      var text='';
+      if(response.body && response.body.getReader){
+        var reader=response.body.getReader(),chunks=[],size=0;
+        for(;;){var item=await reader.read();if(item.done)break;size+=item.value.byteLength;
+          if(size>1048576){await reader.cancel();throw new RangeError('Word timing exceeds 1 MiB');}chunks.push(item.value);}
+        var bytes=new Uint8Array(size),offset=0;
+        chunks.forEach(function(chunk){bytes.set(chunk,offset);offset+=chunk.byteLength;});
+        text=new TextDecoder('utf-8',{fatal:true}).decode(bytes);
+      }else{text=await response.text();if(new TextEncoder().encode(text).length>1048576)throw new RangeError('Word timing exceeds 1 MiB');}
+      wordList=parseWordTimingFile(text);
+      return wordList;
+    }).catch(function(error){wordList=[];
+      document.documentElement.dataset.danceMovesWordStatus='unavailable';
+      if(window.console && window.console.warn)window.console.warn('DanceMoves word file unavailable',error);
+      return [];
+    });
+  }
+
   function initialise() {
     setTimingProperties();
     var root = document.querySelector(".ks-epk");
@@ -941,9 +1007,11 @@
       if (!Number.isFinite(interval) || interval < 1) return;
       deferStart(target, interval, { clock: target.getAttribute("data-dance-moves-start-clock") === "audio" ? "audio" : "page" });
     });
-    Promise.all([loadCueFile(), loadLyricFile()]).then(function () {
+    Promise.all([loadCueFile(), loadLyricFile(), loadWordFile()]).then(function () {
       document.documentElement.dataset.danceMovesCueCount = String(cueList.length);
       document.documentElement.dataset.danceMovesCueStatus = cueList.length ? "ready" : "none";
+      document.documentElement.dataset.danceMovesWordCount = String(wordList.length);
+      document.documentElement.dataset.danceMovesWordStatus = wordList.length ? "ready" : "none";
       document.documentElement.dataset.danceMovesLyricCount = String(lyricList.length);
       document.documentElement.dataset.danceMovesLyricStatus = lyricList.length ? "ready" : "none";
       if (rawConfig.lyricPopupsEnabled && lyricList.length) createLyricRenderer();
@@ -980,6 +1048,8 @@
     normaliseCueName: normaliseCueName,
     onCue: onCue,
     onLyric: onLyric,
+    onWord: onWord,
+    parseWordTimingFile: parseWordTimingFile,
     fireCue: fireCue,
     registerAnimationScope: registerAnimationScope,
     resetRunningAnimations: resetRunningAnimations,
