@@ -10,6 +10,7 @@ const repo = path.resolve(__dirname, '..');
 const php = process.env.PHP_BINARY || 'php';
 const files = [
   'kieran-epk-device-orientation.php', 'dance-moves-rudiments.php', 'dance-moves-beat-alignment.php',
+  'dance-moves-beat-timeline.php', 'dance-moves-song-collection.php',
   'tests/validate-clay-transform.php', 'tests/validate-clay-legacy-collision.php',
   'tests/helpers/clay-transform-fixture.php',
   'tests/fixtures/clay-transform/base.html',
