@@ -265,10 +265,16 @@
     function calculate(reason, staticFallback) {
       var cycleSeconds = Math.max(.001, finite(motion.durationMillisecondsAt ? motion.durationMillisecondsAt(audio,cycleTicks) : motion.durationMilliseconds(cycleTicks), 1) / 1000);
       var time = Math.max(0, finite(audio.currentTime, 0));
-      var localBpm = motion.tempoAt ? motion.tempoAt(audio) : motion.bpm;
-      var currentTicks = motion.sourceTick ? motion.sourceTick(audio) : time * motion.bpm * 16 / 60;
-      var secondsOffsetTicks = phaseOffsetSeconds * localBpm * 16 / 60;
-      var phase = ((currentTicks - secondsOffsetTicks) % cycleTicks + cycleTicks) % cycleTicks / cycleTicks;
+      var phase;
+      if (typeof motion.tempoAt === "function" && typeof motion.sourceTick === "function") {
+        var localBpm = motion.tempoAt(audio);
+        var currentTicks = motion.sourceTick(audio);
+        var secondsOffsetTicks = phaseOffsetSeconds * localBpm * 16 / 60;
+        phase = ((currentTicks - secondsOffsetTicks) % cycleTicks + cycleTicks) % cycleTicks / cycleTicks;
+      } else {
+        var rhythmicSeconds = motion.rhythmicTime ? motion.rhythmicTime(audio) : time;
+        phase = ((rhythmicSeconds - phaseOffsetSeconds) % cycleSeconds + cycleSeconds) % cycleSeconds / cycleSeconds;
+      }
       var localFrame = staticFallback ? staticFrame : Math.min(frameCount - 1, Math.floor(phase * frameCount + 1e-9));
       var mapped = mappedFrame(localFrame);
       return {
