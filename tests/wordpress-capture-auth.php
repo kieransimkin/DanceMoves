@@ -22,6 +22,7 @@ class WP_REST_Request {
 }
 class WP_REST_Server { public const CREATABLE = 'POST'; }
 function add_action(...$args): void {}
+function add_shortcode(...$args): void {}
 function add_filter(...$args): void {}
 function current_user_can($capability): bool {
     global $can_manage, $user_id;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 define('ABSPATH', __DIR__);
 $page_id = 4000; $page = true; $ambient = ''; $scripts = []; $styles = []; $localized = []; $checks = 0;
 function add_action(...$args): void {}
+function add_shortcode(...$args): void {}
 function add_filter(...$args): void {}
 function absint($value): int {return abs((int)$value);}
 function sanitize_key($value): string {return preg_replace('/[^a-z0-9_\-]/','',strtolower((string)$value));}

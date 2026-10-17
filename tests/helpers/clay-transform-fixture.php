@@ -30,6 +30,7 @@ function is_admin(): bool { return $GLOBALS['dm_clay_context']['admin']; }
 function in_the_loop(): bool { return $GLOBALS['dm_clay_context']['in_loop']; }
 function is_main_query(): bool { return $GLOBALS['dm_clay_context']['main_query']; }
 function add_action(...$args): void {}
+function add_shortcode(...$args): void {}
 function add_filter(...$args): void { $GLOBALS['dm_clay_filters'][] = $args; }
 
 dm_clay_context();

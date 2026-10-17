@@ -4,6 +4,7 @@ declare(strict_types=1);
 define('ABSPATH', __DIR__);
 
 function add_action(...$args): void {}
+function add_shortcode(...$args): void {}
 function add_filter(...$args): void {}
 function wp_get_upload_dir(): array {
     return array(
