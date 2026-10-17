@@ -11,15 +11,15 @@
     "productionCss": ["../../../assets/dance-moves-core.css", "../../../assets/ks-epk-device-orientation.css"],
     "productionJs": ["../../../assets/dance-moves-core.js", "../../../assets/dance-moves-effects.js", "../../../assets/dance-moves-catalogue-timing.js", "../../../assets/ks-epk-device-orientation-core.js", "../../../assets/ks-epk-device-orientation.js", "../../../assets/vendor/dancerudiments/dancerudiments-native.js", "../../../assets/dance-moves-rudiments.js"],
     "productionHashes": {
-      "../../../assets/dance-moves-core.css": "C4790396B723B383CBA65D6EA62E78AF93FAB81A8FEBD9443E578EAF5E677D7D",
+      "../../../assets/dance-moves-core.css": "69B7E5F2E6F6EA338839F10655B79B6B515F8B4C52CD7344AC1228237DF4F12D",
       "../../../assets/ks-epk-device-orientation.css": "5E1C975673AC118BCC231BF2A06C2CA2E4854F45BD626E73F66730DA617F7A20",
-      "../../../assets/dance-moves-core.js": "786E07421BA6A975C16DE7FF1CE9C6F41A11FCE6F380D785D13F4A2D89E1DED7",
-      "../../../assets/dance-moves-effects.js": "2D29026545325D0169C147DFF3E57C2815597FC94B5F05013C51C64FE3DF0D63",
-      "../../../assets/dance-moves-catalogue-timing.js": "F2C8232F019E304D8DDF7880D8EDB251A78C9125E9C4418FE53C324E4A7A2927",
+      "../../../assets/dance-moves-core.js": "19A3B45A26271D3384DA14043D15AD15D759502290A931B547001EEE405D1DDF",
+      "../../../assets/dance-moves-effects.js": "5F85E8D1BBA35318B08793A5B1D2940E577EC7E9DA3B43EC4A3A58E1850E6478",
+      "../../../assets/dance-moves-catalogue-timing.js": "84CCEF9F3637EF91BFB1165BB73A25FE6508D98815A0B647325F0687CC6C9470",
       "../../../assets/ks-epk-device-orientation-core.js": "D49FB3D4170986A796CB7066AE5D514E089AD1A2897196742A1868A7A3466A86",
       "../../../assets/ks-epk-device-orientation.js": "6CD1014A882D61A2AD603FB73FCA02C868FE869433736CA64C41CE651B3CB010",
       "../../../assets/vendor/dancerudiments/dancerudiments-native.js": "670860F2551F43115EB798B533F65DD451BCE9E650DE9586FE2FCE3F809F9152",
-      "../../../assets/dance-moves-rudiments.js": "8565D2ED3BAE0DBFB6B6D7DC38D36930D36F3C9EA4C75A719200F164498D048F"
+      "../../../assets/dance-moves-rudiments.js": "03283219CF273E782C9AF7DD70CC60EBCC5D38EC1439BF14D74D66B140D9C656"
     },
     "inputModes": ["pointer", "touch", "keyboard", "orientation"]
   },

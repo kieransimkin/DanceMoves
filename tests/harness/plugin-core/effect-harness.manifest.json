@@ -10,9 +10,9 @@
     "productionCss": ["../../../assets/dance-moves-core.css"],
     "productionJs": ["../../../assets/dance-moves-core.js", "../../../assets/dance-moves-catalogue-timing.js"],
     "productionHashes": {
-      "../../../assets/dance-moves-core.css": "C4790396B723B383CBA65D6EA62E78AF93FAB81A8FEBD9443E578EAF5E677D7D",
-      "../../../assets/dance-moves-core.js": "786E07421BA6A975C16DE7FF1CE9C6F41A11FCE6F380D785D13F4A2D89E1DED7",
-    "../../../assets/dance-moves-catalogue-timing.js": "F2C8232F019E304D8DDF7880D8EDB251A78C9125E9C4418FE53C324E4A7A2927"
+      "../../../assets/dance-moves-core.css": "69B7E5F2E6F6EA338839F10655B79B6B515F8B4C52CD7344AC1228237DF4F12D",
+      "../../../assets/dance-moves-core.js": "19A3B45A26271D3384DA14043D15AD15D759502290A931B547001EEE405D1DDF",
+    "../../../assets/dance-moves-catalogue-timing.js": "84CCEF9F3637EF91BFB1165BB73A25FE6508D98815A0B647325F0687CC6C9470"
     },
     "inputModes": ["pointer", "keyboard", "cue"]
   },
