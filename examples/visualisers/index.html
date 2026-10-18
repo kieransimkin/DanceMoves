@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DanceMoves · Rudiment visualisers</title>
+<style>
+  :root{color-scheme:dark;font-family:system-ui,sans-serif;background:#0c1322;color:#edf3fc}
+  *{box-sizing:border-box}body{margin:0}main{max-width:1240px;margin:auto;padding:clamp(20px,4vw,52px)}
+  .eyebrow{color:#76d4cf;letter-spacing:.12em;text-transform:uppercase;font-size:.75rem;font-weight:700}
+  h1{font-size:clamp(2rem,5vw,3.4rem);letter-spacing:-.04em;margin:.6rem 0 1rem}p{line-height:1.6;color:#bdcbe1;max-width:76ch}
+  .transport,.controls{background:#142037;border:1px solid #2c3c58;border-radius:16px;padding:20px;margin:20px 0}
+  audio{display:block;width:100%}.transport p{margin:10px 0 0;font-size:.9rem}
+  .fields{display:flex;flex-wrap:wrap;align-items:end;gap:14px}label{display:grid;gap:7px;font-size:.85rem;flex:1 1 180px}
+  select,button{font:inherit;border:1px solid #4c607e;border-radius:8px;padding:10px 12px;background:#1c2c47;color:#edf3fc;min-height:44px}
+  select{width:100%}button{cursor:pointer}button:hover{border-color:#76d4cf}button.primary{background:#76d4cf;color:#101b2e;font-weight:700}
+  button:focus-visible,select:focus-visible{outline:3px solid #edb56d;outline-offset:3px}.presets{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+  .presets button{font-size:.85rem}.catalogue-info{margin:14px 0 0;font-size:.85rem}#notice{min-height:1.5em;margin:16px 0;color:#edb56d}
+  #grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+  figure{margin:0;min-width:0;padding:16px;border:1px solid #2e4161;border-radius:14px;background:#101b2e}
+  .view-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}figcaption{font-size:.9rem;font-weight:650}
+  .remove{min-height:36px;padding:5px 10px;font-size:.8rem}canvas{display:block;width:100%;height:220px;margin-top:12px}
+  [data-dance-moves-visualiser-status]{font-size:.75rem;margin:10px 0 0}.source-label{font-size:.75rem;color:#76d4cf;margin:8px 0}
+  footer{margin-top:28px;border-top:1px solid #2c3c58;padding-top:16px}footer p{font-size:.85rem}
+  @media(max-width:650px){#grid{grid-template-columns:1fr}canvas{height:200px}.controls,.transport{padding:14px}}
+  @media(forced-colors:active){figure,.controls,.transport{background:Canvas;color:CanvasText;border-color:CanvasText}p,.source-label,#notice{color:CanvasText}}
+</style>
+<main id="demo">
+  <header><p class="eyebrow">DanceMoves / FrameRudiments</p><h1>Rudiments in motion</h1>
+  <p>Explore 164 views of native movement and recorded frequency bands. Add a view, press play, or seek to a position to inspect its sampled history.</p></header>
+  <section class="transport" aria-label="Synthetic demonstration audio">
+    <audio id="audio" controls preload="metadata" src="/fixture.wav"></audio>
+    <p>Original eight-second synthetic tone. The frequency-band fixture is hand-authored for this demo; it is not a measured analysis of the tone.</p>
+  </section>
+  <section class="controls" aria-label="Choose visualisers">
+    <div class="fields">
+      <label>Catalogue family<select id="family"><option value="all">All 164 visualisers</option><option value="motion">Native movement</option><option value="spectrum">Spectrum</option><option value="spectrogram">Spectrogram</option><option value="spatial">Spatial wireframes</option></select></label>
+      <label>Visualiser<select id="renderer"></select></label>
+      <label>Native pattern<select id="pattern"></select></label>
+      <button class="primary" id="add" type="button">Add view</button>
+    </div>
+    <div class="presets" aria-label="Example groups">
+      <button type="button" data-preset="motion">Motion paths</button><button type="button" data-preset="history">Spectral histories</button>
+      <button type="button" data-preset="circular">Circular views</button><button type="button" data-preset="effects">Effect views</button>
+      <button type="button" data-preset="spatial">Spatial views</button><button type="button" id="clear">Clear views</button>
+    </div>
+    <p class="catalogue-info">58 movement views · 106 calibrated spectral views. Recorded data loads when its first view is added.</p>
+  </section>
+  <p id="notice" role="status" aria-live="polite"></p>
+  <section id="grid" aria-label="Visualiser gallery"></section>
+  <footer><p>Every history is rebuilt from native pip samples. Saved recordings retain their capture clock; generic patterns follow the page’s rhythmic clock. Removing the last recorded view releases that recording from the page.</p></footer>
+</main>
+<script type="module" src="/app.mjs"></script>
+</html>

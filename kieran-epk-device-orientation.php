@@ -32,6 +32,7 @@ require_once __DIR__ . '/dance-moves-rudiments.php';
 require_once __DIR__ . '/dance-moves-beat-alignment.php';
 require_once __DIR__ . '/dance-moves-beat-timeline.php';
 require_once __DIR__ . '/dance-moves-spectrum.php';
+require_once __DIR__ . '/dance-moves-visualisers.php';
 require_once __DIR__ . '/dance-moves-song-collection.php';
 
 define('DANCE_MOVES_DOWNLOAD_QUERY_VAR', 'dance_moves_download');
@@ -314,6 +315,7 @@ function dance_moves_get_page_config($page_id) {
     $master_duration = get_post_meta($page_id, DANCE_MOVES_META_MASTER_DURATION, true);
     $master_duration = is_numeric($master_duration) && (float) $master_duration > 0 ? (float) $master_duration : 0.0;
     $spectrum = dance_moves_spectrum_page_config($page_id);
+    $visualiser = dance_moves_visualiser_page_config($page_id);
 
     return array(
         'pageId' => absint($page_id),
@@ -329,6 +331,10 @@ function dance_moves_get_page_config($page_id) {
         'wordTimingUrl' => dance_moves_attachment_url(get_post_meta($page_id, DANCE_MOVES_META_WORD_TIMING, true)),
         'spectrumRecordingUrl' => $spectrum['spectrumRecordingUrl'],
         'spectrumRenderer' => $spectrum['spectrumRenderer'],
+        'visualiserRecordingUrl' => $visualiser['visualiserRecordingUrl'],
+        'visualiserRenderer' => $visualiser['visualiserRenderer'],
+        'visualiserRudiment' => $visualiser['visualiserRudiment'],
+        'visualiserAxes' => $visualiser['visualiserAxes'],
         'lyricPopupsEnabled' => '1' === (string) get_post_meta($page_id, DANCE_MOVES_META_LYRIC_POPUPS, true),
         'cueTimingUrl' => dance_moves_attachment_url(get_post_meta($page_id, DANCE_MOVES_META_CUE_TIMING, true)),
         'songCollectionEnabled' => get_post_meta($page_id,DANCE_MOVES_META_SONG_PAGE_TYPE,true)==='collection',
@@ -370,6 +376,13 @@ function ks_epk_orientation_enqueue_runtime() {
     }
     if ($has_spectrum) {
         wp_enqueue_style('dance-moves-spectrum', $base_url . 'styles/spectrum.css', array('dance-moves-core'), DANCE_MOVES_VERSION);
+    }
+    $has_visualiser = !empty($config['visualiserRecordingUrl']) || !empty($config['visualiserRudiment']);
+    foreach ($config['songs'] as $song) {
+        if (!empty($song['visualiserRecordingUrl']) || !empty($song['visualiserRudiment'])) { $has_visualiser = true; break; }
+    }
+    if ($has_visualiser) {
+        wp_enqueue_style('dance-moves-visualisers', $base_url . 'styles/visualisers.css', array('dance-moves-core'), DANCE_MOVES_VERSION);
     }
 
     wp_enqueue_script(

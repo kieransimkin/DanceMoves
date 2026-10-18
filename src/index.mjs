@@ -7,7 +7,11 @@ import {createMotionRecorder} from './recorder.mjs';
 import {installPlayback} from './playback.mjs';
 import {createRecordingService} from './recordings.mjs';
 import {createSpectrumService} from './spectrum.mjs';
+import {createVisualiserResources} from './visualiser-resources.mjs';
+import {createVisualiserService} from './visualisers.mjs';
 export {SPECTRUM_RENDERERS} from './spectrum-analysis.mjs';
+export {VISUALISER_CATALOGUE, VISUALISER_RENDERERS, VISUALISER_RUDIMENTS} from './visualiser-catalogue.mjs';
+export {validateVisualiserStyle} from './visualiser-drawing.mjs';
 
 import {installChildPlayback} from './child-playback.mjs';
 export {createPlaybackPublisher, createPlaybackReceiver} from './child-playback.mjs';
@@ -73,8 +77,10 @@ export function createDanceMoves(options = {}) {
       on(type, callback) {scope.listen(scope.document,type,callback); return () => scope.unlisten(scope.document,type,callback);}
     });
     Object.defineProperty(api,'destroyed',{get:() => scope.disposed});
-    api.spectrum = createSpectrumService(scope, api, config);
-    const spectra = api.spectrum.mountPage();
+    const visualiserResources = createVisualiserResources(scope, api);
+    api.spectrum = createSpectrumService(scope, api, config, visualiserResources);
+    api.visualisers = createVisualiserService(scope, api, config, visualiserResources);
+    const spectra = [...api.spectrum.mountPage(), ...api.visualisers.mountPage()];
     installChildPlayback(scope, api, ownerDocument.defaultView);
     api.ready = Promise.all([api.ready, ...spectra.map(view => view.ready)]).then(() => {
       if (!scope.disposed) scope.document.dispatchEvent(new w.CustomEvent('dance-moves-ready', {

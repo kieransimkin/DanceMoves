@@ -1,5 +1,10 @@
 # Spectrum visualisations
 
+This ten-mode API remains supported. The wider
+[164-view rudiment visualiser API](rudiment-visualisers.md) adds native movement,
+spectral histories, circular views, effects and wireframes. Both APIs share
+page-owned recording loads and native tables when they use the same URL.
+
 DanceMoves supplies the basic calibrated spectrum views from FrameRudiments to
 JavaScript, React/Next.js and WordPress pages. The shared module draws Canvas 2D
 views over saved **StemLab Fourier** `dancerudiments.recording` v1 JSON. Native

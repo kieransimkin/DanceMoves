@@ -1,0 +1,24 @@
+/* Declarative native-rudiment Canvas views; scoped to their authored figure. */
+[data-dance-moves-visualiser-figure] {
+  margin: 1.5rem 0;
+  padding: clamp(.75rem, 2vw, 1.25rem);
+  border: 1px solid rgb(146 185 255 / 24%);
+  border-radius: .75rem;
+  background: #101b2e;
+  color: #e7edf7;
+}
+canvas[data-dance-moves-visualiser] {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  height: clamp(12rem, 32vw, 24rem);
+}
+[data-dance-moves-visualiser-status] {
+  margin: .75rem 0 0;
+  color: inherit;
+  font: inherit;
+  font-size: .875rem;
+}
+@media (forced-colors: active) {
+  [data-dance-moves-visualiser-figure] {border-color: CanvasText;background: Canvas;color: CanvasText;}
+}

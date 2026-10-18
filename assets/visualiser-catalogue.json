@@ -1,0 +1,1642 @@
+[
+  {
+    "name": "particles",
+    "label": "Particles",
+    "family": "motion",
+    "styleFamily": "primitive",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Seeded particles moved by native samples with observed trails"
+  },
+  {
+    "name": "bars",
+    "label": "Bars",
+    "family": "motion",
+    "styleFamily": "primitive",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": false,
+    "description": "Signed native dimensions as horizontal or vertical bars"
+  },
+  {
+    "name": "waveform",
+    "label": "Waveform",
+    "family": "motion",
+    "styleFamily": "primitive",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Stacked or overlaid native dimension histories"
+  },
+  {
+    "name": "path",
+    "label": "Path",
+    "family": "motion",
+    "styleFamily": "primitive",
+    "requiresSpectrum": false,
+    "minDimensions": 2,
+    "usesHistory": true,
+    "description": "Two-axis native movement path and current position"
+  },
+  {
+    "name": "spectrum",
+    "label": "Spectrum",
+    "family": "spectrum",
+    "styleFamily": "spectrum",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Calibrated Fourier band bars and recorded peak holds"
+  },
+  {
+    "name": "spectrum-line",
+    "label": "Spectrum Line",
+    "family": "spectrum",
+    "styleFamily": "spectrum",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Classic connected FFT-band magnitude trace"
+  },
+  {
+    "name": "spectrum-area",
+    "label": "Spectrum Area",
+    "family": "spectrum",
+    "styleFamily": "spectrum",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Filled magnitude spectrum"
+  },
+  {
+    "name": "spectrum-dots",
+    "label": "Spectrum Dots",
+    "family": "spectrum",
+    "styleFamily": "spectrum",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Discrete frequency-bin points"
+  },
+  {
+    "name": "spectrum-stems",
+    "label": "Spectrum Stems",
+    "family": "spectrum",
+    "styleFamily": "spectrum",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Vertical impulse / lollipop spectrum"
+  },
+  {
+    "name": "spectrum-steps",
+    "label": "Spectrum Steps",
+    "family": "spectrum",
+    "styleFamily": "spectrum",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Sample-and-hold staircase bands"
+  },
+  {
+    "name": "spectrum-mirror",
+    "label": "Spectrum Mirror",
+    "family": "spectrum",
+    "styleFamily": "spectrum",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Mirrored upper and lower frequency spectrum"
+  },
+  {
+    "name": "spectrum-radial",
+    "label": "Spectrum Radial",
+    "family": "spectrum",
+    "styleFamily": "spectrum",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Spoke-style circular frequency bars"
+  },
+  {
+    "name": "spectrum-ring",
+    "label": "Spectrum Ring",
+    "family": "spectrum",
+    "styleFamily": "spectrum",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Radial polygon that follows spectral levels"
+  },
+  {
+    "name": "spectrum-spiral",
+    "label": "Spectrum Spiral",
+    "family": "spectrum",
+    "styleFamily": "spectrum",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Frequency bins along a logarithmic-looking spiral path"
+  },
+  {
+    "name": "spectrum-horizon",
+    "label": "Spectrum Horizon",
+    "family": "spectrum",
+    "styleFamily": "advanced-spectrum",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Overlaid temporal spectrum traces"
+  },
+  {
+    "name": "spectrum-waterfall",
+    "label": "Spectrum Waterfall",
+    "family": "spectrum",
+    "styleFamily": "advanced-spectrum",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Perspective waterfall of successive band spectra"
+  },
+  {
+    "name": "spectrum-ridgeline",
+    "label": "Spectrum Ridgeline",
+    "family": "spectrum",
+    "styleFamily": "advanced-spectrum",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Offset stacked spectrum ridges"
+  },
+  {
+    "name": "spectrum-peaks",
+    "label": "Spectrum Peaks",
+    "family": "spectrum",
+    "styleFamily": "advanced-spectrum",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Local-maximum spike display"
+  },
+  {
+    "name": "spectrum-log",
+    "label": "Spectrum Log",
+    "family": "spectrum",
+    "styleFamily": "advanced-spectrum",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Current spectrum with a logarithmic frequency axis"
+  },
+  {
+    "name": "spectrum-mel",
+    "label": "Spectrum Mel",
+    "family": "spectrum",
+    "styleFamily": "advanced-spectrum",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Current recorded bands positioned on a mel frequency axis"
+  },
+  {
+    "name": "spectrum-third-octave",
+    "label": "Spectrum Third Octave",
+    "family": "spectrum",
+    "styleFamily": "advanced-spectrum",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Current bands shown on a 1/3-octave frequency axis"
+  },
+  {
+    "name": "spectrogram-linear",
+    "label": "Spectrogram Linear",
+    "family": "spectrogram",
+    "styleFamily": "advanced-spectrum",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Time-frequency heatmap, linear Hz positioning"
+  },
+  {
+    "name": "spectrogram-log",
+    "label": "Spectrogram Log",
+    "family": "spectrogram",
+    "styleFamily": "advanced-spectrum",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Time-frequency heatmap, logarithmic Hz positioning"
+  },
+  {
+    "name": "spectrogram-mel",
+    "label": "Spectrogram Mel",
+    "family": "spectrogram",
+    "styleFamily": "advanced-spectrum",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Recorded Fourier bands remapped to a mel axis"
+  },
+  {
+    "name": "spectrogram-bark",
+    "label": "Spectrogram Bark",
+    "family": "spectrogram",
+    "styleFamily": "advanced-spectrum",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Recorded Fourier bands remapped to a Bark axis"
+  },
+  {
+    "name": "spectrogram-erb",
+    "label": "Spectrogram Erb",
+    "family": "spectrogram",
+    "styleFamily": "advanced-spectrum",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Recorded Fourier bands remapped to ERB-rate axis"
+  },
+  {
+    "name": "spectrogram-peaks",
+    "label": "Spectrogram Peaks",
+    "family": "spectrogram",
+    "styleFamily": "advanced-spectrum",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Time-frequency heatmap retaining only local band maxima"
+  },
+  {
+    "name": "spectrogram-contours",
+    "label": "Spectrogram Contours",
+    "family": "spectrogram",
+    "styleFamily": "advanced-spectrum",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Quantised amplitude contour strips across time"
+  },
+  {
+    "name": "spectrogram-mirror",
+    "label": "Spectrogram Mirror",
+    "family": "spectrogram",
+    "styleFamily": "advanced-spectrum",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Mirrored time-frequency heatmap"
+  },
+  {
+    "name": "spectrogram-transposed",
+    "label": "Spectrogram Transposed",
+    "family": "spectrogram",
+    "styleFamily": "advanced-spectrum",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Vertical-time spectrogram / scrolling frequency history"
+  },
+  {
+    "name": "spectrogram-polar",
+    "label": "Spectrogram Polar",
+    "family": "spectrogram",
+    "styleFamily": "advanced-spectrum",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Time wrapped around angle, frequency along radius"
+  },
+  {
+    "name": "waveform-area",
+    "label": "Waveform Area",
+    "family": "motion",
+    "styleFamily": "advanced-motion",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Filled multi-lane rudiment value histories"
+  },
+  {
+    "name": "waveform-mirror",
+    "label": "Waveform Mirror",
+    "family": "motion",
+    "styleFamily": "advanced-motion",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Symmetric amplitude envelope of rudiment values"
+  },
+  {
+    "name": "waveform-dots",
+    "label": "Waveform Dots",
+    "family": "motion",
+    "styleFamily": "advanced-motion",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Sampled rudiment values drawn as points"
+  },
+  {
+    "name": "waveform-steps",
+    "label": "Waveform Steps",
+    "family": "motion",
+    "styleFamily": "advanced-motion",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Zero-order-hold rudiment signal traces"
+  },
+  {
+    "name": "waveform-oscilloscope",
+    "label": "Waveform Oscilloscope",
+    "family": "motion",
+    "styleFamily": "advanced-motion",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Centred scrolling single-trace rudiment oscilloscope"
+  },
+  {
+    "name": "waveform-envelope",
+    "label": "Waveform Envelope",
+    "family": "motion",
+    "styleFamily": "advanced-motion",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Windowed min/max envelope of observed rudiment values"
+  },
+  {
+    "name": "waveform-ribbon",
+    "label": "Waveform Ribbon",
+    "family": "motion",
+    "styleFamily": "advanced-motion",
+    "requiresSpectrum": false,
+    "minDimensions": 2,
+    "usesHistory": true,
+    "description": "Coloured variation ribbon of paired rudiment channels"
+  },
+  {
+    "name": "waveform-polar",
+    "label": "Waveform Polar",
+    "family": "motion",
+    "styleFamily": "advanced-motion",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Polar history of the first rudiment channel"
+  },
+  {
+    "name": "phase-portrait",
+    "label": "Phase Portrait",
+    "family": "motion",
+    "styleFamily": "advanced-motion",
+    "requiresSpectrum": false,
+    "minDimensions": 2,
+    "usesHistory": true,
+    "description": "Two-dimensional history using first two motion axes"
+  },
+  {
+    "name": "phase-points",
+    "label": "Phase Points",
+    "family": "motion",
+    "styleFamily": "advanced-motion",
+    "requiresSpectrum": false,
+    "minDimensions": 2,
+    "usesHistory": true,
+    "description": "Scatter plot of paired rudiment axes"
+  },
+  {
+    "name": "spectrum-annular-bars",
+    "label": "Spectrum Annular Bars",
+    "family": "spectrum",
+    "styleFamily": "circular",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Continuous radial frequency bars rooted at the inner ring"
+  },
+  {
+    "name": "spectrum-annular-bars-inward",
+    "label": "Spectrum Annular Bars Inward",
+    "family": "spectrum",
+    "styleFamily": "circular",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Radial bars growing inward from the outer perimeter"
+  },
+  {
+    "name": "spectrum-annular-bars-bipolar",
+    "label": "Spectrum Annular Bars Bipolar",
+    "family": "spectrum",
+    "styleFamily": "circular",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Centred, bidirectional radial magnitude bars"
+  },
+  {
+    "name": "spectrum-annular-bars-mirror",
+    "label": "Spectrum Annular Bars Mirror",
+    "family": "spectrum",
+    "styleFamily": "circular",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Bidirectional ring bars with endpoint markers"
+  },
+  {
+    "name": "spectrum-annular-split",
+    "label": "Spectrum Annular Split",
+    "family": "spectrum",
+    "styleFamily": "circular",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Alternating inward/outward frequency bars"
+  },
+  {
+    "name": "spectrum-annular-sunburst",
+    "label": "Spectrum Annular Sunburst",
+    "family": "spectrum",
+    "styleFamily": "circular",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Alternating-length radial sunburst analyser"
+  },
+  {
+    "name": "spectrum-annular-fan",
+    "label": "Spectrum Annular Fan",
+    "family": "spectrum",
+    "styleFamily": "circular",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Filled wedge-frequency fan analyser"
+  },
+  {
+    "name": "spectrum-annular-petals",
+    "label": "Spectrum Annular Petals",
+    "family": "spectrum",
+    "styleFamily": "circular",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Thin sector petals sized by frequency-band strength"
+  },
+  {
+    "name": "spectrum-annular-led",
+    "label": "Spectrum Annular Led",
+    "family": "spectrum",
+    "styleFamily": "circular",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Segmented radial LED meter from inner to outer ring"
+  },
+  {
+    "name": "spectrum-annular-led-inward",
+    "label": "Spectrum Annular Led Inward",
+    "family": "spectrum",
+    "styleFamily": "circular",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "LED meter counting backwards from the outside"
+  },
+  {
+    "name": "spectrum-annular-ticks",
+    "label": "Spectrum Annular Ticks",
+    "family": "spectrum",
+    "styleFamily": "circular",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Isolated radial magnitude-position ticks"
+  },
+  {
+    "name": "spectrum-annular-arc",
+    "label": "Spectrum Annular Arc",
+    "family": "spectrum",
+    "styleFamily": "circular",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Concentric miniature gauge arcs for each band"
+  },
+  {
+    "name": "spectrum-annular-dial",
+    "label": "Spectrum Annular Dial",
+    "family": "spectrum",
+    "styleFamily": "circular",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Graduated frequency dial with dot-end needles"
+  },
+  {
+    "name": "spectrum-annular-dots",
+    "label": "Spectrum Annular Dots",
+    "family": "spectrum",
+    "styleFamily": "circular",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Displaced radial frequency-bin dots"
+  },
+  {
+    "name": "spectrum-annular-lollipop",
+    "label": "Spectrum Annular Lollipop",
+    "family": "spectrum",
+    "styleFamily": "circular",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Radial bar stems with circular end markers"
+  },
+  {
+    "name": "spectrum-annular-orbit",
+    "label": "Spectrum Annular Orbit",
+    "family": "spectrum",
+    "styleFamily": "circular",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Angularly perturbed frequency-bin orbit dots"
+  },
+  {
+    "name": "spectrum-annular-caterpillar",
+    "label": "Spectrum Annular Caterpillar",
+    "family": "spectrum",
+    "styleFamily": "circular",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Thick circular bead chain driven by spectral bins"
+  },
+  {
+    "name": "spectrum-annular-peaks",
+    "label": "Spectrum Annular Peaks",
+    "family": "spectrum",
+    "styleFamily": "circular",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Selected local maximum spectral spokes"
+  },
+  {
+    "name": "spectrum-annular-area",
+    "label": "Spectrum Annular Area",
+    "family": "spectrum",
+    "styleFamily": "circular",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Closed annular frequency response with filled band"
+  },
+  {
+    "name": "spectrum-annular-line",
+    "label": "Spectrum Annular Line",
+    "family": "spectrum",
+    "styleFamily": "circular",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Closed radial spectrum outline"
+  },
+  {
+    "name": "spectrum-annular-ribbon",
+    "label": "Spectrum Annular Ribbon",
+    "family": "spectrum",
+    "styleFamily": "circular",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Nested concentric polygon ribbons"
+  },
+  {
+    "name": "spectrum-annular-halo",
+    "label": "Spectrum Annular Halo",
+    "family": "spectrum",
+    "styleFamily": "circular",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Layered low-alpha spectral halo lines"
+  },
+  {
+    "name": "spectrum-annular-rose",
+    "label": "Spectrum Annular Rose",
+    "family": "spectrum",
+    "styleFamily": "circular",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Alternating polar rose-style magnitude petals"
+  },
+  {
+    "name": "spectrum-annular-concentric",
+    "label": "Spectrum Annular Concentric",
+    "family": "spectrum",
+    "styleFamily": "circular",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Multilayered frequency rings"
+  },
+  {
+    "name": "spectrum-annular-sectors",
+    "label": "Spectrum Annular Sectors",
+    "family": "spectrum",
+    "styleFamily": "circular",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Coloured pie sector bars per frequency bin"
+  },
+  {
+    "name": "spectrum-annular-layers",
+    "label": "Spectrum Annular Layers",
+    "family": "spectrum",
+    "styleFamily": "circular",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Interleaved bands partitioned over concentric rings"
+  },
+  {
+    "name": "spectrum-annular-gauge",
+    "label": "Spectrum Annular Gauge",
+    "family": "spectrum",
+    "styleFamily": "circular",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Single annular swept arc for mean visual band intensity"
+  },
+  {
+    "name": "spectrum-annular-spiral",
+    "label": "Spectrum Annular Spiral",
+    "family": "spectrum",
+    "styleFamily": "circular",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Frequency bins plotted on an amplitude-perturbed spiral"
+  },
+  {
+    "name": "spectrum-annular-helix",
+    "label": "Spectrum Annular Helix",
+    "family": "spectrum",
+    "styleFamily": "circular",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Frequency bins along a multiple-turn polar trace"
+  },
+  {
+    "name": "spectrogram-annular-time",
+    "label": "Spectrogram Annular Time",
+    "family": "spectrogram",
+    "styleFamily": "circular",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Annular spectrogram with time as radius and frequency as angle"
+  },
+  {
+    "name": "spectrogram-annular-rings",
+    "label": "Spectrogram Annular Rings",
+    "family": "spectrogram",
+    "styleFamily": "circular",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Discrete concentric time-history rings coloured by band intensity"
+  },
+  {
+    "name": "spectrogram-annular-heatmap",
+    "label": "Spectrogram Annular Heatmap",
+    "family": "spectrogram",
+    "styleFamily": "circular",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Polar annulus time-frequency heatmap"
+  },
+  {
+    "name": "spectrogram-annular-stripes",
+    "label": "Spectrogram Annular Stripes",
+    "family": "spectrogram",
+    "styleFamily": "circular",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Alternating tinted strips across the polar heatmap"
+  },
+  {
+    "name": "spectrogram-annular-contour",
+    "label": "Spectrogram Annular Contour",
+    "family": "spectrogram",
+    "styleFamily": "circular",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Quantised spectral power annulus, band-level contour regions"
+  },
+  {
+    "name": "spectrogram-annular-frequency",
+    "label": "Spectrogram Annular Frequency",
+    "family": "spectrogram",
+    "styleFamily": "circular",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Time mapped to angle, frequency to radius"
+  },
+  {
+    "name": "spectrogram-annular-sweep",
+    "label": "Spectrogram Annular Sweep",
+    "family": "spectrogram",
+    "styleFamily": "circular",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Radar-style time sweep with old measurements faded"
+  },
+  {
+    "name": "spectrogram-annular-spiral",
+    "label": "Spectrogram Annular Spiral",
+    "family": "spectrogram",
+    "styleFamily": "circular",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Dominant-band spectral history along a time spiral"
+  },
+  {
+    "name": "waveform-annular-line",
+    "label": "Waveform Annular Line",
+    "family": "motion",
+    "styleFamily": "circular",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Signed native Rudiment history as a complete annular outline"
+  },
+  {
+    "name": "waveform-annular-fill",
+    "label": "Waveform Annular Fill",
+    "family": "motion",
+    "styleFamily": "circular",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Signed annular waveform with fill to the centre ring"
+  },
+  {
+    "name": "waveform-annular-area",
+    "label": "Waveform Annular Area",
+    "family": "motion",
+    "styleFamily": "circular",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Filled area between motion trace and inner ring"
+  },
+  {
+    "name": "waveform-annular-envelope",
+    "label": "Waveform Annular Envelope",
+    "family": "motion",
+    "styleFamily": "circular",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Unsigned Rudiment channel amplitude around a circular baseline"
+  },
+  {
+    "name": "waveform-annular-halo",
+    "label": "Waveform Annular Halo",
+    "family": "motion",
+    "styleFamily": "circular",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Translucent circular waveform aura"
+  },
+  {
+    "name": "waveform-annular-rose",
+    "label": "Waveform Annular Rose",
+    "family": "motion",
+    "styleFamily": "circular",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Alternating-petal annular waveform"
+  },
+  {
+    "name": "waveform-annular-pulse",
+    "label": "Waveform Annular Pulse",
+    "family": "motion",
+    "styleFamily": "circular",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Per-point thickness pulse around a middle ring"
+  },
+  {
+    "name": "waveform-annular-mirror",
+    "label": "Waveform Annular Mirror",
+    "family": "motion",
+    "styleFamily": "circular",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Inside/outside mirrored radial waveform envelopes"
+  },
+  {
+    "name": "waveform-annular-ribbon",
+    "label": "Waveform Annular Ribbon",
+    "family": "motion",
+    "styleFamily": "circular",
+    "requiresSpectrum": false,
+    "minDimensions": 2,
+    "usesHistory": true,
+    "description": "Annular ribbon between two native Rudiment axes"
+  },
+  {
+    "name": "waveform-annular-rings",
+    "label": "Waveform Annular Rings",
+    "family": "motion",
+    "styleFamily": "circular",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Concentric independent motion channels"
+  },
+  {
+    "name": "waveform-annular-bands",
+    "label": "Waveform Annular Bands",
+    "family": "motion",
+    "styleFamily": "circular",
+    "requiresSpectrum": false,
+    "minDimensions": 2,
+    "usesHistory": true,
+    "description": "Two-axis banded annular trace"
+  },
+  {
+    "name": "waveform-annular-bars",
+    "label": "Waveform Annular Bars",
+    "family": "motion",
+    "styleFamily": "circular",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Bipolar motion-history spokes rooted at a centred circle"
+  },
+  {
+    "name": "waveform-annular-spokes",
+    "label": "Waveform Annular Spokes",
+    "family": "motion",
+    "styleFamily": "circular",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Circular discrete-time stem oscilloscope"
+  },
+  {
+    "name": "waveform-annular-led",
+    "label": "Waveform Annular Led",
+    "family": "motion",
+    "styleFamily": "circular",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Radial LED trail driven by absolute Rudiment channel value"
+  },
+  {
+    "name": "waveform-annular-petals",
+    "label": "Waveform Annular Petals",
+    "family": "motion",
+    "styleFamily": "circular",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Sampled waveform sectors as radial petals"
+  },
+  {
+    "name": "waveform-annular-sectors",
+    "label": "Waveform Annular Sectors",
+    "family": "motion",
+    "styleFamily": "circular",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Sector length encodes absolute Rudiment motion magnitude"
+  },
+  {
+    "name": "waveform-annular-arc",
+    "label": "Waveform Annular Arc",
+    "family": "motion",
+    "styleFamily": "circular",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Time-addressed arcs with per-sample radial position"
+  },
+  {
+    "name": "waveform-annular-dots",
+    "label": "Waveform Annular Dots",
+    "family": "motion",
+    "styleFamily": "circular",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Circular sampler dots mapped to signed amplitude"
+  },
+  {
+    "name": "waveform-annular-radar",
+    "label": "Waveform Annular Radar",
+    "family": "motion",
+    "styleFamily": "circular",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Radar-like radial motion traces with dot endpoints"
+  },
+  {
+    "name": "waveform-annular-trails",
+    "label": "Waveform Annular Trails",
+    "family": "motion",
+    "styleFamily": "circular",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Chronologically fading dots along the annular waveform"
+  },
+  {
+    "name": "waveform-annular-spiral",
+    "label": "Waveform Annular Spiral",
+    "family": "motion",
+    "styleFamily": "circular",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Rudiment signal warped around a multi-turn time spiral"
+  },
+  {
+    "name": "waveform-annular-helix",
+    "label": "Waveform Annular Helix",
+    "family": "motion",
+    "styleFamily": "circular",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Waveform on a spiralling annular helix"
+  },
+  {
+    "name": "phase-annular-portrait",
+    "label": "Phase Annular Portrait",
+    "family": "motion",
+    "styleFamily": "circular",
+    "requiresSpectrum": false,
+    "minDimensions": 2,
+    "usesHistory": true,
+    "description": "Two native Rudiment dimensions mapped into annular angle and radius"
+  },
+  {
+    "name": "spectrum-cityscape",
+    "label": "Spectrum Cityscape",
+    "family": "spectrum",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "A skyline of unequal roofline bars from calibrated Fourier bands"
+  },
+  {
+    "name": "spectrum-led-matrix",
+    "label": "Spectrum Led Matrix",
+    "family": "spectrum",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Stacked discretised LED columns across frequency"
+  },
+  {
+    "name": "spectrum-capsules",
+    "label": "Spectrum Capsules",
+    "family": "spectrum",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Rounded spectrum amplitude capsules"
+  },
+  {
+    "name": "spectrum-outline-blocks",
+    "label": "Spectrum Outline Blocks",
+    "family": "spectrum",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Outlined rather than filled frequency-bin rectangles"
+  },
+  {
+    "name": "spectrum-peak-ladder",
+    "label": "Spectrum Peak Ladder",
+    "family": "spectrum",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Horizontal rungs marking each calibrated band level"
+  },
+  {
+    "name": "spectrum-staircase",
+    "label": "Spectrum Staircase",
+    "family": "spectrum",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Frequency-band zero-order-hold height step plot"
+  },
+  {
+    "name": "spectrum-eq-curve",
+    "label": "Spectrum Eq Curve",
+    "family": "spectrum",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Interpolated drawing through recorded band centres (no new DSP)"
+  },
+  {
+    "name": "spectrum-ribbon-stack",
+    "label": "Spectrum Ribbon Stack",
+    "family": "spectrum",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Layered observed spectral traces with fading ink"
+  },
+  {
+    "name": "spectrum-peak-trails",
+    "label": "Spectrum Peak Trails",
+    "family": "spectrum",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Trailing observed spectral bin markers over history"
+  },
+  {
+    "name": "spectrum-gel-bars",
+    "label": "Spectrum Gel Bars",
+    "family": "spectrum",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Glassy translucent frequency columns with highlights"
+  },
+  {
+    "name": "spectrum-lollipop-grid",
+    "label": "Spectrum Lollipop Grid",
+    "family": "spectrum",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Stem-and-bead plot on a frequency grid"
+  },
+  {
+    "name": "spectrum-mountain-range",
+    "label": "Spectrum Mountain Range",
+    "family": "spectrum",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Ridged layers of previous frequency-band frames"
+  },
+  {
+    "name": "spectrum-band-delta",
+    "label": "Spectrum Band Delta",
+    "family": "spectrum",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Signed difference between current and previous observed band levels"
+  },
+  {
+    "name": "spectrum-band-variance",
+    "label": "Spectrum Band Variance",
+    "family": "spectrum",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Variance of observed sampled band levels, not spectral variance analysis"
+  },
+  {
+    "name": "spectrum-energy-tiles",
+    "label": "Spectrum Energy Tiles",
+    "family": "spectrum",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Bands drawn as colour-intensity tiles"
+  },
+  {
+    "name": "spectrum-semi-circle",
+    "label": "Spectrum Semi Circle",
+    "family": "spectrum",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Upper semicircular spectrum bars rather than a complete annulus"
+  },
+  {
+    "name": "spectrum-fan-meter",
+    "label": "Spectrum Fan Meter",
+    "family": "spectrum",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Frequency wedges along a semi-annular fan"
+  },
+  {
+    "name": "spectrum-braided-lines",
+    "label": "Spectrum Braided Lines",
+    "family": "spectrum",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Interlaced lines from sampled band histories"
+  },
+  {
+    "name": "spectrum-rain-bars",
+    "label": "Spectrum Rain Bars",
+    "family": "spectrum",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Dropping horizontal frequency strokes over sampled history"
+  },
+  {
+    "name": "spectrum-bead-stacks",
+    "label": "Spectrum Bead Stacks",
+    "family": "spectrum",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Rounded dot columns with discrete energy steps"
+  },
+  {
+    "name": "spectrum-dash-grid",
+    "label": "Spectrum Dash Grid",
+    "family": "spectrum",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Multi-row dashed spectral equaliser"
+  },
+  {
+    "name": "spectrum-thermometer",
+    "label": "Spectrum Thermometer",
+    "family": "spectrum",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Full-height level-sensitive opacity bars"
+  },
+  {
+    "name": "spectrum-wave-fence",
+    "label": "Spectrum Wave Fence",
+    "family": "spectrum",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Perspective fence of successive observed spectra"
+  },
+  {
+    "name": "spectrum-partition",
+    "label": "Spectrum Partition",
+    "family": "spectrum",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Equal-width nested slices with area representing band level"
+  },
+  {
+    "name": "spectrogram-pixel-mosaic",
+    "label": "Spectrogram Pixel Mosaic",
+    "family": "spectrogram",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Hard pixel cells showing observed time-frequency band values"
+  },
+  {
+    "name": "spectrogram-isometric-terrain",
+    "label": "Spectrogram Isometric Terrain",
+    "family": "spectrogram",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Offset isometric horizon lines over observed spectral history"
+  },
+  {
+    "name": "spectrogram-voxel-city",
+    "label": "Spectrogram Voxel City",
+    "family": "spectrogram",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Height-encoded isometric blocks for time-frequency samples"
+  },
+  {
+    "name": "spectrogram-frequency-stripes",
+    "label": "Spectrogram Frequency Stripes",
+    "family": "spectrogram",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Alternating vertical frequency columns in a scrolling heatmap"
+  },
+  {
+    "name": "spectrogram-dot-cloud",
+    "label": "Spectrogram Dot Cloud",
+    "family": "spectrogram",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Circular marks whose radius and alpha follow observed band power"
+  },
+  {
+    "name": "spectrogram-isobands",
+    "label": "Spectrogram Isobands",
+    "family": "spectrogram",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Discrete filled colour thresholds from observed bands"
+  },
+  {
+    "name": "spectrogram-negative",
+    "label": "Spectrogram Negative",
+    "family": "spectrogram",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Inverted visual colour scale of time-frequency energy"
+  },
+  {
+    "name": "spectrogram-tape",
+    "label": "Spectrogram Tape",
+    "family": "spectrogram",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Horizontal film-like band-history lanes"
+  },
+  {
+    "name": "spectrogram-slit-scan",
+    "label": "Spectrogram Slit Scan",
+    "family": "spectrogram",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Vertical slits displaying successive spectrum samples"
+  },
+  {
+    "name": "spectrogram-trails",
+    "label": "Spectrogram Trails",
+    "family": "spectrogram",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Diagonal trails of observed frequency-bin magnitudes"
+  },
+  {
+    "name": "spectrogram-hex-cells",
+    "label": "Spectrogram Hex Cells",
+    "family": "spectrogram",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Hexagonal cells coloured by time-frequency energy"
+  },
+  {
+    "name": "spectrogram-bead-grid",
+    "label": "Spectrogram Bead Grid",
+    "family": "spectrogram",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Elliptical beads arranged on time-frequency rows"
+  },
+  {
+    "name": "spectrogram-tunnel",
+    "label": "Spectrogram Tunnel",
+    "family": "spectrogram",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Concentric rectangular history frames with band colours"
+  },
+  {
+    "name": "spectrogram-record-grooves",
+    "label": "Spectrogram Record Grooves",
+    "family": "spectrogram",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Concentric spectral history grooves in the style of a record"
+  },
+  {
+    "name": "spectrogram-quilt",
+    "label": "Spectrogram Quilt",
+    "family": "spectrogram",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Alternating hard-edged time-frequency patches"
+  },
+  {
+    "name": "spectrogram-crosshatch",
+    "label": "Spectrogram Crosshatch",
+    "family": "spectrogram",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Crosshatched screen whose density follows band magnitude"
+  },
+  {
+    "name": "spectrogram-triangle-tiles",
+    "label": "Spectrogram Triangle Tiles",
+    "family": "spectrogram",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Tessellated triangle glyphs coloured by recorded spectral values"
+  },
+  {
+    "name": "spectrogram-pixel-rain",
+    "label": "Spectrogram Pixel Rain",
+    "family": "spectrogram",
+    "styleFamily": "effects",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Vertical pixel drop matrix showing previous calibrated band levels"
+  },
+  {
+    "name": "waveform-phosphor",
+    "label": "Waveform Phosphor",
+    "family": "motion",
+    "styleFamily": "effects",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Age-decayed CRT-like sampled Rudiment trace"
+  },
+  {
+    "name": "waveform-echo",
+    "label": "Waveform Echo",
+    "family": "motion",
+    "styleFamily": "effects",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Offset translucent history echoes of Rudiment channels"
+  },
+  {
+    "name": "waveform-sample-beads",
+    "label": "Waveform Sample Beads",
+    "family": "motion",
+    "styleFamily": "effects",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Observed Rudiment values drawn as discrete circles"
+  },
+  {
+    "name": "waveform-channel-braid",
+    "label": "Waveform Channel Braid",
+    "family": "motion",
+    "styleFamily": "effects",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Two Rudiment dimensions woven across the time axis"
+  },
+  {
+    "name": "waveform-pulse-train",
+    "label": "Waveform Pulse Train",
+    "family": "motion",
+    "styleFamily": "effects",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Signed Rudiment channel impulses from a zero baseline"
+  },
+  {
+    "name": "waveform-quantised",
+    "label": "Waveform Quantised",
+    "family": "motion",
+    "styleFamily": "effects",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Quantised display grid of Rudiment levels"
+  },
+  {
+    "name": "waveform-triggered",
+    "label": "Waveform Triggered",
+    "family": "motion",
+    "styleFamily": "effects",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Leading-edge display aligned to an observed Rudiment zero crossing"
+  },
+  {
+    "name": "waveform-spiral-trace",
+    "label": "Waveform Spiral Trace",
+    "family": "motion",
+    "styleFamily": "effects",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Rudiment history rendered as a planar spiral with amplitude modulation"
+  },
+  {
+    "name": "waveform-butterfly",
+    "label": "Waveform Butterfly",
+    "family": "motion",
+    "styleFamily": "effects",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Mirrored paired Rudiment traces across the centre line"
+  },
+  {
+    "name": "waveform-horizon",
+    "label": "Waveform Horizon",
+    "family": "motion",
+    "styleFamily": "effects",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Overlaid translucent Rudiment history ridges"
+  },
+  {
+    "name": "waveform-heat-ribbon",
+    "label": "Waveform Heat Ribbon",
+    "family": "motion",
+    "styleFamily": "effects",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Filled channel history with time-varying ink strength"
+  },
+  {
+    "name": "waveform-dotted-envelope",
+    "label": "Waveform Dotted Envelope",
+    "family": "motion",
+    "styleFamily": "effects",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Envelope-style upper/lower sampled Rudiment point clouds"
+  },
+  {
+    "name": "waveform-vertical-scope",
+    "label": "Waveform Vertical Scope",
+    "family": "motion",
+    "styleFamily": "effects",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Rudiment time moving vertically with horizontal signal amplitude"
+  },
+  {
+    "name": "waveform-phase-trails",
+    "label": "Waveform Phase Trails",
+    "family": "motion",
+    "styleFamily": "effects",
+    "requiresSpectrum": false,
+    "minDimensions": 2,
+    "usesHistory": true,
+    "description": "Age-faded XY Rudiment motion portrait"
+  },
+  {
+    "name": "waveform-polar-radar",
+    "label": "Waveform Polar Radar",
+    "family": "motion",
+    "styleFamily": "effects",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Polar motion history with fading position spokes"
+  },
+  {
+    "name": "waveform-dna-helix",
+    "label": "Waveform Dna Helix",
+    "family": "motion",
+    "styleFamily": "effects",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Two out-of-phase Rudiment traces linked by time-axis rungs"
+  },
+  {
+    "name": "waveform-block-meter",
+    "label": "Waveform Block Meter",
+    "family": "motion",
+    "styleFamily": "effects",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Discrete per-sample signed Rudiment blocks"
+  },
+  {
+    "name": "waveform-signal-staircase",
+    "label": "Waveform Signal Staircase",
+    "family": "motion",
+    "styleFamily": "effects",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Stacked stepped traces in independently offset lanes"
+  },
+  {
+    "name": "spatial-torus",
+    "label": "Spatial Torus",
+    "family": "spatial",
+    "styleFamily": "wire",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": false,
+    "description": "Deterministic 3D projected wire geometry animated by native Rudiment channels"
+  },
+  {
+    "name": "spatial-sphere",
+    "label": "Spatial Sphere",
+    "family": "spatial",
+    "styleFamily": "wire",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": false,
+    "description": "Deterministic 3D projected wire geometry animated by native Rudiment channels"
+  },
+  {
+    "name": "spatial-terrain",
+    "label": "Spatial Terrain",
+    "family": "spatial",
+    "styleFamily": "wire",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": false,
+    "description": "Deterministic 3D projected wire geometry animated by native Rudiment channels"
+  }
+]

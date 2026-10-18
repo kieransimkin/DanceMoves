@@ -48,6 +48,15 @@ song's mount, shared by its views, and released on selection changes. Recording
 files stay in the Media Library rather than the reusable rudiment package.
 See [spectrum visualisations](spectrum-visualisations.md) for formats and options.
 
+The **Rudiment visualiser** fields add the wider 164-view catalogue independently
+of the compatible ten-mode Spectrum fields. Each row selects a **Visualiser
+recording (.json)** or a **Native rudiment**, a renderer, and optional named axes.
+The selected song's runtime owns both interfaces and shares a recording request
+and native table if they use the same URL. Unselected song metadata contains URLs
+and settings only; neither recordings nor generic-pattern animation are mounted
+for those songs. Missing/deleted optional recordings suppress their views while
+preserving the song's player. See [rudiment visualisers](rudiment-visualisers.md).
+
 A song collection automatically appends its interface to the Page. Alternatively,
 insert `[dance_moves_song_collection]` to place the interface deliberately. The
 selected song shows native audio controls, its beat/line/word/cue timing lanes, live

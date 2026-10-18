@@ -85,6 +85,7 @@ jobs:
       - run: npm test
       - run: php tests/shared/beat-alignment.php
       - run: php tests/shared/spectrum-wordpress.php
+      - run: php tests/shared/visualiser-wordpress.php
       - run: python tests/shared/test_package_outputs.py
       - run: npm run test:legacy
       - run: python tools/package-wordpress.py
@@ -114,6 +115,7 @@ jobs:
       - run: npx playwright-core install --with-deps chromium
       - run: npm run test:browser
       - run: npm run test:spectrum:browser
+      - run: npm run test:visualisers:browser
       - run: node tests/shared/orientation-navigation-browser.mjs
       - run: node tests/shared/phone-motion-browser.mjs
       - run: node tests/shared/control-feedback-browser.mjs

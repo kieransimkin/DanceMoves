@@ -50,11 +50,24 @@ capability/nonce checks and revisions remain in PHP.
 | `_dance_moves_effect` | Empty or `paper-planes`; no song/page-ID coupling for that effect. |
 | `_dance_moves_spectrum_recording_id` | Optional saved StemLab Fourier JSON attachment, selected in **Dance-rudiment spectrum**. No samples are stored in metadata. |
 | `_dance_moves_spectrum_renderer` | One of the ten basic spectrum styles; default `spectrum` (bars). |
+| `_dance_moves_visualiser_recording_id` | Optional native JSON attachment in **Dance-rudiment visualiser**. Attachment metadata resolves its URL; PHP does not decode the recording samples. |
+| `_dance_moves_visualiser_rudiment` | Empty or one of the 15 native names. Choose this or a recording, with the other source cleared. |
+| `_dance_moves_visualiser_renderer` | One of 164 self-contained FrameRudiments renderer IDs; default `waveform`. |
+| `_dance_moves_visualiser_axes` | Optional array of unique dimension names; edit as a comma-separated list. Empty selects all source axes. |
 
 Add `[dance_moves_spectrum]` in the same content root as the song's player to
 render the selected spectrum. The shared runtime loads the recording only when
 that page mounts a canvas. Each Multiple songs row has its own recording/style;
 only the selected song fetches its data. See [spectrum setup and data ownership](spectrum-visualisations.md).
+
+Use `[dance_moves_visualiser renderer="waveform-annular-ribbon" label="Movement history"]`
+for a general view. A configured native pattern can run without a player using
+the page clock; saved recordings require the matching player in the same content
+root. Each Multiple songs row has its own source, renderer and selected axes.
+Recording URLs are shared between the old spectrum API and the new visualiser API
+within that mount, and are released when their last owner is removed. Metadata
+saves and partial REST updates reject conflicting sources and invalid identifiers.
+See [the complete visualiser guide](rudiment-visualisers.md).
 
 The existing `examples/wordpress/wordpress/configure-page.php` helper and the
 [metadata recipes](wordpress-examples.md) cover validated WP-CLI writes, REST

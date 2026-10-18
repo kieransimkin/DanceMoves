@@ -89,7 +89,9 @@
     "demo:prepare": "python tools/prepare-app-demos.py",
     "version": "node tools/sync-shared-version.mjs",
     "test:next:smoke": "node tests/shared/next-smoke.mjs",
-    "test:react:ssr": "node --test tests/shared/exports.test.mjs"
+    "test:react:ssr": "node --test tests/shared/exports.test.mjs",
+    "demo:visualisers": "node examples/visualisers/serve.mjs",
+    "test:visualisers:browser": "node tests/shared/visualiser-browser.mjs"
   },
   "devDependencies": {
     "@kieransimkin/dance-rudiments": "0.2.0",

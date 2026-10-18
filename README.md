@@ -1,43 +1,75 @@
 # DanceMoves
 
-## Spectrum visualisations for individual pages
+## FrameRudiments visualisers for individual pages
 
-DanceMoves now renders ten basic FrameRudiments spectrum views from a saved
-StemLab Fourier `dancerudiments.recording`: **bars with peak holds, line, area,
-dots, stems, steps, mirror, radial, ring and spiral**. They use the existing
-native DanceRudiments sampler and shared playback lifecycle, with calibrated
-RMS dBFS, real frequency ranges and deterministic seeking. No browser FFT,
-audio separation or new models are needed.
+DanceMoves renders **164 self-contained FrameRudiments visualisers** through
+`runtime.visualisers`: **58 native movement views** and **106 calibrated spectral
+views**. The catalogue includes particles, signed bars, paths, waveform and phase
+histories; spectrum traces, waterfalls and spectrograms; 60 circular variants;
+60 spectrum/spectrogram/waveform effects; and torus, sphere and terrain wireframes.
+The existing ten-mode `runtime.spectrum` API and its styles remain compatible.
 
-**Song recordings belong to the page that uses them.** The npm package,
-browser bundle and WordPress plugin contain reusable renderer code and generic
-rudiments only. A page supplies `spectrumRecordingUrl`; the JSON is fetched only
-when that page has a spectrum canvas. Multiple views in one mount share the
-request and native sample table. In a song collection, only the selected song's
-mount loads its recording, and switching destroys the previous views and aborts
-their pending requests. npm prepack also checks the complete `lib/` inventory,
-rejecting stray files copied in after the build.
+Movement views use one of the **15 existing native patterns** or selected axes of
+an explicit saved `dancerudiments.recording`. Spectral views require the saved
+StemLab Fourier calibration; log, mel, Bark, ERB and third-octave displays reposition
+recorded bands. They do not compute new audio transforms. Every trail is rebuilt
+from bounded native samples, so seeking is deterministic. Saved recordings retain
+their capture BPM and origin even when the page has a different BPM or an optional
+variable-tempo beat map.
 
-In WordPress, choose the recording and style in the Page editor's
-**Dance-rudiment spectrum** box, then insert `[dance_moves_spectrum]` beside the
-audio inside the same content root. Multiple-song pages have a separate recording
-and style in each song row and add their canvases automatically.
+**Song recordings belong to the page that uses them.** Imports and ordinary mounts
+request no recording. A configured `visualiserRecordingUrl` is fetched only when
+that page mounts a visualiser canvas. Old spectrum views and new visualisers in
+one mount share the same URL request and one native sample table. The last owner
+releases it; switching songs destroys the previous views and aborts pending loads.
+The packages contain reusable geometry and generic rudiments, with no song
+recordings, audio, model weights or example data. Prepack checks the complete
+`lib/` inventory and rejects stray files added after the build.
+
+In WordPress, use the Page editor's **Dance-rudiment visualiser** box to choose a saved
+recording **or** a native pattern, a renderer, and optional named axes. Insert
+`[dance_moves_visualiser]` beside the player inside the same content root. Each
+Multiple songs row has independent source/renderer/axis fields and creates its
+canvas automatically when configured. The original **Dance-rudiment spectrum**
+box and `[dance_moves_spectrum]` continue to work.
 
 ```js
-// root contains this song's audio and a <canvas data-dance-moves-spectrum>.
+// root contains this song's audio and a <canvas data-dance-moves-visualiser>.
 const runtime = createDanceMoves({
   root,
   bpm: 120,
-  spectrumRecordingUrl: '/uploads/this-song-fourier.json',
-  spectrumRenderer: 'spectrum-ring'
+  visualiserRecordingUrl: '/uploads/this-song-fourier.json',
+  visualiserRenderer: 'spectrogram-annular-heatmap'
 });
 await runtime.ready;
 // Route or component cleanup:
 runtime.destroy();
 ```
 
-See [spectrum setup, all renderers and loading rules](docs/spectrum-visualisations.md)
-and the [self-contained synthetic gallery](examples/spectrum/README.md).
+For a movement view that needs no recording:
+
+```js
+const view = runtime.visualisers.animate({
+  id: 'native-path', target: canvas, audio,
+  rudiment: 'helix', renderer: 'path', axes: ['x', 'y'],
+  historyPips: 256, style: {line_width: 3, radius: 5}
+});
+await view.ready;
+// view.pause(), resume(), setEnabled(), refresh(), reset(), destroy()
+```
+
+Run `npm run build && npm run demo:visualisers` for the original synthetic gallery
+at <http://127.0.0.1:4195>. It exposes all 164 identifiers, supports view selection
+and removal, and loads its example recording only when a spectral view is added.
+See [all visualisers, family styles and source rules](docs/rudiment-visualisers.md),
+the [gallery instructions](examples/visualisers/README.md), and the
+[compatible basic spectrum API](docs/spectrum-visualisations.md).
+
+This is the complete self-contained Canvas geometry subset of FrameRudiments at
+`c8d1c9a75630a88324e49a1446820392514092dd`. Its remaining 52 atlas-backed sprite modes,
+three solid and three music-spatial modes, and offline pixel postprocessing/style
+modulation are outside this port. The Canvas adaptations preserve renderer
+identifiers and sampled-input semantics; they are not pixel-identical Pillow renders.
 
 **3.3.0** adds source-bound beat alignment, connecting saved StemLab BPM/first-beat readings
 to the shared audio clock. WordPress's **EPK Timing** panel stores the reading
@@ -175,7 +207,8 @@ from `@kieransimkin/dancemoves/server` (Node only; never bundle server secrets).
 | Guide | Contents |
 | --- | --- |
 | [JavaScript API](docs/javascript-api.md) | Existing timing/effects/native APIs, scoped mounts, lifecycle, metadata and phone input |
-| [Spectrum visualisations](docs/spectrum-visualisations.md) | Ten FrameRudiments views, page-specific recording URLs, calibration and native playback |
+| [Rudiment visualisers](docs/rudiment-visualisers.md) | 164 FrameRudiments views, native or page-owned recording sources, family styles, clocks and cleanup |
+| [Spectrum visualisations](docs/spectrum-visualisations.md) | Compatible ten-mode spectrum API and calibration |
 | [React and Next.js](docs/react-next.md) | Hooks, components, SSR, Strict Mode, Arcadians demos and App Router routes |
 | [Node server API](docs/javascript-server.md) | Timing validation, signed MP3 delivery, authenticated private capture and storage adapters |
 | [WordPress usage](docs/wordpress-shared-runtime.md) | All six Page metadata keys, separate build, compatibility handles and installation |
@@ -266,7 +299,7 @@ Top-level `await` snippets belong in an async function or a JavaScript module.
 | `_dance_moves_cue_timing_id` | Cue Timing File; unset/0 | Real ID of `sections.cue` or another valid LRC-style cue file | Simulated ID 9002 is not a WordPress ID. `.cue` uses bracket timestamps, not CD cuesheet syntax. |
 | `_dance_moves_lyric_popups_enabled` | Timed lyric pop-ups; false | `true` only for the lyric demo | Opt in after styling review; does not disable `onLyric()` parsing/subscriptions when false. |
 | `_dance_moves_master_duration_ms` | Hidden advanced field; 0/discovery | `273604.558` | Milliseconds of canonical master, not BPM or sample count. Not REST-visible. |
-| `_dance_moves_effect` | Ambient effect; empty string | `"paper-planes"` only in the plane demo | Empty means none. `"none"` is not a stored option. No generic rudiment/orientation selector exists. |
+| `_dance_moves_effect` | Ambient effect; empty string | `"paper-planes"` only in the plane demo | Empty means none. `"none"` is not a stored option. Generic visualiser controls are in the separate Dance-rudiment visualiser box; no orientation selector exists. |
 
 The simulated editor displays all six keys for **each** demo. It validates the
 five editable keys, preserves previous values on invalid saves, keeps ten local

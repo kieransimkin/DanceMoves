@@ -1,4 +1,4 @@
-import {createDanceMoves,createMemoryPageStore,fromWordPressMeta,type DanceMoves} from '@kieransimkin/dancemoves';
+import {createDanceMoves,createMemoryPageStore,fromWordPressMeta,VISUALISER_CATALOGUE,validateVisualiserStyle,type DanceMoves} from '@kieransimkin/dancemoves';
 import {useDanceMoves,PageMetadataEditor} from '@kieransimkin/dancemoves/react';
 import {createCaptureHandler,createDownloadService,validateTimingFile} from '@kieransimkin/dancemoves/server';
 const root = document.createElement('section');
@@ -11,6 +11,24 @@ const spectrum=motion.spectrum.animate({id:'types:spectrum',target:spectrumCanva
   onFrame(frame){console.log(frame.report?.dominant?.low_hz);}});
 spectrum.ready.then(view=>view.destroy());
 void motion.spectrum.snapshot().sources;
+const visualiserCanvas=document.createElement('canvas');root.append(visualiserCanvas);
+const visualiser=motion.visualisers.animate({id:'types:visualiser',target:visualiserCanvas,audio,
+  rudiment:'helix',renderer:'spatial-torus',style:{rings:13,orbit:35},axes:['x','y'],
+  onFrame(frame){console.log(frame.values?.[0],frame.historyLength);}});
+visualiser.ready.then(view=>view.destroy());
+motion.visualisers.animate({id:'types:sonogram',target:visualiserCanvas,audio,recordingUrl:'/page-assets/fourier.json',
+  renderer:'spectrogram-annular-heatmap',style:{inner_radius:.25,frequency_scale:'mel'}}).destroy();
+motion.visualisers.animate({id:'types:default',target:visualiserCanvas,rudiment:'circle'}).destroy();
+validateVisualiserStyle('particles',{count:24,trail:4});
+void VISUALISER_CATALOGUE[0].requiresSpectrum;void motion.visualisers.describe('path');
+// @ts-expect-error Spectral evidence cannot be created by a named motion pattern.
+motion.visualisers.animate({id:'types:bad-spectrum',target:visualiserCanvas,rudiment:'circle',renderer:'spectrum-waterfall'});
+// @ts-expect-error A capture owns its clock and phase.
+motion.visualisers.animate({id:'types:bad-clock',target:visualiserCanvas,audio,recordingUrl:'/fixture.json',rate:2});
+// @ts-expect-error Family styles use their own schemas.
+validateVisualiserStyle('particles',{floor_db:-60});
+// @ts-expect-error Source choices are exclusive.
+motion.visualisers.animate({id:'types:bad-source',target:visualiserCanvas,audio,rudiment:'circle',recordingUrl:'/fixture.json'});
 motion.onEveryBeat(detail => console.log(detail.boundaryTick));
 motion.effects.pointer({root,target:root}).reset();
 motion.effects.playbackPulse({root,audio}).sync();

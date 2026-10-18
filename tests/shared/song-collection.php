@@ -29,6 +29,7 @@ function wp_verify_nonce(...$args){return true;}function wp_unslash($a){return $
 function update_post_meta($post,$name,$value){$GLOBALS['meta'][$name]=$value;}
 function dance_moves_queue_admin_error($s){throw new RuntimeException($s);}
 require dirname(__DIR__,2).'/dance-moves-spectrum.php';
+require dirname(__DIR__,2).'/dance-moves-visualisers.php';
 require dirname(__DIR__,2).'/dance-moves-song-collection.php';
 $dir=sys_get_temp_dir().'/dm-song-'.uniqid();mkdir($dir);
 $GLOBALS['files']=array();$GLOBALS['meta']=array();

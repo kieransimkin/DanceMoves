@@ -25,6 +25,7 @@ export interface RudimentFrame {
   readonly rudiment: RudimentName;
   readonly clock: 'page' | 'audio';
   readonly sourceBeats: number;
+  readonly rhythmicBeats: number;
   readonly bpm: number;
   readonly rate: number;
   /** Wrapped integer pip; null for a neutral disabled/accessibility pose. */

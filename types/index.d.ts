@@ -1,4 +1,5 @@
 export * from './rudiments';
+import type {RudimentName, RudimentClock} from './rudiments';
 export type Remove = () => void;
 export type PlaybackMedia = HTMLMediaElement | PlaybackSource;
 export interface PlaybackMapping {offset?:number;duration?:number;playerStart?:number}
@@ -51,6 +52,7 @@ export interface PageConfig {
  lyricPopupsEnabled?:boolean;masterDurationMilliseconds?:number;sharedControlTicks?:number;lyricDisclosureTicks?:number;
  effect?:''|'paper-planes';diagnostics?:boolean;
  spectrumRecordingUrl?:string;spectrumRenderer?:SpectrumRenderer;
+ visualiserRecordingUrl?:string;visualiserRenderer?:VisualiserRenderer;visualiserRudiment?:RudimentName|'';visualiserAxes?:readonly string[];
 }
 export interface Options extends PageConfig {
  root:HTMLElement;clayPerformance?:Record<string,number|boolean>;catalogue?:boolean;clay?:boolean;legacyGlobals?:boolean;nonce?:string;onError?:(error:Error)=>void;
@@ -118,7 +120,7 @@ export interface DanceMoves {
  resetRunningAnimations(audio?:PlaybackMedia):number;discoverAudio():void;registerPlaybackSource(source:PlaybackSource):void;unregisterPlaybackSource(source:PlaybackSource):void;
  setDiagnosticsSink(callback:((record:Record<string,unknown>)=>void)|null):boolean;diagnosticsEnabled():boolean;
  applyCatalogueTiming?():Record<string,unknown>;catalogueTimingSnapshot?():Record<string,unknown>;removeCatalogueAnimationScope?():void;
- effects:Effects;rudiments:import('./rudiments').RudimentApi;recordings:RecordingService;spectrum:SpectrumService;
+ effects:Effects;rudiments:import('./rudiments').RudimentApi;recordings:RecordingService;spectrum:SpectrumService;visualisers:VisualiserService;
  orientationCore:Record<string,(...args:any[])=>any>;
  getOrientation():(Controller & {reset():void})|null;getClay():(Controller & Record<string,any>)|null;getPaperPlanes():Controller|null;
  createOrientation(options:{render:(point:Offset & Record<string,unknown>)=>void;windowMilliseconds?:number;minimumSpanDegrees?:number;smoothingTimeConstantMilliseconds?:number}):OrientationController;
@@ -130,7 +132,7 @@ export interface DanceMoves {
 }
 export const VERSION:string;
 export const ORIENTATION_ADAPTERS:readonly OrientationAdapter[];
-export const PAGE_META_KEYS:Readonly<{bpm:string;lyric:string;cue:string;popups:string;duration:string;effect:string;alignment:string;alignmentAudio:string;word:string;beatTimeline:string;useBeatTimeline:string;spectrumRecording:string;spectrumRenderer:string}>;
+export const PAGE_META_KEYS:Readonly<{bpm:string;lyric:string;cue:string;popups:string;duration:string;effect:string;alignment:string;alignmentAudio:string;word:string;beatTimeline:string;useBeatTimeline:string;spectrumRecording:string;spectrumRenderer:string;visualiserRecording:string;visualiserRenderer:string;visualiserRudiment:string;visualiserAxes:string}>;
 export function validateBeatAlignment(input?:BeatAlignment|null):Readonly<BeatAlignment>|null;
 export function validateBeatTimeline(input?:BeatTimeline|null,options?:{requireSourceUrl?:boolean}):Readonly<BeatTimeline>|null;
 export function phasePipsAtSeconds(map:BeatTimeline,sourceSeconds:number):number;
@@ -160,3 +162,239 @@ export interface SpectrumSnapshot {id:string;type:'spectrum';renderer:SpectrumRe
 export type SpectrumOptions = {id:string;target:HTMLCanvasElement|string;audio:PlaybackMedia|string;renderer?:SpectrumRenderer;axes?:readonly (string|number)[];style?:SpectrumStyle;historyPips?:number;historyStride?:number;pixelRatio?:number;enabled?:boolean;offscreen?:boolean;onFrame?:(frame:SpectrumFrame)=>void} & ({recordingUrl:string;recording?:never}|{recording:AudioRecording;recordingUrl?:never});
 export interface SpectrumController {readonly id:string;readonly ready:Promise<SpectrumController>;setEnabled(value:boolean):void;pause():void;resume():void;refresh():void;destroy():void;teardown():void;snapshot():SpectrumSnapshot}
 export interface SpectrumService {animate(options:SpectrumOptions):SpectrumController;get(id:string):SpectrumController|null;destroyAll():void;snapshot():{renderers:readonly SpectrumRenderer[];sources:number;instances:SpectrumSnapshot[]}}
+
+/** Self-contained FrameRudiments Canvas catalogue, preserving its renderer IDs. */
+export type VisualiserRenderer =
+  'particles'
+  | 'bars'
+  | 'waveform'
+  | 'path'
+  | 'spectrum'
+  | 'spectrum-line'
+  | 'spectrum-area'
+  | 'spectrum-dots'
+  | 'spectrum-stems'
+  | 'spectrum-steps'
+  | 'spectrum-mirror'
+  | 'spectrum-radial'
+  | 'spectrum-ring'
+  | 'spectrum-spiral'
+  | 'spectrum-horizon'
+  | 'spectrum-waterfall'
+  | 'spectrum-ridgeline'
+  | 'spectrum-peaks'
+  | 'spectrum-log'
+  | 'spectrum-mel'
+  | 'spectrum-third-octave'
+  | 'spectrogram-linear'
+  | 'spectrogram-log'
+  | 'spectrogram-mel'
+  | 'spectrogram-bark'
+  | 'spectrogram-erb'
+  | 'spectrogram-peaks'
+  | 'spectrogram-contours'
+  | 'spectrogram-mirror'
+  | 'spectrogram-transposed'
+  | 'spectrogram-polar'
+  | 'waveform-area'
+  | 'waveform-mirror'
+  | 'waveform-dots'
+  | 'waveform-steps'
+  | 'waveform-oscilloscope'
+  | 'waveform-envelope'
+  | 'waveform-ribbon'
+  | 'waveform-polar'
+  | 'phase-portrait'
+  | 'phase-points'
+  | 'spectrum-annular-bars'
+  | 'spectrum-annular-bars-inward'
+  | 'spectrum-annular-bars-bipolar'
+  | 'spectrum-annular-bars-mirror'
+  | 'spectrum-annular-split'
+  | 'spectrum-annular-sunburst'
+  | 'spectrum-annular-fan'
+  | 'spectrum-annular-petals'
+  | 'spectrum-annular-led'
+  | 'spectrum-annular-led-inward'
+  | 'spectrum-annular-ticks'
+  | 'spectrum-annular-arc'
+  | 'spectrum-annular-dial'
+  | 'spectrum-annular-dots'
+  | 'spectrum-annular-lollipop'
+  | 'spectrum-annular-orbit'
+  | 'spectrum-annular-caterpillar'
+  | 'spectrum-annular-peaks'
+  | 'spectrum-annular-area'
+  | 'spectrum-annular-line'
+  | 'spectrum-annular-ribbon'
+  | 'spectrum-annular-halo'
+  | 'spectrum-annular-rose'
+  | 'spectrum-annular-concentric'
+  | 'spectrum-annular-sectors'
+  | 'spectrum-annular-layers'
+  | 'spectrum-annular-gauge'
+  | 'spectrum-annular-spiral'
+  | 'spectrum-annular-helix'
+  | 'spectrogram-annular-time'
+  | 'spectrogram-annular-rings'
+  | 'spectrogram-annular-heatmap'
+  | 'spectrogram-annular-stripes'
+  | 'spectrogram-annular-contour'
+  | 'spectrogram-annular-frequency'
+  | 'spectrogram-annular-sweep'
+  | 'spectrogram-annular-spiral'
+  | 'waveform-annular-line'
+  | 'waveform-annular-fill'
+  | 'waveform-annular-area'
+  | 'waveform-annular-envelope'
+  | 'waveform-annular-halo'
+  | 'waveform-annular-rose'
+  | 'waveform-annular-pulse'
+  | 'waveform-annular-mirror'
+  | 'waveform-annular-ribbon'
+  | 'waveform-annular-rings'
+  | 'waveform-annular-bands'
+  | 'waveform-annular-bars'
+  | 'waveform-annular-spokes'
+  | 'waveform-annular-led'
+  | 'waveform-annular-petals'
+  | 'waveform-annular-sectors'
+  | 'waveform-annular-arc'
+  | 'waveform-annular-dots'
+  | 'waveform-annular-radar'
+  | 'waveform-annular-trails'
+  | 'waveform-annular-spiral'
+  | 'waveform-annular-helix'
+  | 'phase-annular-portrait'
+  | 'spectrum-cityscape'
+  | 'spectrum-led-matrix'
+  | 'spectrum-capsules'
+  | 'spectrum-outline-blocks'
+  | 'spectrum-peak-ladder'
+  | 'spectrum-staircase'
+  | 'spectrum-eq-curve'
+  | 'spectrum-ribbon-stack'
+  | 'spectrum-peak-trails'
+  | 'spectrum-gel-bars'
+  | 'spectrum-lollipop-grid'
+  | 'spectrum-mountain-range'
+  | 'spectrum-band-delta'
+  | 'spectrum-band-variance'
+  | 'spectrum-energy-tiles'
+  | 'spectrum-semi-circle'
+  | 'spectrum-fan-meter'
+  | 'spectrum-braided-lines'
+  | 'spectrum-rain-bars'
+  | 'spectrum-bead-stacks'
+  | 'spectrum-dash-grid'
+  | 'spectrum-thermometer'
+  | 'spectrum-wave-fence'
+  | 'spectrum-partition'
+  | 'spectrogram-pixel-mosaic'
+  | 'spectrogram-isometric-terrain'
+  | 'spectrogram-voxel-city'
+  | 'spectrogram-frequency-stripes'
+  | 'spectrogram-dot-cloud'
+  | 'spectrogram-isobands'
+  | 'spectrogram-negative'
+  | 'spectrogram-tape'
+  | 'spectrogram-slit-scan'
+  | 'spectrogram-trails'
+  | 'spectrogram-hex-cells'
+  | 'spectrogram-bead-grid'
+  | 'spectrogram-tunnel'
+  | 'spectrogram-record-grooves'
+  | 'spectrogram-quilt'
+  | 'spectrogram-crosshatch'
+  | 'spectrogram-triangle-tiles'
+  | 'spectrogram-pixel-rain'
+  | 'waveform-phosphor'
+  | 'waveform-echo'
+  | 'waveform-sample-beads'
+  | 'waveform-channel-braid'
+  | 'waveform-pulse-train'
+  | 'waveform-quantised'
+  | 'waveform-triggered'
+  | 'waveform-spiral-trace'
+  | 'waveform-butterfly'
+  | 'waveform-horizon'
+  | 'waveform-heat-ribbon'
+  | 'waveform-dotted-envelope'
+  | 'waveform-vertical-scope'
+  | 'waveform-phase-trails'
+  | 'waveform-polar-radar'
+  | 'waveform-dna-helix'
+  | 'waveform-block-meter'
+  | 'waveform-signal-staircase'
+  | 'spatial-torus'
+  | 'spatial-sphere'
+  | 'spatial-terrain';
+export type SpectralVisualiserRenderer = Extract<VisualiserRenderer, `spectrum${string}` | `spectrogram${string}`>;
+export type MotionVisualiserRenderer = Exclude<VisualiserRenderer, SpectralVisualiserRenderer>;
+export interface VisualiserInfo {
+ readonly name:VisualiserRenderer;readonly label:string;readonly description:string;
+ readonly family:'motion'|'spectrum'|'spectrogram'|'spatial';
+ readonly styleFamily:'primitive'|'spectrum'|'advanced-spectrum'|'advanced-motion'|'circular'|'effects'|'wire';
+ readonly requiresSpectrum:boolean;readonly minDimensions:1|2;readonly usesHistory:boolean;
+}
+export const VISUALISER_CATALOGUE:readonly VisualiserInfo[];
+export const VISUALISER_RENDERERS:readonly VisualiserRenderer[];
+export const VISUALISER_RUDIMENTS:readonly RudimentName[];
+export interface VisualiserStyleBase {colours?:readonly string[];padding?:number;background?:string}
+export interface ParticleVisualiserStyle extends VisualiserStyleBase {count?:number;radius?:number;amplitude?:number;seed?:number;trail?:number;lag?:number}
+export interface BarVisualiserStyle extends VisualiserStyleBase {orientation?:'vertical'|'horizontal';gap?:number;negative_colour?:string;baseline_colour?:string}
+export interface WaveformVisualiserStyle extends VisualiserStyleBase {line_width?:number;layout?:'stacked'|'overlay';baseline_colour?:string}
+export interface PathVisualiserStyle extends VisualiserStyleBase {line_width?:number;radius?:number}
+export interface AdvancedSpectralStyle extends VisualiserStyleBase {floor_db?:number;ceiling_db?:number;line_width?:number;contrast?:number;history_limit?:number}
+export interface AdvancedMotionStyle extends VisualiserStyleBase {line_width?:number;grid?:boolean}
+export interface CircularVisualiserStyle extends VisualiserStyleBase {
+ inner_radius?:number;outer_radius?:number;start_angle?:number;sweep_angle?:number;clockwise?:boolean;mirror?:boolean;grid?:boolean;
+ line_width?:number;bar_gap?:number;bar_width?:number;gain?:number;floor_db?:number;ceiling_db?:number;fill_alpha?:number;
+ led_segments?:number;rings?:number;history_limit?:number;axis?:number;twists?:number;cap_radius?:number;peak_threshold?:number;peak_count?:number;decay?:number;
+ frequency_scale?:'equal'|'linear'|'log'|'mel'|'bark'|'erb';
+}
+export interface EffectVisualiserStyle extends VisualiserStyleBase {
+ line_width?:number;floor_db?:number;ceiling_db?:number;gain?:number;history_limit?:number;axis?:number;segments?:number;quantize?:number;
+ gap?:number;fill_alpha?:number;decay?:number;bead_radius?:number;perspective?:number;smoothing?:number;threshold?:number;stride?:number;
+ amplitude_curve?:'linear'|'sqrt'|'square'|'log'|'ease';colour_map?:'axis'|'level'|'time'|'alternating'|'mono'|'rainbow';
+ mirror?:boolean;reverse?:boolean;grid?:boolean;baseline?:boolean;
+}
+export interface WireVisualiserStyle extends VisualiserStyleBase {geometry?:'torus'|'sphere'|'terrain';camera_distance?:number;fov?:number;rotation?:number;orbit?:number;depth?:number;line_width?:number;fog?:number;glow?:number;rings?:number;segments?:number}
+export type EffectVisualiserRenderer = 'spectrum-cityscape'|'spectrum-led-matrix'|'spectrum-capsules'|'spectrum-outline-blocks'|'spectrum-peak-ladder'|'spectrum-staircase'|'spectrum-eq-curve'|'spectrum-ribbon-stack'|'spectrum-peak-trails'|'spectrum-gel-bars'|'spectrum-lollipop-grid'|'spectrum-mountain-range'|'spectrum-band-delta'|'spectrum-band-variance'|'spectrum-energy-tiles'|'spectrum-semi-circle'|'spectrum-fan-meter'|'spectrum-braided-lines'|'spectrum-rain-bars'|'spectrum-bead-stacks'|'spectrum-dash-grid'|'spectrum-thermometer'|'spectrum-wave-fence'|'spectrum-partition'|'spectrogram-pixel-mosaic'|'spectrogram-isometric-terrain'|'spectrogram-voxel-city'|'spectrogram-frequency-stripes'|'spectrogram-dot-cloud'|'spectrogram-isobands'|'spectrogram-negative'|'spectrogram-tape'|'spectrogram-slit-scan'|'spectrogram-trails'|'spectrogram-hex-cells'|'spectrogram-bead-grid'|'spectrogram-tunnel'|'spectrogram-record-grooves'|'spectrogram-quilt'|'spectrogram-crosshatch'|'spectrogram-triangle-tiles'|'spectrogram-pixel-rain'|'waveform-phosphor'|'waveform-echo'|'waveform-sample-beads'|'waveform-channel-braid'|'waveform-pulse-train'|'waveform-quantised'|'waveform-triggered'|'waveform-spiral-trace'|'waveform-butterfly'|'waveform-horizon'|'waveform-heat-ribbon'|'waveform-dotted-envelope'|'waveform-vertical-scope'|'waveform-phase-trails'|'waveform-polar-radar'|'waveform-dna-helix'|'waveform-block-meter'|'waveform-signal-staircase';
+export type AdvancedSpectralRenderer = 'spectrum-horizon'|'spectrum-waterfall'|'spectrum-ridgeline'|'spectrum-peaks'|'spectrum-log'|'spectrum-mel'|'spectrum-third-octave'|'spectrogram-linear'|'spectrogram-log'|'spectrogram-mel'|'spectrogram-bark'|'spectrogram-erb'|'spectrogram-peaks'|'spectrogram-contours'|'spectrogram-mirror'|'spectrogram-transposed'|'spectrogram-polar';
+export type VisualiserStyle<R extends VisualiserRenderer = VisualiserRenderer> =
+ R extends SpectrumRenderer ? SpectrumStyle :
+ R extends 'particles' ? ParticleVisualiserStyle : R extends 'bars' ? BarVisualiserStyle :
+ R extends 'waveform' ? WaveformVisualiserStyle : R extends 'path' ? PathVisualiserStyle :
+ R extends `spatial-${string}` ? WireVisualiserStyle :
+ R extends `${string}-annular-${string}` ? CircularVisualiserStyle :
+ R extends EffectVisualiserRenderer ? EffectVisualiserStyle :
+ R extends AdvancedSpectralRenderer ? AdvancedSpectralStyle : AdvancedMotionStyle;
+export function validateVisualiserStyle<R extends VisualiserRenderer>(renderer:R,style?:VisualiserStyle<R>):Readonly<VisualiserStyle<R>>;
+export interface VisualiserFrame {
+ readonly id:string;readonly renderer:VisualiserRenderer;readonly rudiment:RudimentName|null;readonly pip:number|null;readonly sourceSeconds:number|null;
+ readonly reason:string;readonly dimensions:readonly string[]|null;readonly values:readonly number[]|null;readonly historyLength:number;readonly report:SpectrumReport|null;
+}
+export interface VisualiserSnapshot {
+ id:string;type:'visualiser';renderer:VisualiserRenderer;rudiment:RudimentName|null;recordingUrl:string|null;status:string;error:string|null;
+ destroyed:boolean;enabled:boolean;paused:boolean;clock:RudimentClock;rate:number|null;pip:number|null;sourceSeconds:number|null;
+ dimensions:readonly string[];values:readonly number[]|null;historyLength:number;report:SpectrumReport|null;
+ historyPips:number;historyStride:number;canvasWidth:number;canvasHeight:number;
+}
+export type VisualiserOptions<R extends VisualiserRenderer = VisualiserRenderer> = {
+ id:string;target:HTMLCanvasElement|string;renderer?:R;axes?:readonly (string|number)[];style?:VisualiserStyle<R>;
+ historyPips?:number;historyStride?:number;pixelRatio?:number;enabled?:boolean;offscreen?:boolean;onFrame?:(frame:VisualiserFrame)=>void;
+} & ((R extends MotionVisualiserRenderer ? {
+ rudiment:RudimentName;recording?:never;recordingUrl?:never;audio?:PlaybackMedia|string;clock?:RudimentClock;rate?:number;phasePips?:number;resetOnCue?:boolean|string;
+} : never) | ({rudiment?:never;audio:PlaybackMedia|string;clock?:never;rate?:never;phasePips?:never;resetOnCue?:never} &
+ ({recordingUrl:string;recording?:never}|{recording:AudioRecording;recordingUrl?:never})));
+export interface VisualiserController {
+ readonly id:string;readonly ready:Promise<VisualiserController>;setEnabled(value:boolean):void;pause():void;resume():void;refresh():void;
+ /** Generic native patterns only; saved recordings retain their capture origin. */
+ reset():void;destroy():void;teardown():void;snapshot():VisualiserSnapshot;
+}
+export interface VisualiserService {
+ animate<R extends VisualiserRenderer = 'waveform'>(options:VisualiserOptions<R>):VisualiserController;
+ catalogue():readonly VisualiserInfo[];describe(name:string):VisualiserInfo|null;get(id:string):VisualiserController|null;destroyAll():void;
+ snapshot():{renderers:readonly VisualiserRenderer[];sources:number;patterns:number;instances:VisualiserSnapshot[]};
+}

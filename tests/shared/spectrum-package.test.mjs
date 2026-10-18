@@ -53,6 +53,8 @@ test('npm, browser and WordPress distributions contain no page recording or audi
  fs.mkdirSync(path.join(directory,'tools'),{recursive:true});
  fs.mkdirSync(path.join(directory,'.build'),{recursive:true});
  fs.mkdirSync(path.join(directory,'docs'),{recursive:true});
+ fs.mkdirSync(path.join(directory,'assets'),{recursive:true});
+ fs.copyFileSync(path.join(ROOT,'assets/visualiser-catalogue.json'),path.join(directory,'assets/visualiser-catalogue.json'));
  fs.cpSync(path.join(ROOT,'lib'),path.join(directory,'lib'),{recursive:true});
  fs.cpSync(path.join(ROOT,'.build/wordpress'),path.join(directory,'.build/wordpress'),{recursive:true});
  fs.cpSync(path.join(ROOT,'docs/branding'),path.join(directory,'docs/branding'),{recursive:true});

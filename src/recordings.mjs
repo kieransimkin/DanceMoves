@@ -22,7 +22,10 @@ async function samplerFromData(data) {
  const api=(await WebAssembly.instantiate(await modulePromise,{})).exports;
  const base=api.table_base(),pages=Math.ceil((base+data.values.byteLength-api.memory.buffer.byteLength)/65536);
  if(pages>0)api.memory.grow(pages);new Float64Array(api.memory.buffer,base,data.values.length).set(data.values);
- return Object.freeze({...data,sample(pip){if(!Number.isInteger(pip)||pip<data.clock.start_pip||pip>=data.clock.start_pip+data.count)throw new RangeError('Position is outside the non-looping recording');return data.dimensions.map((_,axis)=>api.sample_recording(base,data.count,data.dimensions.length,data.clock.start_pip,pip,axis));}});
+ // Once copied into native memory, retain only capture metadata and that one
+ // table. A page with many visualisers must not keep a duplicate float64 table.
+ const {name,dimensions,count,clock}=data;data=null;
+ return Object.freeze({name,dimensions,count,clock,sample(pip){if(!Number.isInteger(pip)||pip<clock.start_pip||pip>=clock.start_pip+count)throw new RangeError('Position is outside the non-looping recording');return dimensions.map((_,axis)=>api.sample_recording(base,count,dimensions.length,clock.start_pip,pip,axis));}});
 }
 /** Compose native recording samples with the existing native scheduler/media lifecycle. */
 export function createRecordingService(scope,rudiments,config) {

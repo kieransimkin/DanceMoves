@@ -11,11 +11,12 @@ def main():
     version=pkg['version']
     if not re.search(r'Version:\s*'+re.escape(version)+r'\s*\n',php):raise SystemExit('Built PHP/library versions differ; rebuild before packaging')
     if not re.search(r"define\('DANCE_MOVES_VERSION',\s*'"+re.escape(version)+r"'\)",php):raise SystemExit('Built runtime constant differs from package version')
-    for name in ['kieran-epk-device-orientation.php','dance-moves-rudiments.php','dance-moves-beat-alignment.php','dance-moves-beat-timeline.php','dance-moves-spectrum.php','dance-moves-song-collection.php']:
+    for name in ['kieran-epk-device-orientation.php','dance-moves-rudiments.php','dance-moves-beat-alignment.php','dance-moves-beat-timeline.php','dance-moves-spectrum.php','dance-moves-visualisers.php','dance-moves-song-collection.php']:
         if (source/name).read_bytes()!=(ROOT/name).read_bytes():raise SystemExit('PHP changed after build: '+name)
+    if (source/'lib/assets/visualiser-catalogue.json').read_bytes()!=(ROOT/'assets/visualiser-catalogue.json').read_bytes():raise SystemExit('Visualiser catalogue changed after build')
     if any(p.is_symlink() for p in source.rglob('*')):raise SystemExit('Symlinks are not accepted in package staging')
     files=sorted(p for p in source.rglob('*') if p.is_file())
-    expected=['lib/wordpress.js','lib/admin.min.js','dance-moves-rudiments.php','dance-moves-spectrum.php','library-manifest.json']
+    expected=['lib/wordpress.js','lib/admin.min.js','dance-moves-rudiments.php','dance-moves-spectrum.php','dance-moves-visualisers.php','lib/assets/visualiser-catalogue.json','lib/styles/visualisers.css','library-manifest.json']
     if any(not (source/p).is_file() for p in expected):raise SystemExit('WordPress build is incomplete')
     names=[p.relative_to(source).as_posix() for p in files]
     if any(any(part in {'node_modules','tests','examples','qa','tools','src','migration'} for part in Path(n).parts) for n in names):raise SystemExit('Development files entered the WordPress build')

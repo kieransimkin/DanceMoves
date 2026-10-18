@@ -22,13 +22,14 @@ for (const [entry,out,globalName] of [['index','dancemoves.min.js','DanceMovesLi
   await esbuild.build({...options,entryPoints:[path.join(modules,`${entry}.mjs`)],outfile:path.join(lib,out),format:'iife',platform:'browser',minify:true,globalName});
 }
 await esbuild.build({...options,entryPoints:['assets/dance-moves-admin.js'],outfile:path.join(lib,'admin.min.js'),format:'iife',platform:'browser',minify:true});
-const cssFiles=['dance-moves-core.css','ks-epk-device-orientation.css','clay-stars-effects.css','paper-dreams-flight.css','spectrum.css'];
+const cssFiles=['dance-moves-core.css','ks-epk-device-orientation.css','clay-stars-effects.css','paper-dreams-flight.css','spectrum.css','visualisers.css'];
 fs.mkdirSync(path.join(lib,'styles'),{recursive:true});
 for(const file of cssFiles) await esbuild.build({entryPoints:['assets/'+file],outfile:path.join(lib,'styles',file),minify:true,logLevel:'warning'});
 fs.writeFileSync(path.join(lib,'dancemoves.css'),cssFiles.map(file=>fs.readFileSync(path.join(lib,'styles',file),'utf8')).join('\n'));
 fs.copyFileSync('assets/paper-dreams-plane-atlas.png',path.join(lib,'assets/paper-dreams-plane-atlas.png'));
 fs.copyFileSync('assets/vendor/dancerudiments/LICENSE',path.join(lib,'assets/DanceRudiments-LICENSE'));
 fs.copyFileSync('assets/vendor/dancerudiments/build-manifest.json',path.join(lib,'assets/DanceRudiments-build-manifest.json'));
+fs.copyFileSync('assets/visualiser-catalogue.json',path.join(lib,'assets/visualiser-catalogue.json'));
 for(const file of ['index.d.ts','react.d.ts','server.d.ts']) fs.copyFileSync(path.join(ROOT,'types',file),path.join(lib,file));
 fs.copyFileSync('RUDIMENTS-API.d.ts',path.join(lib,'rudiments.d.ts'));
 const packageInfo=JSON.parse(fs.readFileSync('package.json','utf8'));
@@ -42,11 +43,11 @@ fs.writeFileSync(path.join(lib,'build-manifest.json'),JSON.stringify({schema:'da
 if (target!=='library') {
   const wp=path.join(ROOT,'.build/wordpress');fs.rmSync(wp,{recursive:true,force:true});fs.mkdirSync(path.join(wp,'lib/assets'),{recursive:true});
   fs.mkdirSync(path.join(wp,'lib/styles'),{recursive:true});
-  for(const file of ['kieran-epk-device-orientation.php','dance-moves-rudiments.php','dance-moves-beat-alignment.php','dance-moves-beat-timeline.php','dance-moves-spectrum.php','dance-moves-song-collection.php','LICENSE','AGENTS.md','CONTRIBUTING.md']) fs.copyFileSync(file,path.join(wp,file));
+  for(const file of ['kieran-epk-device-orientation.php','dance-moves-rudiments.php','dance-moves-beat-alignment.php','dance-moves-beat-timeline.php','dance-moves-spectrum.php','dance-moves-visualisers.php','dance-moves-song-collection.php','LICENSE','AGENTS.md','CONTRIBUTING.md']) fs.copyFileSync(file,path.join(wp,file));
   // Exactly the library build: no raw assets/ sources or second engine in WordPress.
   for (const file of ['wordpress.js','admin.min.js']) fs.copyFileSync(path.join(lib,file),path.join(wp,'lib',file));
   for(const file of cssFiles) fs.copyFileSync(path.join(lib,'styles',file),path.join(wp,'lib/styles',file));
-  for(const file of ['paper-dreams-plane-atlas.png','DanceRudiments-LICENSE','DanceRudiments-build-manifest.json']) fs.copyFileSync(path.join(lib,'assets',file),path.join(wp,'lib/assets',file));
+  for(const file of ['paper-dreams-plane-atlas.png','DanceRudiments-LICENSE','DanceRudiments-build-manifest.json','visualiser-catalogue.json']) fs.copyFileSync(path.join(lib,'assets',file),path.join(wp,'lib/assets',file));
   fs.mkdirSync(path.join(wp,'docs'),{recursive:true});
   for(const file of fs.readdirSync('docs').filter(name=>name.endsWith('.md'))) fs.copyFileSync(path.join('docs',file),path.join(wp,'docs',file));
   fs.cpSync('docs/branding',path.join(wp,'docs/branding'),{recursive:true});
@@ -56,7 +57,7 @@ if (target!=='library') {
   fs.copyFileSync('docs/wordpress-org.md',path.join(wp,'docs/wordpress-org.md'));
   const agentGuidance=fs.readFileSync('README.md','utf8').replace(/\r\n/g,'\n').match(/## Agents and contributors\n[\s\S]*?(?=\n## |$)/)?.[0];
   if(!agentGuidance) throw new Error('Source README is missing agent contribution guidance');
-  fs.writeFileSync(path.join(wp,'README.md'),`# DanceMoves ${packageInfo.version} for WordPress\n\n[![DanceMoves logo](https://raw.githubusercontent.com/kieransimkin/DanceMoves/v${packageInfo.version}/docs/branding/logo.png)](https://kieransimkin.co.uk/danceflow/)\n\n${packageInfo.description}\n\nHomepage: ${packageInfo.homepage}\n\n[WordPress setup and all six Page metadata fields](docs/wordpress-shared-runtime.md)\n\nThis archive imports the shared DanceMoves JavaScript library.\nSource, JavaScript/React/Next.js packages and release artifacts: https://github.com/kieransimkin/DanceMoves\n\n${agentGuidance}\n`);
+  fs.writeFileSync(path.join(wp,'README.md'),`# DanceMoves ${packageInfo.version} for WordPress\n\n[![DanceMoves logo](https://raw.githubusercontent.com/kieransimkin/DanceMoves/v${packageInfo.version}/docs/branding/logo.png)](https://kieransimkin.co.uk/danceflow/)\n\n${packageInfo.description}\n\nHomepage: ${packageInfo.homepage}\n\n[WordPress setup, Page metadata and song collections](docs/wordpress-shared-runtime.md)\n\nThis archive imports the shared DanceMoves JavaScript library.\nSource, JavaScript/React/Next.js packages and release artifacts: https://github.com/kieransimkin/DanceMoves\n\n${agentGuidance}\n`);
   fs.writeFileSync(path.join(wp,'library-manifest.json'),JSON.stringify({schema:'dancemoves-wordpress-library/v1',name:packageInfo.name,version:packageInfo.version,homepage:packageInfo.homepage,frontend:inventory(path.join(wp,'lib'))},null,2)+'\n');
 }
 console.log(`Built ${packageInfo.name}@${packageInfo.version}: ESM, CommonJS, React, Node, minified browser${target!=='library'?' and WordPress adapter':''}`);

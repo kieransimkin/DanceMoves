@@ -72,6 +72,10 @@ does not import either dependency.
 | `diagnostics` | false; explicitly enables diagnostic sinks. |
 | `spectrumRecordingUrl` | Empty. Page-owned saved StemLab Fourier recording URL; fetched only when a spectrum canvas is mounted in this root. |
 | `spectrumRenderer` | `spectrum`; selects one of ten basic FrameRudiments views. Individual canvases can override the style. |
+| `visualiserRecordingUrl` | Empty. Page-owned native recording URL, fetched only for an authored visualiser canvas. Exclusive with `visualiserRudiment`. |
+| `visualiserRudiment` | Empty. One of the 15 native names; provides movement views without a recording request. |
+| `visualiserRenderer` | `waveform`. One of 164 catalogue identifiers; spectral choices require a calibrated recording. |
+| `visualiserAxes` | Empty means all axes. Optional array of up to 64 unique dimension names; selection is checked against the source when mounted. |
 | `legacyGlobals` | false. WordPress compatibility mode; one per document, not for ordinary React roots. |
 | `nonce` | Optional nonce attached to library-created style elements for an application's CSP. |
 | `onError` | Optional callback for asynchronous readiness and cleanup errors. Handle individual native-controller `ready` failures as well. |
@@ -89,6 +93,16 @@ working lyric track. Read native readiness separately with
 and removes resources; it does not stop or delete your audio element.
 
 ## Core methods: complete inherited surface
+
+`runtime.visualisers.animate()` renders any of the 164 self-contained
+FrameRudiments views. `catalogue()` and `describe(name)` expose each view's family,
+required input, minimum axes and history usage. A native `rudiment` uses the
+existing page/audio/auto clock; a `recordingUrl` or inline `recording` uses its
+saved capture clock. `get()`, `snapshot()` and `destroyAll()` expose ownership.
+Declarative `canvas[data-dance-moves-visualiser]` views mount only with a configured
+source and participate in `runtime.ready`. An invalid declarative view reports
+its own error without destroying other views or the root. See the
+[complete visualiser API and styles](rudiment-visualisers.md).
 
 `runtime.spectrum.animate()` creates native-clock Canvas spectrum views with
 explicit page-owned data. `runtime.spectrum.get()`, `snapshot()` and `destroyAll()`
