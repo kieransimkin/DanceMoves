@@ -1,5 +1,239 @@
 # DanceMoves
 
+## Before every new workflow
+
+Check the latest stable official release and the actual installed/imported version before starting; do not infer currency from a directory name or a development checkout. Read the current release notes, tagged capability documentation and relevant Potential problems. Use the [DanceFlow release preflight](https://github.com/kieransimkin/DanceFlow/blob/main/docs/workflows/release-preflight.md) and [complete capability references](https://github.com/kieransimkin/DanceFlow/blob/main/docs/capabilities/index.md).
+
+People and agents should consider the full ecosystem, use all capabilities that materially serve the task, compose supported files/APIs, and improve a demonstrated reusable gap in its canonical tool. Record why no worthwhile change is justified when that is the result. Keep independent tool identities, compatibility, source clocks, privacy, model/download costs and publication/deployment permissions intact. Store weights and model-specific caches in the owning project's ignored `models/`.
+
+## Find your route
+
+[Shared JavaScript library and WordPress](#shared-javascript-library-and-wordpress) · [Page properties](#page-properties) · [Musical clock](#musical-clock) · [Optional variable-tempo / corrected Beat 1 maps from StemLab](#optional-variable-tempo--corrected-beat-1-maps-from-stemlab) · [Optional word-level lyrics and multi-song Pages](#optional-word-level-lyrics-and-multi-song-pages) · [Cue behavior and page API](#cue-behavior-and-page-api) · [Timed lyric pop-ups and visual-language workflow](#timed-lyric-pop-ups-and-visual-language-workflow) · [FrameRudiments visualisers for individual pages](#framerudiments-visualisers-for-individual-pages) · [Rudiment animation integration](#rudiment-animation-integration)
+
+## Shared JavaScript library and WordPress
+
+`@kieransimkin/dancemoves` exports browser ESM/CommonJS, optional React hooks,
+and separate Node server services. All frontend engines, CSS, admin behaviour
+and native DanceRudiments data have one canonical source in this repository.
+The WordPress archive consumes the generated library; it contains no parallel
+frontend implementation. PHP retains WordPress hooks, metadata and persistence.
+The [WordPress directory checks](docs/wordpress-org.md#visualiser-integration-checks)
+document the visualiser attachment and escaped-markup boundaries, local PHP
+regressions and the contextual warnings retained in the official Plugin Check gate.
+
+```sh
+# Build this source checkout (Node 22.14+, npm, Python 3, PHP 8+ for tests).
+npm install --ignore-scripts
+npm run build
+npm test
+npm run test:legacy
+# Generate the two separately installable browser/WordPress ZIPs.
+python tools/package-web.py
+python tools/package-wordpress.py
+```
+
+Commit the generated `package-lock.json` before a release tag. The release
+workflow intentionally refuses unlocked dependencies; no unverified lockfile
+is supplied by this patch. In consumer applications, after the first npm release:
+
+```js
+import { createDanceMoves } from '@kieransimkin/dancemoves';
+import '@kieransimkin/dancemoves/styles.css';
+
+const motion = createDanceMoves({
+  root: document.querySelector('#my-epk'),
+  bpm: 145,
+  lyricTimingUrl: '/media/arcadians.lrc'
+});
+await motion.ready;
+// motion.effects, motion.rudiments, motion.onCue, motion.onLyric, ...
+// On route/component disposal:
+motion.destroy();
+```
+
+For React and Next.js, use `@kieransimkin/dancemoves/react` inside a Client
+Component. Importing the root or React package during SSR does not access the
+DOM. Signed downloads and authenticated private motion capture are available
+from `@kieransimkin/dancemoves/server` (Node only; never bundle server secrets).
+
+| Guide | Contents |
+| --- | --- |
+| [JavaScript API](docs/javascript-api.md) | Existing timing/effects/native APIs, scoped mounts, lifecycle, metadata and phone input |
+| [Rudiment visualisers](docs/rudiment-visualisers.md) | All 222 FrameRudiments views, 17 lazy sprite atlases, solid/music meshes, page-owned sources, styles, clocks and cleanup |
+| [Spectrum visualisations](docs/spectrum-visualisations.md) | Compatible ten-mode spectrum API and calibration |
+| [React and Next.js](docs/react-next.md) | Hooks, components, SSR, Strict Mode, Arcadians demos and App Router routes |
+| [Node server API](docs/javascript-server.md) | Timing validation, signed MP3 delivery, authenticated private capture and storage adapters |
+| [WordPress usage](docs/wordpress-shared-runtime.md) | All six Page metadata keys, separate build, compatibility handles and installation |
+| [Architecture and migration](docs/shared-runtime-migration.md) | Single-source ownership and explicit browser/server/WordPress boundaries |
+| [Feature coverage](docs/shared-feature-coverage.md) | Existing features mapped to APIs, demos and tests |
+| [Builds and npm releases](docs/releasing-shared.md) | Tag-triggered npm/browser/WordPress artifacts and one-time trusted publishing setup |
+
+```sh
+npm run demo:prepare       # Hash-pinned Arcadians media from StemLab
+npm run demo:react         # http://127.0.0.1:4173
+npm run demo:next          # http://localhost:3000 (separate terminal)
+```
+
+The release workflow tests the same checkout, builds all three distributions,
+and publishes npm plus the minified browser and WordPress archives for `v*`
+tags. Prerelease versions use npm `next`. An npm trusted publisher (or an
+explicit one-time bootstrap token) must be configured before automatic
+publication. No secrets are included here.
+
+## Page properties
+
+Edit Page contains an **EPK Timing** meta box with:
+
+- **BPM**: explicit finite value from 20 to 400. Blank means unknown and the public runtime uses 120 BPM without claiming that 120 is known.
+- **Lyric Timing File**: a WordPress Media Library `.lrc` attachment.
+- **Cue Timing File**: a WordPress Media Library `.lrc` or `.cue` attachment.
+- **Timed lyric pop-ups**: off by default. Enable only when a canonical lyric LRC is selected and the EPK has an approved release-specific lyric treatment.
+- **Ambient effect**: None or Paper planes (`_dance_moves_effect = "paper-planes"`). Only selected Pages load the plane assets; the existing hero must provide suitable containment.
+
+The plugin stores attachment IDs and resolves their current WordPress URLs at render time. A hidden, revision-aware master-duration value in milliseconds supports safe matching of public audio that has the same programme length as the canonical master.
+
+Timing files are limited to 1 MiB, must be strict UTF-8, must contain monotonic LRC/CUE timestamps, and cannot contain null or replacement characters. The browser parser treats file contents as data and never executes cue text.
+
+## Musical clock
+
+The shared CSS timing and tick-based helpers follow this numeric rule:
+
+- one timing tick is one sixteenth of a beat: `3.75 / BPM` seconds;
+- 16 ticks are one beat and 64 ticks are one 4/4 bar;
+- DanceMoves-owned CSS animations, transitions and delays, and tick-based JavaScript effect lifetimes, use integer tick counts;
+- durations greater than 16 ticks are rounded to the nearest multiple of 16 ticks;
+- exact half-way cases round upward; and
+- `prefers-reduced-motion` remains authoritative.
+
+The paper-plane adapter combines page-clock ambient phase with continuous frame-delta physics; its manoeuvres are not audio-seekable or all integer-tick durations. See the [paper-plane clock contract](docs/api/paper-planes.md#rendering-and-lifecycle).
+
+CSS receives versioned custom properties such as `--dance-moves-16t`. JavaScript uses `DanceMoves.durationMilliseconds(ticks)`. Orientation input keeps only the latest finite, screen-aligned sample; the shared scheduler publishes the latest meaningful target at a two-tick cadence and CSS transform transitions interpolate between targets. The first target remains immediate, jitter below the configured delta is suppressed, and teardown cancels any trailing target. Its two-second rolling normalisation is functional input processing, not a visual effect duration.
+
+The catalogue adopter discovers the rendered EPK root, quantizes release-owned stylesheet, inline, computed and generated pseudo-element timing, registers the full release root for cue resets, and repeats the pass after dynamically inserted motion markup. It preserves the one-millisecond view-timeline sentinel used by November Christmas and the 0.01 ms reduced-motion sentinel. Under `prefers-reduced-motion: reduce`, the owned EPK subtree and its pseudo-elements are clamped to one 0.01 ms iteration.
+
+The adopter changes timing ownership, not the creative design: selectors, keyframes, artwork, inputs and release identity remain page-specific. Pointer, scroll and orientation reactions remain event-driven. Canvas/WebGL effects that compute oscillator phase directly from frame time must use the public `DanceMoves.currentTick({ clock: "audio", audio })` value in their page adapter; CSS scanning cannot safely rewrite shader or drawing code.
+
+An element can delay its CSS animation until a musical boundary:
+
+```html
+<div data-dance-moves-start-interval="16">Starts on a beat</div>
+<div data-dance-moves-start-interval="64" data-dance-moves-start-clock="audio">Starts on a 4/4 bar of the active song</div>
+```
+
+Without `data-dance-moves-start-clock="audio"`, declarative starts use the page clock. For transitions or JavaScript-driven updates, use `DanceMoves.deferStart(element, ticks, { clock: "audio", start, id: "release:entrance" })` or `DanceMoves.scheduleAtInterval(ticks, callback, { id: "release:update" })`. Each returns a cancellation function. Stable IDs are required by the pre-live harness so synchronous page work can be attributed to its owning effect.
+
+## Optional variable-tempo / corrected Beat 1 maps from StemLab
+
+DanceMoves now accepts the **complete corrected beat map** exported by StemLab's
+Beat correction editor (`stemlab.beat-timeline.v1`). Unlike the existing fixed-BPM
+`beat-alignment.v1`, the map preserves every exact source sample frame, missing
+or irregular beat, local BPM and the signed 64-pip Beat 1 offset. It is
+**opt-in per page**: leave **Use corrected variable-tempo beat map** unchecked
+and the existing fixed BPM, constant phase offset, cue clock, lyric timestamps,
+and all other behaviour continue unchanged.
+
+In WordPress **EPK Timing**, select **Analysed Master Audio**, paste the full
+StemLab JSON into **StemLab full beat timeline JSON**, and explicitly enable the
+checkbox. Its master SHA-256 is verified; the large export is normalised to
+bounded authoritative beat anchors before storage/localisation. No additional
+model, internet service or compulsory runtime is installed. Incorrect source
+identity fails closed, and an invalid map cannot be saved over the previous
+valid timing. The old **Beat alignment reading** field is retained separately.
+
+The shared JS, React and Next.js API accepts `beatTimeline` with the same JSON
+plus the verified `source_url`. `sourceTick()` and beat/bar scheduling interpolate
+native fractional phase between edited anchors. `tempoAt()` exposes the local
+BPM; `durationMillisecondsAt()` exposes beat-relative durations. Native
+DanceRudiments callbacks, sprite playback, phase pulses and page CSS duration
+variables follow changing BPM; page-only clocks remain fixed. Audio/recording,
+lyric and cue timestamps remain in original master seconds. Registered excerpt
+players are converted to master time *before* phase mapping.
+
+See [variable-tempo integration, security, boundaries and examples](docs/variable-tempo.md).
+
+## Optional word-level lyrics and multi-song Pages
+
+DanceMoves accepts an independent **Per-word Lyric Timing File** next to the existing
+per-line `.lrc` and cue attachment selectors in WordPress EPK Timing. Supported
+formats are StemLab `words.tsv` (`start`, `end`, `probability`, `word`), JSON with
+a `words` array, enhanced LRC (`<mm:ss.xx>word`) or one `[mm:ss.xx]word` per line.
+All timestamps remain in the source audio clock; neither the corrected beat
+map nor the lyric timing alters the media clock. The core exposes `onWord`,
+`parseWordTimingFile` and `dance-moves-word` independently of `onLyric`.
+
+WordPress Pages may opt into **Song collection** from their editor metabox. Add
+1â€“24 tracks with separate master attachments, BPM, optional full variable-tempo
+beat maps or fixed alignments, line lyrics, word timings and cue files. A
+track selector and independent audio/time lanes are rendered automatically (or
+via `[dance_moves_song_collection]` to control placement). Switching songs stops
+the previous audio and destroys its scoped motion controller. Existing ordinary
+Pages, page effects, fixed BPM/offsets and legacy uploads retain their contract.
+
+Details, file limits, source checks, JavaScript hooks and repeatable editor steps:
+[Word lyrics and multi-song pages](docs/word-and-multi-song.md).
+
+## Cue behavior and page API
+
+The runtime fetches the page's cue file, finds every `<audio>` whose duration matches the canonical programme, and follows each active player independently. Ordinary seeking re-indexes the cue cursor without replaying skipped cues. An exact cue landing within 50 milliseconds arms only that cue: paused players dispatch it once on the next playback start, while players already running dispatch it as soon as the seek completes.
+
+When a cue occurs during playback, DanceMoves resets every currently running DanceMoves-owned CSS/Web Animation to its first frame and immediately continues it. It does not reset WordPress, browser, player-control or third-party animations.
+
+Page adapters can subscribe without executing timing-file text:
+
+```js
+const unsubscribe = window.DanceMoves.onCue("CHORUS 1", detail => {
+  // Perform a page-specific update.
+}, { id: "release:chorus-state" });
+```
+
+`"*"` subscribes to all cues. The runtime also dispatches bubbling `dance-moves-cue` and backwards-compatible `kieran-epk-cue` custom events. Local harnesses can route a data-only cue through the same production path with `DanceMoves.fireCue({ name, type, time })`.
+
+## Timed lyric pop-ups and visual-language workflow
+
+When enabled, DanceMoves creates one non-interactive, `aria-hidden` lyric layer and writes lyric text with `textContent`; timing-file text is never interpreted as markup. The full readable lyric section remains the accessible source, so rapid sung lines are not repeatedly announced by assistive technology. Blank LRC cues clear the layer. Reduced-motion mode keeps the words but removes entrance and exit motion; forced-colours mode supplies a high-contrast fallback.
+
+Page adapters can respond to the same lyric state without running a second parser or clock:
+
+```js
+const removeLyrics = DanceMoves.onLyric(detail => {
+  document.querySelector('.ks-epk')?.toggleAttribute(
+    'data-hook-line',
+    detail.normalisedText === 'HAVE SOME TAT'
+  );
+}, { id: 'release:lyric-treatment' });
+```
+
+Each detail also exposes `nextTime`, `nextText`, `nextNormalisedText` and `nextIndex` for the immediate next LRC entry. A blank next entry is deliberately preserved because its timestamp is a real lyric-clear boundary. The final entry reports `nextTime: null`, an empty next text and `nextIndex: -1`. Release adapters may use these fields with `detail.audio.currentTime` for seek-, pause- and playback-rate-safe choreography; they must not fetch or parse the LRC again.
+
+The `nextVisibleTime`, `nextVisibleText`, `nextVisibleNormalisedText` and `nextVisibleIndex` fields instead describe the next nonblank lyric, skipping clear entries. Missing future entries use `null` time, empty text and index `-1`. The [lyric payload reference](docs/api/javascript.md#onlyric) specifies both sets of fields and the separate pause/end responsibilities of a custom renderer.
+
+An EPK may override the neutral component through `.dance-moves-lyric-popover` and `.dance-moves-lyric-popover__text`, their public state attributes, and CSS custom properties. Adoption is a design task, not a switch-only task. Before enabling it for any release:
+
+1. read the release's current visual-language record and inspect its artwork, typography, texture, palette, motifs and motion rules;
+2. state what is observed, inferred, proposed and adopted;
+3. design a unique lyric container, typography, entrance/replacement motion and any restrained cue-specific emphasis that belong to that song rather than copying another EPK;
+4. use DanceMoves ticks or `onLyric()` only—never add a second LRC parser, timer or audio clock;
+5. preserve real text, the complete readable lyrics, mobile safe areas, player/control clearance, `prefers-reduced-motion`, forced colours and a static fallback; and
+6. stage and test ordinary lines, blank clears, repeated hooks, pause, resume, seek, end, narrow screens and long lines before action-time approval.
+
+The release-local visual-language file and EPK change record must name the treatment, explain why it fits the song, record the fallback, and give a measurable acceptance test. If the visual evidence does not support a distinctive treatment yet, leave the checkbox off.
+
+EPK code can attach one-shot or repeating handlers to the active master-length song clock:
+
+```js
+const removeNext = DanceMoves.onNextInterval(updateOnce, 16, { id: "release:next-beat" });
+const removeLoop = DanceMoves.onEveryInterval(updateRepeatedly, 64, { id: "release:bar-loop" });
+
+DanceMoves.onNextBeat(updateOnce);  // 16 ticks
+DanceMoves.onEveryBeat(updateRepeatedly);
+DanceMoves.onNextBar(updateOnce);   // 64 ticks, assuming 4/4
+DanceMoves.onEveryBar(updateRepeatedly);
+```
+
+Every registration returns a remover. One-shot handlers remove themselves after firing. Repeating handlers pause with playback and stop at the end of the song or when their remover is called. “Bar” deliberately means four beats; a page using another meter should call the interval functions with its explicit tick count.
+
+Performance diagnostics are disabled unless the boot configuration explicitly contains `diagnostics: true`. A development harness may then attach a bounded receiver with `DanceMoves.setDiagnosticsSink(callback)`. The core does not retain, log or transmit diagnostic records, and ordinary WordPress configuration does not enable the sink. Missing cue or interval IDs are reported as unattributed and block pre-live approval.
+
 ## FrameRudiments visualisers for individual pages
 
 DanceMoves renders **all 222 FrameRudiments visualisers** through
@@ -191,93 +425,62 @@ colours, ended media and teardown use a declared static pose, while adaptive
 tiers reduce update frequency without accumulating phase drift. See the
 [shared-effects reference](docs/api/effects.md#spriteplaybackoptions).
 
+## Rudiment animation integration
 
-## Agents and contributors
+DanceMoves now exposes `DanceMoves.rudiments` (also `DanceMovesRudiments`) for the
+pinned DanceRudiments 0.2.0 API. The build verifies its 1,731-movement upstream
+catalogue, then compiles every integer sample for only the 15 movements selected
+in `vendor/dancerudiments/UPSTREAM.json`. The compact browser WebAssembly contains
+no JavaScript motion-formula mirror or runtime CDN dependency.
 
-Agents using DanceMoves should inspect its available capabilities, use them fully where they fit the task, and look for useful improvements wherever possible. When a required feature is missing, or a reusable reliability, usability, performance or documentation gap is found, improve this tool rather than maintaining a separate workaround. If no worthwhile change is justified, explain why.
+The integration converts 16 DanceMoves ticks per beat to 64 DanceRudiments pips
+per beat. Controllers share one animation-frame scheduler and provide explicit
+page/audio clocks, pause/seek handling, cue resets, accessibility and visibility
+suspension, CSS-variable or callback rendering, snapshots and teardown.
 
-Submit every improvement as a pull request to [DanceMoves](https://github.com/kieransimkin/DanceMoves/pulls), with relevant tests, documentation and a reproducible example. Follow [CONTRIBUTING.md](CONTRIBUTING.md) and [AGENTS.md](AGENTS.md) for the contribution and validation workflow.
+The existing Clay/Stars page uses API 1.1.0's `clay_background` for its
+atmosphere translation. Half-speed sampling preserves the original eight-beat
+cycle; the existing rotation, scale and opacity treatment shares the new phase.
+The original CSS remains the capability-failure fallback. No page-content edit
+is required, and the legacy-plugin coexistence guard remains authoritative.
 
-Project website: [https://kieransimkin.co.uk/danceflow/](https://kieransimkin.co.uk/danceflow/).
+See [the complete rudiment API reference](RUDIMENTS-API.md),
+[TypeScript declarations](RUDIMENTS-API.d.ts) and the
+[pinned source record](vendor/dancerudiments/UPSTREAM.json).
+Run `node tools/verify-rudiments.cjs` and the new tests before packaging. This
+Native and lifecycle contracts do not substitute for signed-out WordPress,
+real-browser and physical-device acceptance.
 
-## Shared JavaScript library and WordPress
+## Reusable effect primitives (2.8.0)
 
-`@kieransimkin/dancemoves` exports browser ESM/CommonJS, optional React hooks,
-and separate Node server services. All frontend engines, CSS, admin behaviour
-and native DanceRudiments data have one canonical source in this repository.
-The WordPress archive consumes the generated library; it contains no parallel
-frontend implementation. PHP retains WordPress hooks, metadata and persistence.
-The [WordPress directory checks](docs/wordpress-org.md#visualiser-integration-checks)
-document the visualiser attachment and escaped-markup boundaries, local PHP
-regressions and the contextual warnings retained in the official Plugin Check gate.
+DanceMoves 2.8.0 keeps repeated motion and playback mechanisms out of individual EPK payloads. The shared code owns input acquisition, requestAnimationFrame scheduling, cached geometry, audio phase, cue subscription, cue deduplication, crossing detection, seeking, pause/resume, current-time restoration, visibility and motion-preference lifecycle, and recoverable quality measurement. EPK pages keep only declarative cue data, scoped CSS and optional appearance/render callbacks.
 
-```sh
-# Build this source checkout (Node 22.14+, npm, Python 3, PHP 8+ for tests).
-npm install --ignore-scripts
-npm run build
-npm test
-npm run test:legacy
-# Generate the two separately installable browser/WordPress ZIPs.
-python tools/package-web.py
-python tools/package-wordpress.py
-```
+`DanceMovesEffects.cueTimeline()` is the reusable playback state machine. Supply an audio element, sorted or unsorted cue objects and page-specific `onCue`/`render` callbacks. The primitive rebuilds state from `audio.currentTime` after seeks and visibility or preference changes, does not replay skipped cues, prevents duplicate cue firing within one traversal, and resumes from the actual playback position without maintaining a page-local clock.
 
-Commit the generated `package-lock.json` before a release tag. The release
-workflow intentionally refuses unlocked dependencies; no unverified lockfile
-is supplied by this patch. In consumer applications, after the first npm release:
+| Motion type | Shared API | Replaces repeated page code | Page-owned surface |
+| --- | --- | --- | --- |
+| Bounded pointer/parallax | `DanceMovesEffects.pointer()` | pointer normalisation, cached bounds, one-write-per-frame scheduling, leave/orientation/visibility reset | CSS consuming `--dance-moves-x` / `--dance-moves-y`, or a `render({x,y})` callback |
+| Audio-phase pulse | `DanceMovesEffects.playbackPulse()` | play/pause/rate/seek listeners, BPM-derived duration and phase correction | a playing class plus CSS using the configured duration/delay properties, or a render callback |
+| Cue-local finite state | `DanceMovesEffects.cueClass()` | named DanceMoves cue subscription, bounded lifetime, retrigger and accessibility teardown | a class-styled subject or one finite render callback; never a full-frame repetitive colour layer |
+| Cue timeline and state restoration | `DanceMovesEffects.cueTimeline()` | crossing deduplication, seek/visibility/preference reconstruction, effect pause/resume | declarative cue objects and `onCue`/`render` callbacks; persistent state derives from active intervals |
+| Media-clock sprite atlas | `DanceMovesEffects.spritePlayback()` | frame mapping, play/pause/seek/rate listeners, visibility and preference restoration, quality throttling and teardown | an approved atlas, bounded stage, verified cycle/phase configuration and CSS consuming frame/row/column properties |
+| Recoverable quality tier | `DanceMovesEffects.quality()` | visibility-safe sampling, sustained downgrade, continued recovery checks and hysteresis | CSS keyed from `data-dance-moves-quality`, plus an optional tier-change callback |
+
+The runtime is page and release agnostic. It contains no release names, slugs, page IDs, song tempos, cue names, colours, images or drawing styles. It dispatches `dance-moves-effects-ready` after the API is installed so page-owned inline code can mount adapters even when WordPress prints the plugin in the footer.
 
 ```js
-import { createDanceMoves } from '@kieransimkin/dancemoves';
-import '@kieransimkin/dancemoves/styles.css';
-
-const motion = createDanceMoves({
-  root: document.querySelector('#my-epk'),
-  bpm: 145,
-  lyricTimingUrl: '/media/arcadians.lrc'
-});
-await motion.ready;
-// motion.effects, motion.rudiments, motion.onCue, motion.onLyric, ...
-// On route/component disposal:
-motion.destroy();
+function mountEffects() {
+  var effects = window.DanceMovesEffects;
+  effects.pointer({ id: "release:hero-depth", root: ".ks-epk", bounds: ".epk-hero" });
+  effects.playbackPulse({ id: "release:player-pulse", root: ".ks-epk", audio: "audio", ticks: 32, className: "is-playing" });
+  effects.cueClass({ id: "release:chorus-glow", root: ".ks-epk", cue: "CHORUS 1", className: "is-chorus", durationTicks: 64 });
+}
+if (window.DanceMovesEffects) mountEffects();
+else document.addEventListener("dance-moves-effects-ready", mountEffects, { once: true });
 ```
 
-For React and Next.js, use `@kieransimkin/dancemoves/react` inside a Client
-Component. Importing the root or React package during SSR does not access the
-DOM. Signed downloads and authenticated private motion capture are available
-from `@kieransimkin/dancemoves/server` (Node only; never bundle server secrets).
+Each mount returns `snapshot()` and `teardown()` methods and is deduplicated by stable ID. `DanceMovesEffects.snapshot()` exposes current instances for a harness without retaining or transmitting frame samples. Pages should prefer CSS-only consumers; use callbacks only when the look genuinely needs custom drawing or DOM state.
 
-| Guide | Contents |
-| --- | --- |
-| [JavaScript API](docs/javascript-api.md) | Existing timing/effects/native APIs, scoped mounts, lifecycle, metadata and phone input |
-| [Rudiment visualisers](docs/rudiment-visualisers.md) | All 222 FrameRudiments views, 17 lazy sprite atlases, solid/music meshes, page-owned sources, styles, clocks and cleanup |
-| [Spectrum visualisations](docs/spectrum-visualisations.md) | Compatible ten-mode spectrum API and calibration |
-| [React and Next.js](docs/react-next.md) | Hooks, components, SSR, Strict Mode, Arcadians demos and App Router routes |
-| [Node server API](docs/javascript-server.md) | Timing validation, signed MP3 delivery, authenticated private capture and storage adapters |
-| [WordPress usage](docs/wordpress-shared-runtime.md) | All six Page metadata keys, separate build, compatibility handles and installation |
-| [Architecture and migration](docs/shared-runtime-migration.md) | Single-source ownership and explicit browser/server/WordPress boundaries |
-| [Feature coverage](docs/shared-feature-coverage.md) | Existing features mapped to APIs, demos and tests |
-| [Builds and npm releases](docs/releasing-shared.md) | Tag-triggered npm/browser/WordPress artifacts and one-time trusted publishing setup |
-
-```sh
-npm run demo:prepare       # Hash-pinned Arcadians media from StemLab
-npm run demo:react         # http://127.0.0.1:4173
-npm run demo:next          # http://localhost:3000 (separate terminal)
-```
-
-The release workflow tests the same checkout, builds all three distributions,
-and publishes npm plus the minified browser and WordPress archives for `v*`
-tags. Prerelease versions use npm `next`. An npm trusted publisher (or an
-explicit one-time bootstrap token) must be configured before automatic
-publication. No secrets are included here.
-
-## Existing WordPress recipes and 2.x reference material
-
-The examples below remain useful. Their historical provenance/version notes
-refer to their original 2.9.0 authoring baseline. Current build/initialisation
-instructions are in the shared-library guides above. The 23-page WordPress
-simulator now imports the same library as the new React/Next frontends.
-
-<!-- BEGIN WORDPRESS EXAMPLES -->
 ## WordPress examples: Arcadians and complete feature coverage
 
 These examples target the **2.9.0 source** on `main` at
@@ -804,61 +1007,21 @@ WordPress ZIP. Packaged readers can visit the [source repository](https://github
 and select the documentation-bearing branch. This documentation change does not
 rebuild release ZIPs, alter PHP/JavaScript, or change the WordPress upgrade slug.
 
-## Rudiment animation integration
+## Release adapters
 
-DanceMoves now exposes `DanceMoves.rudiments` (also `DanceMovesRudiments`) for the
-pinned DanceRudiments 0.2.0 API. The build verifies its 1,731-movement upstream
-catalogue, then compiles every integer sample for only the 15 movements selected
-in `vendor/dancerudiments/UPSTREAM.json`. The compact browser WebAssembly contains
-no JavaScript motion-formula mirror or runtime CDN dependency.
+- Page 130: Dying for a Diagnosis orientation adapter
+- Page 140: Light Will Win orientation adapter
+- Page 243: Presents & Chocolate orientation adapter
+- Page 252: Made from the Clay and the Stars timing and visual-effects adapter
+- Page 268: Fully Nocturnal orientation adapter
+- Page 270: Amnesty, honestly? orientation adapter
+- Page 276: Walk With Me orientation adapter
+- Page 298: Dmitri My Talisman orientation adapter
+- Page 839: California Screamin' orientation adapter
 
-The integration converts 16 DanceMoves ticks per beat to 64 DanceRudiments pips
-per beat. Controllers share one animation-frame scheduler and provide explicit
-page/audio clocks, pause/seek handling, cue resets, accessibility and visibility
-suspension, CSS-variable or callback rendering, snapshots and teardown.
+Page 252's visual treatment remains release-specific. DanceMoves reuses its neutral timing and input infrastructure elsewhere but does not transplant its clay, cuneiform, cloud, warm-light or button choreography to other EPKs.
 
-The existing Clay/Stars page uses API 1.1.0's `clay_background` for its
-atmosphere translation. Half-speed sampling preserves the original eight-beat
-cycle; the existing rotation, scale and opacity treatment shares the new phase.
-The original CSS remains the capability-failure fallback. No page-content edit
-is required, and the legacy-plugin coexistence guard remains authoritative.
-
-See [the complete rudiment API reference](RUDIMENTS-API.md),
-[TypeScript declarations](RUDIMENTS-API.d.ts) and the
-[pinned source record](vendor/dancerudiments/UPSTREAM.json).
-Run `node tools/verify-rudiments.cjs` and the new tests before packaging. This
-Native and lifecycle contracts do not substitute for signed-out WordPress,
-real-browser and physical-device acceptance.
-
-## Reusable effect primitives (2.8.0)
-
-DanceMoves 2.8.0 keeps repeated motion and playback mechanisms out of individual EPK payloads. The shared code owns input acquisition, requestAnimationFrame scheduling, cached geometry, audio phase, cue subscription, cue deduplication, crossing detection, seeking, pause/resume, current-time restoration, visibility and motion-preference lifecycle, and recoverable quality measurement. EPK pages keep only declarative cue data, scoped CSS and optional appearance/render callbacks.
-
-`DanceMovesEffects.cueTimeline()` is the reusable playback state machine. Supply an audio element, sorted or unsorted cue objects and page-specific `onCue`/`render` callbacks. The primitive rebuilds state from `audio.currentTime` after seeks and visibility or preference changes, does not replay skipped cues, prevents duplicate cue firing within one traversal, and resumes from the actual playback position without maintaining a page-local clock.
-
-| Motion type | Shared API | Replaces repeated page code | Page-owned surface |
-| --- | --- | --- | --- |
-| Bounded pointer/parallax | `DanceMovesEffects.pointer()` | pointer normalisation, cached bounds, one-write-per-frame scheduling, leave/orientation/visibility reset | CSS consuming `--dance-moves-x` / `--dance-moves-y`, or a `render({x,y})` callback |
-| Audio-phase pulse | `DanceMovesEffects.playbackPulse()` | play/pause/rate/seek listeners, BPM-derived duration and phase correction | a playing class plus CSS using the configured duration/delay properties, or a render callback |
-| Cue-local finite state | `DanceMovesEffects.cueClass()` | named DanceMoves cue subscription, bounded lifetime, retrigger and accessibility teardown | a class-styled subject or one finite render callback; never a full-frame repetitive colour layer |
-| Cue timeline and state restoration | `DanceMovesEffects.cueTimeline()` | crossing deduplication, seek/visibility/preference reconstruction, effect pause/resume | declarative cue objects and `onCue`/`render` callbacks; persistent state derives from active intervals |
-| Media-clock sprite atlas | `DanceMovesEffects.spritePlayback()` | frame mapping, play/pause/seek/rate listeners, visibility and preference restoration, quality throttling and teardown | an approved atlas, bounded stage, verified cycle/phase configuration and CSS consuming frame/row/column properties |
-| Recoverable quality tier | `DanceMovesEffects.quality()` | visibility-safe sampling, sustained downgrade, continued recovery checks and hysteresis | CSS keyed from `data-dance-moves-quality`, plus an optional tier-change callback |
-
-The runtime is page and release agnostic. It contains no release names, slugs, page IDs, song tempos, cue names, colours, images or drawing styles. It dispatches `dance-moves-effects-ready` after the API is installed so page-owned inline code can mount adapters even when WordPress prints the plugin in the footer.
-
-```js
-function mountEffects() {
-  var effects = window.DanceMovesEffects;
-  effects.pointer({ id: "release:hero-depth", root: ".ks-epk", bounds: ".epk-hero" });
-  effects.playbackPulse({ id: "release:player-pulse", root: ".ks-epk", audio: "audio", ticks: 32, className: "is-playing" });
-  effects.cueClass({ id: "release:chorus-glow", root: ".ks-epk", cue: "CHORUS 1", className: "is-chorus", durationTicks: 64 });
-}
-if (window.DanceMovesEffects) mountEffects();
-else document.addEventListener("dance-moves-effects-ready", mountEffects, { once: true });
-```
-
-Each mount returns `snapshot()` and `teardown()` methods and is deduplicated by stable ID. `DanceMovesEffects.snapshot()` exposes current instances for a harness without retaining or transmitting frame samples. Pages should prefer CSS-only consumers; use callbacks only when the look genuinely needs custom drawing or DOM state.
+While the old `Made from Clay and Stars EPK Effects` plugin is active, DanceMoves suppresses its page-252 assets and content transform. Deactivating the old plugin makes DanceMoves take over on the next request, preventing a double-loaded effect stack.
 
 ## Paper Dreams flight adapter (2.6.3)
 
@@ -888,126 +1051,6 @@ DanceMoves is Kieran Simkin's WordPress EPK motion runtime. Version 2.0.0 added 
 Version 2.3.5 reconciles the Clay/Stars fallback clock and local harness with the confirmed canonical 90 BPM that the WordPress page supplies.
 
 The WordPress plugin name is **DanceMoves**. The distributable ZIP deliberately retains the internal `kieran-epk-device-orientation` folder and entrypoint name so WordPress upgrades the installed plugin rather than installing a parallel copy.
-
-## Page properties
-
-Edit Page contains an **EPK Timing** meta box with:
-
-- **BPM**: explicit finite value from 20 to 400. Blank means unknown and the public runtime uses 120 BPM without claiming that 120 is known.
-- **Lyric Timing File**: a WordPress Media Library `.lrc` attachment.
-- **Cue Timing File**: a WordPress Media Library `.lrc` or `.cue` attachment.
-- **Timed lyric pop-ups**: off by default. Enable only when a canonical lyric LRC is selected and the EPK has an approved release-specific lyric treatment.
-- **Ambient effect**: None or Paper planes (`_dance_moves_effect = "paper-planes"`). Only selected Pages load the plane assets; the existing hero must provide suitable containment.
-
-The plugin stores attachment IDs and resolves their current WordPress URLs at render time. A hidden, revision-aware master-duration value in milliseconds supports safe matching of public audio that has the same programme length as the canonical master.
-
-Timing files are limited to 1 MiB, must be strict UTF-8, must contain monotonic LRC/CUE timestamps, and cannot contain null or replacement characters. The browser parser treats file contents as data and never executes cue text.
-
-## Musical clock
-
-The shared CSS timing and tick-based helpers follow this numeric rule:
-
-- one timing tick is one sixteenth of a beat: `3.75 / BPM` seconds;
-- 16 ticks are one beat and 64 ticks are one 4/4 bar;
-- DanceMoves-owned CSS animations, transitions and delays, and tick-based JavaScript effect lifetimes, use integer tick counts;
-- durations greater than 16 ticks are rounded to the nearest multiple of 16 ticks;
-- exact half-way cases round upward; and
-- `prefers-reduced-motion` remains authoritative.
-
-The paper-plane adapter combines page-clock ambient phase with continuous frame-delta physics; its manoeuvres are not audio-seekable or all integer-tick durations. See the [paper-plane clock contract](docs/api/paper-planes.md#rendering-and-lifecycle).
-
-CSS receives versioned custom properties such as `--dance-moves-16t`. JavaScript uses `DanceMoves.durationMilliseconds(ticks)`. Orientation input keeps only the latest finite, screen-aligned sample; the shared scheduler publishes the latest meaningful target at a two-tick cadence and CSS transform transitions interpolate between targets. The first target remains immediate, jitter below the configured delta is suppressed, and teardown cancels any trailing target. Its two-second rolling normalisation is functional input processing, not a visual effect duration.
-
-The catalogue adopter discovers the rendered EPK root, quantizes release-owned stylesheet, inline, computed and generated pseudo-element timing, registers the full release root for cue resets, and repeats the pass after dynamically inserted motion markup. It preserves the one-millisecond view-timeline sentinel used by November Christmas and the 0.01 ms reduced-motion sentinel. Under `prefers-reduced-motion: reduce`, the owned EPK subtree and its pseudo-elements are clamped to one 0.01 ms iteration.
-
-The adopter changes timing ownership, not the creative design: selectors, keyframes, artwork, inputs and release identity remain page-specific. Pointer, scroll and orientation reactions remain event-driven. Canvas/WebGL effects that compute oscillator phase directly from frame time must use the public `DanceMoves.currentTick({ clock: "audio", audio })` value in their page adapter; CSS scanning cannot safely rewrite shader or drawing code.
-
-An element can delay its CSS animation until a musical boundary:
-
-```html
-<div data-dance-moves-start-interval="16">Starts on a beat</div>
-<div data-dance-moves-start-interval="64" data-dance-moves-start-clock="audio">Starts on a 4/4 bar of the active song</div>
-```
-
-Without `data-dance-moves-start-clock="audio"`, declarative starts use the page clock. For transitions or JavaScript-driven updates, use `DanceMoves.deferStart(element, ticks, { clock: "audio", start, id: "release:entrance" })` or `DanceMoves.scheduleAtInterval(ticks, callback, { id: "release:update" })`. Each returns a cancellation function. Stable IDs are required by the pre-live harness so synchronous page work can be attributed to its owning effect.
-
-## Cue behavior and page API
-
-The runtime fetches the page's cue file, finds every `<audio>` whose duration matches the canonical programme, and follows each active player independently. Ordinary seeking re-indexes the cue cursor without replaying skipped cues. An exact cue landing within 50 milliseconds arms only that cue: paused players dispatch it once on the next playback start, while players already running dispatch it as soon as the seek completes.
-
-When a cue occurs during playback, DanceMoves resets every currently running DanceMoves-owned CSS/Web Animation to its first frame and immediately continues it. It does not reset WordPress, browser, player-control or third-party animations.
-
-Page adapters can subscribe without executing timing-file text:
-
-```js
-const unsubscribe = window.DanceMoves.onCue("CHORUS 1", detail => {
-  // Perform a page-specific update.
-}, { id: "release:chorus-state" });
-```
-
-`"*"` subscribes to all cues. The runtime also dispatches bubbling `dance-moves-cue` and backwards-compatible `kieran-epk-cue` custom events. Local harnesses can route a data-only cue through the same production path with `DanceMoves.fireCue({ name, type, time })`.
-
-## Timed lyric pop-ups and visual-language workflow
-
-When enabled, DanceMoves creates one non-interactive, `aria-hidden` lyric layer and writes lyric text with `textContent`; timing-file text is never interpreted as markup. The full readable lyric section remains the accessible source, so rapid sung lines are not repeatedly announced by assistive technology. Blank LRC cues clear the layer. Reduced-motion mode keeps the words but removes entrance and exit motion; forced-colours mode supplies a high-contrast fallback.
-
-Page adapters can respond to the same lyric state without running a second parser or clock:
-
-```js
-const removeLyrics = DanceMoves.onLyric(detail => {
-  document.querySelector('.ks-epk')?.toggleAttribute(
-    'data-hook-line',
-    detail.normalisedText === 'HAVE SOME TAT'
-  );
-}, { id: 'release:lyric-treatment' });
-```
-
-Each detail also exposes `nextTime`, `nextText`, `nextNormalisedText` and `nextIndex` for the immediate next LRC entry. A blank next entry is deliberately preserved because its timestamp is a real lyric-clear boundary. The final entry reports `nextTime: null`, an empty next text and `nextIndex: -1`. Release adapters may use these fields with `detail.audio.currentTime` for seek-, pause- and playback-rate-safe choreography; they must not fetch or parse the LRC again.
-
-The `nextVisibleTime`, `nextVisibleText`, `nextVisibleNormalisedText` and `nextVisibleIndex` fields instead describe the next nonblank lyric, skipping clear entries. Missing future entries use `null` time, empty text and index `-1`. The [lyric payload reference](docs/api/javascript.md#onlyric) specifies both sets of fields and the separate pause/end responsibilities of a custom renderer.
-
-An EPK may override the neutral component through `.dance-moves-lyric-popover` and `.dance-moves-lyric-popover__text`, their public state attributes, and CSS custom properties. Adoption is a design task, not a switch-only task. Before enabling it for any release:
-
-1. read the release's current visual-language record and inspect its artwork, typography, texture, palette, motifs and motion rules;
-2. state what is observed, inferred, proposed and adopted;
-3. design a unique lyric container, typography, entrance/replacement motion and any restrained cue-specific emphasis that belong to that song rather than copying another EPK;
-4. use DanceMoves ticks or `onLyric()` only—never add a second LRC parser, timer or audio clock;
-5. preserve real text, the complete readable lyrics, mobile safe areas, player/control clearance, `prefers-reduced-motion`, forced colours and a static fallback; and
-6. stage and test ordinary lines, blank clears, repeated hooks, pause, resume, seek, end, narrow screens and long lines before action-time approval.
-
-The release-local visual-language file and EPK change record must name the treatment, explain why it fits the song, record the fallback, and give a measurable acceptance test. If the visual evidence does not support a distinctive treatment yet, leave the checkbox off.
-
-EPK code can attach one-shot or repeating handlers to the active master-length song clock:
-
-```js
-const removeNext = DanceMoves.onNextInterval(updateOnce, 16, { id: "release:next-beat" });
-const removeLoop = DanceMoves.onEveryInterval(updateRepeatedly, 64, { id: "release:bar-loop" });
-
-DanceMoves.onNextBeat(updateOnce);  // 16 ticks
-DanceMoves.onEveryBeat(updateRepeatedly);
-DanceMoves.onNextBar(updateOnce);   // 64 ticks, assuming 4/4
-DanceMoves.onEveryBar(updateRepeatedly);
-```
-
-Every registration returns a remover. One-shot handlers remove themselves after firing. Repeating handlers pause with playback and stop at the end of the song or when their remover is called. “Bar” deliberately means four beats; a page using another meter should call the interval functions with its explicit tick count.
-
-Performance diagnostics are disabled unless the boot configuration explicitly contains `diagnostics: true`. A development harness may then attach a bounded receiver with `DanceMoves.setDiagnosticsSink(callback)`. The core does not retain, log or transmit diagnostic records, and ordinary WordPress configuration does not enable the sink. Missing cue or interval IDs are reported as unattributed and block pre-live approval.
-
-## Release adapters
-
-- Page 130: Dying for a Diagnosis orientation adapter
-- Page 140: Light Will Win orientation adapter
-- Page 243: Presents & Chocolate orientation adapter
-- Page 252: Made from the Clay and the Stars timing and visual-effects adapter
-- Page 268: Fully Nocturnal orientation adapter
-- Page 270: Amnesty, honestly? orientation adapter
-- Page 276: Walk With Me orientation adapter
-- Page 298: Dmitri My Talisman orientation adapter
-- Page 839: California Screamin' orientation adapter
-
-Page 252's visual treatment remains release-specific. DanceMoves reuses its neutral timing and input infrastructure elsewhere but does not transplant its clay, cuneiform, cloud, warm-light or button choreography to other EPKs.
-
-While the old `Made from Clay and Stars EPK Effects` plugin is active, DanceMoves suppresses its page-252 assets and content transform. Deactivating the old plugin makes DanceMoves take over on the next request, preventing a double-loaded effect stack.
 
 ## Adaptive Clay/Stars performance
 
@@ -1107,6 +1150,14 @@ back into this section. Existing release and deployment history remains in Git,
 
 The release workflow can update the WordPress.org directory automatically after a validated release tag. Initial directory submission and human approval remain required. After approval, configure repository variables `WPORG_PLUGIN_APPROVED=true` and `WPORG_PLUGIN_SLUG` with the directory-assigned slug, plus `WPORG_SVN_USERNAME` and `WPORG_SVN_PASSWORD` secrets in the `wordpress-org` environment. The job verifies the exact tested release artifacts after the matching GitHub release exists, then uploads the packaged plugin through SVN. It remains disabled while the initial submission is queued; it does not install the plugin on a website. Website: https://kieransimkin.co.uk/danceflow/
 
+## Agents and contributors
+
+Agents using DanceMoves should inspect its available capabilities, use them fully where they fit the task, and look for useful improvements wherever possible. When a required feature is missing, or a reusable reliability, usability, performance or documentation gap is found, improve this tool rather than maintaining a separate workaround. If no worthwhile change is justified, explain why.
+
+Submit every improvement as a pull request to [DanceMoves](https://github.com/kieransimkin/DanceMoves/pulls), with relevant tests, documentation and a reproducible example. Follow [CONTRIBUTING.md](CONTRIBUTING.md) and [AGENTS.md](AGENTS.md) for the contribution and validation workflow.
+
+Project website: [https://kieransimkin.co.uk/danceflow/](https://kieransimkin.co.uk/danceflow/).
+
 ## Agent guidance releases
 
 Source-only agent guidance releases use `readme-policy-vMAJOR.MINOR.PATCH` tags
@@ -1116,52 +1167,11 @@ The runtime release workflow accepts tags starting with `v` and then verifies
 the exact semantic version and immutable source before building and publishing
 packages. Guidance release events skip that workflow's build and publishing jobs.
 
-## Optional variable-tempo / corrected Beat 1 maps from StemLab
+## Existing WordPress recipes and 2.x reference material
 
-DanceMoves now accepts the **complete corrected beat map** exported by StemLab's
-Beat correction editor (`stemlab.beat-timeline.v1`). Unlike the existing fixed-BPM
-`beat-alignment.v1`, the map preserves every exact source sample frame, missing
-or irregular beat, local BPM and the signed 64-pip Beat 1 offset. It is
-**opt-in per page**: leave **Use corrected variable-tempo beat map** unchecked
-and the existing fixed BPM, constant phase offset, cue clock, lyric timestamps,
-and all other behaviour continue unchanged.
+The examples below remain useful. Their historical provenance/version notes
+refer to their original 2.9.0 authoring baseline. Current build/initialisation
+instructions are in the shared-library guides above. The 23-page WordPress
+simulator now imports the same library as the new React/Next frontends.
 
-In WordPress **EPK Timing**, select **Analysed Master Audio**, paste the full
-StemLab JSON into **StemLab full beat timeline JSON**, and explicitly enable the
-checkbox. Its master SHA-256 is verified; the large export is normalised to
-bounded authoritative beat anchors before storage/localisation. No additional
-model, internet service or compulsory runtime is installed. Incorrect source
-identity fails closed, and an invalid map cannot be saved over the previous
-valid timing. The old **Beat alignment reading** field is retained separately.
-
-The shared JS, React and Next.js API accepts `beatTimeline` with the same JSON
-plus the verified `source_url`. `sourceTick()` and beat/bar scheduling interpolate
-native fractional phase between edited anchors. `tempoAt()` exposes the local
-BPM; `durationMillisecondsAt()` exposes beat-relative durations. Native
-DanceRudiments callbacks, sprite playback, phase pulses and page CSS duration
-variables follow changing BPM; page-only clocks remain fixed. Audio/recording,
-lyric and cue timestamps remain in original master seconds. Registered excerpt
-players are converted to master time *before* phase mapping.
-
-See [variable-tempo integration, security, boundaries and examples](docs/variable-tempo.md).
-
-## Optional word-level lyrics and multi-song Pages
-
-DanceMoves accepts an independent **Per-word Lyric Timing File** next to the existing
-per-line `.lrc` and cue attachment selectors in WordPress EPK Timing. Supported
-formats are StemLab `words.tsv` (`start`, `end`, `probability`, `word`), JSON with
-a `words` array, enhanced LRC (`<mm:ss.xx>word`) or one `[mm:ss.xx]word` per line.
-All timestamps remain in the source audio clock; neither the corrected beat
-map nor the lyric timing alters the media clock. The core exposes `onWord`,
-`parseWordTimingFile` and `dance-moves-word` independently of `onLyric`.
-
-WordPress Pages may opt into **Song collection** from their editor metabox. Add
-1â€“24 tracks with separate master attachments, BPM, optional full variable-tempo
-beat maps or fixed alignments, line lyrics, word timings and cue files. A
-track selector and independent audio/time lanes are rendered automatically (or
-via `[dance_moves_song_collection]` to control placement). Switching songs stops
-the previous audio and destroys its scoped motion controller. Existing ordinary
-Pages, page effects, fixed BPM/offsets and legacy uploads retain their contract.
-
-Details, file limits, source checks, JavaScript hooks and repeatable editor steps:
-[Word lyrics and multi-song pages](docs/word-and-multi-song.md).
+<!-- BEGIN WORDPRESS EXAMPLES -->
