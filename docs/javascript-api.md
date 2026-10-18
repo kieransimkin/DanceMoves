@@ -1,6 +1,6 @@
 # Shared JavaScript API
 
-Package: `@kieransimkin/dancemoves`, release candidate 3.1.1.
+Package: `@kieransimkin/dancemoves`.
 This guide describes the public shared module; [WordPress](wordpress-shared-runtime.md)
 loads the same runtime through its adapter.
 
@@ -74,8 +74,12 @@ does not import either dependency.
 | `spectrumRenderer` | `spectrum`; selects one of ten basic FrameRudiments views. Individual canvases can override the style. |
 | `visualiserRecordingUrl` | Empty. Page-owned native recording URL, fetched only for an authored visualiser canvas. Exclusive with `visualiserRudiment`. |
 | `visualiserRudiment` | Empty. One of the 15 native names; provides movement views without a recording request. |
-| `visualiserRenderer` | `waveform`. One of 164 catalogue identifiers; spectral choices require a calibrated recording. |
+| `visualiserRenderer` | `waveform`. One of 222 catalogue identifiers; spectral choices require a calibrated recording. |
 | `visualiserAxes` | Empty means all axes. Optional array of up to 64 unique dimension names; selection is checked against the source when mounted. |
+| `visualiserAssetBaseUrl` | Empty. Host-supplied HTTP(S) or relative directory URL for the shipped `visualiser-sprites/` assets, without a query or fragment. Required for built-in sprite atlases; WordPress derives it from the plugin URL. |
+| `visualiserSpriteTheme` | Empty selects the renderer's default. Otherwise one of `SPRITE_THEMES`; retained but unused by non-sprite views. |
+| `visualiserTerrainSource` | `procedural`. `fft` applies only to `spatial-music-terrain`; a configured source must be a calibrated recording. |
+| `visualiserSpectralDeform` | `false`. Enables spectral deformation on the three `spatial-music-*` views; a configured source must be a calibrated recording. |
 | `legacyGlobals` | false. WordPress compatibility mode; one per document, not for ordinary React roots. |
 | `nonce` | Optional nonce attached to library-created style elements for an application's CSP. |
 | `onError` | Optional callback for asynchronous readiness and cleanup errors. Handle individual native-controller `ready` failures as well. |
@@ -94,14 +98,25 @@ and removes resources; it does not stop or delete your audio element.
 
 ## Core methods: complete inherited surface
 
-`runtime.visualisers.animate()` renders any of the 164 self-contained
+`runtime.visualisers.animate()` renders any of the 222
 FrameRudiments views. `catalogue()` and `describe(name)` expose each view's family,
-required input, minimum axes and history usage. A native `rudiment` uses the
+required input, minimum axes, history usage, `requiresAtlas` and `supportsSpectrum`.
+A native `rudiment` uses the
 existing page/audio/auto clock; a `recordingUrl` or inline `recording` uses its
 saved capture clock. `get()`, `snapshot()` and `destroyAll()` expose ownership.
 Declarative `canvas[data-dance-moves-visualiser]` views mount only with a configured
 source and participate in `runtime.ready`. An invalid declarative view reports
-its own error without destroying other views or the root. See the
+its own error without destroying other views or the root.
+
+The 52 sprite views load their selected PNG lazily and verify its pinned SHA-256.
+`SPRITE_THEMES` and `SPRITE_ATLASES` export immutable metadata without loading image
+bytes. The six solid/music views use a bounded CPU rasterizer; `backend:'auto'`
+reports the CPU fallback, while `backend:'gpu'` is rejected. Their
+`raster_size` defaults to 512 and accepts integers from 64 to 1024. Frame and
+controller snapshots include a frozen, nullable `renderReport`, separate from
+the calibrated spectral `report`; service snapshots include the active `atlases`
+count. Source recordings and image resources remain scoped to their consuming
+mount. See the
 [complete visualiser API and styles](rudiment-visualisers.md).
 
 `runtime.spectrum.animate()` creates native-clock Canvas spectrum views with

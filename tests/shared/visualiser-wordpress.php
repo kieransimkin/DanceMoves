@@ -15,6 +15,7 @@ function register_post_meta($type,$name,$args) {$GLOBALS['registered'][$name]=$a
 function add_meta_box(...$args) {$GLOBALS['boxes'][]=$args;}
 function absint($value) {return abs((int)$value);}
 function wp_json_encode($value) {return json_encode($value,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);}
+function wp_parse_url($value) {return parse_url($value);}
 function sanitize_text_field($value) {return is_scalar($value) ? strip_tags((string)$value) : '';}
 function sanitize_key($value) {return preg_replace('/[^a-z0-9_\-]/','',strtolower((string)$value));}
 function esc_attr($value) {return htmlspecialchars((string)$value,ENT_QUOTES);}
@@ -68,32 +69,50 @@ function request_meta($meta) {
         public function get_param($name) {return $name==='meta'?$this->meta:901;}
     };
 }
-function generic_form($id=0,$renderer='waveform',$rudiment='',$axes='') {
-    return array('dance_moves_visualiser_nonce'=>'valid','dance_moves_visualiser_recording_id'=>$id,
-        'dance_moves_visualiser_renderer'=>$renderer,'dance_moves_visualiser_rudiment'=>$rudiment,'dance_moves_visualiser_axes'=>$axes);
+function generic_form($id=0,$renderer='waveform',$rudiment='',$axes='',$theme='',$terrain='procedural',$deform=false) {
+    $form=array('dance_moves_visualiser_nonce'=>'valid','dance_moves_visualiser_recording_id'=>$id,
+        'dance_moves_visualiser_renderer'=>$renderer,'dance_moves_visualiser_rudiment'=>$rudiment,'dance_moves_visualiser_axes'=>$axes,
+        'dance_moves_visualiser_sprite_theme'=>$theme,'dance_moves_visualiser_terrain_source'=>$terrain);
+    if ($deform!==false) $form['dance_moves_visualiser_spectral_deform']=$deform;
+    return $form;
 }
 try {
     $catalogue=dance_moves_visualiser_catalogue();
     $mirror=json_decode(file_get_contents(dirname(__DIR__,2).'/assets/visualiser-catalogue.json'),true);
     check(array_values($catalogue)===$mirror,'PHP reads the exact shared trusted renderer metadata');
-    check(count($catalogue)===164 && isset($catalogue['path'],$catalogue['spatial-torus']) && in_array('spectrogram',array_column($catalogue,'family'),true),'all motion, history, spectrum and 3D choices available');
+    check(count($catalogue)===222 && isset($catalogue['path'],$catalogue['spatial-torus'],$catalogue['sprite-spectrum-lcd'],$catalogue['spatial-solid-sphere'],$catalogue['spatial-music-terrain']) && in_array('spectrogram',array_column($catalogue,'family'),true),'all motion, history, spectrum, sprite and 3D choices available');
+    $manifest=json_decode(file_get_contents(dirname(__DIR__,2).'/assets/visualiser-sprites/manifest.json'),true);
+    check(count(dance_moves_visualiser_sprite_themes())===17 && array_keys(dance_moves_visualiser_sprite_themes())===array_keys($manifest['themes']),'sprite themes come from the exact bundled metadata manifest');
     $native=json_decode(file_get_contents(dirname(__DIR__,2).'/assets/vendor/dancerudiments/build-manifest.json'),true);
     check(array_keys(dance_moves_visualiser_rudiments())===$native['upstream']['selection'],'native choices match the existing selected package');
     $empty=dance_moves_visualiser_page_config(901);
-    check($empty===array('visualiserRecordingUrl'=>'','visualiserRenderer'=>'waveform','visualiserRudiment'=>'','visualiserAxes'=>array()),'old single-song Pages remain inactive by default');
+    check($empty===array('visualiserRecordingUrl'=>'','visualiserRenderer'=>'waveform','visualiserRudiment'=>'','visualiserAxes'=>array(),
+        'visualiserSpriteTheme'=>'','visualiserTerrainSource'=>'procedural','visualiserSpectralDeform'=>false),'old single-song Pages remain inactive by default');
     check(dance_moves_render_visualiser()==='','no generic canvas without a configured source');
     ks_epk_orientation_enqueue_runtime();
     check(!isset($GLOBALS['styles']['dance-moves-visualisers']),'unconfigured page does not enqueue generic styles');
+    check($GLOBALS['localized']['danceMovesConfig']['visualiserAssetBaseUrl']==='https://example.test/plugins/dancemoves/lib/assets/visualiser-sprites/','host localizes the plugin asset base without loading sprite pixels');
     check($GLOBALS['shortcodes']['dance_moves_visualiser']==='dance_moves_render_visualiser','shortcode registered');
     check($GLOBALS['shortcodes']['dance_moves_spectrum']==='dance_moves_render_spectrum','original shortcode still registered');
+    $GLOBALS['meta'][901]=array(DANCE_MOVES_META_VISUALISER_RENDERER=>'spatial-music-terrain',
+        DANCE_MOVES_META_VISUALISER_TERRAIN_SOURCE=>'fft',DANCE_MOVES_META_VISUALISER_SPECTRAL_DEFORM=>'1');
+    $unset_source=dance_moves_visualiser_page_config(901);
+    check($unset_source['visualiserRecordingUrl']==='' && $unset_source['visualiserRudiment']==='' && $unset_source['visualiserSpectralDeform']===true && dance_moves_render_visualiser()==='','saved music options with no source stay inactive and normalize WordPress boolean strings');
+    $GLOBALS['meta'][901][DANCE_MOVES_META_VISUALISER_SPECTRAL_DEFORM]='0';
+    check(dance_moves_visualiser_page_config(901)['visualiserSpectralDeform']===false,'WordPress stored zero never enables spectral deformation');
+    $GLOBALS['meta'][901]=array();
 
     dance_moves_register_visualiser_meta();
     foreach (dance_moves_visualiser_meta_keys() as $key) {
         check($GLOBALS['registered'][$key]['auth_callback']==='dance_moves_meta_auth' && $GLOBALS['registered'][$key]['revisions_enabled']===true,'generic metadata uses existing authorization and revisions');
     }
-    check(count($GLOBALS['registered'][DANCE_MOVES_META_VISUALISER_RENDERER]['show_in_rest']['schema']['enum'])===164,'REST renderer enum shares the complete catalogue');
+    check(count($GLOBALS['registered'][DANCE_MOVES_META_VISUALISER_RENDERER]['show_in_rest']['schema']['enum'])===222,'REST renderer enum shares the complete catalogue');
     check($GLOBALS['registered'][DANCE_MOVES_META_VISUALISER_AXES]['type']==='array' && $GLOBALS['registered'][DANCE_MOVES_META_VISUALISER_AXES]['show_in_rest']['schema']['uniqueItems']===true,'REST axes schema is an ordered unique array');
-    check(count(dance_moves_visualiser_revision_meta_keys(array(DANCE_MOVES_META_VISUALISER_AXES)))===4,'revision keys remain unique');
+    check($GLOBALS['registered'][DANCE_MOVES_META_VISUALISER_SPRITE_THEME]['show_in_rest']['schema']['enum']===array_merge(array(''),array_keys($manifest['themes'])),'REST theme enum includes the renderer default and every bundled theme');
+    check($GLOBALS['registered'][DANCE_MOVES_META_VISUALISER_TERRAIN_SOURCE]['show_in_rest']['schema']['enum']===array('procedural','fft'),'REST terrain source has two explicit choices');
+    check($GLOBALS['registered'][DANCE_MOVES_META_VISUALISER_SPECTRAL_DEFORM]['type']==='boolean' && $GLOBALS['registered'][DANCE_MOVES_META_VISUALISER_SPECTRAL_DEFORM]['default']===false,'spectral deformation is opt-in boolean metadata');
+    check(count(dance_moves_visualiser_revision_meta_keys(array(DANCE_MOVES_META_VISUALISER_AXES)))===7,'revision keys remain unique');
+    check(!in_array('_dance_moves_visualiser_asset_base_url',dance_moves_visualiser_meta_keys(),true),'asset base is host configuration, not saved Page metadata');
     check(dance_moves_validate_visualiser_axes('x, y, band_010')===array('x','y','band_010'),'editor comma list becomes ordered axes');
     check(dance_moves_validate_visualiser_axes('')===array(),'empty axes select all');
     $maximum=array_map(fn($n)=>'axis_'.$n,range(0,63));
@@ -117,6 +136,29 @@ try {
     check(is_wp_error(dance_moves_validate_visualiser_options(0,'spectrum','circle')),'named source cannot claim Fourier provenance');
     check(is_wp_error(dance_moves_validate_visualiser_options(0,'unknown-view')),'unknown renderer rejected');
     check(is_wp_error(dance_moves_validate_visualiser_options(0,'path','song_private')),'unbundled named rudiment rejected');
+    check(!is_wp_error(dance_moves_validate_visualiser_options($bad_type,'path','',array(),false)),'existing fifth argument still controls optional attachment validation');
+    foreach (array_keys($manifest['themes']) as $theme) {
+        $valid=dance_moves_validate_visualiser_options(0,'sprite-motion-path','circle',array(),true,$theme);
+        check(!is_wp_error($valid) && $valid['visualiser_sprite_theme']===$theme,'bundled sprite theme works with a native movement source');
+    }
+    $retained=dance_moves_visualiser_config(0,'path','circle',array(),'generated-neon');
+    check($retained['visualiserSpriteTheme']==='generated-neon' && $retained['visualiserRudiment']==='circle','non-sprite styles retain a valid theme without changing the source');
+    foreach (array('missing-theme','../lcd','https://example.test/lcd.png',array('lcd')) as $theme)
+        check(is_wp_error(dance_moves_validate_visualiser_options(0,'waveform','circle',array(),true,$theme)),'theme selection cannot introduce a custom image URL or unknown name');
+    check(!is_wp_error(dance_moves_validate_visualiser_options(0,'spatial-music-terrain','helix')),'procedural music terrain works with a native pattern');
+    check(!is_wp_error(dance_moves_validate_visualiser_options($recording,'spatial-music-terrain','',array(),true,'','fft')),'FFT music terrain accepts a saved recording reference without decoding it in PHP');
+    check(!is_wp_error(dance_moves_validate_visualiser_options(0,'spatial-music-terrain','',array(),true,'','fft',true)),'spectral options can be configured before an optional source is selected');
+    foreach (array('spatial-music-torus','spatial-music-sphere','spatial-music-terrain') as $renderer) {
+        $valid=dance_moves_validate_visualiser_options($recording,$renderer,'',array(),true,'','procedural','1');
+        check(!is_wp_error($valid) && $valid['visualiser_spectral_deform']===true,'music deformation accepts a recording and normalizes the WordPress checkbox value');
+        check(is_wp_error(dance_moves_validate_visualiser_options(0,$renderer,'helix',array(),true,'','procedural',true)),'spectral music deformation cannot use a named pattern');
+    }
+    foreach (array('fft','unknown',false) as $terrain)
+        check(is_wp_error(dance_moves_validate_visualiser_options($recording,'path','',array(),true,'',$terrain)),'non-terrain renderers cannot receive FFT or invalid terrain options');
+    check(is_wp_error(dance_moves_validate_visualiser_options(0,'spatial-music-terrain','helix',array(),true,'','fft')),'FFT terrain cannot use a named pattern');
+    check(is_wp_error(dance_moves_validate_visualiser_options($recording,'spatial-solid-torus','',array(),true,'','procedural',true)),'spectral deformation is unavailable on solid renderers');
+    foreach (array('false','true',2,array(),null) as $deform)
+        check(is_wp_error(dance_moves_validate_visualiser_options($recording,'spatial-music-terrain','',array(),true,'','procedural',$deform)),'spectral deformation rejects ambiguous or malformed boolean values');
 
     $GLOBALS['meta'][901][DANCE_MOVES_META_SPECTRUM_RECORDING]=$other;
     $GLOBALS['meta'][901][DANCE_MOVES_META_SPECTRUM_RENDERER]='spectrum-ring';
@@ -125,7 +167,9 @@ try {
     check($GLOBALS['meta'][901][DANCE_MOVES_META_SPECTRUM_RECORDING]===$other && $GLOBALS['meta'][901][DANCE_MOVES_META_SPECTRUM_RENDERER]==='spectrum-ring','generic save preserves all original spectrum metadata');
     check(!str_contains(wp_json_encode($GLOBALS['meta'][901]),'samples') && !str_contains(wp_json_encode($GLOBALS['meta'][901]),'https://'),'metadata never stores recording data or resolved URLs');
     $saved=$GLOBALS['meta'][901];
-    foreach (array(generic_form($recording,'path','circle'),generic_form($recording,'unknown-view'),generic_form($recording,'path','','x,x'),generic_form($bad_type)) as $bad) {
+    foreach (array(generic_form($recording,'path','circle'),generic_form($recording,'unknown-view'),generic_form($recording,'path','','x,x'),generic_form($bad_type),
+        generic_form($recording,'path','','','invalid-theme'),generic_form($recording,'path','','','','fft'),
+        generic_form($recording,'path','','','','procedural','1')) as $bad) {
         $_POST=$bad;dance_moves_save_visualiser_meta(901);
         check($GLOBALS['meta'][901]===$saved,'invalid editor inputs preserve the previous complete selection');
     }
@@ -148,6 +192,25 @@ try {
     $prior=new WP_Error('prior','Already invalid');
     check(dance_moves_visualiser_rest_guard($prior,request_meta(array()))===$prior,'REST preserves errors from previous guards');
 
+    $saved_named=$GLOBALS['meta'][901];
+    $_POST=generic_form($recording,'spatial-music-terrain','','x, y','generated-neon','fft','1');
+    dance_moves_save_visualiser_meta(901);
+    $music=dance_moves_get_page_config(901);
+    check($music['visualiserRecordingUrl']===$GLOBALS['files'][$recording]['url'] && $music['visualiserTerrainSource']==='fft' && $music['visualiserSpectralDeform']===true,'Page saves and exposes independent FFT terrain and spectral deformation choices');
+    check($music['visualiserSpriteTheme']==='generated-neon','music styles retain an unused sprite theme');
+    check($GLOBALS['meta'][901][DANCE_MOVES_META_VISUALISER_SPECTRAL_DEFORM]===true && !str_contains(wp_json_encode($GLOBALS['meta'][901]),'https://'),'music options remain compact metadata without asset or recording URLs');
+    check(is_wp_error(dance_moves_visualiser_rest_guard($prepared,request_meta(array(DANCE_MOVES_META_VISUALISER_RENDERER=>'spatial-music-torus')))),'partial REST renderer update cannot leave FFT terrain on another music shape');
+    check(is_wp_error(dance_moves_visualiser_rest_guard($prepared,request_meta(array(DANCE_MOVES_META_VISUALISER_RECORDING=>0,DANCE_MOVES_META_VISUALISER_RUDIMENT=>'helix')))),'REST source switch cannot attach saved spectral options to a named pattern');
+    $reset=array(DANCE_MOVES_META_VISUALISER_RECORDING=>0,DANCE_MOVES_META_VISUALISER_RUDIMENT=>'helix',
+        DANCE_MOVES_META_VISUALISER_TERRAIN_SOURCE=>'procedural',DANCE_MOVES_META_VISUALISER_SPECTRAL_DEFORM=>false);
+    check(dance_moves_visualiser_rest_guard($prepared,request_meta($reset))===$prepared,'REST can explicitly clear spectral options while switching back to a native pattern');
+    check(is_wp_error(dance_moves_visualiser_rest_guard($prepared,request_meta(array(DANCE_MOVES_META_VISUALISER_SPRITE_THEME=>'custom')))),'REST refuses unknown sprite themes');
+    check(is_wp_error(dance_moves_visualiser_rest_guard($prepared,request_meta(array(DANCE_MOVES_META_VISUALISER_SPECTRAL_DEFORM=>'false')))),'REST rejects an ambiguous string boolean');
+    check(dance_moves_visualiser_rest_guard($prepared,request_meta(array(DANCE_MOVES_META_VISUALISER_SPRITE_THEME=>'lcd-green')))===$prepared,'REST can retain a valid theme while music rendering is selected');
+    $_POST=generic_form(0,'spatial-music-terrain','helix','','generated-neon');dance_moves_save_visualiser_meta(901);
+    check(!isset($GLOBALS['meta'][901][DANCE_MOVES_META_VISUALISER_SPECTRAL_DEFORM]) && dance_moves_get_page_config(901)['visualiserSpectralDeform']===false,'unchecked deformation clears an earlier saved checkbox');
+    $GLOBALS['meta'][901]=$saved_named;
+
     $html=dance_moves_render_visualiser(array('renderer'=>'spatial-torus','label'=>'<b>Movement</b> "view"'));
     check(str_contains($html,'data-dance-moves-visualiser-renderer="spatial-torus"') && str_contains($html,'role="img"'),'shortcode supports a generic renderer and accessible canvas');
     check(str_contains($html,'aria-live="polite"') && str_contains($html,'aria-describedby=') && str_contains($html,'Movement &quot;view&quot;'),'status and escaped label are accessible');
@@ -156,40 +219,60 @@ try {
     ob_start();dance_moves_visualiser_meta_box((object)array('ID'=>901));$admin=ob_get_clean();
     check(str_contains($admin,'<optgroup') && str_contains($admin,'value="spatial-torus"') && str_contains($admin,'value="helix"'),'Page controls group all renderer choices and expose existing native patterns');
     check(str_contains($admin,'dance_moves_visualiser_recording_id') && str_contains($admin,'dance_moves_visualiser_axes'),'Page controls use compact recording and axis fields');
+    check(str_contains($admin,'name="dance_moves_visualiser_sprite_theme"') && str_contains($admin,'value="generated-neon"') && str_contains($admin,'Renderer default'),'Page editor exposes bundled sprite themes without a custom image picker');
+    check(str_contains($admin,'name="dance_moves_visualiser_terrain_source"') && str_contains($admin,'value="fft"') && str_contains($admin,'name="dance_moves_visualiser_spectral_deform"'),'Page editor exposes both explicit music spectrum options');
     $GLOBALS['styles']=array();ks_epk_orientation_enqueue_runtime();
     check(str_ends_with($GLOBALS['styles']['dance-moves-visualisers']['src'],'lib/styles/visualisers.css'),'named Page view enqueues the shared generic stylesheet');
     check($GLOBALS['localized']['danceMovesConfig']['visualiserRudiment']==='helix' && $GLOBALS['localized']['danceMovesConfig']['visualiserRecordingUrl']==='','localized page config exposes only the selected named source');
 
     $masters=array(asset(201,'one.wav','audio/wav',str_repeat("\0",128)),asset(202,'two.wav','audio/wav',str_repeat("\0",128)),asset(203,'three.wav','audio/wav',str_repeat("\0",128)));
     $rows=array(
-        array('id'=>'one','title'=>'One','audio_id'=>$masters[0],'bpm'=>120,'visualiser_recording_id'=>$recording,'visualiser_renderer'=>'path','visualiser_axes'=>array('x','y'),
+        array('id'=>'one','title'=>'One','audio_id'=>$masters[0],'bpm'=>120,'visualiser_recording_id'=>$recording,'visualiser_renderer'=>'spatial-music-terrain','visualiser_axes'=>array('x','y'),
+            'visualiser_terrain_source'=>'fft','visualiser_spectral_deform'=>'1',
             'spectrum_recording_id'=>$recording,'spectrum_renderer'=>'spectrum-line','visualiserRecording'=>array('samples'=>array(array(999)))) ,
-        array('id'=>'two','title'=>'Two','audio_id'=>$masters[1],'bpm'=>140,'visualiser_rudiment'=>'circle','visualiser_renderer'=>'path','visualiser_axes'=>'y, x'),
+        array('id'=>'two','title'=>'Two','audio_id'=>$masters[1],'bpm'=>140,'visualiser_rudiment'=>'circle','visualiser_renderer'=>'sprite-motion-path','visualiser_axes'=>'y, x',
+            'visualiser_sprite_theme'=>'lcd-green','visualiserAssetBaseUrl'=>'https://untrusted.example/assets/'),
         array('id'=>'three','title'=>'Three','audio_id'=>$masters[2],'bpm'=>100));
     $songs=dance_moves_validate_song_collection(array('schema'=>'dancemoves.song-collection.v1','songs'=>$rows));
     check(!is_wp_error($songs),'collection accepts independent saved, named and inactive visualiser sources');
     check($songs['songs'][1]['visualiser_axes']===array('y','x') && $songs['songs'][2]['visualiser_recording_id']===0,'collection normalizes axes and preserves inactive defaults');
     check(!isset($songs['songs'][0]['visualiserRecording']) && !str_contains(wp_json_encode($songs),'samples'),'collection whitelist excludes embedded recording samples');
+    check($songs['songs'][0]['visualiser_spectral_deform']===true && !isset($songs['songs'][1]['visualiserAssetBaseUrl']),'collection persists a normalized checkbox but cannot override host asset locations');
     $GLOBALS['meta'][901][DANCE_MOVES_META_SONG_PAGE_TYPE]='collection';
     $GLOBALS['meta'][901][DANCE_MOVES_META_SONG_COLLECTION]=wp_json_encode($songs);
     $config=dance_moves_song_collection_config(901);
     check($config['songs'][0]['visualiserRecordingUrl']===$GLOBALS['files'][$recording]['url'] && $config['songs'][0]['visualiserRudiment']==='','first song resolves only its saved recording');
     check($config['songs'][1]['visualiserRecordingUrl']==='' && $config['songs'][1]['visualiserRudiment']==='circle','second song receives only its named source');
     check($config['songs'][2]['visualiserRecordingUrl']==='' && $config['songs'][2]['visualiserRudiment']==='','third song inherits no Page or adjacent song source');
+    check($config['songs'][0]['visualiserTerrainSource']==='fft' && $config['songs'][0]['visualiserSpectralDeform']===true,'recorded song retains its own two music spectrum options');
+    check($config['songs'][1]['visualiserSpriteTheme']==='lcd-green' && $config['songs'][1]['visualiserTerrainSource']==='procedural' && $config['songs'][1]['visualiserSpectralDeform']===false,'native sprite song receives its own theme and no previous song spectral options');
+    check($config['songs'][2]['visualiserSpriteTheme']==='' && $config['songs'][2]['visualiserTerrainSource']==='procedural' && $config['songs'][2]['visualiserSpectralDeform']===false,'inactive song receives all option defaults without inheritance');
     check($config['songs'][0]['spectrumRenderer']==='spectrum-line','original song spectrum configuration remains supported');
     $html=dance_moves_render_song_collection();
     check(substr_count($html,'data-dance-moves-visualiser data-')===2 && substr_count($html,'<audio ')===3,'collection places canvases only in the two configured song roots');
     check(substr_count($html,'data-dance-moves-spectrum data-')===1,'original spectrum markup can coexist on the configured song');
+    $hostile=$songs;
+    $hostile['songs'][0]['title']='Lead " onpointerenter="alert(1) & <img src=x onerror=alert(1)>';
+    $GLOBALS['meta'][901][DANCE_MOVES_META_SONG_COLLECTION]=wp_json_encode($hostile);
+    $escaped=dance_moves_render_song_collection();
+    check(!str_contains($escaped,'<img') && !preg_match('/\s(?:onpointerenter|onerror)="/i',$escaped),'collection titles cannot inject tags or event attributes through either markup helper');
+    foreach (array('spectrum','visualiser') as $kind) {
+        check(preg_match('/<canvas\b[^>]*data-dance-moves-'.$kind.'\s[^>]*aria-label="Lead &quot; onpointerenter=&quot;alert\(1\) &amp; [^"]*'.$kind.'"[^>]*aria-describedby="dance-moves-'.$kind.'-status-[0-9]+"/',$escaped)===1,'escaped '.$kind.' canvas label and accessible status binding survive collection rendering');
+    }
+    $GLOBALS['meta'][901][DANCE_MOVES_META_SONG_COLLECTION]=wp_json_encode($songs);
     check(dance_moves_render_visualiser()==='','Page shortcode avoids unscoped duplicate in collection mode');
     ob_start();dance_moves_song_collection_row($songs['songs'][0],0);$admin=ob_get_clean();
     check(str_contains($admin,'dance_moves_songs[0][visualiser_recording_id]') && str_contains($admin,'dance_moves_songs[0][visualiser_rudiment]') && str_contains($admin,'dance_moves_songs[0][visualiser_axes]'),'per-song editor uses independent visualiser fields');
-    foreach (array(array('visualiser_rudiment'=>'circle'),array('visualiser_recording_id'=>$bad_type),array('visualiser_renderer'=>'unknown'),array('visualiser_axes'=>'x,x')) as $change) {
+    check(str_contains($admin,'dance_moves_songs[0][visualiser_sprite_theme]') && str_contains($admin,'dance_moves_songs[0][visualiser_terrain_source]') && str_contains($admin,'dance_moves_songs[0][visualiser_spectral_deform]'),'per-song editor owns its theme and two music spectrum controls');
+    foreach (array(array('visualiser_rudiment'=>'circle'),array('visualiser_recording_id'=>$bad_type),array('visualiser_renderer'=>'unknown'),array('visualiser_axes'=>'x,x'),
+        array('visualiser_sprite_theme'=>'custom'),array('visualiser_renderer'=>'spatial-music-sphere'),array('visualiser_spectral_deform'=>'false')) as $change) {
         $bad=$rows;$bad[0]=array_merge($bad[0],$change);
         check(is_wp_error(dance_moves_validate_song_collection(array('schema'=>'dancemoves.song-collection.v1','songs'=>$bad))),'collection import refuses an invalid song visualiser without saving partial rows');
     }
     unset($GLOBALS['meta'][901][DANCE_MOVES_META_VISUALISER_RUDIMENT],$GLOBALS['meta'][901][DANCE_MOVES_META_SPECTRUM_RECORDING]);
     $GLOBALS['styles']=array();ks_epk_orientation_enqueue_runtime();
     check(isset($GLOBALS['styles']['dance-moves-visualisers']),'configured collection songs enqueue the shared style even without a Page source');
+    check($GLOBALS['localized']['danceMovesConfig']['visualiserAssetBaseUrl']==='https://example.test/plugins/dancemoves/lib/assets/visualiser-sprites/','collections receive the host plugin asset base once');
     check(!str_contains(wp_json_encode($GLOBALS['localized']['danceMovesConfig']),'samples'),'localized collection config carries references and no recording arrays');
     unlink(get_attached_file($recording));clearstatcache();
     $config=dance_moves_song_collection_config(901);

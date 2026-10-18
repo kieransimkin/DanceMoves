@@ -14,9 +14,23 @@ def main():
     for name in ['kieran-epk-device-orientation.php','dance-moves-rudiments.php','dance-moves-beat-alignment.php','dance-moves-beat-timeline.php','dance-moves-spectrum.php','dance-moves-visualisers.php','dance-moves-song-collection.php']:
         if (source/name).read_bytes()!=(ROOT/name).read_bytes():raise SystemExit('PHP changed after build: '+name)
     if (source/'lib/assets/visualiser-catalogue.json').read_bytes()!=(ROOT/'assets/visualiser-catalogue.json').read_bytes():raise SystemExit('Visualiser catalogue changed after build')
+    sprite_root=ROOT/'assets/visualiser-sprites'
+    sprite_manifest=json.loads((sprite_root/'manifest.json').read_text('utf-8'))
+    if sprite_manifest.get('schema')!='framerudiments.sprite-atlas.v1':raise SystemExit('Unknown sprite atlas manifest')
+    sprite_files={'manifest.json','LICENSE','README.md'}
+    for theme,atlas in sprite_manifest['themes'].items():
+        name=atlas['file']
+        if not re.fullmatch(r'[a-z][a-z0-9-]*\.png',name):raise SystemExit('Invalid sprite atlas filename')
+        if digest((sprite_root/name).read_bytes())!=atlas['sha256'].upper():raise SystemExit('Pinned sprite atlas changed: '+theme)
+        sprite_files.add(name)
+    if {p.name for p in sprite_root.iterdir()}!=sprite_files:raise SystemExit('Unexpected or missing source sprite asset')
+    if {p.name for p in (source/'lib/assets/visualiser-sprites').iterdir()}!=sprite_files:raise SystemExit('Unexpected or missing built sprite asset')
+    for name in sorted(sprite_files):
+        if (source/'lib/assets/visualiser-sprites'/name).read_bytes()!=(sprite_root/name).read_bytes():raise SystemExit('Sprite assets changed after build: '+name)
     if any(p.is_symlink() for p in source.rglob('*')):raise SystemExit('Symlinks are not accepted in package staging')
     files=sorted(p for p in source.rglob('*') if p.is_file())
-    expected=['lib/wordpress.js','lib/admin.min.js','dance-moves-rudiments.php','dance-moves-spectrum.php','dance-moves-visualisers.php','lib/assets/visualiser-catalogue.json','lib/styles/visualisers.css','library-manifest.json']
+    expected=['lib/wordpress.js','lib/admin.min.js','dance-moves-rudiments.php','dance-moves-spectrum.php','dance-moves-visualisers.php','lib/assets/visualiser-catalogue.json','lib/styles/visualisers.css','library-manifest.json',
+      *['lib/assets/visualiser-sprites/'+name for name in sprite_files]]
     if any(not (source/p).is_file() for p in expected):raise SystemExit('WordPress build is incomplete')
     names=[p.relative_to(source).as_posix() for p in files]
     if any(any(part in {'node_modules','tests','examples','qa','tools','src','migration'} for part in Path(n).parts) for n in names):raise SystemExit('Development files entered the WordPress build')

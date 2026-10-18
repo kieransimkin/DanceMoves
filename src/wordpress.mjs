@@ -8,7 +8,8 @@ export function mountWordPress(host = window) {
   if (config.songCollectionEnabled === true) {
     const collectionRoot=host.document.querySelector('[data-dance-moves-song-collection]');
     if (!collectionRoot || !Array.isArray(config.songs) || !config.songs.length) return null;
-    const collection=createSongCollection({root:collectionRoot,songs:config.songs.map(song=>({...song,pageId:config.pageId})),mount:createDanceMoves,host});
+    const collection=createSongCollection({root:collectionRoot,songs:config.songs.map(song=>({...song,pageId:config.pageId,
+      visualiserAssetBaseUrl:config.visualiserAssetBaseUrl})),mount:createDanceMoves,host});
     host.__danceMovesMount=collection;
     return collection;
   }

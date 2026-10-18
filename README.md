@@ -2,11 +2,14 @@
 
 ## FrameRudiments visualisers for individual pages
 
-DanceMoves renders **164 self-contained FrameRudiments visualisers** through
-`runtime.visualisers`: **58 native movement views** and **106 calibrated spectral
+DanceMoves renders **all 222 FrameRudiments visualisers** through
+`runtime.visualisers`: **84 views accepting native movement** and **138 calibrated spectral
 views**. The catalogue includes particles, signed bars, paths, waveform and phase
 histories; spectrum traces, waterfalls and spectrograms; 60 circular variants;
-60 spectrum/spectrogram/waveform effects; and torus, sphere and terrain wireframes.
+60 spectrum/spectrogram/waveform effects; **52 sprite/atlas modes**; and torus,
+sphere and terrain in wire, **solid** and **music-aware** forms. The three music
+views additionally support calibrated spectral deformation; music terrain can
+use saved FFT history.
 The existing ten-mode `runtime.spectrum` API and its styles remain compatible.
 
 Movement views use one of the **15 existing native patterns** or selected axes of
@@ -22,14 +25,23 @@ request no recording. A configured `visualiserRecordingUrl` is fetched only when
 that page mounts a visualiser canvas. Old spectrum views and new visualisers in
 one mount share the same URL request and one native sample table. The last owner
 releases it; switching songs destroys the previous views and aborts pending loads.
-The packages contain reusable geometry and generic rudiments, with no song
+The packages contain reusable geometry, 17 original pinned sprite atlases and generic rudiments, with no song
 recordings, audio, model weights or example data. Prepack checks the complete
 `lib/` inventory and rejects stray files added after the build.
+
+**Sprite pixels also load on demand.** Set `visualiserAssetBaseUrl` to the hosted
+`lib/assets/visualiser-sprites/` directory for npm/browser use; WordPress supplies
+its plugin URL automatically. A sprite view fetches only its selected PNG,
+verifies the pinned SHA-256, shares a bounded decoded-image/cell cache with other
+views using that atlas, and releases it when its last owner leaves. Imports and
+non-sprite views fetch no atlas. Custom artwork is an explicit page-owned
+`style.sprite_asset: {url, sha256}` reference with a declared grid.
 
 In WordPress, use the Page editor's **Dance-rudiment visualiser** box to choose a saved
 recording **or** a native pattern, a renderer, and optional named axes. Insert
 `[dance_moves_visualiser]` beside the player inside the same content root. Each
-Multiple songs row has independent source/renderer/axis fields and creates its
+Multiple songs row has independent source/renderer/axis fields, sprite theme,
+music terrain source and spectral-deformation controls, and creates its
 canvas automatically when configured. The original **Dance-rudiment spectrum**
 box and `[dance_moves_spectrum]` continue to work.
 
@@ -58,18 +70,45 @@ await view.ready;
 // view.pause(), resume(), setEnabled(), refresh(), reset(), destroy()
 ```
 
+For an atlas view, configure its asset directory when creating the runtime:
+
+```js
+const sprites = createDanceMoves({
+  root: spriteRoot,
+  bpm: 120,
+  visualiserAssetBaseUrl: '/assets/visualiser-sprites/'
+});
+const orbit = sprites.visualisers.animate({
+  id: 'sprite-orbit', target: spriteCanvas,
+  rudiment: 'helix', renderer: 'sprite-motion-orbit',
+  style: {sprite_theme: 'generated-neon', sprite_size: 18, sprite_spin: 0.2}
+});
+await orbit.ready;
+// sprites.destroy() in this root's route/component cleanup.
+```
+
+The six filled spatial modes use a bounded CPU depth buffer, mesh materials,
+lighting and fog. `style.raster_size` defaults to 512 and caps the longest
+internal edge; unusually expensive geometry reduces that resolution
+deterministically. `snapshot().renderReport` identifies the CPU backend, actual
+raster size, mesh work and source rows. `backend: 'auto'` reports the CPU fallback;
+an explicit GPU request is rejected. Optional spectral music controls require at
+least three calibrated bands, with no new audio-analysis models or DSP dependency.
+
 Run `npm run build && npm run demo:visualisers` for the original synthetic gallery
-at <http://127.0.0.1:4195>. It exposes all 164 identifiers, supports view selection
-and removal, and loads its example recording only when a spectral view is added.
+at <http://127.0.0.1:4195>. It exposes all 222 identifiers, 17 sprite themes,
+movement/spectral music controls and view selection/removal. Its example
+recording and each selected atlas load only when needed.
 See [all visualisers, family styles and source rules](docs/rudiment-visualisers.md),
 the [gallery instructions](examples/visualisers/README.md), and the
 [compatible basic spectrum API](docs/spectrum-visualisations.md).
 
-This is the complete self-contained Canvas geometry subset of FrameRudiments at
-`c8d1c9a75630a88324e49a1446820392514092dd`. Its remaining 52 atlas-backed sprite modes,
-three solid and three music-spatial modes, and offline pixel postprocessing/style
-modulation are outside this port. The Canvas adaptations preserve renderer
-identifiers and sampled-input semantics; they are not pixel-identical Pillow renders.
+This covers the complete renderer catalogue from FrameRudiments at
+`c8d1c9a75630a88324e49a1446820392514092dd`, including its original atlas artwork and
+40 static sprite controls. The Canvas adaptations preserve renderer identifiers
+and sampled-input semantics. They do not promise pixel-identical Pillow output;
+the optional native OpenGL backend, GPU shadows, universal offline postprocessing
+and global style-modulation pipeline are outside this browser API.
 
 **3.3.0** adds source-bound beat alignment, connecting saved StemLab BPM/first-beat readings
 to the shared audio clock. WordPress's **EPK Timing** panel stores the reading
@@ -168,6 +207,9 @@ and separate Node server services. All frontend engines, CSS, admin behaviour
 and native DanceRudiments data have one canonical source in this repository.
 The WordPress archive consumes the generated library; it contains no parallel
 frontend implementation. PHP retains WordPress hooks, metadata and persistence.
+The [WordPress directory checks](docs/wordpress-org.md#visualiser-integration-checks)
+document the visualiser attachment and escaped-markup boundaries, local PHP
+regressions and the contextual warnings retained in the official Plugin Check gate.
 
 ```sh
 # Build this source checkout (Node 22.14+, npm, Python 3, PHP 8+ for tests).
@@ -207,7 +249,7 @@ from `@kieransimkin/dancemoves/server` (Node only; never bundle server secrets).
 | Guide | Contents |
 | --- | --- |
 | [JavaScript API](docs/javascript-api.md) | Existing timing/effects/native APIs, scoped mounts, lifecycle, metadata and phone input |
-| [Rudiment visualisers](docs/rudiment-visualisers.md) | 164 FrameRudiments views, native or page-owned recording sources, family styles, clocks and cleanup |
+| [Rudiment visualisers](docs/rudiment-visualisers.md) | All 222 FrameRudiments views, 17 lazy sprite atlases, solid/music meshes, page-owned sources, styles, clocks and cleanup |
 | [Spectrum visualisations](docs/spectrum-visualisations.md) | Compatible ten-mode spectrum API and calibration |
 | [React and Next.js](docs/react-next.md) | Hooks, components, SSR, Strict Mode, Arcadians demos and App Router routes |
 | [Node server API](docs/javascript-server.md) | Timing validation, signed MP3 delivery, authenticated private capture and storage adapters |

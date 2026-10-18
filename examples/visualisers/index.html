@@ -26,24 +26,27 @@
 </style>
 <main id="demo">
   <header><p class="eyebrow">DanceMoves / FrameRudiments</p><h1>Rudiments in motion</h1>
-  <p>Explore 164 views of native movement and recorded frequency bands. Add a view, press play, or seek to a position to inspect its sampled history.</p></header>
+  <p>Explore 222 views of native movement and recorded frequency bands, including sprite atlases, filled meshes and music-aware terrain. Add a view, press play, or seek to inspect its sampled history.</p></header>
   <section class="transport" aria-label="Synthetic demonstration audio">
     <audio id="audio" controls preload="metadata" src="/fixture.wav"></audio>
     <p>Original eight-second synthetic tone. The frequency-band fixture is hand-authored for this demo; it is not a measured analysis of the tone.</p>
   </section>
   <section class="controls" aria-label="Choose visualisers">
     <div class="fields">
-      <label>Catalogue family<select id="family"><option value="all">All 164 visualisers</option><option value="motion">Native movement</option><option value="spectrum">Spectrum</option><option value="spectrogram">Spectrogram</option><option value="spatial">Spatial wireframes</option></select></label>
+      <label>Catalogue family<select id="family"><option value="all">All 222 visualisers</option><option value="motion">Native movement</option><option value="spectrum">Spectrum</option><option value="spectrogram">Spectrogram</option><option value="spatial">All spatial views</option><option value="sprites">Sprite and atlas views</option><option value="solid">Solid meshes</option><option value="music">Music-aware meshes</option></select></label>
       <label>Visualiser<select id="renderer"></select></label>
       <label>Native pattern<select id="pattern"></select></label>
+      <label>Sprite theme<select id="theme"><option value="">Renderer default</option></select></label>
+      <label>Music response<select id="music-source"><option value="motion">Native motion</option><option value="deform">Calibrated spectral deformation</option><option value="fft">Recorded FFT terrain</option></select></label>
       <button class="primary" id="add" type="button">Add view</button>
     </div>
     <div class="presets" aria-label="Example groups">
       <button type="button" data-preset="motion">Motion paths</button><button type="button" data-preset="history">Spectral histories</button>
       <button type="button" data-preset="circular">Circular views</button><button type="button" data-preset="effects">Effect views</button>
-      <button type="button" data-preset="spatial">Spatial views</button><button type="button" id="clear">Clear views</button>
+      <button type="button" data-preset="spatial">Wire meshes</button><button type="button" data-preset="sprites">Sprite atlases</button>
+      <button type="button" data-preset="solid">Solid meshes</button><button type="button" data-preset="music">Music-aware meshes</button><button type="button" id="clear">Clear views</button>
     </div>
-    <p class="catalogue-info">58 movement views · 106 calibrated spectral views. Recorded data loads when its first view is added.</p>
+    <p class="catalogue-info">84 views accept native movement · 138 require calibrated bands. The three music-aware meshes also accept optional spectral controls. Each recording or sprite atlas loads when its first view is added.</p>
   </section>
   <p id="notice" role="status" aria-live="polite"></p>
   <section id="grid" aria-label="Visualiser gallery"></section>

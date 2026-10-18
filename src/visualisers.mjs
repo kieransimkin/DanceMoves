@@ -1,9 +1,11 @@
 /** Native motion and calibrated spectral Canvas views, scoped to one page mount. */
 import {VISUALISER_CATALOGUE, VISUALISER_RENDERERS, describeVisualiser} from './visualiser-catalogue.mjs';
-import {validateVisualiserStyle, drawVisualiser} from './visualiser-drawing.mjs';
+import {validateVisualiserStyle, drawVisualiser, visualiserNeedsSpectrum} from './visualiser-drawing.mjs';
 import {validateSpectrumBands, validateSpectrumStyle, analyseSpectrum} from './spectrum-analysis.mjs';
 import {createVisualiserResources, createCanvasSurface, cachedSample, freezeSpectrumReport, playbackIdentity} from './visualiser-resources.mjs';
 import {numberStyle} from './visualiser-helpers.mjs';
+import {createSpriteResources, resolveSpriteAtlas} from './visualiser-sprite-resources.mjs';
+import {createSpatialSurface} from './visualiser-solid.mjs';
 
 const neutralReasons = new Set(['disabled', 'reduced-motion', 'forced-colors']);
 const heldReasons = new Set(['hidden','offscreen','paused','seeking']);
@@ -37,6 +39,7 @@ function historyWindow(data, pip, indexes, historyPips, historyStride, recording
 export function createVisualiserService(scope, runtime, config, resources = createVisualiserResources(scope, runtime)) {
   const handles = new Map(), patterns = new Map();
   const host = scope.root.ownerDocument.defaultView;
+  const spriteResources = createSpriteResources(scope);
   function acquirePattern(name, row) {
     let entry = patterns.get(name);
     if (!entry) {
@@ -62,12 +65,15 @@ export function createVisualiserService(scope, runtime, config, resources = crea
     const renderer = options.renderer ?? 'waveform', view = describeVisualiser(renderer);
     if (!view) throw new RangeError('Unknown visualiser renderer');
     const style = validateVisualiserStyle(renderer, options.style);
+    const needsSpectrum = visualiserNeedsSpectrum(renderer, style);
+    const minimumDimensions = needsSpectrum && view.styleFamily === 'music' ? 3 : view.minDimensions;
+    const atlasDescriptor = view.requiresAtlas ? resolveSpriteAtlas(style, config.visualiserAssetBaseUrl, host.location.href) : null;
     if ([options.rudiment, options.recordingUrl, options.recording].filter(value => value !== undefined).length !== 1) throw new TypeError('Supply exactly one rudiment, recordingUrl or recording');
     const isRecording = options.rudiment === undefined;
     const rudiment = isRecording ? null : options.rudiment;
     const row = isRecording ? null : runtime.rudiments.describe(rudiment);
     if (!isRecording && !row) throw new RangeError('Unknown native rudiment');
-    if (!isRecording && view.requiresSpectrum) throw new TypeError('Spectral visualisers require a calibrated Fourier recording');
+    if (!isRecording && needsSpectrum) throw new TypeError('Spectral visualisers require a calibrated Fourier recording');
     if (isRecording) for (const key of ['clock','bpm','rate','phasePips','resetOnCue']) if (Object.hasOwn(options, key)) throw new TypeError('Recording clock, rate and origin come from its capture');
     if (Object.hasOwn(options, 'bpm')) throw new TypeError('Generic pattern BPM comes from the DanceMoves page clock');
     const audio = typeof options.audio === 'string' ? resources.resolveElement(options.audio, 'Visualiser player') : options.audio;
@@ -86,7 +92,7 @@ export function createVisualiserService(scope, runtime, config, resources = crea
     if (options.axes !== undefined && (!Array.isArray(options.axes) || !options.axes.length || options.axes.length > 64 ||
       options.axes.some(axis => typeof axis !== 'string' && (!Number.isInteger(axis) || axis < 0 || axis > 63)))) throw new TypeError('axes must contain 1..64 dimension names or indexes');
     const axes = options.axes === undefined ? undefined : [...options.axes];
-    if (row) selectedAxes(['x','y','z'].slice(0, row.dimensions), axes, view.minDimensions);
+    if (row) selectedAxes(['x','y','z'].slice(0, row.dimensions), axes, minimumDimensions);
     const url = options.recordingUrl === undefined ? null : resources.recordingUrl(options.recordingUrl);
     const source = audio ? runtime.playbackSource(audio) : null, initialSource = playbackIdentity(source);
     const target = resources.resolveElement(options.target, 'Visualiser canvas');
@@ -99,16 +105,21 @@ export function createVisualiserService(scope, runtime, config, resources = crea
     let onFrame = options.onFrame;
     const offscreen = options.offscreen !== false;
     let destroyed = false, inner = null, activeData = null, acquired = null, bands = null, indexes = null, dimensions = null;
+    let acquiredAtlas = null, spriteBank = null, spatialSurface = null;
     let enabled = options.enabled !== false, paused = false, status = 'loading', error = null, last = null, drawn = '';
     const surface = createCanvasSurface(scope, target, context, {type: 'visualiser', label: view.label, pixelRatio,
       refresh() {drawn = '';inner?.refresh();}});
     function state(reason) {status = reason;surface.state(reason);}
     function clear(reason, pip = null, sourceSeconds = null) {
       state(reason);surface.clear();drawn = '';
-      last = Object.freeze({id, renderer, rudiment, pip, sourceSeconds, reason, dimensions, values: null, historyLength: 0, report: null});
+      last = Object.freeze({id, renderer, rudiment, pip, sourceSeconds, reason, dimensions, values: null, historyLength: 0, report: null, renderReport: null});
       onFrame?.(last);
     }
-    function release() {acquired?.release();acquired = null;activeData = null;bands = null;indexes = null;dimensions = null;onFrame = null;}
+    function release() {
+      acquired?.release();acquired = null;activeData = null;bands = null;indexes = null;dimensions = null;onFrame = null;
+      acquiredAtlas?.release();acquiredAtlas = null;spriteBank = null;
+      spatialSurface?.destroy();spatialSurface = null;
+    }
     function destroy() {
       if (destroyed) return;destroyed = true;inner?.destroy();inner = null;release();last = null;
       surface.destroy();status = 'destroyed';handles.delete(id);resources.releaseCanvas(target);
@@ -131,22 +142,25 @@ export function createVisualiserService(scope, runtime, config, resources = crea
           error: error || native?.error || null, destroyed, enabled, paused, clock, rate: isRecording ? null : rate,
           pip: last?.pip ?? null, sourceSeconds: last?.sourceSeconds ?? null, dimensions: dimensions || [],
           values: last?.values ?? null, historyLength: last?.historyLength ?? 0, report: last?.report ?? null,
+          renderReport: last?.renderReport ?? null,
           historyPips, historyStride, canvasWidth: target.width, canvasHeight: target.height};
       }
     };
     handles.set(id, handle);resources.claimCanvas(target, handle);
     acquired = url ? resources.acquire(url) : isRecording ? null : acquirePattern(rudiment, row);
-    handle.ready = (acquired?.promise || resources.prepare(options.recording)).then(data => {
+    acquiredAtlas = atlasDescriptor ? spriteResources.acquire(atlasDescriptor) : null;
+    handle.ready = Promise.all([acquired?.promise || resources.prepare(options.recording), acquiredAtlas?.promise || null]).then(([data, atlas]) => {
       if (destroyed || scope.disposed) return handle;
-      activeData = data;indexes = selectedAxes(data.sampler.dimensions, axes, view.minDimensions);
+      activeData = data;spriteBank = atlas;indexes = selectedAxes(data.sampler.dimensions, axes, minimumDimensions);
+      if (['solid', 'music'].includes(view.styleFamily)) spatialSurface = createSpatialSurface(() => host.document.createElement('canvas'));
       dimensions = Object.freeze(indexes.map(index => data.sampler.dimensions[index]));
-      bands = view.requiresSpectrum ? validateSpectrumBands(data.recording, indexes) : null;
-      const analysisStyle = view.requiresSpectrum ? view.styleFamily === 'spectrum' ? style :
-        validateSpectrumStyle({floor_db: style.floor_db, ceiling_db: style.ceiling_db}) : null;
+      bands = needsSpectrum ? validateSpectrumBands(data.recording, indexes) : null;
+      const analysisStyle = needsSpectrum ? view.styleFamily === 'spectrum' ? style :
+        validateSpectrumStyle({floor_db: style.fft_floor_db ?? style.floor_db, ceiling_db: style.ceiling_db ?? 0}) : null;
       const analysisKey = analysisStyle ? JSON.stringify(analysisStyle) : '';
       // The dimension-map callback captures this lexical slot. Clear it before
       // installing a retained driver so activeData is the only table owner here.
-      data = null;
+      data = null;atlas = null;
       // The existing native driver owns RAF, audio seeks, page/auto clocks,
       // visibility, preferences, cue resets and phase/rate for generic patterns.
       inner = runtime.rudiments.animate({id, target, root: target, audio, clock, rudiment: rudiment || 'circle',
@@ -162,7 +176,8 @@ export function createVisualiserService(scope, runtime, config, resources = crea
             if (!Number.isFinite(seconds) || !Number.isSafeInteger(pip) ||
                 isRecording && (pip < capture.clock.start_pip || pip >= capture.clock.start_pip + capture.count)) return clear('outside-recording', pip, seconds);
             state(frame.reason);
-            const key = `${pip}:${surface.revision}:${view.styleFamily === 'wire' ? seconds : ''}`;
+            const spriteFrame = Math.floor(seconds * 60 + 1e-8);
+            const key = `${pip}:${surface.revision}:${['wire', 'solid', 'music'].includes(view.styleFamily) ? seconds : view.requiresAtlas ? spriteFrame : ''}`;
             if (drawn === key) return;
             const window = historyWindow(activeData, pip, indexes, view.usesHistory ? historyPips : 1, historyStride, isRecording);
             const values = window.history.at(-1).values;
@@ -176,11 +191,12 @@ export function createVisualiserService(scope, runtime, config, resources = crea
                 if (activeData.reports.size > 32) activeData.reports.delete(activeData.reports.keys().next().value);
               }
             }
-            drawVisualiser(context, surface.width, surface.height, {values, dimensions, history: window.history,
-              pip, sourceSeconds: seconds, historySpanPips: Math.max(1, (historyPips - 1) * historyStride), bands, report}, renderer, style);
+            const renderReport = drawVisualiser(context, surface.width, surface.height, {values, dimensions, history: window.history,
+              pip, sourceSeconds: seconds, spriteFrame, assets: {sprite: spriteBank, spatial: spatialSurface},
+              historySpanPips: Math.max(1, (historyPips - 1) * historyStride), bands, report}, renderer, style) || null;
             drawn = key;
             last = Object.freeze({id, renderer, rudiment, pip, sourceSeconds: seconds, reason: frame.reason,
-              dimensions, values, historyLength: window.history.length, report});
+              dimensions, values, historyLength: window.history.length, report, renderReport});
             onFrame?.(last);
           } catch (failure) {fail(failure);throw failure;}
         }});
@@ -203,9 +219,13 @@ export function createVisualiserService(scope, runtime, config, resources = crea
       try {
         const audioSelector = target.getAttribute('data-dance-moves-visualiser-audio');
         const audio = audioSelector ? resources.resolveElement(audioSelector, 'Visualiser player') : scope.root.querySelector('audio[data-dance-moves-master]') || scope.root.querySelector('audio,video');
+        const view = describeVisualiser(renderer);
+        const style = view?.styleFamily === 'sprites' && config.visualiserSpriteTheme ? {sprite_theme: config.visualiserSpriteTheme} :
+          view?.styleFamily === 'music' ? {spectral_deform: config.visualiserSpectralDeform === true,
+            ...(renderer === 'spatial-music-terrain' ? {terrain_source: config.visualiserTerrainSource ?? 'procedural'} : {})} : undefined;
         return animate({id, target, audio: audio || undefined,
           ...(config.visualiserRecordingUrl ? {recordingUrl: config.visualiserRecordingUrl} : {rudiment: config.visualiserRudiment}),
-          ...(config.visualiserAxes?.length ? {axes: config.visualiserAxes} : {}), renderer});
+          ...(config.visualiserAxes?.length ? {axes: config.visualiserAxes} : {}), renderer, style});
       } catch (failure) {
         // A malformed declarative canvas must not tear down the song player or
         // other correctly configured views. Readiness still reports the error.
@@ -215,7 +235,7 @@ export function createVisualiserService(scope, runtime, config, resources = crea
           snapshot: () => ({id, type: 'visualiser', renderer, rudiment: config.visualiserRudiment || null,
             recordingUrl: config.visualiserRecordingUrl || null, status: destroyed ? 'destroyed' : 'error', error: String(failure.message || failure),
             destroyed, enabled: false, paused: false, clock: config.visualiserRecordingUrl ? 'audio' : 'page', rate: null,
-            pip: null, sourceSeconds: null, dimensions: [], values: null, historyLength: 0, report: null,
+            pip: null, sourceSeconds: null, dimensions: [], values: null, historyLength: 0, report: null, renderReport: null,
             historyPips: 256, historyStride: 1, canvasWidth: target.width, canvasHeight: target.height}),
           destroy() {if (destroyed) return;destroyed = true;surface?.destroy();surface = null;if (claimed) resources.releaseCanvas(target);handles.delete(id);}
         };
@@ -238,5 +258,5 @@ export function createVisualiserService(scope, runtime, config, resources = crea
   scope.onDispose(destroyAll);
   return Object.freeze({animate, mountPage, catalogue: () => VISUALISER_CATALOGUE, describe: describeVisualiser,
     get: id => handles.get(id) || null, destroyAll,
-    snapshot: () => ({renderers: VISUALISER_RENDERERS, sources: resources.sourceCount(), patterns: patterns.size, instances: [...handles.values()].map(handle => handle.snapshot())})});
+    snapshot: () => ({renderers: VISUALISER_RENDERERS, sources: resources.sourceCount(), patterns: patterns.size, atlases: spriteResources.count(), instances: [...handles.values()].map(handle => handle.snapshot())})});
 }

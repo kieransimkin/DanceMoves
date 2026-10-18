@@ -1,6 +1,9 @@
 /** Normalize wp_localize_script's scalar-string wire format; no effect logic. */
 export function readWordPressConfig(input = {}) {
   const out = {...input};
+  const spectralDeform = value => [true, 1, '1'].includes(value) ? true :
+    [false, 0, '0', '', null, undefined].includes(value) ? false : value;
+  out.visualiserSpectralDeform = spectralDeform(out.visualiserSpectralDeform);
   if (out.beatAlignment) {
     out.beatAlignment={...out.beatAlignment};
     for (const key of ['bpm','first_beat_seconds','offset_pips','pips_per_beat','canonical_first_beat_pip']) out.beatAlignment[key]=Number(out.beatAlignment[key]);
@@ -20,6 +23,7 @@ export function readWordPressConfig(input = {}) {
   if (Array.isArray(out.songs)) {
     out.songs=out.songs.map(song=>{
       const row={...song};
+      row.visualiserSpectralDeform=spectralDeform(row.visualiserSpectralDeform);
       for(const field of ['bpm','pageId','masterDurationMilliseconds'])if(row[field]!==undefined&&row[field]!==null)row[field]=Number(row[field]);
       for(const field of ['beatAlignment','beatTimeline'])if(row[field]){
         const nested=readWordPressConfig({[field]:row[field]});

@@ -6,6 +6,9 @@ define('DANCE_MOVES_META_VISUALISER_RECORDING', '_dance_moves_visualiser_recordi
 define('DANCE_MOVES_META_VISUALISER_RENDERER', '_dance_moves_visualiser_renderer');
 define('DANCE_MOVES_META_VISUALISER_RUDIMENT', '_dance_moves_visualiser_rudiment');
 define('DANCE_MOVES_META_VISUALISER_AXES', '_dance_moves_visualiser_axes');
+define('DANCE_MOVES_META_VISUALISER_SPRITE_THEME', '_dance_moves_visualiser_sprite_theme');
+define('DANCE_MOVES_META_VISUALISER_TERRAIN_SOURCE', '_dance_moves_visualiser_terrain_source');
+define('DANCE_MOVES_META_VISUALISER_SPECTRAL_DEFORM', '_dance_moves_visualiser_spectral_deform');
 
 /** This small, trusted catalogue is build metadata; it contains no recording samples. */
 function dance_moves_visualiser_catalogue() {
@@ -31,6 +34,25 @@ function dance_moves_visualiser_renderers() {
     foreach (dance_moves_visualiser_catalogue() as $name=>$row) $renderers[$name]=$row['label'];
     return $renderers;
 }
+/** Read only the small bundled theme manifest. The browser owns lazy image loading. */
+function dance_moves_visualiser_sprite_themes() {
+    static $themes=null;
+    if ($themes!==null) return $themes;
+    $themes=array();
+    $file=__DIR__.'/assets/visualiser-sprites/manifest.json';
+    if (!is_file($file)) $file=__DIR__.'/lib/assets/visualiser-sprites/manifest.json';
+    if (!is_readable($file) || filesize($file)>65536) return $themes;
+    $manifest=json_decode(file_get_contents($file),true,8);
+    if (!is_array($manifest) || ($manifest['schema'] ?? '')!=='framerudiments.sprite-atlas.v1' ||
+        !is_array($manifest['themes'] ?? null) || count($manifest['themes'])>64) return $themes;
+    foreach ($manifest['themes'] as $name=>$entry) {
+        if (!is_string($name) || !preg_match('/^[a-z][a-z0-9-]{0,63}$/D',$name) || !is_array($entry) ||
+            ($entry['file'] ?? '')!==$name.'.png' || !is_string($entry['sha256'] ?? null) ||
+            !preg_match('/^[a-f0-9]{64}$/D',$entry['sha256'])) continue;
+        $themes[$name]=ucwords(str_replace('-',' ',$name));
+    }
+    return $themes;
+}
 /** Match the existing selected native package; do not introduce a second pattern catalogue. */
 function dance_moves_visualiser_rudiments() {
     static $rudiments=null;
@@ -51,6 +73,15 @@ function dance_moves_sanitize_visualiser_renderer($value) {
 }
 function dance_moves_sanitize_visualiser_rudiment($value) {
     return is_string($value) && isset(dance_moves_visualiser_rudiments()[$value]) ? $value : '';
+}
+function dance_moves_sanitize_visualiser_sprite_theme($value) {
+    return is_string($value) && isset(dance_moves_visualiser_sprite_themes()[$value]) ? $value : '';
+}
+function dance_moves_sanitize_visualiser_terrain_source($value) {
+    return $value==='fft' ? 'fft' : 'procedural';
+}
+function dance_moves_sanitize_visualiser_spectral_deform($value) {
+    return in_array($value,array(true,1,'1'),true);
 }
 /** The editor accepts a comma list; REST and saved configuration use an ordered array. */
 function dance_moves_validate_visualiser_axes($value) {
@@ -73,7 +104,8 @@ function dance_moves_sanitize_visualiser_axes($value) {
     return is_wp_error($axes) ? array() : $axes;
 }
 /** Validate references, not large JSON payloads. The browser validates actual dimensions and samples. */
-function dance_moves_validate_visualiser_options($recording_id=0,$renderer='waveform',$rudiment='',$axes=array(),$check_attachment=true) {
+function dance_moves_validate_visualiser_options($recording_id=0,$renderer='waveform',$rudiment='',$axes=array(),$check_attachment=true,
+    $sprite_theme='',$terrain_source='procedural',$spectral_deform=false) {
     if (!dance_moves_spectrum_valid_id($recording_id))
         return new WP_Error('dance_moves_visualiser_id','Choose a Media Library visualiser recording attachment.');
     $catalogue=dance_moves_visualiser_catalogue();
@@ -83,7 +115,16 @@ function dance_moves_validate_visualiser_options($recording_id=0,$renderer='wave
         return new WP_Error('dance_moves_visualiser_rudiment','Choose a supported bundled rudiment.');
     if (absint($recording_id) && $rudiment!=='')
         return new WP_Error('dance_moves_visualiser_source','Choose one visualiser source: a recording attachment or a bundled rudiment. Clear the other source before saving.');
-    if ($rudiment!=='' && $catalogue[$renderer]['requiresSpectrum'])
+    if (!is_string($sprite_theme) || ($sprite_theme!=='' && !isset(dance_moves_visualiser_sprite_themes()[$sprite_theme])))
+        return new WP_Error('dance_moves_visualiser_sprite_theme','Choose a bundled sprite theme or the renderer default.');
+    if (!in_array($terrain_source,array('procedural','fft'),true) || ($terrain_source==='fft' && $renderer!=='spatial-music-terrain'))
+        return new WP_Error('dance_moves_visualiser_terrain_source','Saved spectrum terrain applies only to the Music terrain renderer.');
+    if (!in_array($spectral_deform,array(false,true,0,1,'','0','1'),true))
+        return new WP_Error('dance_moves_visualiser_spectral_deform','Spectral deformation must be enabled or disabled.');
+    $spectral_deform=dance_moves_sanitize_visualiser_spectral_deform($spectral_deform);
+    if ($spectral_deform && $catalogue[$renderer]['styleFamily']!=='music')
+        return new WP_Error('dance_moves_visualiser_spectral_deform','Spectral deformation applies only to Music torus, Music sphere or Music terrain.');
+    if ($rudiment!=='' && ($catalogue[$renderer]['requiresSpectrum'] || $terrain_source==='fft' || $spectral_deform))
         return new WP_Error('dance_moves_visualiser_spectrum','This renderer needs a calibrated Fourier recording. Choose a motion renderer for a bundled rudiment.');
     $axes=dance_moves_validate_visualiser_axes($axes);
     if (is_wp_error($axes)) return $axes;
@@ -93,15 +134,21 @@ function dance_moves_validate_visualiser_options($recording_id=0,$renderer='wave
             str_replace(array('spectrum','Spectrum'),array('visualiser','Visualiser'),$valid->get_error_message()));
     }
     return array('visualiser_recording_id'=>absint($recording_id),'visualiser_renderer'=>$renderer,
-        'visualiser_rudiment'=>$rudiment,'visualiser_axes'=>$axes);
+        'visualiser_rudiment'=>$rudiment,'visualiser_axes'=>$axes,'visualiser_sprite_theme'=>$sprite_theme,
+        'visualiser_terrain_source'=>$terrain_source,'visualiser_spectral_deform'=>$spectral_deform);
 }
-function dance_moves_visualiser_config($recording_id=0,$renderer='waveform',$rudiment='',$axes=array()) {
-    $config=array('visualiserRecordingUrl'=>'','visualiserRenderer'=>'waveform','visualiserRudiment'=>'','visualiserAxes'=>array());
-    $valid=dance_moves_validate_visualiser_options($recording_id,$renderer,$rudiment,$axes,false);
+function dance_moves_visualiser_config($recording_id=0,$renderer='waveform',$rudiment='',$axes=array(),
+    $sprite_theme='',$terrain_source='procedural',$spectral_deform=false) {
+    $config=array('visualiserRecordingUrl'=>'','visualiserRenderer'=>'waveform','visualiserRudiment'=>'','visualiserAxes'=>array(),
+        'visualiserSpriteTheme'=>'','visualiserTerrainSource'=>'procedural','visualiserSpectralDeform'=>false);
+    $valid=dance_moves_validate_visualiser_options($recording_id,$renderer,$rudiment,$axes,false,$sprite_theme,$terrain_source,$spectral_deform);
     if (is_wp_error($valid)) return $config;
     $config['visualiserRenderer']=$valid['visualiser_renderer'];
     $config['visualiserRudiment']=$valid['visualiser_rudiment'];
     $config['visualiserAxes']=$valid['visualiser_axes'];
+    $config['visualiserSpriteTheme']=$valid['visualiser_sprite_theme'];
+    $config['visualiserTerrainSource']=$valid['visualiser_terrain_source'];
+    $config['visualiserSpectralDeform']=$valid['visualiser_spectral_deform'];
     // Removing an optional recording must not disable the Page's audio or other effects.
     if ($valid['visualiser_recording_id'] && !is_wp_error(dance_moves_validate_spectrum_attachment($valid['visualiser_recording_id'])))
         $config['visualiserRecordingUrl']=dance_moves_attachment_url($valid['visualiser_recording_id']);
@@ -111,11 +158,15 @@ function dance_moves_visualiser_page_config($page_id) {
     return dance_moves_visualiser_config(get_post_meta($page_id,DANCE_MOVES_META_VISUALISER_RECORDING,true),
         get_post_meta($page_id,DANCE_MOVES_META_VISUALISER_RENDERER,true) ?: 'waveform',
         get_post_meta($page_id,DANCE_MOVES_META_VISUALISER_RUDIMENT,true),
-        get_post_meta($page_id,DANCE_MOVES_META_VISUALISER_AXES,true));
+        get_post_meta($page_id,DANCE_MOVES_META_VISUALISER_AXES,true),
+        get_post_meta($page_id,DANCE_MOVES_META_VISUALISER_SPRITE_THEME,true),
+        get_post_meta($page_id,DANCE_MOVES_META_VISUALISER_TERRAIN_SOURCE,true) ?: 'procedural',
+        get_post_meta($page_id,DANCE_MOVES_META_VISUALISER_SPECTRAL_DEFORM,true));
 }
 function dance_moves_visualiser_meta_keys() {
     return array(DANCE_MOVES_META_VISUALISER_RECORDING,DANCE_MOVES_META_VISUALISER_RENDERER,
-        DANCE_MOVES_META_VISUALISER_RUDIMENT,DANCE_MOVES_META_VISUALISER_AXES);
+        DANCE_MOVES_META_VISUALISER_RUDIMENT,DANCE_MOVES_META_VISUALISER_AXES,DANCE_MOVES_META_VISUALISER_SPRITE_THEME,
+        DANCE_MOVES_META_VISUALISER_TERRAIN_SOURCE,DANCE_MOVES_META_VISUALISER_SPECTRAL_DEFORM);
 }
 function dance_moves_register_visualiser_meta() {
     $common=array('single'=>true,'auth_callback'=>'dance_moves_meta_auth','revisions_enabled'=>true);
@@ -131,6 +182,14 @@ function dance_moves_register_visualiser_meta() {
         'type'=>'array','default'=>array(),'sanitize_callback'=>'dance_moves_sanitize_visualiser_axes',
         'show_in_rest'=>array('schema'=>array('type'=>'array','maxItems'=>64,'uniqueItems'=>true,
             'items'=>array('type'=>'string','pattern'=>'^[a-z][a-z0-9_]{0,127}$','maxLength'=>128))))));
+    register_post_meta('page',DANCE_MOVES_META_VISUALISER_SPRITE_THEME,array_merge($common,array(
+        'type'=>'string','default'=>'','sanitize_callback'=>'dance_moves_sanitize_visualiser_sprite_theme',
+        'show_in_rest'=>array('schema'=>array('type'=>'string','enum'=>array_merge(array(''),array_keys(dance_moves_visualiser_sprite_themes())))))));
+    register_post_meta('page',DANCE_MOVES_META_VISUALISER_TERRAIN_SOURCE,array_merge($common,array(
+        'type'=>'string','default'=>'procedural','sanitize_callback'=>'dance_moves_sanitize_visualiser_terrain_source',
+        'show_in_rest'=>array('schema'=>array('type'=>'string','enum'=>array('procedural','fft'))))));
+    register_post_meta('page',DANCE_MOVES_META_VISUALISER_SPECTRAL_DEFORM,array_merge($common,array(
+        'type'=>'boolean','default'=>false,'sanitize_callback'=>'dance_moves_sanitize_visualiser_spectral_deform','show_in_rest'=>true)));
 }
 add_action('init','dance_moves_register_visualiser_meta');
 function dance_moves_visualiser_revision_meta_keys($keys) {
@@ -144,9 +203,12 @@ function dance_moves_visualiser_rest_guard($prepared,$request) {
     $page_id=absint($request->get_param('id') ?: ($prepared->ID ?? 0));
     $values=array();
     foreach (dance_moves_visualiser_meta_keys() as $key)
-        $values[]=array_key_exists($key,$meta) ? $meta[$key] : get_post_meta($page_id,$key,true);
-    if (!array_key_exists(DANCE_MOVES_META_VISUALISER_RENDERER,$meta) && $values[1]==='') $values[1]='waveform';
-    $valid=dance_moves_validate_visualiser_options(...$values);
+        $values[$key]=array_key_exists($key,$meta) ? $meta[$key] : get_post_meta($page_id,$key,true);
+    foreach (array(DANCE_MOVES_META_VISUALISER_RENDERER=>'waveform',DANCE_MOVES_META_VISUALISER_TERRAIN_SOURCE=>'procedural') as $key=>$default)
+        if (!array_key_exists($key,$meta) && $values[$key]==='') $values[$key]=$default;
+    $valid=dance_moves_validate_visualiser_options($values[DANCE_MOVES_META_VISUALISER_RECORDING],$values[DANCE_MOVES_META_VISUALISER_RENDERER],
+        $values[DANCE_MOVES_META_VISUALISER_RUDIMENT],$values[DANCE_MOVES_META_VISUALISER_AXES],true,
+        $values[DANCE_MOVES_META_VISUALISER_SPRITE_THEME],$values[DANCE_MOVES_META_VISUALISER_TERRAIN_SOURCE],$values[DANCE_MOVES_META_VISUALISER_SPECTRAL_DEFORM]);
     if (is_wp_error($valid)) { $valid->add_data(array('status'=>400)); return $valid; }
     return $prepared;
 }
@@ -175,6 +237,23 @@ function dance_moves_visualiser_axes_field($name,$axes) {
         esc_attr(implode(', ',dance_moves_sanitize_visualiser_axes($axes))).'" maxlength="8255" placeholder="x, y"></label></p>';
     echo '<p class="description">Leave axes empty to use all dimensions. Choose up to 64 unique dimension names from the recording; bundled rudiments use x, y and z where available. Path views need at least two dimensions.</p>';
 }
+function dance_moves_visualiser_sprite_theme_field($name,$theme) {
+    echo '<p><label>Sprite theme <select name="'.esc_attr($name).'"><option value="">Renderer default</option>';
+    foreach (dance_moves_visualiser_sprite_themes() as $value=>$label)
+        echo '<option value="'.esc_attr($value).'"'.selected($theme,$value,false).'>'.esc_html($label).'</option>';
+    echo '</select></label></p><p class="description">Used by sprite styles. Other styles retain this choice for later.</p>';
+}
+function dance_moves_visualiser_terrain_source_field($name,$source) {
+    echo '<p><label>Music terrain source <select name="'.esc_attr($name).'">';
+    echo '<option value="procedural"'.selected($source,'procedural',false).'>Procedural</option>';
+    echo '<option value="fft"'.selected($source,'fft',false).'>Saved spectrum (FFT)</option></select></label></p>';
+    echo '<p class="description">Saved spectrum applies only to Music terrain and requires a calibrated Fourier recording.</p>';
+}
+function dance_moves_visualiser_spectral_deform_field($name,$enabled) {
+    echo '<p><label><input type="checkbox" name="'.esc_attr($name).'" value="1"'.
+        checked(dance_moves_sanitize_visualiser_spectral_deform($enabled),true,false).'> Use saved spectrum for music deformation</label></p>';
+    echo '<p class="description">Applies to Music torus, Music sphere and Music terrain. Requires a calibrated Fourier recording.</p>';
+}
 function dance_moves_visualiser_meta_box($post) {
     wp_nonce_field('dance_moves_save_visualiser','dance_moves_visualiser_nonce');
     dance_moves_file_field($post->ID,'Visualiser recording (.json)','dance_moves_visualiser_recording_id',DANCE_MOVES_META_VISUALISER_RECORDING,array('json'));
@@ -182,6 +261,10 @@ function dance_moves_visualiser_meta_box($post) {
     dance_moves_visualiser_renderer_field('dance_moves_visualiser_renderer',
         dance_moves_sanitize_visualiser_renderer(get_post_meta($post->ID,DANCE_MOVES_META_VISUALISER_RENDERER,true)));
     dance_moves_visualiser_axes_field('dance_moves_visualiser_axes',get_post_meta($post->ID,DANCE_MOVES_META_VISUALISER_AXES,true));
+    dance_moves_visualiser_sprite_theme_field('dance_moves_visualiser_sprite_theme',get_post_meta($post->ID,DANCE_MOVES_META_VISUALISER_SPRITE_THEME,true));
+    dance_moves_visualiser_terrain_source_field('dance_moves_visualiser_terrain_source',
+        get_post_meta($post->ID,DANCE_MOVES_META_VISUALISER_TERRAIN_SOURCE,true) ?: 'procedural');
+    dance_moves_visualiser_spectral_deform_field('dance_moves_visualiser_spectral_deform',get_post_meta($post->ID,DANCE_MOVES_META_VISUALISER_SPECTRAL_DEFORM,true));
     echo '<p class="description">Choose one source: a saved DanceRudiments recording (up to 64 MiB) or a bundled rudiment. Clear the other source to switch. Spectrum and spectrogram views require a StemLab Fourier recording.</p>';
     echo '<p class="description">Add <code>[dance_moves_visualiser]</code> inside the same DanceMoves content root as its audio player. A recording requires audio; a bundled rudiment can also animate on a page without audio. For Multiple songs, configure each Song collection row instead.</p>';
 }
@@ -195,13 +278,17 @@ function dance_moves_save_visualiser_meta($post_id) {
         (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) || !current_user_can('edit_post',$post_id)) return;
     $valid=dance_moves_validate_visualiser_options(wp_unslash($_POST['dance_moves_visualiser_recording_id'] ?? 0),
         wp_unslash($_POST['dance_moves_visualiser_renderer'] ?? 'waveform'),
-        wp_unslash($_POST['dance_moves_visualiser_rudiment'] ?? ''),wp_unslash($_POST['dance_moves_visualiser_axes'] ?? ''));
+        wp_unslash($_POST['dance_moves_visualiser_rudiment'] ?? ''),wp_unslash($_POST['dance_moves_visualiser_axes'] ?? ''),true,
+        wp_unslash($_POST['dance_moves_visualiser_sprite_theme'] ?? ''),wp_unslash($_POST['dance_moves_visualiser_terrain_source'] ?? 'procedural'),
+        wp_unslash($_POST['dance_moves_visualiser_spectral_deform'] ?? false));
     if (is_wp_error($valid)) {
         dance_moves_queue_admin_error($valid->get_error_message().' The previous visualiser selection was preserved.');
         return;
     }
     foreach (array(DANCE_MOVES_META_VISUALISER_RECORDING=>'visualiser_recording_id',DANCE_MOVES_META_VISUALISER_RENDERER=>'visualiser_renderer',
-        DANCE_MOVES_META_VISUALISER_RUDIMENT=>'visualiser_rudiment',DANCE_MOVES_META_VISUALISER_AXES=>'visualiser_axes') as $key=>$field) {
+        DANCE_MOVES_META_VISUALISER_RUDIMENT=>'visualiser_rudiment',DANCE_MOVES_META_VISUALISER_AXES=>'visualiser_axes',
+        DANCE_MOVES_META_VISUALISER_SPRITE_THEME=>'visualiser_sprite_theme',DANCE_MOVES_META_VISUALISER_TERRAIN_SOURCE=>'visualiser_terrain_source',
+        DANCE_MOVES_META_VISUALISER_SPECTRAL_DEFORM=>'visualiser_spectral_deform') as $key=>$field) {
         if ($valid[$field]) update_post_meta($post_id,$key,$valid[$field]);
         else delete_post_meta($post_id,$key);
     }

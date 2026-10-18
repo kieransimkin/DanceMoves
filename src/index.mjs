@@ -11,6 +11,7 @@ import {createVisualiserResources} from './visualiser-resources.mjs';
 import {createVisualiserService} from './visualisers.mjs';
 export {SPECTRUM_RENDERERS} from './spectrum-analysis.mjs';
 export {VISUALISER_CATALOGUE, VISUALISER_RENDERERS, VISUALISER_RUDIMENTS} from './visualiser-catalogue.mjs';
+export {SPRITE_THEMES, SPRITE_ATLASES} from './visualiser-sprite-catalogue.mjs';
 export {validateVisualiserStyle} from './visualiser-drawing.mjs';
 
 import {installChildPlayback} from './child-playback.mjs';

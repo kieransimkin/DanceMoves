@@ -335,6 +335,9 @@ function dance_moves_get_page_config($page_id) {
         'visualiserRenderer' => $visualiser['visualiserRenderer'],
         'visualiserRudiment' => $visualiser['visualiserRudiment'],
         'visualiserAxes' => $visualiser['visualiserAxes'],
+        'visualiserSpriteTheme' => $visualiser['visualiserSpriteTheme'],
+        'visualiserTerrainSource' => $visualiser['visualiserTerrainSource'],
+        'visualiserSpectralDeform' => $visualiser['visualiserSpectralDeform'],
         'lyricPopupsEnabled' => '1' === (string) get_post_meta($page_id, DANCE_MOVES_META_LYRIC_POPUPS, true),
         'cueTimingUrl' => dance_moves_attachment_url(get_post_meta($page_id, DANCE_MOVES_META_CUE_TIMING, true)),
         'songCollectionEnabled' => get_post_meta($page_id,DANCE_MOVES_META_SONG_PAGE_TYPE,true)==='collection',
@@ -363,6 +366,7 @@ function ks_epk_orientation_enqueue_runtime() {
     $config['orientationAdapter'] = $adapters[$page_id] ?? '';
     $config['clayEnabled'] = DANCE_MOVES_CLAY_STARS_PAGE_ID === (int) $page_id && !defined('KS_CLAY_STARS_EFFECTS_VERSION');
     $config['atlasUrl'] = $base_url . 'assets/paper-dreams-plane-atlas.png';
+    $config['visualiserAssetBaseUrl'] = $base_url . 'assets/visualiser-sprites/';
 
     wp_enqueue_style(
         'dance-moves-core',

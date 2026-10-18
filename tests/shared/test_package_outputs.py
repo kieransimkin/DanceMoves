@@ -20,6 +20,12 @@ class PackageTests(unittest.TestCase):
     p=parent/name;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(data)
    self.front.append({'path':name,'bytes':len(data),'sha256':hashlib.sha256(data).hexdigest()})
   (self.root/'assets').mkdir();shutil.copyfile(self.root/'lib/assets/visualiser-catalogue.json',self.root/'assets/visualiser-catalogue.json')
+  sprite=b'synthetic atlas bytes; packaging checks hashes, browser checks PNG structure'
+  manifest={'schema':'framerudiments.sprite-atlas.v1','themes':{'fixture':{'file':'fixture.png','sha256':hashlib.sha256(sprite).hexdigest()}}}
+  for name,data in [('fixture.png',sprite),('manifest.json',json.dumps(manifest).encode()),('LICENSE',b'Synthetic licence'),('README.md',b'Synthetic provenance')]:
+   for parent in [self.root/'assets/visualiser-sprites',self.root/'lib/assets/visualiser-sprites',self.stage/'lib/assets/visualiser-sprites']:
+    parent.mkdir(parents=True,exist_ok=True);(parent/name).write_bytes(data)
+   self.front.append({'path':'assets/visualiser-sprites/'+name,'bytes':len(data),'sha256':hashlib.sha256(data).hexdigest()})
   (self.stage/'library-manifest.json').write_text(json.dumps({'name':'@kieransimkin/dancemoves','version':'3.0.0','frontend':self.front}))
  def tearDown(self):self.temp.cleanup()
  def run_builder(self):return subprocess.run([sys.executable,str(self.root/'tools/package-wordpress.py')],text=True,capture_output=True)
@@ -40,6 +46,12 @@ class PackageTests(unittest.TestCase):
  def test_visualiser_catalogue_cannot_change_after_build(self):
   (self.root/'assets/visualiser-catalogue.json').write_text('[{"name":"unbuilt-view"}]')
   result=self.run_builder();self.assertNotEqual(result.returncode,0);self.assertIn('Visualiser catalogue changed after build',result.stderr)
+ def test_atlas_cannot_change_after_build(self):
+  (self.root/'assets/visualiser-sprites/fixture.png').write_bytes(b'changed atlas')
+  result=self.run_builder();self.assertNotEqual(result.returncode,0);self.assertIn('Pinned sprite atlas changed',result.stderr)
+ def test_unlisted_custom_atlas_stays_page_owned(self):
+  (self.stage/'lib/assets/visualiser-sprites/custom.png').write_bytes(b'page image')
+  result=self.run_builder();self.assertNotEqual(result.returncode,0);self.assertIn('Unexpected or missing built sprite asset',result.stderr)
  def test_manifest_cannot_forge_frontend_inventory(self):
   self.front.pop();(self.stage/'library-manifest.json').write_text(json.dumps({'name':'@kieransimkin/dancemoves','version':'3.0.0','frontend':self.front}))
   self.assertNotEqual(self.run_builder().returncode,0)

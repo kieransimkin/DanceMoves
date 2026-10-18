@@ -6,11 +6,16 @@ ROOT=Path(__file__).resolve().parents[1]
 def main():
     pkg=json.loads((ROOT/'package.json').read_text());version=pkg['version'];lib=ROOT/'lib'
     homepage=pkg.get('homepage','')
-    files=[lib/'dancemoves.min.js',lib/'dancemoves.css',lib/'build-manifest.json',ROOT/'LICENSE',ROOT/'README.md',ROOT/'AGENTS.md',ROOT/'CONTRIBUTING.md']+sorted((lib/'assets').glob('*'))+sorted((ROOT/'docs/branding').glob('*'))
+    asset_entries=sorted((lib/'assets').rglob('*'))
+    if (lib/'assets').is_symlink() or any(p.is_symlink() for p in asset_entries):raise SystemExit('Symlinks are not accepted in web staging')
+    assets=[p for p in asset_entries if p.is_file()]
+    files=[lib/'dancemoves.min.js',lib/'dancemoves.css',lib/'build-manifest.json',ROOT/'LICENSE',ROOT/'README.md',ROOT/'AGENTS.md',ROOT/'CONTRIBUTING.md']+assets+sorted((ROOT/'docs/branding').glob('*'))
     if any(not p.is_file() for p in files):raise SystemExit('Run npm run build:library first')
     manifest=json.loads((lib/'build-manifest.json').read_text('utf-8'))
     if manifest.get('version')!=version:raise SystemExit('Stale library version; rebuild')
     inventory={item['path']:item for item in manifest['files']}
+    if {p.relative_to(lib).as_posix() for p in assets}!={name for name in inventory if name.startswith('assets/')}:
+        raise SystemExit('Web asset inventory differs from the shared library build')
     for p in files:
         if p.is_symlink():raise SystemExit('Symlinks are not accepted in web staging')
         if not p.is_relative_to(lib) or p.name=='build-manifest.json':continue

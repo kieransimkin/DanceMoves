@@ -2,6 +2,27 @@
 
 By [Kieran Simkin](https://kieransimkin.co.uk/), part of [DanceFlow](https://kieransimkin.co.uk/danceflow/).
 
+## Current shared runtime
+
+The shared JavaScript, React/Next.js and WordPress runtime includes the complete
+222-view FrameRudiments catalogue: movement and history views, calibrated
+spectra, 52 sprite views with 17 lazy atlas themes, and six CPU solid/music views.
+Song recordings are loaded only by their consuming page or active collection
+song; the shared packages contain no song sample tables.
+
+| Task | Reference |
+|---|---|
+| Mount the shared library and configure page options | [Shared JavaScript API](javascript-api.md) |
+| Select renderers, native patterns, saved recordings and styles | [Complete visualiser guide](rudiment-visualisers.md) |
+| Configure WordPress shortcodes, per-song sources, sprite themes and music controls | [WordPress shared-runtime guide](wordpress-shared-runtime.md) |
+| Check shared features and their execution boundaries | [Shared feature coverage](shared-feature-coverage.md) |
+
+## Archived WordPress 2.8 reference
+
+The reference below records the earlier release's surface. Its exclusions,
+version numbers and branch observations describe that dated audit; use the
+shared-runtime guides above for current shortcodes and visualiser options.
+
 **Implemented baseline:** DanceMoves **2.8.0**, release tag `v2.8.0`, commit
 `4cb6a71f60459b5579be87d7e55ac8b1426c578e` (28 September 2026).
 This reference was checked against that source on 29 September 2026. It documents
@@ -20,7 +41,7 @@ reviewed. The staging branch `timed-lyrics-staging-2026-09-20` at
 after `v2.8.0`; runtime and README are identical. This reference covers the release,
 not a hypothetical 2.9. See [source provenance](source-audit.md).
 
-## Read by task
+### Read by task
 
 | Task | Reference |
 | --- | --- |
@@ -35,7 +56,7 @@ not a hypothetical 2.9. See [source provenance](source-audit.md).
 | Run tests, use local harnesses, package and troubleshoot | [Development and operations](development.md) |
 | Check reference coverage and important implementation caveats | [Source audit](source-audit.md) and [symbol inventory](api/surface.json) |
 
-## Feature map
+### Feature map
 
 | Feature | What ships | Important boundary |
 | --- | --- | --- |
@@ -53,7 +74,7 @@ not a hypothetical 2.9. See [source provenance](source-audit.md).
 | Diagnostics | Explicitly enabled synchronous timing sink and bounded catalogue evidence | No core diagnostic retention/transmission; external consumers own their storage and privacy obligations. |
 | Development | Contract tests, local harnesses, deployment evidence and package tooling | Tests and harness globals are not front-end production APIs. |
 
-## API scope and compatibility
+### API scope and compatibility
 
 The documented integration surface is `window.DanceMoves` (also exposed as
 `window.KieranEpkMotion`), `window.DanceMovesEffects`, the documented conditional adapter globals, the PHP

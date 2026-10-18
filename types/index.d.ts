@@ -53,6 +53,14 @@ export interface PageConfig {
  effect?:''|'paper-planes';diagnostics?:boolean;
  spectrumRecordingUrl?:string;spectrumRenderer?:SpectrumRenderer;
  visualiserRecordingUrl?:string;visualiserRenderer?:VisualiserRenderer;visualiserRudiment?:RudimentName|'';visualiserAxes?:readonly string[];
+ /** Host-supplied directory URL for the shipped sprite PNGs; WordPress supplies its plugin asset URL. */
+ visualiserAssetBaseUrl?:string;
+ /** Empty selects the renderer's default atlas; retained but unused by other renderer families. */
+ visualiserSpriteTheme?:SpriteTheme|'';
+ /** FFT requires spatial-music-terrain and a calibrated saved recording when a source is configured. */
+ visualiserTerrainSource?:'procedural'|'fft';
+ /** Calibrated saved recordings only; supported by the three spatial-music renderers. */
+ visualiserSpectralDeform?:boolean;
 }
 export interface Options extends PageConfig {
  root:HTMLElement;clayPerformance?:Record<string,number|boolean>;catalogue?:boolean;clay?:boolean;legacyGlobals?:boolean;nonce?:string;onError?:(error:Error)=>void;
@@ -132,7 +140,7 @@ export interface DanceMoves {
 }
 export const VERSION:string;
 export const ORIENTATION_ADAPTERS:readonly OrientationAdapter[];
-export const PAGE_META_KEYS:Readonly<{bpm:string;lyric:string;cue:string;popups:string;duration:string;effect:string;alignment:string;alignmentAudio:string;word:string;beatTimeline:string;useBeatTimeline:string;spectrumRecording:string;spectrumRenderer:string;visualiserRecording:string;visualiserRenderer:string;visualiserRudiment:string;visualiserAxes:string}>;
+export const PAGE_META_KEYS:Readonly<{bpm:string;lyric:string;cue:string;popups:string;duration:string;effect:string;alignment:string;alignmentAudio:string;word:string;beatTimeline:string;useBeatTimeline:string;spectrumRecording:string;spectrumRenderer:string;visualiserRecording:string;visualiserRenderer:string;visualiserRudiment:string;visualiserAxes:string;visualiserSpriteTheme:string;visualiserTerrainSource:string;visualiserSpectralDeform:string}>;
 export function validateBeatAlignment(input?:BeatAlignment|null):Readonly<BeatAlignment>|null;
 export function validateBeatTimeline(input?:BeatTimeline|null,options?:{requireSourceUrl?:boolean}):Readonly<BeatTimeline>|null;
 export function phasePipsAtSeconds(map:BeatTimeline,sourceSeconds:number):number;
@@ -163,7 +171,7 @@ export type SpectrumOptions = {id:string;target:HTMLCanvasElement|string;audio:P
 export interface SpectrumController {readonly id:string;readonly ready:Promise<SpectrumController>;setEnabled(value:boolean):void;pause():void;resume():void;refresh():void;destroy():void;teardown():void;snapshot():SpectrumSnapshot}
 export interface SpectrumService {animate(options:SpectrumOptions):SpectrumController;get(id:string):SpectrumController|null;destroyAll():void;snapshot():{renderers:readonly SpectrumRenderer[];sources:number;instances:SpectrumSnapshot[]}}
 
-/** Self-contained FrameRudiments Canvas catalogue, preserving its renderer IDs. */
+/** Complete 222-view FrameRudiments Canvas catalogue, preserving its renderer IDs. */
 export type VisualiserRenderer =
   'particles'
   | 'bars'
@@ -328,18 +336,90 @@ export type VisualiserRenderer =
   | 'waveform-signal-staircase'
   | 'spatial-torus'
   | 'spatial-sphere'
-  | 'spatial-terrain';
-export type SpectralVisualiserRenderer = Extract<VisualiserRenderer, `spectrum${string}` | `spectrogram${string}`>;
+  | 'spatial-terrain'
+  | 'sprite-spectrum-lcd'
+  | 'sprite-spectrum-lcd-horizontal'
+  | 'sprite-spectrum-lcd-mirrored'
+  | 'sprite-spectrum-led'
+  | 'sprite-spectrum-led-radial'
+  | 'sprite-spectrum-vfd'
+  | 'sprite-spectrum-retro'
+  | 'sprite-spectrum-neon'
+  | 'sprite-spectrum-crystal'
+  | 'sprite-spectrum-fire'
+  | 'sprite-spectrum-ice'
+  | 'sprite-spectrum-icons'
+  | 'sprite-spectrum-petals'
+  | 'sprite-spectrum-ring'
+  | 'sprite-spectrum-halo'
+  | 'sprite-spectrum-mosaic'
+  | 'sprite-spectrum-city'
+  | 'sprite-spectrum-gauge'
+  | 'sprite-spectrum-spokes'
+  | 'sprite-spectrum-orbits'
+  | 'sprite-spectrogram-lcd'
+  | 'sprite-spectrogram-led'
+  | 'sprite-spectrogram-pixels'
+  | 'sprite-spectrogram-heatmap'
+  | 'sprite-spectrogram-icons'
+  | 'sprite-spectrogram-neon'
+  | 'sprite-spectrogram-crystal'
+  | 'sprite-spectrogram-fire'
+  | 'sprite-spectrogram-radial'
+  | 'sprite-spectrogram-spiral'
+  | 'sprite-spectrogram-rain'
+  | 'sprite-spectrogram-blocks'
+  | 'sprite-waveform-lcd'
+  | 'sprite-waveform-led'
+  | 'sprite-waveform-dots'
+  | 'sprite-waveform-icons'
+  | 'sprite-waveform-neon'
+  | 'sprite-waveform-ribbon'
+  | 'sprite-waveform-bars'
+  | 'sprite-waveform-mirrored'
+  | 'sprite-waveform-annular'
+  | 'sprite-waveform-spiral'
+  | 'sprite-waveform-sparks'
+  | 'sprite-waveform-crystal'
+  | 'sprite-motion-path'
+  | 'sprite-motion-orbit'
+  | 'sprite-motion-cloud'
+  | 'sprite-motion-constellation'
+  | 'sprite-motion-trails'
+  | 'sprite-motion-particles'
+  | 'sprite-motion-xy'
+  | 'sprite-motion-icon-grid'
+  | 'spatial-solid-torus'
+  | 'spatial-solid-sphere'
+  | 'spatial-solid-terrain'
+  | 'spatial-music-torus'
+  | 'spatial-music-sphere'
+  | 'spatial-music-terrain';
+/** These modes always require saved Fourier calibration; music modes can opt into it through style. */
+export type SpectralVisualiserRenderer = Extract<VisualiserRenderer, `spectrum${string}` | `spectrogram${string}` | `sprite-spectrum-${string}` | `sprite-spectrogram-${string}`>;
 export type MotionVisualiserRenderer = Exclude<VisualiserRenderer, SpectralVisualiserRenderer>;
+export type SpriteVisualiserRenderer = Extract<VisualiserRenderer, `sprite-${string}`>;
+export type SolidVisualiserRenderer = Extract<VisualiserRenderer, `spatial-solid-${string}`>;
+export type MusicVisualiserRenderer = Extract<VisualiserRenderer, `spatial-music-${string}`>;
 export interface VisualiserInfo {
  readonly name:VisualiserRenderer;readonly label:string;readonly description:string;
  readonly family:'motion'|'spectrum'|'spectrogram'|'spatial';
- readonly styleFamily:'primitive'|'spectrum'|'advanced-spectrum'|'advanced-motion'|'circular'|'effects'|'wire';
+ readonly styleFamily:'primitive'|'spectrum'|'advanced-spectrum'|'advanced-motion'|'circular'|'effects'|'wire'|'sprites'|'solid'|'music';
  readonly requiresSpectrum:boolean;readonly minDimensions:1|2;readonly usesHistory:boolean;
+ readonly requiresAtlas:boolean;readonly supportsSpectrum:boolean;
 }
 export const VISUALISER_CATALOGUE:readonly VisualiserInfo[];
 export const VISUALISER_RENDERERS:readonly VisualiserRenderer[];
 export const VISUALISER_RUDIMENTS:readonly RudimentName[];
+export type SpriteTheme = 'lcd'|'lcd-green'|'lcd-amber'|'led'|'vfd'|'arcade'|'neon'|'glass'|'metal'|'crystal'|'pixel'|'hud'|'plasma'|'fire'|'ice'|'mono'|'generated-neon';
+export interface SpriteAtlasInfo {
+ readonly file:string;readonly sha256:string;readonly width:number;readonly height:number;readonly columns:number;readonly rows:number;
+}
+/** Metadata only: importing these constants does not request or decode images. */
+export const SPRITE_THEMES:readonly SpriteTheme[];
+export const SPRITE_ATLASES:Readonly<Record<SpriteTheme,SpriteAtlasInfo>>;
+/** Pinned HTTP(S) or relative PNG URL. The legacy path spelling is accepted as a browser URL. */
+export type SpriteAsset = Readonly<{url:string;sha256:string;path?:never}> | Readonly<{path:string;sha256:string;url?:never}>;
 export interface VisualiserStyleBase {colours?:readonly string[];padding?:number;background?:string}
 export interface ParticleVisualiserStyle extends VisualiserStyleBase {count?:number;radius?:number;amplitude?:number;seed?:number;trail?:number;lag?:number}
 export interface BarVisualiserStyle extends VisualiserStyleBase {orientation?:'vertical'|'horizontal';gap?:number;negative_colour?:string;baseline_colour?:string}
@@ -360,25 +440,87 @@ export interface EffectVisualiserStyle extends VisualiserStyleBase {
  mirror?:boolean;reverse?:boolean;grid?:boolean;baseline?:boolean;
 }
 export interface WireVisualiserStyle extends VisualiserStyleBase {geometry?:'torus'|'sphere'|'terrain';camera_distance?:number;fov?:number;rotation?:number;orbit?:number;depth?:number;line_width?:number;fog?:number;glow?:number;rings?:number;segments?:number}
+export interface SpriteVisualiserStyle extends VisualiserStyleBase {
+ sprite_theme?:SpriteTheme;sprite_asset?:SpriteAsset|null;
+ /** Built-in atlases use an 8 by 8 grid. Custom PNG grids accept 1..32 columns and rows. */
+ sprite_columns?:number;sprite_rows?:number;
+ shape?:'segment'|'dot'|'tube'|'crystal'|'icon'|'spark'|'block'|'flame';sprite_index?:number;
+ sprite_colour?:'original'|'tint'|'level';sprite_blend?:'normal'|'add'|'screen'|'multiply'|'lighten'|'difference';
+ sprite_tint_colour?:string|null;sprite_outline_colour?:string;orientation?:'vertical'|'horizontal';mirror?:boolean;pixelated?:boolean;
+ sprite_size?:number;sprite_opacity?:number;tint_strength?:number;segment_count?:number;segment_gap?:number;off_opacity?:number;
+ bar_gap?:number;start_angle?:number;sweep_angle?:number;inner_radius?:number;outer_radius?:number;history_limit?:number;
+ bin_stride?:number;sample_stride?:number;spacing?:number;threshold?:number;floor_db?:number;ceiling_db?:number;
+ /** Animation advances on the source clock at 60 frames per second, independently of repaint count. */
+ animation_frames?:number;animation_stride?:number;sprite_animation_rate?:number;sprite_animation_phase?:number;
+ axis?:number;rings?:number;twists?:number;seed?:number;max_stamps?:number;
+ sprite_scale?:number;sprite_scale_x?:number;sprite_scale_y?:number;sprite_rotation?:number;sprite_spin?:number;
+ sprite_offset_x?:number;sprite_offset_y?:number;sprite_layout_rotation?:number;sprite_spread?:number;
+ sprite_anchor_x?:number;sprite_anchor_y?:number;sprite_shear_x?:number;sprite_shear_y?:number;
+ sprite_jitter?:number;sprite_angle_jitter?:number;sprite_visible_fraction?:number;sprite_palette_shift?:number;
+ sprite_hue_shift?:number;sprite_saturation?:number;sprite_brightness?:number;sprite_contrast?:number;sprite_gamma?:number;
+ sprite_temperature?:number;sprite_red?:number;sprite_green?:number;sprite_blue?:number;sprite_posterize?:number;
+ sprite_pixel_size?:number;sprite_blur?:number;sprite_glow?:number;sprite_outline?:number;sprite_shadow?:number;
+ sprite_shadow_x?:number;sprite_shadow_y?:number;sprite_shadow_opacity?:number;sprite_scanlines?:number;sprite_grain?:number;sprite_sharpen?:number;
+}
+export type SpatialGeometry = 'torus'|'sphere'|'terrain';
+export interface SolidVisualiserStyle extends VisualiserStyleBase {
+ geometry?:SpatialGeometry;camera_distance?:number;fov?:number;rotation?:number;orbit?:number;depth?:number;rings?:number;segments?:number;
+ ambient?:number;roughness?:number;metallic?:number;light_direction?:readonly [number,number,number];light_colour?:string;
+ fog?:number;fog_colour?:string;fog_steps?:number;fog_resolution?:number;glow?:number;
+ /** Both choices use the CPU rasterizer; auto includes a fallback reason in renderReport. GPU requests are rejected. */
+ backend?:'cpu'|'auto';
+ /** Longest raster edge: integer 64..1024, default 512. Work limits can reduce the actual resolution. */
+ raster_size?:number;
+}
+export interface MusicVisualiserStyle extends SolidVisualiserStyle {
+ /** FFT is valid only for spatial-music-terrain and requires a calibrated recording. */
+ terrain_source?:'procedural'|'fft';terrain_height?:number;fft_floor_db?:number;fft_gain?:number;
+ /** Enabling spectral deformation requires a calibrated recording for every music geometry. */
+ spectral_deform?:boolean;spectral_gain?:number;mesh_gain?:number;
+ audio_displacement?:number;audio_frequency?:number;audio_twist?:number;audio_ripple_speed?:number;
+ texture_scale?:number;texture_octaves?:number;bump_strength?:number;normal_strength?:number;
+ weathering?:number;thermal_erosion?:number;hydraulic_erosion?:number;glaciation?:number;erosion_iterations?:number;seed?:number;
+ snowline?:number;ice_coverage?:number;light_power?:number;light_azimuth?:number;light_elevation?:number;camera_pitch?:number;
+}
 export type EffectVisualiserRenderer = 'spectrum-cityscape'|'spectrum-led-matrix'|'spectrum-capsules'|'spectrum-outline-blocks'|'spectrum-peak-ladder'|'spectrum-staircase'|'spectrum-eq-curve'|'spectrum-ribbon-stack'|'spectrum-peak-trails'|'spectrum-gel-bars'|'spectrum-lollipop-grid'|'spectrum-mountain-range'|'spectrum-band-delta'|'spectrum-band-variance'|'spectrum-energy-tiles'|'spectrum-semi-circle'|'spectrum-fan-meter'|'spectrum-braided-lines'|'spectrum-rain-bars'|'spectrum-bead-stacks'|'spectrum-dash-grid'|'spectrum-thermometer'|'spectrum-wave-fence'|'spectrum-partition'|'spectrogram-pixel-mosaic'|'spectrogram-isometric-terrain'|'spectrogram-voxel-city'|'spectrogram-frequency-stripes'|'spectrogram-dot-cloud'|'spectrogram-isobands'|'spectrogram-negative'|'spectrogram-tape'|'spectrogram-slit-scan'|'spectrogram-trails'|'spectrogram-hex-cells'|'spectrogram-bead-grid'|'spectrogram-tunnel'|'spectrogram-record-grooves'|'spectrogram-quilt'|'spectrogram-crosshatch'|'spectrogram-triangle-tiles'|'spectrogram-pixel-rain'|'waveform-phosphor'|'waveform-echo'|'waveform-sample-beads'|'waveform-channel-braid'|'waveform-pulse-train'|'waveform-quantised'|'waveform-triggered'|'waveform-spiral-trace'|'waveform-butterfly'|'waveform-horizon'|'waveform-heat-ribbon'|'waveform-dotted-envelope'|'waveform-vertical-scope'|'waveform-phase-trails'|'waveform-polar-radar'|'waveform-dna-helix'|'waveform-block-meter'|'waveform-signal-staircase';
 export type AdvancedSpectralRenderer = 'spectrum-horizon'|'spectrum-waterfall'|'spectrum-ridgeline'|'spectrum-peaks'|'spectrum-log'|'spectrum-mel'|'spectrum-third-octave'|'spectrogram-linear'|'spectrogram-log'|'spectrogram-mel'|'spectrogram-bark'|'spectrogram-erb'|'spectrogram-peaks'|'spectrogram-contours'|'spectrogram-mirror'|'spectrogram-transposed'|'spectrogram-polar';
 export type VisualiserStyle<R extends VisualiserRenderer = VisualiserRenderer> =
  R extends SpectrumRenderer ? SpectrumStyle :
  R extends 'particles' ? ParticleVisualiserStyle : R extends 'bars' ? BarVisualiserStyle :
  R extends 'waveform' ? WaveformVisualiserStyle : R extends 'path' ? PathVisualiserStyle :
+ R extends SpriteVisualiserRenderer ? SpriteVisualiserStyle :
+ R extends `spatial-music-${infer G extends SpatialGeometry}` ? MusicVisualiserStyle & {geometry?:G;terrain_source?:G extends 'terrain' ? 'procedural'|'fft' : 'procedural'} :
+ R extends `spatial-solid-${infer G extends SpatialGeometry}` ? SolidVisualiserStyle & {geometry?:G} :
  R extends `spatial-${string}` ? WireVisualiserStyle :
  R extends `${string}-annular-${string}` ? CircularVisualiserStyle :
  R extends EffectVisualiserRenderer ? EffectVisualiserStyle :
  R extends AdvancedSpectralRenderer ? AdvancedSpectralStyle : AdvancedMotionStyle;
 export function validateVisualiserStyle<R extends VisualiserRenderer>(renderer:R,style?:VisualiserStyle<R>):Readonly<VisualiserStyle<R>>;
+export interface SpriteVisualiserRenderReport {
+ readonly kind:'sprite-rudiment';readonly stamps:number;readonly drawn_stamps:number;
+ /** floor(sourceSeconds * 60), independent of repaint count. */
+ readonly animation_frame:number;
+ readonly atlas:Readonly<{sha256:string;width:number;height:number;columns:number;rows:number;custom:boolean}>;
+}
+export interface SpatialVisualiserRenderReport {
+ readonly backend:'cpu';readonly fallbackReason?:string;readonly geometry:SpatialGeometry;
+ readonly rasterWidth:number;readonly rasterHeight:number;readonly triangles:number;readonly coveredPixels:number;
+ readonly rasterPixelTests:number;readonly rasterLimited:boolean;
+ readonly depthBuffer:'per-pixel reciprocal camera depth';readonly shading:'linear-light Cook-Torrance GGX';
+ readonly fog:'off'|'depth-terminated bounded fog';readonly shadows:'not calculated by the CPU backend';
+ readonly sourcePips:readonly number[];readonly sourceSha256:string|null;
+}
+/** Frozen renderer diagnostics, separate from the calibrated SpectrumReport. */
+export type VisualiserRenderReport = SpriteVisualiserRenderReport | SpatialVisualiserRenderReport;
 export interface VisualiserFrame {
  readonly id:string;readonly renderer:VisualiserRenderer;readonly rudiment:RudimentName|null;readonly pip:number|null;readonly sourceSeconds:number|null;
  readonly reason:string;readonly dimensions:readonly string[]|null;readonly values:readonly number[]|null;readonly historyLength:number;readonly report:SpectrumReport|null;
+ readonly renderReport:VisualiserRenderReport|null;
 }
 export interface VisualiserSnapshot {
  id:string;type:'visualiser';renderer:VisualiserRenderer;rudiment:RudimentName|null;recordingUrl:string|null;status:string;error:string|null;
  destroyed:boolean;enabled:boolean;paused:boolean;clock:RudimentClock;rate:number|null;pip:number|null;sourceSeconds:number|null;
- dimensions:readonly string[];values:readonly number[]|null;historyLength:number;report:SpectrumReport|null;
+ dimensions:readonly string[];values:readonly number[]|null;historyLength:number;report:SpectrumReport|null;renderReport:VisualiserRenderReport|null;
  historyPips:number;historyStride:number;canvasWidth:number;canvasHeight:number;
 }
 export type VisualiserOptions<R extends VisualiserRenderer = VisualiserRenderer> = {
@@ -386,6 +528,7 @@ export type VisualiserOptions<R extends VisualiserRenderer = VisualiserRenderer>
  historyPips?:number;historyStride?:number;pixelRatio?:number;enabled?:boolean;offscreen?:boolean;onFrame?:(frame:VisualiserFrame)=>void;
 } & ((R extends MotionVisualiserRenderer ? {
  rudiment:RudimentName;recording?:never;recordingUrl?:never;audio?:PlaybackMedia|string;clock?:RudimentClock;rate?:number;phasePips?:number;resetOnCue?:boolean|string;
+ style?:R extends MusicVisualiserRenderer ? VisualiserStyle<R> & {terrain_source?:'procedural';spectral_deform?:false} : VisualiserStyle<R>;
 } : never) | ({rudiment?:never;audio:PlaybackMedia|string;clock?:never;rate?:never;phasePips?:never;resetOnCue?:never} &
  ({recordingUrl:string;recording?:never}|{recording:AudioRecording;recordingUrl?:never})));
 export interface VisualiserController {
@@ -396,5 +539,5 @@ export interface VisualiserController {
 export interface VisualiserService {
  animate<R extends VisualiserRenderer = 'waveform'>(options:VisualiserOptions<R>):VisualiserController;
  catalogue():readonly VisualiserInfo[];describe(name:string):VisualiserInfo|null;get(id:string):VisualiserController|null;destroyAll():void;
- snapshot():{renderers:readonly VisualiserRenderer[];sources:number;patterns:number;instances:VisualiserSnapshot[]};
+ snapshot():{renderers:readonly VisualiserRenderer[];sources:number;patterns:number;atlases:number;instances:VisualiserSnapshot[]};
 }

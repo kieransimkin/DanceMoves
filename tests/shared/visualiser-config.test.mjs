@@ -5,6 +5,7 @@ import {PAGE_META_KEYS, validatePageConfig, fromWordPressMeta} from '../../src/c
 import {readWordPressConfig} from '../../src/wordpress-config.mjs';
 import {validateSongCollection, createSongCollection} from '../../src/song-collection.mjs';
 import {VISUALISER_CATALOGUE, VISUALISER_RENDERERS, VISUALISER_RUDIMENTS} from '../../src/visualiser-catalogue.mjs';
+import {SPRITE_THEMES} from '../../src/visualiser-sprite-catalogue.mjs';
 
 test('generic views are inactive by default and keep recording payloads out of page configuration', () => {
   const config = validatePageConfig({visualiserRecording:{format:'dancerudiments.recording',samples:[[0]]}});
@@ -12,6 +13,10 @@ test('generic views are inactive by default and keep recording payloads out of p
   assert.equal(config.visualiserRudiment, '');
   assert.equal(config.visualiserRenderer, 'waveform');
   assert.deepEqual(config.visualiserAxes, []);
+  assert.equal(config.visualiserAssetBaseUrl, '');
+  assert.equal(config.visualiserSpriteTheme, '');
+  assert.equal(config.visualiserTerrainSource, 'procedural');
+  assert.equal(config.visualiserSpectralDeform, false);
   assert.equal(Object.hasOwn(config, 'visualiserRecording'), false);
   assert.equal(Object.isFrozen(config.visualiserAxes), true);
   assert.equal(config.spectrumRecordingUrl, '');
@@ -22,8 +27,8 @@ test('JS and WordPress share all renderer metadata and the existing native patte
   const catalogue = JSON.parse(fs.readFileSync(new URL('../../assets/visualiser-catalogue.json', import.meta.url)));
   const native = JSON.parse(fs.readFileSync(new URL('../../assets/vendor/dancerudiments/build-manifest.json', import.meta.url)));
   assert.deepEqual(catalogue, VISUALISER_CATALOGUE);
-  assert.equal(VISUALISER_RENDERERS.length, 164);
-  assert.equal(new Set(VISUALISER_RENDERERS).size, 164);
+  assert.equal(VISUALISER_RENDERERS.length, 222);
+  assert.equal(new Set(VISUALISER_RENDERERS).size, 222);
   assert.deepEqual(VISUALISER_RUDIMENTS, native.upstream.selection);
   for (const visualiserRenderer of VISUALISER_RENDERERS)
     assert.equal(validatePageConfig({visualiserRenderer}).visualiserRenderer, visualiserRenderer);
@@ -63,6 +68,66 @@ test('axis selection is ordered, immutable and bounded without assuming a record
   for (const visualiserAxes of ['x,y', {}, ['x','x'], [''], ['X'], ['1x'], ['x-y'], ['x\n'], [' x'], ['a'.repeat(129)],
     ['x', 1], new Array(1), [...maximum, 'overflow']])
     assert.throws(() => validatePageConfig({visualiserAxes}), /visualiserAxes/);
+});
+
+test('page atlas configuration keeps reusable theme metadata separate from page-owned image references', () => {
+  for (const visualiserSpriteTheme of ['', ...SPRITE_THEMES]) {
+    const result = validatePageConfig({visualiserSpriteTheme, visualiserRudiment:'circle',
+      visualiserRenderer:'sprite-motion-particles', visualiserAssetBaseUrl:'/assets/visualiser-sprites/'});
+    assert.equal(result.visualiserSpriteTheme, visualiserSpriteTheme);
+    assert.equal(result.visualiserAssetBaseUrl, '/assets/visualiser-sprites/');
+    assert.equal(validatePageConfig({visualiserSpriteTheme}).visualiserSpriteTheme, visualiserSpriteTheme,
+      'a valid theme survives switching to a non-sprite renderer');
+  }
+  for (const visualiserAssetBaseUrl of ['javascript:evil()', 'https://user:secret@example.test/', '/atlases/?v=1',
+    '/atlases/#fragment', '/line\nbreak/', {}, 'x'.repeat(4097)])
+    assert.throws(() => validatePageConfig({visualiserAssetBaseUrl}));
+  for (const visualiserSpriteTheme of ['custom', 'unknown', {}, false])
+    assert.throws(() => validatePageConfig({visualiserSpriteTheme}), /sprite theme/);
+  const config = validatePageConfig({visualiserSpriteAsset:{url:'/song-art.png',sha256:'a'.repeat(64)}});
+  assert.equal(Object.hasOwn(config, 'visualiserSpriteAsset'), false, 'custom PNGs are explicit per-view styles');
+  assert.equal(Object.hasOwn(PAGE_META_KEYS, 'visualiserAssetBaseUrl'), false, 'the host owns its asset URL');
+});
+
+test('music-aware calibration is opt-in and requires a matching renderer and saved recording', () => {
+  const music = ['spatial-music-torus','spatial-music-sphere','spatial-music-terrain'];
+  for (const visualiserRenderer of music) {
+    assert.equal(validatePageConfig({visualiserRenderer, visualiserRudiment:'helix'}).visualiserSpectralDeform, false);
+    const config = validatePageConfig({visualiserRenderer, visualiserRecordingUrl:'/song.json', visualiserSpectralDeform:true});
+    assert.equal(config.visualiserSpectralDeform, true);
+    assert.throws(() => validatePageConfig({...config, visualiserRecordingUrl:'', visualiserRudiment:'helix'}), /calibrated spectrum/);
+    assert.equal(validatePageConfig({visualiserRenderer, visualiserSpectralDeform:true}).visualiserRecordingUrl, '', 'an unset source remains inactive');
+  }
+  const terrain = {visualiserRenderer:'spatial-music-terrain', visualiserTerrainSource:'fft'};
+  assert.equal(validatePageConfig({...terrain, visualiserRecordingUrl:'/bands.json'}).visualiserTerrainSource, 'fft');
+  assert.throws(() => validatePageConfig({...terrain, visualiserRudiment:'helix'}), /calibrated spectrum/);
+  for (const visualiserRenderer of ['waveform','spatial-solid-terrain','spatial-music-torus'])
+    assert.throws(() => validatePageConfig({...terrain, visualiserRenderer}), /FFT terrain/);
+  assert.throws(() => validatePageConfig({visualiserSpectralDeform:true}), /music-aware/);
+  for (const visualiserSpectralDeform of ['1', 1, 'false', null, {}])
+    assert.throws(() => validatePageConfig({visualiserSpectralDeform}), /must be boolean/);
+  assert.throws(() => validatePageConfig({visualiserTerrainSource:'guessed'}), /procedural or fft/);
+});
+
+test('metadata and localized song rows preserve theme and strict music controls', async () => {
+  const config = await fromWordPressMeta({[PAGE_META_KEYS.visualiserRecording]:17,
+    [PAGE_META_KEYS.visualiserRenderer]:'spatial-music-terrain',
+    [PAGE_META_KEYS.visualiserSpriteTheme]:'generated-neon',
+    [PAGE_META_KEYS.visualiserTerrainSource]:'fft', [PAGE_META_KEYS.visualiserSpectralDeform]:'1'}, id => `/recordings/${id}.json`);
+  assert.equal(config.visualiserSpriteTheme, 'generated-neon');
+  assert.equal(config.visualiserTerrainSource, 'fft'); assert.equal(config.visualiserSpectralDeform, true);
+  assert.equal(config.visualiserAssetBaseUrl, '');
+  await assert.rejects(fromWordPressMeta({[PAGE_META_KEYS.visualiserSpectralDeform]:'yes'}), /must be boolean/);
+  const wire = readWordPressConfig({visualiserSpectralDeform:'0', songs:[
+    {id:'bands',title:'Bands',bpm:'120',audioSrc:'/tone.wav',visualiserRecordingUrl:'/bands.json',
+      visualiserRenderer:'spatial-music-terrain',visualiserTerrainSource:'fft',visualiserSpectralDeform:'1'},
+    {id:'sprite',title:'Sprite',bpm:'120',audioSrc:'/tone.wav',visualiserRudiment:'helix',
+      visualiserRenderer:'sprite-motion-orbit',visualiserSpriteTheme:'ice',visualiserSpectralDeform:'0'}]});
+  assert.equal(wire.visualiserSpectralDeform, false);
+  const [bands, sprite] = validateSongCollection(wire.songs);
+  assert.equal(bands.visualiserTerrainSource, 'fft'); assert.equal(bands.visualiserSpectralDeform, true);
+  assert.equal(sprite.visualiserSpriteTheme, 'ice'); assert.equal(sprite.visualiserSpectralDeform, false);
+  assert.equal(sprite.visualiserRecordingUrl, '');
 });
 
 test('WordPress metadata resolves only recording IDs and preserves generic source and axes fields', async () => {

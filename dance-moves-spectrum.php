@@ -68,7 +68,7 @@ function dance_moves_validate_spectrum_attachment($value) {
         !in_array(strtolower((string)get_post_mime_type($id)),array('application/json','text/json','text/plain'),true))
         return new WP_Error('dance_moves_spectrum_type','Spectrum recordings must be JSON Media Library attachments.');
     $url=dance_moves_attachment_url($id);
-    $parts=is_string($url) ? parse_url($url) : false;
+    $parts=is_string($url) ? wp_parse_url($url) : false;
     if (!$url || strlen($url)>4096 || preg_match('/[\x00-\x1f]/',$url) || $parts===false ||
         (isset($parts['scheme']) && !in_array(strtolower($parts['scheme']),array('http','https'),true)) ||
         isset($parts['user']) || isset($parts['pass']))

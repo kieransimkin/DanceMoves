@@ -15,6 +15,7 @@ function register_post_meta($type,$name,$args) {$GLOBALS['registered'][$name]=$a
 function add_meta_box(...$args) {$GLOBALS['boxes'][]=$args;}
 function absint($value) {return abs((int)$value);}
 function wp_json_encode($value) {return json_encode($value,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);}
+function wp_parse_url($value) {return parse_url($value);}
 function sanitize_text_field($value) {return is_scalar($value) ? strip_tags((string)$value) : '';}
 function sanitize_key($value) {return preg_replace('/[^a-z0-9_\-]/','',strtolower((string)$value));}
 function esc_attr($value) {return htmlspecialchars((string)$value,ENT_QUOTES);}
@@ -92,7 +93,11 @@ try {
     check(dance_moves_sanitize_spectrum_attachment_id($wrong_mime)===0,'invalid programmatic attachment sanitized away');
     check(dance_moves_sanitize_spectrum_attachment_id((string)$first)===$first,'valid programmatic ID retained');
     $original_url=$GLOBALS['files'][$first]['url'];
-    foreach (array('javascript:alert(1)','https://person:secret@example.test/file.json',"/a\nb.json") as $url) {
+    foreach (array('http://example.test/file.json','https://example.test/file.json','//cdn.example.test/file.json','/uploads/file.json','uploads/file.json') as $url) {
+        $GLOBALS['files'][$first]['url']=$url;
+        check(dance_moves_validate_spectrum_attachment($first)===true,'HTTP(S), protocol-relative and relative attachment URLs remain valid');
+    }
+    foreach (array('javascript:alert(1)','ftp://example.test/file.json','https://person:secret@example.test/file.json','//person:secret@example.test/file.json','https://example.test:99999/file.json',"/a\nb.json") as $url) {
         $GLOBALS['files'][$first]['url']=$url;
         check(is_wp_error(dance_moves_validate_spectrum_attachment($first)),'unsafe attachment URL rejected');
     }

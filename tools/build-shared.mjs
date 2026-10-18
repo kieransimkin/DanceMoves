@@ -4,6 +4,7 @@ import {createHash} from 'node:crypto';
 import {spawnSync} from 'node:child_process';
 import * as esbuild from 'esbuild-wasm';
 import {buildModules,ROOT} from './build-modules.mjs';
+import {SPRITE_ATLASES} from '../src/visualiser-sprite-catalogue.mjs';
 const requested=process.argv.indexOf('--target');const target=requested<0?'all':process.argv[requested+1];
 if (!['all','library','wordpress'].includes(target)) throw new Error('target must be all, library or wordpress');
 process.chdir(ROOT);
@@ -30,6 +31,18 @@ fs.copyFileSync('assets/paper-dreams-plane-atlas.png',path.join(lib,'assets/pape
 fs.copyFileSync('assets/vendor/dancerudiments/LICENSE',path.join(lib,'assets/DanceRudiments-LICENSE'));
 fs.copyFileSync('assets/vendor/dancerudiments/build-manifest.json',path.join(lib,'assets/DanceRudiments-build-manifest.json'));
 fs.copyFileSync('assets/visualiser-catalogue.json',path.join(lib,'assets/visualiser-catalogue.json'));
+const spriteManifest=JSON.parse(fs.readFileSync('assets/visualiser-sprites/manifest.json','utf8'));
+if (spriteManifest.schema!=='framerudiments.sprite-atlas.v1' || spriteManifest.columns!==8 || spriteManifest.rows!==8 || spriteManifest.tile_size!==96 ||
+    JSON.stringify(Object.keys(spriteManifest.themes))!==JSON.stringify(Object.keys(SPRITE_ATLASES))) throw new Error('Sprite atlas manifest differs from the pinned catalogue');
+const spriteFiles=['manifest.json','LICENSE','README.md',...Object.values(SPRITE_ATLASES).map(atlas=>atlas.file)];
+if (JSON.stringify(fs.readdirSync('assets/visualiser-sprites').sort())!==JSON.stringify([...spriteFiles].sort()))
+  throw new Error('Unexpected or missing sprite asset; custom artwork belongs to the page');
+for (const [theme,atlas] of Object.entries(SPRITE_ATLASES)) {
+  if (spriteManifest.themes[theme].file!==atlas.file || spriteManifest.themes[theme].sha256!==atlas.sha256 ||
+      createHash('sha256').update(fs.readFileSync(path.join('assets/visualiser-sprites',atlas.file))).digest('hex')!==atlas.sha256)
+    throw new Error('Pinned sprite atlas changed: '+theme);
+}
+fs.cpSync('assets/visualiser-sprites',path.join(lib,'assets/visualiser-sprites'),{recursive:true});
 for(const file of ['index.d.ts','react.d.ts','server.d.ts']) fs.copyFileSync(path.join(ROOT,'types',file),path.join(lib,file));
 fs.copyFileSync('RUDIMENTS-API.d.ts',path.join(lib,'rudiments.d.ts'));
 const packageInfo=JSON.parse(fs.readFileSync('package.json','utf8'));
@@ -48,6 +61,7 @@ if (target!=='library') {
   for (const file of ['wordpress.js','admin.min.js']) fs.copyFileSync(path.join(lib,file),path.join(wp,'lib',file));
   for(const file of cssFiles) fs.copyFileSync(path.join(lib,'styles',file),path.join(wp,'lib/styles',file));
   for(const file of ['paper-dreams-plane-atlas.png','DanceRudiments-LICENSE','DanceRudiments-build-manifest.json','visualiser-catalogue.json']) fs.copyFileSync(path.join(lib,'assets',file),path.join(wp,'lib/assets',file));
+  fs.cpSync(path.join(lib,'assets/visualiser-sprites'),path.join(wp,'lib/assets/visualiser-sprites'),{recursive:true});
   fs.mkdirSync(path.join(wp,'docs'),{recursive:true});
   for(const file of fs.readdirSync('docs').filter(name=>name.endsWith('.md'))) fs.copyFileSync(path.join('docs',file),path.join(wp,'docs',file));
   fs.cpSync('docs/branding',path.join(wp,'docs/branding'),{recursive:true});

@@ -8,17 +8,21 @@ import {CORE_RENDERERS} from '../../src/visualiser-core.mjs';
 import {CIRCULAR_RENDERERS} from '../../src/visualiser-circular.mjs';
 import {EFFECT_RENDERERS} from '../../src/visualiser-effects.mjs';
 import {WIRE_RENDERERS, validateWireStyle, drawWire} from '../../src/visualiser-wire.mjs';
+import {SPRITE_RENDERERS} from '../../src/visualiser-sprites.mjs';
+import {SOLID_RENDERERS} from '../../src/visualiser-solid.mjs';
+import {MUSIC_RENDERERS} from '../../src/visualiser-music.mjs';
 import {SPECTRUM_RENDERERS, validateSpectrumStyle} from '../../src/spectrum-analysis.mjs';
 import {validateVisualiserStyle, drawVisualiser} from '../../src/visualiser-drawing.mjs';
 
 const readJSON = path => JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8'));
 const close = (actual, expected, epsilon = 1e-8) => assert.ok(Math.abs(actual - expected) <= epsilon, `${actual} differs from ${expected}`);
 
-test('the immutable 164-view catalogue exactly covers the five implemented name arrays', () => {
-  assert.equal(VISUALISER_CATALOGUE.length, 164); assert.equal(VISUALISER_RENDERERS.length, 164);
-  assert.deepEqual([CORE_RENDERERS.length, CIRCULAR_RENDERERS.length, EFFECT_RENDERERS.length, WIRE_RENDERERS.length, SPECTRUM_RENDERERS.length], [31, 60, 60, 3, 10]);
-  const implementations = [...CORE_RENDERERS, ...CIRCULAR_RENDERERS, ...EFFECT_RENDERERS, ...WIRE_RENDERERS, ...SPECTRUM_RENDERERS];
-  assert.equal(new Set(implementations).size, 164, 'no duplicate registration can hide an unimplemented renderer');
+test('the immutable 222-view catalogue exactly covers all eight implemented name arrays', () => {
+  assert.equal(VISUALISER_CATALOGUE.length, 222); assert.equal(VISUALISER_RENDERERS.length, 222);
+  const arrays = [CORE_RENDERERS, CIRCULAR_RENDERERS, EFFECT_RENDERERS, WIRE_RENDERERS, SPECTRUM_RENDERERS, SPRITE_RENDERERS, SOLID_RENDERERS, MUSIC_RENDERERS];
+  assert.deepEqual(arrays.map(names => names.length), [31, 60, 60, 3, 10, 52, 3, 3]);
+  const implementations = arrays.flat();
+  assert.equal(new Set(implementations).size, 222, 'no duplicate registration can hide an unimplemented renderer');
   assert.deepEqual([...VISUALISER_RENDERERS].sort(), implementations.sort());
   assert.deepEqual(VISUALISER_RENDERERS, VISUALISER_CATALOGUE.map(view => view.name));
   assert.ok(Object.isFrozen(VISUALISER_CATALOGUE)); assert.ok(Object.isFrozen(VISUALISER_RENDERERS));
@@ -27,27 +31,32 @@ test('the immutable 164-view catalogue exactly covers the five implemented name 
     assert.match(view.name, /^[a-z][a-z0-9-]{0,127}$/);
     assert.equal(typeof view.label, 'string'); assert.ok(view.label.length > 0);
     assert.equal(typeof view.description, 'string'); assert.ok(view.description.length > 0);
-    assert.deepEqual(Object.keys(view).sort(), ['name', 'label', 'description', 'family', 'styleFamily', 'requiresSpectrum', 'minDimensions', 'usesHistory'].sort());
+    assert.deepEqual(Object.keys(view).sort(), ['name', 'label', 'description', 'family', 'styleFamily', 'requiresSpectrum', 'supportsSpectrum', 'requiresAtlas', 'minDimensions', 'usesHistory'].sort());
   }
-  assert.equal(describeVisualiser('spatial-solid-torus'), null);
-  assert.equal(describeVisualiser('sprite-spectrum-lcd'), null);
+  assert.equal(describeVisualiser('spatial-solid-torus').styleFamily, 'solid');
+  assert.equal(describeVisualiser('sprite-spectrum-lcd').requiresAtlas, true);
   assert.equal(describeVisualiser('missing'), null);
 });
 
-test('catalogue capability flags distinguish 106 Fourier views and 58 native motion views', () => {
+test('catalogue flags distinguish 138 Fourier views, 84 default motion views and optional music calibration', () => {
   const spectral = VISUALISER_CATALOGUE.filter(view => view.requiresSpectrum), motion = VISUALISER_CATALOGUE.filter(view => !view.requiresSpectrum);
-  assert.equal(spectral.length, 106); assert.equal(motion.length, 58);
+  assert.equal(spectral.length, 138); assert.equal(motion.length, 84);
+  assert.equal(VISUALISER_CATALOGUE.filter(view => view.requiresAtlas).length, 52);
+  assert.equal(VISUALISER_CATALOGUE.filter(view => view.supportsSpectrum).length, 141);
+  assert.deepEqual(motion.filter(view => view.supportsSpectrum).map(view => view.name), MUSIC_RENDERERS);
   assert.ok(spectral.every(view => ['spectrum', 'spectrogram'].includes(view.family)));
   assert.ok(motion.every(view => ['motion', 'spatial'].includes(view.family)));
   const pairs = ['path', 'waveform-ribbon', 'phase-portrait', 'phase-points', 'waveform-annular-ribbon',
     'waveform-annular-bands', 'phase-annular-portrait', 'waveform-phase-trails'];
   assert.deepEqual(motion.filter(view => view.minDimensions === 2).map(view => view.name).sort(), pairs.sort());
-  assert.equal(motion.filter(view => view.minDimensions === 1).length, 50);
+  assert.equal(motion.filter(view => view.minDimensions === 1).length, 76);
   assert.ok(WIRE_RENDERERS.every(name => describeVisualiser(name).minDimensions === 1 && !describeVisualiser(name).usesHistory));
   for (const names of [SPECTRUM_RENDERERS, CIRCULAR_RENDERERS, EFFECT_RENDERERS, WIRE_RENDERERS]) {
     const expected = names === SPECTRUM_RENDERERS ? 'spectrum' : names === CIRCULAR_RENDERERS ? 'circular' : names === EFFECT_RENDERERS ? 'effects' : 'wire';
     assert.ok(names.every(name => describeVisualiser(name).styleFamily === expected));
   }
+  for (const [styleFamily, names] of [['sprites', SPRITE_RENDERERS], ['solid', SOLID_RENDERERS], ['music', MUSIC_RENDERERS]])
+    assert.ok(names.every(name => describeVisualiser(name).styleFamily === styleFamily));
 });
 
 test('trusted JSON and the actual PHP catalogue reader expose identical renderer metadata', () => {

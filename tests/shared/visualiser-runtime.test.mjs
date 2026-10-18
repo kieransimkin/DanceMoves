@@ -38,7 +38,18 @@ function movementRecording({startPip = 0, count = 96, beatZero = .25} = {}) {
 
 function fixture({fetch, config = {}, source, withoutResizeObserver = false} = {}) {
   const e = environment(), requests = [], signals = [], drivers = new Map();
-  const sampled = [], mutationObservers = [], installedOptions = [];
+  const sampled = [], mutationObservers = [], installedOptions = [], scratchCanvases = [];
+  const createElement = e.doc.createElement.bind(e.doc);
+  e.doc.createElement = name => {
+    const element = createElement(name);
+    if (name === 'canvas') {
+      // Spatial modules write their actual RGBA raster here. Browser coverage
+      // separately verifies image presentation and CSS-colour parsing.
+      element.getContext = () => ({createImageData(width,height) {return {data:new Uint8ClampedArray(width*height*4)};},putImageData() {}});
+      scratchCanvases.push(element);
+    }
+    return element;
+  };
   const Observer = e.host.MutationObserver;
   e.host.MutationObserver = class extends Observer {
     constructor(callback) {super(callback); mutationObservers.push(this);}
@@ -130,7 +141,7 @@ function fixture({fetch, config = {}, source, withoutResizeObserver = false} = {
     for (const observer of mutationObservers) if (!observer.disconnected) observer.callback([{type: 'childList'}]);
   }
   return {...e, scope, runtime, audio, clockFrame, requests, signals, drivers, sampled, installedOptions,
-    canvas, flushRemovals, readyCalls: () => readyCalls};
+    canvas, flushRemovals, scratchCanvases, readyCalls: () => readyCalls};
 }
 
 function saved(f, canvas, id, extra = {}) {
@@ -198,6 +209,75 @@ test('generic controls delegate clock, rate, phase and cue reset to the existing
   assert.equal(h.snapshot().historyLength, 1, 'wire geometry does not allocate a history window');
   h.reset(); assert.equal(f.drivers.get(h.id).handle.snapshot().resetCount, 1);
   assert.equal(f.requests.length, 0); f.scope.dispose(); assertDisposed(f);
+});
+
+test('all six spatial views own a bounded CPU surface and redraw source-time changes within a native pip', async () => {
+  const f = fixture(), handles = [], canvases = [];
+  const style = {raster_size:64,rings:3,segments:6,fog:0,glow:0};
+  for (const renderer of ['spatial-solid-torus','spatial-solid-sphere','spatial-solid-terrain',
+    'spatial-music-torus','spatial-music-sphere','spatial-music-terrain']) {
+    const canvas = f.canvas();canvases.push(canvas);
+    handles.push(f.runtime.visualisers.animate(generic(f, canvas, renderer, {renderer,rudiment:'helix',style})));
+  }
+  await Promise.all(handles.map(handle => handle.ready));
+  assert.equal(f.requests.length, 0);assert.equal(f.runtime.visualisers.snapshot().atlases, 0);
+  assert.equal(f.scratchCanvases.length, 6);
+  for (const [index, handle] of handles.entries()) {
+    const state = handle.snapshot(), report = state.renderReport;
+    assert.equal(state.report, null);assert.equal(report.backend, 'cpu');assert.equal(report.sourceSha256, null);
+    assert.ok(Object.isFrozen(report));assert.ok(report.coveredPixels > 0);
+    assert.ok(report.rasterWidth * report.rasterHeight <= 64 * 64);
+    const draws = canvases[index].calls.filter(call => call[0] === 'drawImage').length;
+    f.drivers.get(handle.id).emit('frame', {sourceBeats:f.clockFrame.sourceBeats + .001});
+    assert.equal(handle.snapshot().pip, state.pip);
+    assert.notEqual(handle.snapshot().sourceSeconds, state.sourceSeconds);
+    assert.equal(canvases[index].calls.filter(call => call[0] === 'drawImage').length, draws + 1);
+  }
+  f.scope.dispose();assertDisposed(f);
+  assert.ok(f.scratchCanvases.every(canvas => canvas.width === 1 && canvas.height === 1));
+  assert.ok(handles.every(handle => handle.snapshot().renderReport === null));
+});
+
+test('optional music calibration uses the saved source clock, selected bands and observed history', async () => {
+  const f = fixture({config:{bpm:173}}), recording = createSpectrumRecording(), handles = [];
+  for (const [renderer, option] of [['spatial-music-torus',{spectral_deform:true}],
+    ['spatial-music-sphere',{spectral_deform:true}], ['spatial-music-terrain',{terrain_source:'fft'}]]) {
+    const handle = f.runtime.visualisers.animate(saved(f, f.canvas(), renderer, {
+      renderer, recordingUrl:undefined, recording, historyPips:5,historyStride:2,
+      axes:['band_000','band_001','band_002'],style:{raster_size:64,rings:3,segments:6,fog:0,glow:0,...option}
+    }));handles.push(handle);
+  }
+  await Promise.all(handles.map(handle => handle.ready));
+  for (const handle of handles) {
+    assert.equal(handle.snapshot().pip, 0);assert.equal(handle.snapshot().historyLength, 1);
+    assert.deepEqual(handle.snapshot().renderReport.sourcePips, [0], 'the first strip has one observed row');
+    assert.equal(handle.snapshot().report.source_sha256, 'ab'.repeat(32));
+    assert.equal(handle.snapshot().renderReport.sourceSha256, 'ab'.repeat(32));
+  }
+  f.audio.currentTime = .03125;
+  for (const handle of handles) handle.refresh();
+  const terrain = handles[2].snapshot();assert.equal(terrain.pip, 4);
+  assert.deepEqual(terrain.renderReport.sourcePips, [0,2,4]);assert.equal(terrain.historyLength, 3);
+  assert.equal(terrain.sourceSeconds, .03125, 'page BPM and rhythmic phase do not retime saved FFT rows');
+  for (const handle of handles.slice(0,2)) assert.deepEqual(handle.snapshot().renderReport.sourcePips, [4]);
+  f.audio.src = 'http://localhost:4173/another-master.wav';
+  for (const handle of handles) {handle.refresh();assert.equal(handle.snapshot().status, 'source-mismatch');
+    assert.equal(handle.snapshot().renderReport, null);assert.equal(handle.snapshot().report, null);}
+  assert.equal(f.requests.length, 0);f.scope.dispose();assertDisposed(f);
+});
+
+test('declarative music controls reach the real calibrated renderer while incompatible native options fail before loading', async () => {
+  const f = fixture({config:{visualiserRecordingUrl:'/page-bands.json',visualiserRenderer:'spatial-music-terrain',
+    visualiserTerrainSource:'fft',visualiserSpectralDeform:true,visualiserAxes:['band_000','band_001','band_002']}});
+  f.canvas({renderer:'spatial-music-terrain'});
+  const [view] = f.runtime.visualisers.mountPage();await view.ready;
+  assert.equal(view.snapshot().renderReport.sourceSha256, 'ab'.repeat(32));
+  assert.equal(view.snapshot().dimensions.length, 3);assert.equal(f.requests.length, 1);
+  const before = f.installedOptions.length;
+  assert.throws(() => f.runtime.visualisers.animate(generic(f, f.canvas(), 'bad-native-fft', {
+    renderer:'spatial-music-terrain',style:{terrain_source:'fft'}})), /calibrated Fourier/);
+  assert.equal(f.installedOptions.length, before);assert.equal(f.requests.length, 1);
+  f.scope.dispose();assertDisposed(f);
 });
 
 test('large generic seeks keep observed histories within the public sample limit', async () => {
@@ -399,7 +479,9 @@ test('axis and Fourier prerequisites fail visibly before an invalid source insta
     {recording: movementRecording(), axes: ['missing'], error: /axis/},
     {recording: movementRecording(), axes: ['x', 'x'], error: /unique/},
     {recording: movementRecording(), axes: ['x'], renderer: 'waveform-phase-trails', error: /at least 2/},
-    {recording: createSpectrumRecording(), axes: ['band_002', 'band_001'], renderer: 'spectrogram-tape', error: /order|overlap/}
+    {recording: createSpectrumRecording(), axes: ['band_002', 'band_001'], renderer: 'spectrogram-tape', error: /order|overlap/},
+    {recording: createSpectrumRecording(), axes: ['band_000','band_001'], renderer: 'spatial-music-terrain', style: {terrain_source:'fft'}, error: /at least 3/},
+    {recording: movementRecording(), renderer: 'spatial-music-sphere', style: {spectral_deform:true}, error: /StemLab|Fourier/}
   ];
   for (const [index, row] of cases.entries()) {
     const c = f.canvas(), {error, ...sourceOptions} = row;

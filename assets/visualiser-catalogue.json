@@ -7,7 +7,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Seeded particles moved by native samples with observed trails"
+    "description": "Seeded particles moved by native samples with observed trails",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "bars",
@@ -17,7 +19,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": false,
-    "description": "Signed native dimensions as horizontal or vertical bars"
+    "description": "Signed native dimensions as horizontal or vertical bars",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform",
@@ -27,7 +31,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Stacked or overlaid native dimension histories"
+    "description": "Stacked or overlaid native dimension histories",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "path",
@@ -37,7 +43,9 @@
     "requiresSpectrum": false,
     "minDimensions": 2,
     "usesHistory": true,
-    "description": "Two-axis native movement path and current position"
+    "description": "Two-axis native movement path and current position",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "spectrum",
@@ -47,7 +55,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Calibrated Fourier band bars and recorded peak holds"
+    "description": "Calibrated Fourier band bars and recorded peak holds",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-line",
@@ -57,7 +67,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Classic connected FFT-band magnitude trace"
+    "description": "Classic connected FFT-band magnitude trace",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-area",
@@ -67,7 +79,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Filled magnitude spectrum"
+    "description": "Filled magnitude spectrum",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-dots",
@@ -77,7 +91,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Discrete frequency-bin points"
+    "description": "Discrete frequency-bin points",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-stems",
@@ -87,7 +103,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Vertical impulse / lollipop spectrum"
+    "description": "Vertical impulse / lollipop spectrum",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-steps",
@@ -97,7 +115,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Sample-and-hold staircase bands"
+    "description": "Sample-and-hold staircase bands",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-mirror",
@@ -107,7 +127,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Mirrored upper and lower frequency spectrum"
+    "description": "Mirrored upper and lower frequency spectrum",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-radial",
@@ -117,7 +139,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Spoke-style circular frequency bars"
+    "description": "Spoke-style circular frequency bars",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-ring",
@@ -127,7 +151,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Radial polygon that follows spectral levels"
+    "description": "Radial polygon that follows spectral levels",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-spiral",
@@ -137,7 +163,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Frequency bins along a logarithmic-looking spiral path"
+    "description": "Frequency bins along a logarithmic-looking spiral path",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-horizon",
@@ -147,7 +175,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Overlaid temporal spectrum traces"
+    "description": "Overlaid temporal spectrum traces",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-waterfall",
@@ -157,7 +187,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Perspective waterfall of successive band spectra"
+    "description": "Perspective waterfall of successive band spectra",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-ridgeline",
@@ -167,7 +199,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Offset stacked spectrum ridges"
+    "description": "Offset stacked spectrum ridges",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-peaks",
@@ -177,7 +211,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Local-maximum spike display"
+    "description": "Local-maximum spike display",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-log",
@@ -187,7 +223,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Current spectrum with a logarithmic frequency axis"
+    "description": "Current spectrum with a logarithmic frequency axis",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-mel",
@@ -197,7 +235,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Current recorded bands positioned on a mel frequency axis"
+    "description": "Current recorded bands positioned on a mel frequency axis",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-third-octave",
@@ -207,7 +247,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Current bands shown on a 1/3-octave frequency axis"
+    "description": "Current bands shown on a 1/3-octave frequency axis",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrogram-linear",
@@ -217,7 +259,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Time-frequency heatmap, linear Hz positioning"
+    "description": "Time-frequency heatmap, linear Hz positioning",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrogram-log",
@@ -227,7 +271,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Time-frequency heatmap, logarithmic Hz positioning"
+    "description": "Time-frequency heatmap, logarithmic Hz positioning",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrogram-mel",
@@ -237,7 +283,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Recorded Fourier bands remapped to a mel axis"
+    "description": "Recorded Fourier bands remapped to a mel axis",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrogram-bark",
@@ -247,7 +295,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Recorded Fourier bands remapped to a Bark axis"
+    "description": "Recorded Fourier bands remapped to a Bark axis",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrogram-erb",
@@ -257,7 +307,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Recorded Fourier bands remapped to ERB-rate axis"
+    "description": "Recorded Fourier bands remapped to ERB-rate axis",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrogram-peaks",
@@ -267,7 +319,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Time-frequency heatmap retaining only local band maxima"
+    "description": "Time-frequency heatmap retaining only local band maxima",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrogram-contours",
@@ -277,7 +331,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Quantised amplitude contour strips across time"
+    "description": "Quantised amplitude contour strips across time",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrogram-mirror",
@@ -287,7 +343,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Mirrored time-frequency heatmap"
+    "description": "Mirrored time-frequency heatmap",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrogram-transposed",
@@ -297,7 +355,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Vertical-time spectrogram / scrolling frequency history"
+    "description": "Vertical-time spectrogram / scrolling frequency history",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrogram-polar",
@@ -307,7 +367,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Time wrapped around angle, frequency along radius"
+    "description": "Time wrapped around angle, frequency along radius",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "waveform-area",
@@ -317,7 +379,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Filled multi-lane rudiment value histories"
+    "description": "Filled multi-lane rudiment value histories",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-mirror",
@@ -327,7 +391,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Symmetric amplitude envelope of rudiment values"
+    "description": "Symmetric amplitude envelope of rudiment values",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-dots",
@@ -337,7 +403,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Sampled rudiment values drawn as points"
+    "description": "Sampled rudiment values drawn as points",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-steps",
@@ -347,7 +415,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Zero-order-hold rudiment signal traces"
+    "description": "Zero-order-hold rudiment signal traces",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-oscilloscope",
@@ -357,7 +427,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Centred scrolling single-trace rudiment oscilloscope"
+    "description": "Centred scrolling single-trace rudiment oscilloscope",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-envelope",
@@ -367,7 +439,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Windowed min/max envelope of observed rudiment values"
+    "description": "Windowed min/max envelope of observed rudiment values",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-ribbon",
@@ -377,7 +451,9 @@
     "requiresSpectrum": false,
     "minDimensions": 2,
     "usesHistory": true,
-    "description": "Coloured variation ribbon of paired rudiment channels"
+    "description": "Coloured variation ribbon of paired rudiment channels",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-polar",
@@ -387,7 +463,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Polar history of the first rudiment channel"
+    "description": "Polar history of the first rudiment channel",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "phase-portrait",
@@ -397,7 +475,9 @@
     "requiresSpectrum": false,
     "minDimensions": 2,
     "usesHistory": true,
-    "description": "Two-dimensional history using first two motion axes"
+    "description": "Two-dimensional history using first two motion axes",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "phase-points",
@@ -407,7 +487,9 @@
     "requiresSpectrum": false,
     "minDimensions": 2,
     "usesHistory": true,
-    "description": "Scatter plot of paired rudiment axes"
+    "description": "Scatter plot of paired rudiment axes",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "spectrum-annular-bars",
@@ -417,7 +499,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Continuous radial frequency bars rooted at the inner ring"
+    "description": "Continuous radial frequency bars rooted at the inner ring",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-annular-bars-inward",
@@ -427,7 +511,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Radial bars growing inward from the outer perimeter"
+    "description": "Radial bars growing inward from the outer perimeter",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-annular-bars-bipolar",
@@ -437,7 +523,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Centred, bidirectional radial magnitude bars"
+    "description": "Centred, bidirectional radial magnitude bars",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-annular-bars-mirror",
@@ -447,7 +535,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Bidirectional ring bars with endpoint markers"
+    "description": "Bidirectional ring bars with endpoint markers",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-annular-split",
@@ -457,7 +547,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Alternating inward/outward frequency bars"
+    "description": "Alternating inward/outward frequency bars",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-annular-sunburst",
@@ -467,7 +559,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Alternating-length radial sunburst analyser"
+    "description": "Alternating-length radial sunburst analyser",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-annular-fan",
@@ -477,7 +571,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Filled wedge-frequency fan analyser"
+    "description": "Filled wedge-frequency fan analyser",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-annular-petals",
@@ -487,7 +583,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Thin sector petals sized by frequency-band strength"
+    "description": "Thin sector petals sized by frequency-band strength",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-annular-led",
@@ -497,7 +595,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Segmented radial LED meter from inner to outer ring"
+    "description": "Segmented radial LED meter from inner to outer ring",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-annular-led-inward",
@@ -507,7 +607,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "LED meter counting backwards from the outside"
+    "description": "LED meter counting backwards from the outside",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-annular-ticks",
@@ -517,7 +619,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Isolated radial magnitude-position ticks"
+    "description": "Isolated radial magnitude-position ticks",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-annular-arc",
@@ -527,7 +631,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Concentric miniature gauge arcs for each band"
+    "description": "Concentric miniature gauge arcs for each band",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-annular-dial",
@@ -537,7 +643,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Graduated frequency dial with dot-end needles"
+    "description": "Graduated frequency dial with dot-end needles",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-annular-dots",
@@ -547,7 +655,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Displaced radial frequency-bin dots"
+    "description": "Displaced radial frequency-bin dots",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-annular-lollipop",
@@ -557,7 +667,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Radial bar stems with circular end markers"
+    "description": "Radial bar stems with circular end markers",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-annular-orbit",
@@ -567,7 +679,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Angularly perturbed frequency-bin orbit dots"
+    "description": "Angularly perturbed frequency-bin orbit dots",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-annular-caterpillar",
@@ -577,7 +691,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Thick circular bead chain driven by spectral bins"
+    "description": "Thick circular bead chain driven by spectral bins",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-annular-peaks",
@@ -587,7 +703,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Selected local maximum spectral spokes"
+    "description": "Selected local maximum spectral spokes",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-annular-area",
@@ -597,7 +715,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Closed annular frequency response with filled band"
+    "description": "Closed annular frequency response with filled band",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-annular-line",
@@ -607,7 +727,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Closed radial spectrum outline"
+    "description": "Closed radial spectrum outline",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-annular-ribbon",
@@ -617,7 +739,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Nested concentric polygon ribbons"
+    "description": "Nested concentric polygon ribbons",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-annular-halo",
@@ -627,7 +751,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Layered low-alpha spectral halo lines"
+    "description": "Layered low-alpha spectral halo lines",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-annular-rose",
@@ -637,7 +763,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Alternating polar rose-style magnitude petals"
+    "description": "Alternating polar rose-style magnitude petals",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-annular-concentric",
@@ -647,7 +775,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Multilayered frequency rings"
+    "description": "Multilayered frequency rings",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-annular-sectors",
@@ -657,7 +787,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Coloured pie sector bars per frequency bin"
+    "description": "Coloured pie sector bars per frequency bin",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-annular-layers",
@@ -667,7 +799,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Interleaved bands partitioned over concentric rings"
+    "description": "Interleaved bands partitioned over concentric rings",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-annular-gauge",
@@ -677,7 +811,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Single annular swept arc for mean visual band intensity"
+    "description": "Single annular swept arc for mean visual band intensity",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-annular-spiral",
@@ -687,7 +823,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Frequency bins plotted on an amplitude-perturbed spiral"
+    "description": "Frequency bins plotted on an amplitude-perturbed spiral",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-annular-helix",
@@ -697,7 +835,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Frequency bins along a multiple-turn polar trace"
+    "description": "Frequency bins along a multiple-turn polar trace",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrogram-annular-time",
@@ -707,7 +847,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Annular spectrogram with time as radius and frequency as angle"
+    "description": "Annular spectrogram with time as radius and frequency as angle",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrogram-annular-rings",
@@ -717,7 +859,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Discrete concentric time-history rings coloured by band intensity"
+    "description": "Discrete concentric time-history rings coloured by band intensity",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrogram-annular-heatmap",
@@ -727,7 +871,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Polar annulus time-frequency heatmap"
+    "description": "Polar annulus time-frequency heatmap",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrogram-annular-stripes",
@@ -737,7 +883,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Alternating tinted strips across the polar heatmap"
+    "description": "Alternating tinted strips across the polar heatmap",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrogram-annular-contour",
@@ -747,7 +895,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Quantised spectral power annulus, band-level contour regions"
+    "description": "Quantised spectral power annulus, band-level contour regions",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrogram-annular-frequency",
@@ -757,7 +907,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Time mapped to angle, frequency to radius"
+    "description": "Time mapped to angle, frequency to radius",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrogram-annular-sweep",
@@ -767,7 +919,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Radar-style time sweep with old measurements faded"
+    "description": "Radar-style time sweep with old measurements faded",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrogram-annular-spiral",
@@ -777,7 +931,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Dominant-band spectral history along a time spiral"
+    "description": "Dominant-band spectral history along a time spiral",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "waveform-annular-line",
@@ -787,7 +943,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Signed native Rudiment history as a complete annular outline"
+    "description": "Signed native Rudiment history as a complete annular outline",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-annular-fill",
@@ -797,7 +955,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Signed annular waveform with fill to the centre ring"
+    "description": "Signed annular waveform with fill to the centre ring",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-annular-area",
@@ -807,7 +967,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Filled area between motion trace and inner ring"
+    "description": "Filled area between motion trace and inner ring",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-annular-envelope",
@@ -817,7 +979,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Unsigned Rudiment channel amplitude around a circular baseline"
+    "description": "Unsigned Rudiment channel amplitude around a circular baseline",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-annular-halo",
@@ -827,7 +991,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Translucent circular waveform aura"
+    "description": "Translucent circular waveform aura",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-annular-rose",
@@ -837,7 +1003,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Alternating-petal annular waveform"
+    "description": "Alternating-petal annular waveform",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-annular-pulse",
@@ -847,7 +1015,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Per-point thickness pulse around a middle ring"
+    "description": "Per-point thickness pulse around a middle ring",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-annular-mirror",
@@ -857,7 +1027,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Inside/outside mirrored radial waveform envelopes"
+    "description": "Inside/outside mirrored radial waveform envelopes",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-annular-ribbon",
@@ -867,7 +1039,9 @@
     "requiresSpectrum": false,
     "minDimensions": 2,
     "usesHistory": true,
-    "description": "Annular ribbon between two native Rudiment axes"
+    "description": "Annular ribbon between two native Rudiment axes",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-annular-rings",
@@ -877,7 +1051,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Concentric independent motion channels"
+    "description": "Concentric independent motion channels",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-annular-bands",
@@ -887,7 +1063,9 @@
     "requiresSpectrum": false,
     "minDimensions": 2,
     "usesHistory": true,
-    "description": "Two-axis banded annular trace"
+    "description": "Two-axis banded annular trace",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-annular-bars",
@@ -897,7 +1075,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Bipolar motion-history spokes rooted at a centred circle"
+    "description": "Bipolar motion-history spokes rooted at a centred circle",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-annular-spokes",
@@ -907,7 +1087,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Circular discrete-time stem oscilloscope"
+    "description": "Circular discrete-time stem oscilloscope",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-annular-led",
@@ -917,7 +1099,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Radial LED trail driven by absolute Rudiment channel value"
+    "description": "Radial LED trail driven by absolute Rudiment channel value",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-annular-petals",
@@ -927,7 +1111,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Sampled waveform sectors as radial petals"
+    "description": "Sampled waveform sectors as radial petals",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-annular-sectors",
@@ -937,7 +1123,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Sector length encodes absolute Rudiment motion magnitude"
+    "description": "Sector length encodes absolute Rudiment motion magnitude",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-annular-arc",
@@ -947,7 +1135,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Time-addressed arcs with per-sample radial position"
+    "description": "Time-addressed arcs with per-sample radial position",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-annular-dots",
@@ -957,7 +1147,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Circular sampler dots mapped to signed amplitude"
+    "description": "Circular sampler dots mapped to signed amplitude",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-annular-radar",
@@ -967,7 +1159,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Radar-like radial motion traces with dot endpoints"
+    "description": "Radar-like radial motion traces with dot endpoints",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-annular-trails",
@@ -977,7 +1171,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Chronologically fading dots along the annular waveform"
+    "description": "Chronologically fading dots along the annular waveform",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-annular-spiral",
@@ -987,7 +1183,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Rudiment signal warped around a multi-turn time spiral"
+    "description": "Rudiment signal warped around a multi-turn time spiral",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-annular-helix",
@@ -997,7 +1195,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Waveform on a spiralling annular helix"
+    "description": "Waveform on a spiralling annular helix",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "phase-annular-portrait",
@@ -1007,7 +1207,9 @@
     "requiresSpectrum": false,
     "minDimensions": 2,
     "usesHistory": true,
-    "description": "Two native Rudiment dimensions mapped into annular angle and radius"
+    "description": "Two native Rudiment dimensions mapped into annular angle and radius",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "spectrum-cityscape",
@@ -1017,7 +1219,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "A skyline of unequal roofline bars from calibrated Fourier bands"
+    "description": "A skyline of unequal roofline bars from calibrated Fourier bands",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-led-matrix",
@@ -1027,7 +1231,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Stacked discretised LED columns across frequency"
+    "description": "Stacked discretised LED columns across frequency",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-capsules",
@@ -1037,7 +1243,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Rounded spectrum amplitude capsules"
+    "description": "Rounded spectrum amplitude capsules",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-outline-blocks",
@@ -1047,7 +1255,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Outlined rather than filled frequency-bin rectangles"
+    "description": "Outlined rather than filled frequency-bin rectangles",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-peak-ladder",
@@ -1057,7 +1267,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Horizontal rungs marking each calibrated band level"
+    "description": "Horizontal rungs marking each calibrated band level",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-staircase",
@@ -1067,7 +1279,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Frequency-band zero-order-hold height step plot"
+    "description": "Frequency-band zero-order-hold height step plot",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-eq-curve",
@@ -1077,7 +1291,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Interpolated drawing through recorded band centres (no new DSP)"
+    "description": "Interpolated drawing through recorded band centres (no new DSP)",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-ribbon-stack",
@@ -1087,7 +1303,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Layered observed spectral traces with fading ink"
+    "description": "Layered observed spectral traces with fading ink",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-peak-trails",
@@ -1097,7 +1315,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Trailing observed spectral bin markers over history"
+    "description": "Trailing observed spectral bin markers over history",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-gel-bars",
@@ -1107,7 +1327,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Glassy translucent frequency columns with highlights"
+    "description": "Glassy translucent frequency columns with highlights",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-lollipop-grid",
@@ -1117,7 +1339,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Stem-and-bead plot on a frequency grid"
+    "description": "Stem-and-bead plot on a frequency grid",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-mountain-range",
@@ -1127,7 +1351,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Ridged layers of previous frequency-band frames"
+    "description": "Ridged layers of previous frequency-band frames",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-band-delta",
@@ -1137,7 +1363,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Signed difference between current and previous observed band levels"
+    "description": "Signed difference between current and previous observed band levels",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-band-variance",
@@ -1147,7 +1375,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Variance of observed sampled band levels, not spectral variance analysis"
+    "description": "Variance of observed sampled band levels, not spectral variance analysis",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-energy-tiles",
@@ -1157,7 +1387,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Bands drawn as colour-intensity tiles"
+    "description": "Bands drawn as colour-intensity tiles",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-semi-circle",
@@ -1167,7 +1399,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Upper semicircular spectrum bars rather than a complete annulus"
+    "description": "Upper semicircular spectrum bars rather than a complete annulus",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-fan-meter",
@@ -1177,7 +1411,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Frequency wedges along a semi-annular fan"
+    "description": "Frequency wedges along a semi-annular fan",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-braided-lines",
@@ -1187,7 +1423,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Interlaced lines from sampled band histories"
+    "description": "Interlaced lines from sampled band histories",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-rain-bars",
@@ -1197,7 +1435,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Dropping horizontal frequency strokes over sampled history"
+    "description": "Dropping horizontal frequency strokes over sampled history",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-bead-stacks",
@@ -1207,7 +1447,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Rounded dot columns with discrete energy steps"
+    "description": "Rounded dot columns with discrete energy steps",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-dash-grid",
@@ -1217,7 +1459,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Multi-row dashed spectral equaliser"
+    "description": "Multi-row dashed spectral equaliser",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-thermometer",
@@ -1227,7 +1471,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Full-height level-sensitive opacity bars"
+    "description": "Full-height level-sensitive opacity bars",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-wave-fence",
@@ -1237,7 +1483,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Perspective fence of successive observed spectra"
+    "description": "Perspective fence of successive observed spectra",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrum-partition",
@@ -1247,7 +1495,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Equal-width nested slices with area representing band level"
+    "description": "Equal-width nested slices with area representing band level",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrogram-pixel-mosaic",
@@ -1257,7 +1507,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Hard pixel cells showing observed time-frequency band values"
+    "description": "Hard pixel cells showing observed time-frequency band values",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrogram-isometric-terrain",
@@ -1267,7 +1519,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Offset isometric horizon lines over observed spectral history"
+    "description": "Offset isometric horizon lines over observed spectral history",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrogram-voxel-city",
@@ -1277,7 +1531,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Height-encoded isometric blocks for time-frequency samples"
+    "description": "Height-encoded isometric blocks for time-frequency samples",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrogram-frequency-stripes",
@@ -1287,7 +1543,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Alternating vertical frequency columns in a scrolling heatmap"
+    "description": "Alternating vertical frequency columns in a scrolling heatmap",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrogram-dot-cloud",
@@ -1297,7 +1555,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Circular marks whose radius and alpha follow observed band power"
+    "description": "Circular marks whose radius and alpha follow observed band power",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrogram-isobands",
@@ -1307,7 +1567,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Discrete filled colour thresholds from observed bands"
+    "description": "Discrete filled colour thresholds from observed bands",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrogram-negative",
@@ -1317,7 +1579,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Inverted visual colour scale of time-frequency energy"
+    "description": "Inverted visual colour scale of time-frequency energy",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrogram-tape",
@@ -1327,7 +1591,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Horizontal film-like band-history lanes"
+    "description": "Horizontal film-like band-history lanes",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrogram-slit-scan",
@@ -1337,7 +1603,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Vertical slits displaying successive spectrum samples"
+    "description": "Vertical slits displaying successive spectrum samples",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrogram-trails",
@@ -1347,7 +1615,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Diagonal trails of observed frequency-bin magnitudes"
+    "description": "Diagonal trails of observed frequency-bin magnitudes",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrogram-hex-cells",
@@ -1357,7 +1627,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Hexagonal cells coloured by time-frequency energy"
+    "description": "Hexagonal cells coloured by time-frequency energy",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrogram-bead-grid",
@@ -1367,7 +1639,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Elliptical beads arranged on time-frequency rows"
+    "description": "Elliptical beads arranged on time-frequency rows",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrogram-tunnel",
@@ -1377,7 +1651,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Concentric rectangular history frames with band colours"
+    "description": "Concentric rectangular history frames with band colours",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrogram-record-grooves",
@@ -1387,7 +1663,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Concentric spectral history grooves in the style of a record"
+    "description": "Concentric spectral history grooves in the style of a record",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrogram-quilt",
@@ -1397,7 +1675,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Alternating hard-edged time-frequency patches"
+    "description": "Alternating hard-edged time-frequency patches",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrogram-crosshatch",
@@ -1407,7 +1687,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Crosshatched screen whose density follows band magnitude"
+    "description": "Crosshatched screen whose density follows band magnitude",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrogram-triangle-tiles",
@@ -1417,7 +1699,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Tessellated triangle glyphs coloured by recorded spectral values"
+    "description": "Tessellated triangle glyphs coloured by recorded spectral values",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "spectrogram-pixel-rain",
@@ -1427,7 +1711,9 @@
     "requiresSpectrum": true,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Vertical pixel drop matrix showing previous calibrated band levels"
+    "description": "Vertical pixel drop matrix showing previous calibrated band levels",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   },
   {
     "name": "waveform-phosphor",
@@ -1437,7 +1723,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Age-decayed CRT-like sampled Rudiment trace"
+    "description": "Age-decayed CRT-like sampled Rudiment trace",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-echo",
@@ -1447,7 +1735,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Offset translucent history echoes of Rudiment channels"
+    "description": "Offset translucent history echoes of Rudiment channels",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-sample-beads",
@@ -1457,7 +1747,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Observed Rudiment values drawn as discrete circles"
+    "description": "Observed Rudiment values drawn as discrete circles",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-channel-braid",
@@ -1467,7 +1759,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Two Rudiment dimensions woven across the time axis"
+    "description": "Two Rudiment dimensions woven across the time axis",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-pulse-train",
@@ -1477,7 +1771,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Signed Rudiment channel impulses from a zero baseline"
+    "description": "Signed Rudiment channel impulses from a zero baseline",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-quantised",
@@ -1487,7 +1783,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Quantised display grid of Rudiment levels"
+    "description": "Quantised display grid of Rudiment levels",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-triggered",
@@ -1497,7 +1795,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Leading-edge display aligned to an observed Rudiment zero crossing"
+    "description": "Leading-edge display aligned to an observed Rudiment zero crossing",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-spiral-trace",
@@ -1507,7 +1807,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Rudiment history rendered as a planar spiral with amplitude modulation"
+    "description": "Rudiment history rendered as a planar spiral with amplitude modulation",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-butterfly",
@@ -1517,7 +1819,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Mirrored paired Rudiment traces across the centre line"
+    "description": "Mirrored paired Rudiment traces across the centre line",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-horizon",
@@ -1527,7 +1831,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Overlaid translucent Rudiment history ridges"
+    "description": "Overlaid translucent Rudiment history ridges",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-heat-ribbon",
@@ -1537,7 +1843,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Filled channel history with time-varying ink strength"
+    "description": "Filled channel history with time-varying ink strength",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-dotted-envelope",
@@ -1547,7 +1855,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Envelope-style upper/lower sampled Rudiment point clouds"
+    "description": "Envelope-style upper/lower sampled Rudiment point clouds",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-vertical-scope",
@@ -1557,7 +1867,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Rudiment time moving vertically with horizontal signal amplitude"
+    "description": "Rudiment time moving vertically with horizontal signal amplitude",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-phase-trails",
@@ -1567,7 +1879,9 @@
     "requiresSpectrum": false,
     "minDimensions": 2,
     "usesHistory": true,
-    "description": "Age-faded XY Rudiment motion portrait"
+    "description": "Age-faded XY Rudiment motion portrait",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-polar-radar",
@@ -1577,7 +1891,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Polar motion history with fading position spokes"
+    "description": "Polar motion history with fading position spokes",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-dna-helix",
@@ -1587,7 +1903,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Two out-of-phase Rudiment traces linked by time-axis rungs"
+    "description": "Two out-of-phase Rudiment traces linked by time-axis rungs",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-block-meter",
@@ -1597,7 +1915,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Discrete per-sample signed Rudiment blocks"
+    "description": "Discrete per-sample signed Rudiment blocks",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "waveform-signal-staircase",
@@ -1607,7 +1927,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": true,
-    "description": "Stacked stepped traces in independently offset lanes"
+    "description": "Stacked stepped traces in independently offset lanes",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "spatial-torus",
@@ -1617,7 +1939,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": false,
-    "description": "Deterministic 3D projected wire geometry animated by native Rudiment channels"
+    "description": "Deterministic 3D projected wire geometry animated by native Rudiment channels",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "spatial-sphere",
@@ -1627,7 +1951,9 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": false,
-    "description": "Deterministic 3D projected wire geometry animated by native Rudiment channels"
+    "description": "Deterministic 3D projected wire geometry animated by native Rudiment channels",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
   },
   {
     "name": "spatial-terrain",
@@ -1637,6 +1963,704 @@
     "requiresSpectrum": false,
     "minDimensions": 1,
     "usesHistory": false,
-    "description": "Deterministic 3D projected wire geometry animated by native Rudiment channels"
+    "description": "Deterministic 3D projected wire geometry animated by native Rudiment channels",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
+  },
+  {
+    "name": "sprite-spectrum-lcd",
+    "label": "Sprite Spectrum Lcd",
+    "family": "spectrum",
+    "styleFamily": "sprites",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": false,
+    "description": "Segmented LCD level columns with lit and unlit image cells",
+    "requiresAtlas": true,
+    "supportsSpectrum": true
+  },
+  {
+    "name": "sprite-spectrum-lcd-horizontal",
+    "label": "Sprite Spectrum Lcd Horizontal",
+    "family": "spectrum",
+    "styleFamily": "sprites",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": false,
+    "description": "Horizontal LCD meters with independent band rows",
+    "requiresAtlas": true,
+    "supportsSpectrum": true
+  },
+  {
+    "name": "sprite-spectrum-lcd-mirrored",
+    "label": "Sprite Spectrum Lcd Mirrored",
+    "family": "spectrum",
+    "styleFamily": "sprites",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": false,
+    "description": "Mirrored LCD columns growing about the centre line",
+    "requiresAtlas": true,
+    "supportsSpectrum": true
+  },
+  {
+    "name": "sprite-spectrum-led",
+    "label": "Sprite Spectrum Led",
+    "family": "spectrum",
+    "styleFamily": "sprites",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": false,
+    "description": "LED dot matrix with individually illuminated PNG discs",
+    "requiresAtlas": true,
+    "supportsSpectrum": true
+  },
+  {
+    "name": "sprite-spectrum-led-radial",
+    "label": "Sprite Spectrum Led Radial",
+    "family": "spectrum",
+    "styleFamily": "sprites",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": false,
+    "description": "Circular LED dot analyzers built from repeated PNG stamps",
+    "requiresAtlas": true,
+    "supportsSpectrum": true
+  },
+  {
+    "name": "sprite-spectrum-vfd",
+    "label": "Sprite Spectrum Vfd",
+    "family": "spectrum",
+    "styleFamily": "sprites",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": false,
+    "description": "Vacuum fluorescent tube bars assembled from sprite cells",
+    "requiresAtlas": true,
+    "supportsSpectrum": true
+  },
+  {
+    "name": "sprite-spectrum-retro",
+    "label": "Sprite Spectrum Retro",
+    "family": "spectrum",
+    "styleFamily": "sprites",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": false,
+    "description": "8-bit arcade frequency blocks",
+    "requiresAtlas": true,
+    "supportsSpectrum": true
+  },
+  {
+    "name": "sprite-spectrum-neon",
+    "label": "Sprite Spectrum Neon",
+    "family": "spectrum",
+    "styleFamily": "sprites",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": false,
+    "description": "Glossy neon tube columns with sprite reflections",
+    "requiresAtlas": true,
+    "supportsSpectrum": true
+  },
+  {
+    "name": "sprite-spectrum-crystal",
+    "label": "Sprite Spectrum Crystal",
+    "family": "spectrum",
+    "styleFamily": "sprites",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": false,
+    "description": "Stacked refractive crystal sprite frequency columns",
+    "requiresAtlas": true,
+    "supportsSpectrum": true
+  },
+  {
+    "name": "sprite-spectrum-fire",
+    "label": "Sprite Spectrum Fire",
+    "family": "spectrum",
+    "styleFamily": "sprites",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": false,
+    "description": "Flame sprite stacks driven by calibrated band magnitudes",
+    "requiresAtlas": true,
+    "supportsSpectrum": true
+  },
+  {
+    "name": "sprite-spectrum-ice",
+    "label": "Sprite Spectrum Ice",
+    "family": "spectrum",
+    "styleFamily": "sprites",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": false,
+    "description": "Translucent frosted sprite frequency peaks",
+    "requiresAtlas": true,
+    "supportsSpectrum": true
+  },
+  {
+    "name": "sprite-spectrum-icons",
+    "label": "Sprite Spectrum Icons",
+    "family": "spectrum",
+    "styleFamily": "sprites",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": false,
+    "description": "Icon-stack frequency columns",
+    "requiresAtlas": true,
+    "supportsSpectrum": true
+  },
+  {
+    "name": "sprite-spectrum-petals",
+    "label": "Sprite Spectrum Petals",
+    "family": "spectrum",
+    "styleFamily": "sprites",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": false,
+    "description": "Sprite petals arranged around a circular frequency plot",
+    "requiresAtlas": true,
+    "supportsSpectrum": true
+  },
+  {
+    "name": "sprite-spectrum-ring",
+    "label": "Sprite Spectrum Ring",
+    "family": "spectrum",
+    "styleFamily": "sprites",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": false,
+    "description": "Concentric sprite level rings",
+    "requiresAtlas": true,
+    "supportsSpectrum": true
+  },
+  {
+    "name": "sprite-spectrum-halo",
+    "label": "Sprite Spectrum Halo",
+    "family": "spectrum",
+    "styleFamily": "sprites",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": false,
+    "description": "Soft-glow image particles around polar band positions",
+    "requiresAtlas": true,
+    "supportsSpectrum": true
+  },
+  {
+    "name": "sprite-spectrum-mosaic",
+    "label": "Sprite Spectrum Mosaic",
+    "family": "spectrum",
+    "styleFamily": "sprites",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": false,
+    "description": "Frequency-response mosaics made from image tiles",
+    "requiresAtlas": true,
+    "supportsSpectrum": true
+  },
+  {
+    "name": "sprite-spectrum-city",
+    "label": "Sprite Spectrum City",
+    "family": "spectrum",
+    "styleFamily": "sprites",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": false,
+    "description": "Skyline of tile-built frequency towers",
+    "requiresAtlas": true,
+    "supportsSpectrum": true
+  },
+  {
+    "name": "sprite-spectrum-gauge",
+    "label": "Sprite Spectrum Gauge",
+    "family": "spectrum",
+    "styleFamily": "sprites",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": false,
+    "description": "Single radial sprite meter of current aggregate band level",
+    "requiresAtlas": true,
+    "supportsSpectrum": true
+  },
+  {
+    "name": "sprite-spectrum-spokes",
+    "label": "Sprite Spectrum Spokes",
+    "family": "spectrum",
+    "styleFamily": "sprites",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": false,
+    "description": "Radial discrete frequency spokes stamped from source tiles",
+    "requiresAtlas": true,
+    "supportsSpectrum": true
+  },
+  {
+    "name": "sprite-spectrum-orbits",
+    "label": "Sprite Spectrum Orbits",
+    "family": "spectrum",
+    "styleFamily": "sprites",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": false,
+    "description": "Orbiting glyphs at data-derived radius for each Fourier band",
+    "requiresAtlas": true,
+    "supportsSpectrum": true
+  },
+  {
+    "name": "sprite-spectrogram-lcd",
+    "label": "Sprite Spectrogram Lcd",
+    "family": "spectrogram",
+    "styleFamily": "sprites",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "LCD segment-cell time-frequency history",
+    "requiresAtlas": true,
+    "supportsSpectrum": true
+  },
+  {
+    "name": "sprite-spectrogram-led",
+    "label": "Sprite Spectrogram Led",
+    "family": "spectrogram",
+    "styleFamily": "sprites",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Discrete LED dot sonogram",
+    "requiresAtlas": true,
+    "supportsSpectrum": true
+  },
+  {
+    "name": "sprite-spectrogram-pixels",
+    "label": "Sprite Spectrogram Pixels",
+    "family": "spectrogram",
+    "styleFamily": "sprites",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Indexed pixel tiles across observed spectrum history",
+    "requiresAtlas": true,
+    "supportsSpectrum": true
+  },
+  {
+    "name": "sprite-spectrogram-heatmap",
+    "label": "Sprite Spectrogram Heatmap",
+    "family": "spectrogram",
+    "styleFamily": "sprites",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Intensity-coded bitmap cell sonogram",
+    "requiresAtlas": true,
+    "supportsSpectrum": true
+  },
+  {
+    "name": "sprite-spectrogram-icons",
+    "label": "Sprite Spectrogram Icons",
+    "family": "spectrogram",
+    "styleFamily": "sprites",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Discrete icon heatmap over observed time-frequency bins",
+    "requiresAtlas": true,
+    "supportsSpectrum": true
+  },
+  {
+    "name": "sprite-spectrogram-neon",
+    "label": "Sprite Spectrogram Neon",
+    "family": "spectrogram",
+    "styleFamily": "sprites",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Neon time-frequency mosaic",
+    "requiresAtlas": true,
+    "supportsSpectrum": true
+  },
+  {
+    "name": "sprite-spectrogram-crystal",
+    "label": "Sprite Spectrogram Crystal",
+    "family": "spectrogram",
+    "styleFamily": "sprites",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Crystal glyphs arranged by band and observed time",
+    "requiresAtlas": true,
+    "supportsSpectrum": true
+  },
+  {
+    "name": "sprite-spectrogram-fire",
+    "label": "Sprite Spectrogram Fire",
+    "family": "spectrogram",
+    "styleFamily": "sprites",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Flame sprites along energetic time-frequency regions",
+    "requiresAtlas": true,
+    "supportsSpectrum": true
+  },
+  {
+    "name": "sprite-spectrogram-radial",
+    "label": "Sprite Spectrogram Radial",
+    "family": "spectrogram",
+    "styleFamily": "sprites",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Radial annulus with frequency and time sprite positions",
+    "requiresAtlas": true,
+    "supportsSpectrum": true
+  },
+  {
+    "name": "sprite-spectrogram-spiral",
+    "label": "Sprite Spectrogram Spiral",
+    "family": "spectrogram",
+    "styleFamily": "sprites",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Time-wrapped sprite spiral with frequency-driven radius",
+    "requiresAtlas": true,
+    "supportsSpectrum": true
+  },
+  {
+    "name": "sprite-spectrogram-rain",
+    "label": "Sprite Spectrogram Rain",
+    "family": "spectrogram",
+    "styleFamily": "sprites",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Rain-like descending trails of detected Fourier energy",
+    "requiresAtlas": true,
+    "supportsSpectrum": true
+  },
+  {
+    "name": "sprite-spectrogram-blocks",
+    "label": "Sprite Spectrogram Blocks",
+    "family": "spectrogram",
+    "styleFamily": "sprites",
+    "requiresSpectrum": true,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Block-cell bitmap sonogram with visible grid",
+    "requiresAtlas": true,
+    "supportsSpectrum": true
+  },
+  {
+    "name": "sprite-waveform-lcd",
+    "label": "Sprite Waveform Lcd",
+    "family": "motion",
+    "styleFamily": "sprites",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Discrete LCD cells tracing native Rudiment history",
+    "requiresAtlas": true,
+    "supportsSpectrum": false
+  },
+  {
+    "name": "sprite-waveform-led",
+    "label": "Sprite Waveform Led",
+    "family": "motion",
+    "styleFamily": "sprites",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "LED particles following the native waveform",
+    "requiresAtlas": true,
+    "supportsSpectrum": false
+  },
+  {
+    "name": "sprite-waveform-dots",
+    "label": "Sprite Waveform Dots",
+    "family": "motion",
+    "styleFamily": "sprites",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Individual sprite points for every observed sample",
+    "requiresAtlas": true,
+    "supportsSpectrum": false
+  },
+  {
+    "name": "sprite-waveform-icons",
+    "label": "Sprite Waveform Icons",
+    "family": "motion",
+    "styleFamily": "sprites",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Icon stamps in chronological waveform order",
+    "requiresAtlas": true,
+    "supportsSpectrum": false
+  },
+  {
+    "name": "sprite-waveform-neon",
+    "label": "Sprite Waveform Neon",
+    "family": "motion",
+    "styleFamily": "sprites",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Luminous neon nodes along the native motion trace",
+    "requiresAtlas": true,
+    "supportsSpectrum": false
+  },
+  {
+    "name": "sprite-waveform-ribbon",
+    "label": "Sprite Waveform Ribbon",
+    "family": "motion",
+    "styleFamily": "sprites",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Thick image-tile waveform ribbon",
+    "requiresAtlas": true,
+    "supportsSpectrum": false
+  },
+  {
+    "name": "sprite-waveform-bars",
+    "label": "Sprite Waveform Bars",
+    "family": "motion",
+    "styleFamily": "sprites",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Sprite columns from the zero line to Rudiment samples",
+    "requiresAtlas": true,
+    "supportsSpectrum": false
+  },
+  {
+    "name": "sprite-waveform-mirrored",
+    "label": "Sprite Waveform Mirrored",
+    "family": "motion",
+    "styleFamily": "sprites",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Inside/outside mirrored sprite waveform",
+    "requiresAtlas": true,
+    "supportsSpectrum": false
+  },
+  {
+    "name": "sprite-waveform-annular",
+    "label": "Sprite Waveform Annular",
+    "family": "motion",
+    "styleFamily": "sprites",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Circular waveform built from rotating sprites",
+    "requiresAtlas": true,
+    "supportsSpectrum": false
+  },
+  {
+    "name": "sprite-waveform-spiral",
+    "label": "Sprite Waveform Spiral",
+    "family": "motion",
+    "styleFamily": "sprites",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Chronological spiral sprite trail",
+    "requiresAtlas": true,
+    "supportsSpectrum": false
+  },
+  {
+    "name": "sprite-waveform-sparks",
+    "label": "Sprite Waveform Sparks",
+    "family": "motion",
+    "styleFamily": "sprites",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Phosphor photon sprites at sampled motion positions",
+    "requiresAtlas": true,
+    "supportsSpectrum": false
+  },
+  {
+    "name": "sprite-waveform-crystal",
+    "label": "Sprite Waveform Crystal",
+    "family": "motion",
+    "styleFamily": "sprites",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Crystal and gem glyphs following the waveform",
+    "requiresAtlas": true,
+    "supportsSpectrum": false
+  },
+  {
+    "name": "sprite-motion-path",
+    "label": "Sprite Motion Path",
+    "family": "motion",
+    "styleFamily": "sprites",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "XY native Rudiment path drawn with sprite stamps",
+    "requiresAtlas": true,
+    "supportsSpectrum": false
+  },
+  {
+    "name": "sprite-motion-orbit",
+    "label": "Sprite Motion Orbit",
+    "family": "motion",
+    "styleFamily": "sprites",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Orbiting sprite glyphs driven by two Rudiment axes",
+    "requiresAtlas": true,
+    "supportsSpectrum": false
+  },
+  {
+    "name": "sprite-motion-cloud",
+    "label": "Sprite Motion Cloud",
+    "family": "motion",
+    "styleFamily": "sprites",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Deterministic sprite cloud around native movement",
+    "requiresAtlas": true,
+    "supportsSpectrum": false
+  },
+  {
+    "name": "sprite-motion-constellation",
+    "label": "Sprite Motion Constellation",
+    "family": "motion",
+    "styleFamily": "sprites",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Sparse star / node sprite constellation",
+    "requiresAtlas": true,
+    "supportsSpectrum": false
+  },
+  {
+    "name": "sprite-motion-trails",
+    "label": "Sprite Motion Trails",
+    "family": "motion",
+    "styleFamily": "sprites",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Chronological decaying motion sprite trails",
+    "requiresAtlas": true,
+    "supportsSpectrum": false
+  },
+  {
+    "name": "sprite-motion-particles",
+    "label": "Sprite Motion Particles",
+    "family": "motion",
+    "styleFamily": "sprites",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Multi-particle native motion sprite field",
+    "requiresAtlas": true,
+    "supportsSpectrum": false
+  },
+  {
+    "name": "sprite-motion-xy",
+    "label": "Sprite Motion Xy",
+    "family": "motion",
+    "styleFamily": "sprites",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Sprite scatter for the first two native dimensions",
+    "requiresAtlas": true,
+    "supportsSpectrum": false
+  },
+  {
+    "name": "sprite-motion-icon-grid",
+    "label": "Sprite Motion Icon Grid",
+    "family": "motion",
+    "styleFamily": "sprites",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Grid of sprites responding to independent Rudiment values",
+    "requiresAtlas": true,
+    "supportsSpectrum": false
+  },
+  {
+    "name": "spatial-solid-torus",
+    "label": "Spatial Solid Torus",
+    "family": "spatial",
+    "styleFamily": "solid",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": false,
+    "description": "Depth-tested filled torus with native motion, materials and fog",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
+  },
+  {
+    "name": "spatial-solid-sphere",
+    "label": "Spatial Solid Sphere",
+    "family": "spatial",
+    "styleFamily": "solid",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": false,
+    "description": "Depth-tested filled sphere with native motion, materials and fog",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
+  },
+  {
+    "name": "spatial-solid-terrain",
+    "label": "Spatial Solid Terrain",
+    "family": "spatial",
+    "styleFamily": "solid",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": false,
+    "description": "Depth-tested filled terrain with native motion, materials and fog",
+    "requiresAtlas": false,
+    "supportsSpectrum": false
+  },
+  {
+    "name": "spatial-music-torus",
+    "label": "Spatial Music Torus",
+    "family": "spatial",
+    "styleFamily": "music",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": false,
+    "description": "Native-deformed torus with procedural materials and optional saved Fourier input",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
+  },
+  {
+    "name": "spatial-music-sphere",
+    "label": "Spatial Music Sphere",
+    "family": "spatial",
+    "styleFamily": "music",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": false,
+    "description": "Native-deformed sphere with procedural materials and optional saved Fourier input",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
+  },
+  {
+    "name": "spatial-music-terrain",
+    "label": "Spatial Music Terrain",
+    "family": "spatial",
+    "styleFamily": "music",
+    "requiresSpectrum": false,
+    "minDimensions": 1,
+    "usesHistory": true,
+    "description": "Native-deformed terrain with procedural materials and optional saved Fourier input",
+    "requiresAtlas": false,
+    "supportsSpectrum": true
   }
 ]

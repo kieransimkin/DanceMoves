@@ -5,6 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {spawnSync} from 'node:child_process';
+import {SPRITE_ATLASES} from '../../src/visualiser-sprite-catalogue.mjs';
 
 const ROOT=path.resolve(import.meta.dirname,'../..');
 const readJson=file=>JSON.parse(fs.readFileSync(file,'utf8'));
@@ -47,6 +48,8 @@ test('npm, browser and WordPress distributions contain no page recording or audi
  assert.equal(packed.length,1);
  assertPageDataExcluded(packed[0].files.map(file=>file.path),ROOT,'npm');
  assert.ok(packed[0].files.some(file=>file.path==='lib/index.mjs'));
+ for(const atlas of Object.values(SPRITE_ATLASES))
+  assert.ok(packed[0].files.some(file=>file.path==='lib/assets/visualiser-sprites/'+atlas.file),'npm includes '+atlas.file);
 
  // Package an isolated copy of the actual build. Tests never add/remove files
  // from the user's build or race another process writing release archives.
@@ -55,6 +58,7 @@ test('npm, browser and WordPress distributions contain no page recording or audi
  fs.mkdirSync(path.join(directory,'docs'),{recursive:true});
  fs.mkdirSync(path.join(directory,'assets'),{recursive:true});
  fs.copyFileSync(path.join(ROOT,'assets/visualiser-catalogue.json'),path.join(directory,'assets/visualiser-catalogue.json'));
+ fs.cpSync(path.join(ROOT,'assets/visualiser-sprites'),path.join(directory,'assets/visualiser-sprites'),{recursive:true});
  fs.cpSync(path.join(ROOT,'lib'),path.join(directory,'lib'),{recursive:true});
  fs.cpSync(path.join(ROOT,'.build/wordpress'),path.join(directory,'.build/wordpress'),{recursive:true});
  fs.cpSync(path.join(ROOT,'docs/branding'),path.join(directory,'docs/branding'),{recursive:true});
@@ -73,7 +77,14 @@ test('npm, browser and WordPress distributions contain no page recording or audi
   const zipped=JSON.parse(run(python,['-c','import json,sys,zipfile; print(json.dumps(zipfile.ZipFile(sys.argv[1]).namelist()))',path.join(directory,'dist',archive.name)],directory));
   const names=zipped.map(name=>name.slice(name.indexOf('/')+1));
   assertPageDataExcluded(names,archive.source,archive.label);
+  const prefix=archive.label==='WordPress'?'lib/':'';
+  for(const name of ['LICENSE','manifest.json',...Object.values(SPRITE_ATLASES).map(atlas=>atlas.file)])
+   assert.ok(names.includes(prefix+'assets/visualiser-sprites/'+name),archive.label+' includes '+name);
  }
+ fs.unlinkSync(path.join(directory,'lib/assets/visualiser-sprites/lcd.png'));
+ const missing=spawnSync(python,['tools/package-web.py'],{cwd:directory,encoding:'utf8'});
+ assert.ifError(missing.error);assert.notEqual(missing.status,0);
+ assert.match(missing.stderr,/Web asset inventory differs/,'browser packaging cannot silently omit a required atlas');
 }));
 
 test('prepack rejects a song recording added after build without changing it',()=>temporary(directory=>{

@@ -6,6 +6,7 @@ function is_wp_error($x){return $x instanceof WP_Error;}
 function add_filter(...$a){}function add_action(...$a){}function add_shortcode(...$a){}
 function register_post_meta(...$a){}function add_meta_box(...$a){}function absint($v){return max(0,abs((int)$v));}
 function wp_json_encode($v){return json_encode($v,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);}
+function wp_parse_url($v){return parse_url($v);}
 function sanitize_text_field($v){return strip_tags((string)$v);}
 function get_post_type($id){return isset($GLOBALS['files'][(int)$id])?'attachment':'page';}
 function get_post_mime_type($id){return ($GLOBALS['files'][(int)$id]['mime']??'');}

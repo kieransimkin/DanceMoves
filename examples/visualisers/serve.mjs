@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {createFixture} from '../spectrum/fixture.mjs';
+import {SPRITE_ATLASES} from '../../src/visualiser-sprite-catalogue.mjs';
 const root = path.resolve(import.meta.dirname, '../..');
 export function createGalleryServer({onRequest = () => {}} = {}) {
   const fixture = createFixture();
@@ -21,6 +22,8 @@ export function createGalleryServer({onRequest = () => {}} = {}) {
     ['/fixture.json', {type:'application/json',body:Buffer.from(JSON.stringify(fixture.recording))}],
     ['/fixture.wav', {type:'audio/wav',body:fixture.wav}]
   ]);
+  for (const atlas of Object.values(SPRITE_ATLASES)) routes.set('/lib/assets/visualiser-sprites/' + atlas.file,
+    {type:'image/png',body:fs.readFileSync(path.join(root,'lib/assets/visualiser-sprites',atlas.file))});
   return http.createServer((request, response) => {
     const pathname = new URL(request.url, 'http://localhost').pathname;
     onRequest(pathname);

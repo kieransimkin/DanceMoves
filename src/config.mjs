@@ -2,6 +2,7 @@ import {validateBeatAlignment} from './beat-alignment.mjs';
 import {validateBeatTimeline, tempoAtSeconds} from './beat-timeline.mjs';
 import {SPECTRUM_RENDERERS} from './spectrum-analysis.mjs';
 import {VISUALISER_RENDERERS, VISUALISER_RUDIMENTS, describeVisualiser} from './visualiser-catalogue.mjs';
+import {SPRITE_THEMES} from './visualiser-sprite-catalogue.mjs';
 /** Host-neutral page properties. WordPress attachment IDs remain a host concern. */
 export const PAGE_META_KEYS = Object.freeze({
   bpm: '_dance_moves_bpm', lyric: '_dance_moves_lyric_timing_id', word: '_dance_moves_word_timing_id', cue: '_dance_moves_cue_timing_id',
@@ -10,7 +11,9 @@ export const PAGE_META_KEYS = Object.freeze({
   beatTimeline: '_dance_moves_beat_timeline', useBeatTimeline: '_dance_moves_use_beat_timeline',
   spectrumRecording: '_dance_moves_spectrum_recording_id', spectrumRenderer: '_dance_moves_spectrum_renderer',
   visualiserRecording: '_dance_moves_visualiser_recording_id', visualiserRenderer: '_dance_moves_visualiser_renderer',
-  visualiserRudiment: '_dance_moves_visualiser_rudiment', visualiserAxes: '_dance_moves_visualiser_axes'
+  visualiserRudiment: '_dance_moves_visualiser_rudiment', visualiserAxes: '_dance_moves_visualiser_axes',
+  visualiserSpriteTheme: '_dance_moves_visualiser_sprite_theme', visualiserTerrainSource: '_dance_moves_visualiser_terrain_source',
+  visualiserSpectralDeform: '_dance_moves_visualiser_spectral_deform'
 });
 const object = value => value && typeof value === 'object' && !Array.isArray(value);
 function finite(value, name, min, max) {
@@ -49,7 +52,23 @@ export function validatePageConfig(input = {}) {
   if (typeof visualiserRudiment !== 'string' || (visualiserRudiment !== '' && !VISUALISER_RUDIMENTS.includes(visualiserRudiment)))
     throw new RangeError('Unknown visualiser rudiment');
   if (visualiserRecordingUrl && visualiserRudiment) throw new RangeError('Choose one visualiser source: a recording URL or a named rudiment');
-  if (visualiserRudiment && describeVisualiser(visualiserRenderer).requiresSpectrum)
+  const visualiserAssetBaseUrl = url(input.visualiserAssetBaseUrl, 'visualiserAssetBaseUrl');
+  if (visualiserAssetBaseUrl && (new URL(visualiserAssetBaseUrl, 'https://dancemoves.invalid/').search ||
+      new URL(visualiserAssetBaseUrl, 'https://dancemoves.invalid/').hash))
+    throw new TypeError('visualiserAssetBaseUrl must be a directory URL without a query or fragment');
+  const visualiserSpriteTheme = input.visualiserSpriteTheme ?? '';
+  if (typeof visualiserSpriteTheme !== 'string' || visualiserSpriteTheme && !SPRITE_THEMES.includes(visualiserSpriteTheme))
+    throw new RangeError('Unknown visualiser sprite theme');
+  const visualiserTerrainSource = input.visualiserTerrainSource ?? 'procedural';
+  if (!['procedural', 'fft'].includes(visualiserTerrainSource)) throw new RangeError('visualiserTerrainSource must be procedural or fft');
+  if (visualiserTerrainSource === 'fft' && visualiserRenderer !== 'spatial-music-terrain')
+    throw new RangeError('FFT terrain requires spatial-music-terrain');
+  if (input.visualiserSpectralDeform !== undefined && typeof input.visualiserSpectralDeform !== 'boolean')
+    throw new TypeError('visualiserSpectralDeform must be boolean');
+  const visualiserSpectralDeform = input.visualiserSpectralDeform === true;
+  if (visualiserSpectralDeform && describeVisualiser(visualiserRenderer).styleFamily !== 'music')
+    throw new RangeError('Spectral deformation requires a music-aware spatial renderer');
+  if (visualiserRudiment && (describeVisualiser(visualiserRenderer).requiresSpectrum || visualiserTerrainSource === 'fft' || visualiserSpectralDeform))
     throw new RangeError('This visualiser renderer requires a calibrated spectrum recording');
   const axes = input.visualiserAxes ?? [];
   if (!Array.isArray(axes) || axes.length > 64) throw new RangeError('visualiserAxes must contain at most 64 unique dimension names');
@@ -74,6 +93,7 @@ export function validatePageConfig(input = {}) {
     wordTimingUrl: url(input.wordTimingUrl,'wordTimingUrl'),
     spectrumRecordingUrl: url(input.spectrumRecordingUrl,'spectrumRecordingUrl'), spectrumRenderer,
     visualiserRecordingUrl, visualiserRenderer, visualiserRudiment, visualiserAxes,
+    visualiserAssetBaseUrl, visualiserSpriteTheme, visualiserTerrainSource, visualiserSpectralDeform,
     lyricPopupsEnabled: input.lyricPopupsEnabled === true, masterDurationMilliseconds: Math.round(duration * 1000) / 1000,
     sharedControlTicks: ticks, lyricDisclosureTicks: disclosure, effect, diagnostics: input.diagnostics === true});
 }
@@ -111,6 +131,10 @@ export async function fromWordPressMeta(meta, resolveAttachment) {
     visualiserRenderer: VISUALISER_RENDERERS.includes(meta[PAGE_META_KEYS.visualiserRenderer]) ? meta[PAGE_META_KEYS.visualiserRenderer] : 'waveform',
     visualiserRudiment: meta[PAGE_META_KEYS.visualiserRudiment] || '',
     visualiserAxes: meta[PAGE_META_KEYS.visualiserAxes] || [],
+    visualiserSpriteTheme: meta[PAGE_META_KEYS.visualiserSpriteTheme] || '',
+    visualiserTerrainSource: meta[PAGE_META_KEYS.visualiserTerrainSource] || 'procedural',
+    visualiserSpectralDeform: [true, 1, '1'].includes(meta[PAGE_META_KEYS.visualiserSpectralDeform]) ? true :
+      [false, 0, '0', '', null, undefined].includes(meta[PAGE_META_KEYS.visualiserSpectralDeform]) ? false : meta[PAGE_META_KEYS.visualiserSpectralDeform],
     lyricPopupsEnabled: meta[PAGE_META_KEYS.popups] === true || String(meta[PAGE_META_KEYS.popups]) === '1',
     masterDurationMilliseconds: Number.isFinite(duration) && duration > 0 && duration <= 86400000 ? duration : 0,
     effect: meta[PAGE_META_KEYS.effect] === 'paper-planes' ? 'paper-planes' : ''});
