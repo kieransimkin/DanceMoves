@@ -70,6 +70,8 @@ does not import either dependency.
 | `orientation` | Optional `{adapter, transitionTargetTicks, harness}`. Adapter is one of `ORIENTATION_ADAPTERS`. Harness remains loopback-only. |
 | `paperPlanes` | `{atlasUrl, planeCount, compactPlaneCount}`. The atlas URL is required with `effect:'paper-planes'`; use the shipped asset, not a fabricated sprite. |
 | `diagnostics` | false; explicitly enables diagnostic sinks. |
+| `spectrumRecordingUrl` | Empty. Page-owned saved StemLab Fourier recording URL; fetched only when a spectrum canvas is mounted in this root. |
+| `spectrumRenderer` | `spectrum`; selects one of ten basic FrameRudiments views. Individual canvases can override the style. |
 | `legacyGlobals` | false. WordPress compatibility mode; one per document, not for ordinary React roots. |
 | `nonce` | Optional nonce attached to library-created style elements for an application's CSP. |
 | `onError` | Optional callback for asynchronous readiness and cleanup errors. Handle individual native-controller `ready` failures as well. |
@@ -87,6 +89,11 @@ working lyric track. Read native readiness separately with
 and removes resources; it does not stop or delete your audio element.
 
 ## Core methods: complete inherited surface
+
+`runtime.spectrum.animate()` creates native-clock Canvas spectrum views with
+explicit page-owned data. `runtime.spectrum.get()`, `snapshot()` and `destroyAll()`
+expose their lifecycle. Declarative canvases mount automatically when configured;
+their readiness is included in `runtime.ready`. See the [complete spectrum API](spectrum-visualisations.md).
 
 The core has **16 ticks per beat**. A tick lasts `3750 / bpm` milliseconds.
 The native library uses **64 pips per beat**, so one core tick is four pips.

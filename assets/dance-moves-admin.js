@@ -57,7 +57,7 @@
       rows.toggle(mode.val() === 'collection');
       add.toggle(mode.val() === 'collection');
       items.each(function (index) {
-        $(this).find('input,textarea').each(function () {
+        $(this).find('input,textarea,select').each(function () {
           const original = $(this).attr('name');
           if (original) $(this).attr('name', original.replace(/dance_moves_songs\[(?:\d+|__INDEX__)\]/, 'dance_moves_songs['+index+']'));
         });

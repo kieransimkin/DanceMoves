@@ -5,6 +5,12 @@ const root = document.createElement('section');
 const audio = document.createElement('audio');
 root.append(audio);
 const motion: DanceMoves = createDanceMoves({root,bpm:145,diagnostics:true});
+const spectrumCanvas=document.createElement('canvas');root.append(spectrumCanvas);
+const spectrum=motion.spectrum.animate({id:'types:spectrum',target:spectrumCanvas,audio,
+  recordingUrl:'/page-assets/fourier.json',renderer:'spectrum-ring',style:{floor_db:-72,labels:true},
+  onFrame(frame){console.log(frame.report?.dominant?.low_hz);}});
+spectrum.ready.then(view=>view.destroy());
+void motion.spectrum.snapshot().sources;
 motion.onEveryBeat(detail => console.log(detail.boundaryTick));
 motion.effects.pointer({root,target:root}).reset();
 motion.effects.playbackPulse({root,audio}).sync();

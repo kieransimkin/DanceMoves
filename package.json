@@ -78,6 +78,8 @@
     "test": "node --test tests/shared/*.test.mjs tests/epk-dom-stability.test.mjs",
     "test:legacy": "node tools/test-legacy.cjs",
     "test:browser": "node tests/shared/browser.mjs",
+    "test:spectrum:browser": "node tests/shared/spectrum-browser.mjs",
+    "demo:spectrum": "node examples/spectrum/serve.mjs",
     "test:epk-dom-stability": "node tools/epk-dom-stability.mjs",
     "test:next": "node tools/run-next.mjs build",
     "demo:react": "node examples/react/serve.mjs",

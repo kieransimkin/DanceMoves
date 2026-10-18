@@ -105,7 +105,7 @@ function dance_moves_word_filetype($check,$file,$filename,$mimes) {
 add_filter('wp_check_filetype_and_ext','dance_moves_word_filetype',20,4);
 
 /** Store attachment IDs and compact verified alignment/maps, NEVER arbitrary public URLs. */
-function dance_moves_validate_song_collection($input) {
+function dance_moves_validate_song_collection($input,$check_spectrum_attachment=true) {
     if (is_string($input)) {
         if (strlen($input)>8388608) return new WP_Error('dance_moves_songs_size','Song collection exceeds 8 MiB.');
         $input=json_decode($input,true,16);
@@ -136,6 +136,15 @@ function dance_moves_validate_song_collection($input) {
         }
         $words=dance_moves_validate_word_timing_attachment($word);
         if (is_wp_error($words)) return $words;
+        $spectrum_id=$row['spectrum_recording_id'] ?? 0;
+        $spectrum_renderer=$row['spectrum_renderer'] ?? 'spectrum';
+        if (!dance_moves_spectrum_valid_id($spectrum_id)) return new WP_Error('dance_moves_song_spectrum','Choose a spectrum recording attachment for this song.');
+        if (!is_string($spectrum_renderer) || !array_key_exists($spectrum_renderer,dance_moves_spectrum_renderers()))
+            return new WP_Error('dance_moves_song_spectrum_renderer','Choose a supported spectrum renderer for each song.');
+        if ($check_spectrum_attachment) {
+            $spectrum=dance_moves_validate_spectrum_attachment($spectrum_id);
+            if (is_wp_error($spectrum)) return $spectrum;
+        }
         $enabled=in_array($row['use_beat_timeline'] ?? false,array(true,1,'1'),true);
         $alignment=$row['beat_alignment'] ?? '';
         if (is_array($alignment)) $alignment=wp_json_encode($alignment);
@@ -156,6 +165,7 @@ function dance_moves_validate_song_collection($input) {
         if ($enabled && !$timeline) return new WP_Error('dance_moves_song_map','Enabled variable tempo requires a complete source-matched beat map.');
         $clean[]=array('id'=>$id,'title'=>sanitize_text_field($title),'audio_id'=>$audio_id,'bpm'=>(float)$bpm,
             'lyric_id'=>$lyric,'word_id'=>$word,'cue_id'=>$cue,
+            'spectrum_recording_id'=>absint($spectrum_id),'spectrum_renderer'=>$spectrum_renderer,
             'beat_alignment'=>$fixed ? dance_moves_parse_beat_alignment($alignment) : null,
             'use_beat_timeline'=>$enabled,'beat_timeline'=>$timeline ? dance_moves_parse_beat_timeline($map) : null);
     }
@@ -165,7 +175,9 @@ function dance_moves_validate_song_collection($input) {
 }
 function dance_moves_parse_song_collection($input) {
     if (!is_string($input) || trim($input)==='') return null;
-    return dance_moves_validate_song_collection($input);
+    // A deleted optional spectrum attachment must not disable the song's audio.
+    // Saves/imports validate its file; page resolution suppresses invalid URLs.
+    return dance_moves_validate_song_collection($input,false);
 }
 function dance_moves_sanitize_song_collection($value) {
     $valid=dance_moves_validate_song_collection($value);
@@ -183,6 +195,7 @@ function dance_moves_song_collection_config($page_id) {
             'wordTimingUrl'=>dance_moves_attachment_url($row['word_id']),
             'cueTimingUrl'=>dance_moves_attachment_url($row['cue_id']),
             'lyricPopupsEnabled'=>false);
+        $entry=array_merge($entry,dance_moves_spectrum_config($row['spectrum_recording_id'],$row['spectrum_renderer']));
         if ($row['beat_alignment']) $entry['beatAlignment']=array_merge($row['beat_alignment'],array('source_url'=>$master));
         if ($row['use_beat_timeline'] && $row['beat_timeline']) $entry['beatTimeline']=array_merge($row['beat_timeline'],array('source_url'=>$master));
         $songs[]=$entry;
@@ -232,7 +245,7 @@ function dance_moves_song_collection_file_field($name,$label,$id,$allowed) {
 }
 function dance_moves_song_collection_row($row,$index) {
     $prefix='dance_moves_songs['.$index.']';
-    $defaults=array('id'=>'song_'.(is_numeric($index) ? ($index+1) : '__INDEX__'),'title'=>'','audio_id'=>0,'bpm'=>120,'lyric_id'=>0,'word_id'=>0,'cue_id'=>0,'beat_alignment'=>null,'beat_timeline'=>null,'use_beat_timeline'=>false);
+    $defaults=array('id'=>'song_'.(is_numeric($index) ? ($index+1) : '__INDEX__'),'title'=>'','audio_id'=>0,'bpm'=>120,'lyric_id'=>0,'word_id'=>0,'cue_id'=>0,'spectrum_recording_id'=>0,'spectrum_renderer'=>'spectrum','beat_alignment'=>null,'beat_timeline'=>null,'use_beat_timeline'=>false);
     $row=array_merge($defaults,is_array($row)?$row:array());
     echo '<fieldset class="dance-moves-song-row" data-dance-moves-song-row><legend>Song '.esc_html((string)(is_numeric($index)?($index+1):'__INDEX__')).'</legend>';
     echo '<label>Song ID <input name="'.esc_attr($prefix.'[id]').'" value="'.esc_attr($row['id']).'" required pattern="[a-z][a-z0-9_-]*"></label> ';
@@ -242,6 +255,9 @@ function dance_moves_song_collection_row($row,$index) {
     dance_moves_song_collection_file_field($prefix.'[lyric_id]','Line lyrics (.lrc)',$row['lyric_id'],array('lrc'));
     dance_moves_song_collection_file_field($prefix.'[word_id]','Word lyrics (.lrc/.tsv/.json)',$row['word_id'],array('lrc','tsv','json'));
     dance_moves_song_collection_file_field($prefix.'[cue_id]','Cues (.lrc/.cue)',$row['cue_id'],array('lrc','cue'));
+    dance_moves_song_collection_file_field($prefix.'[spectrum_recording_id]','Spectrum recording (.json)',$row['spectrum_recording_id'],array('json'));
+    dance_moves_spectrum_renderer_field($prefix.'[spectrum_renderer]',$row['spectrum_renderer']);
+    echo '<p class="description">Optional StemLab Fourier DanceRudiments recording, up to 64 MiB. This song’s canvas loads it only when the song is selected.</p>';
     $fixed=is_array($row['beat_alignment'])?wp_json_encode($row['beat_alignment']):(string)$row['beat_alignment'];
     $map=is_array($row['beat_timeline'])?wp_json_encode($row['beat_timeline']):(string)$row['beat_timeline'];
     echo '<label>Fixed beat alignment JSON <textarea name="'.esc_attr($prefix.'[beat_alignment]').'" rows="3">'.esc_textarea($fixed).'</textarea></label>';
@@ -296,6 +312,7 @@ function dance_moves_render_song_collection($attrs=array(),$content=null) {
         <section class="dance-moves-song ks-epk" data-dance-moves-song="<?php echo esc_attr($song['id']); ?>"<?php echo $i?' hidden':''; ?>>
           <h3><?php echo esc_html($song['title']); ?></h3>
           <audio controls preload="metadata" data-dance-moves-master src="<?php echo esc_url($song['audioSrc']); ?>"></audio>
+          <?php if ($song['spectrumRecordingUrl']) echo dance_moves_spectrum_markup($song['spectrumRenderer'],$song['title'].' spectrum'); ?>
           <div class="dance-moves-song-now" aria-live="off">BPM: <output data-dance-moves-current="bpm"><?php echo esc_html((string)$song['bpm']); ?></output> · Line: <output data-dance-moves-current="line"></output> · Word: <output data-dance-moves-current="word"></output> · Cue: <output data-dance-moves-current="cue"></output></div>
           <div class="dance-moves-song-timeline" role="group" aria-label="Song timeline">
             <span data-dance-moves-playhead class="dance-moves-song-playhead" aria-hidden="true"></span>

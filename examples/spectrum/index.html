@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DanceMoves · Spectrum studies</title>
+  <link rel="stylesheet" href="/lib/dancemoves.css">
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:#0c1522;color:#e9eff7;font:16px/1.55 system-ui,sans-serif}
+    main{max-width:1240px;margin:auto;padding:48px 32px}header{border-bottom:1px solid #2d3b4e;padding-bottom:28px;margin-bottom:26px}
+    .eyebrow{color:#76d4cf;font-size:12px;letter-spacing:.18em;text-transform:uppercase;font-weight:700}
+    h1{font-size:clamp(36px,5vw,64px);line-height:1.08;letter-spacing:-.04em;margin:14px 0 18px;font-weight:650}
+    .intro{max-width:720px;color:#b4c0d1;font-size:18px;margin:0}audio{width:min(500px,100%);display:block;margin:24px 0 12px}
+    .controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap}button{background:#173333;color:#b8f1ea;border:1px solid #44746f;padding:9px 15px;border-radius:7px;cursor:pointer;font:inherit}button:hover{background:#204746}button:focus-visible{outline:3px solid #edb56d;outline-offset:3px}
+    .status{color:#c8d3df;font-size:13px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+    figure[data-dance-moves-spectrum-figure]{margin:0;background:#111f30;border:1px solid #263b52;padding:18px}
+    h2{font-size:15px;font-weight:600;margin:0 0 16px}h2 span{font:11px ui-monospace,monospace;letter-spacing:.08em;color:#7c9ab6;margin-right:10px}
+    canvas[data-dance-moves-spectrum]{aspect-ratio:2 / 1;min-height:140px}
+    [data-dance-moves-spectrum-status]{color:#a9bacf;font-size:11px}footer{font-size:13px;color:#a9bacf;margin-top:28px;max-width:800px}a{color:#76d4cf}
+    @media(max-width:640px){main{padding:28px 16px}.grid{grid-template-columns:1fr}.intro{font-size:16px}}
+  </style>
+</head>
+<body>
+<main id="gallery">
+  <header>
+    <div class="eyebrow">DanceMoves / FrameRudiments</div>
+    <h1>Spectrum studies.</h1>
+    <p class="intro">One recording, ten ways to see it. Calibrated frequency bands follow the audio cursor as you play, pause and seek.</p>
+    <audio controls preload="metadata" data-dance-moves-master src="/fixture.wav" aria-label="Synthetic tone example"></audio>
+    <div class="controls"><button id="toggle" type="button">Unload visualisations</button><output id="summary" class="status" aria-live="polite">Loading views…</output></div>
+  </header>
+  <section class="grid" id="views" aria-label="Spectrum visualisations"></section>
+  <footer>This page uses a synthetic tone and an illustrative calibration fixture. The band levels are hand-authored test data, not a song analysis. For a music page, point <code>spectrumRecordingUrl</code> at that page’s saved StemLab Fourier recording. No example data is included in the reusable package.</footer>
+</main>
+<script type="module">
+  import {createDanceMoves,SPECTRUM_RENDERERS} from '/lib/index.mjs';
+  const root=document.querySelector('#gallery'),grid=document.querySelector('#views'),summary=document.querySelector('#summary'),toggle=document.querySelector('#toggle');
+  const names=['Bars + peak holds','Frequency line','Filled area','Band dots','Frequency stems','Stepped levels','Mirrored spectrum','Radial spokes','Spectrum ring','Frequency spiral'];
+  SPECTRUM_RENDERERS.forEach((renderer,i)=>{
+    const figure=document.createElement('figure');figure.setAttribute('data-dance-moves-spectrum-figure','');
+    const heading=document.createElement('h2'),number=document.createElement('span');number.textContent=String(i+1).padStart(2,'0');heading.append(number,names[i]);
+    const canvas=document.createElement('canvas');canvas.width=640;canvas.height=320;canvas.setAttribute('data-dance-moves-spectrum',renderer);canvas.setAttribute('aria-label',names[i]);
+    const caption=document.createElement('figcaption');caption.setAttribute('data-dance-moves-spectrum-status','');caption.textContent='Waiting for the recording.';
+    figure.append(heading,canvas,caption);grid.append(figure);
+  });
+  let runtime;
+  function mount(){
+    runtime=createDanceMoves({root,bpm:120,spectrumRecordingUrl:'/fixture.json'});window.spectrumDemo=runtime;
+    toggle.textContent='Unload visualisations';summary.textContent='Loading views…';
+    runtime.ready.then(()=>{if(!runtime.destroyed)summary.textContent=`${runtime.spectrum.snapshot().sources} recording · ${SPECTRUM_RENDERERS.length} views`;}).catch(error=>{summary.textContent='Spectrum unavailable: '+error.message;});
+  }
+  toggle.addEventListener('click',()=>{if(runtime&&!runtime.destroyed){runtime.destroy();toggle.textContent='Load visualisations';summary.textContent='Visualisations unloaded; audio controls remain available.';}else mount();});
+  mount();
+</script>
+</body>
+</html>

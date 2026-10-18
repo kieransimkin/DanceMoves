@@ -48,6 +48,13 @@ capability/nonce checks and revisions remain in PHP.
 | `_dance_moves_lyric_popups_enabled` | Explicit checkbox opt-in. Custom song art direction remains page CSS. |
 | `_dance_moves_master_duration_ms` | Advanced duration property, positive milliseconds; no ordinary editor field and not exposed through the standard REST metadata response. Arcadians reference: 273604.558. |
 | `_dance_moves_effect` | Empty or `paper-planes`; no song/page-ID coupling for that effect. |
+| `_dance_moves_spectrum_recording_id` | Optional saved StemLab Fourier JSON attachment, selected in **Dance-rudiment spectrum**. No samples are stored in metadata. |
+| `_dance_moves_spectrum_renderer` | One of the ten basic spectrum styles; default `spectrum` (bars). |
+
+Add `[dance_moves_spectrum]` in the same content root as the song's player to
+render the selected spectrum. The shared runtime loads the recording only when
+that page mounts a canvas. Each Multiple songs row has its own recording/style;
+only the selected song fetches its data. See [spectrum setup and data ownership](spectrum-visualisations.md).
 
 The existing `examples/wordpress/wordpress/configure-page.php` helper and the
 [metadata recipes](wordpress-examples.md) cover validated WP-CLI writes, REST

@@ -50,6 +50,7 @@ export interface PageConfig {
  pageId?:number;bpm?:number|null;bpmSource?:'explicit'|'fallback'|'analysis';beatAlignment?:BeatAlignment|null;beatTimeline?:BeatTimeline|null;lyricTimingUrl?:string;wordTimingUrl?:string;cueTimingUrl?:string;
  lyricPopupsEnabled?:boolean;masterDurationMilliseconds?:number;sharedControlTicks?:number;lyricDisclosureTicks?:number;
  effect?:''|'paper-planes';diagnostics?:boolean;
+ spectrumRecordingUrl?:string;spectrumRenderer?:SpectrumRenderer;
 }
 export interface Options extends PageConfig {
  root:HTMLElement;clayPerformance?:Record<string,number|boolean>;catalogue?:boolean;clay?:boolean;legacyGlobals?:boolean;nonce?:string;onError?:(error:Error)=>void;
@@ -117,7 +118,7 @@ export interface DanceMoves {
  resetRunningAnimations(audio?:PlaybackMedia):number;discoverAudio():void;registerPlaybackSource(source:PlaybackSource):void;unregisterPlaybackSource(source:PlaybackSource):void;
  setDiagnosticsSink(callback:((record:Record<string,unknown>)=>void)|null):boolean;diagnosticsEnabled():boolean;
  applyCatalogueTiming?():Record<string,unknown>;catalogueTimingSnapshot?():Record<string,unknown>;removeCatalogueAnimationScope?():void;
- effects:Effects;rudiments:import('./rudiments').RudimentApi;recordings:RecordingService;
+ effects:Effects;rudiments:import('./rudiments').RudimentApi;recordings:RecordingService;spectrum:SpectrumService;
  orientationCore:Record<string,(...args:any[])=>any>;
  getOrientation():(Controller & {reset():void})|null;getClay():(Controller & Record<string,any>)|null;getPaperPlanes():Controller|null;
  createOrientation(options:{render:(point:Offset & Record<string,unknown>)=>void;windowMilliseconds?:number;minimumSpanDegrees?:number;smoothingTimeConstantMilliseconds?:number}):OrientationController;
@@ -129,7 +130,7 @@ export interface DanceMoves {
 }
 export const VERSION:string;
 export const ORIENTATION_ADAPTERS:readonly OrientationAdapter[];
-export const PAGE_META_KEYS:Readonly<{bpm:string;lyric:string;cue:string;popups:string;duration:string;effect:string;alignment:string;alignmentAudio:string;word:string;beatTimeline:string;useBeatTimeline:string}>;
+export const PAGE_META_KEYS:Readonly<{bpm:string;lyric:string;cue:string;popups:string;duration:string;effect:string;alignment:string;alignmentAudio:string;word:string;beatTimeline:string;useBeatTimeline:string;spectrumRecording:string;spectrumRenderer:string}>;
 export function validateBeatAlignment(input?:BeatAlignment|null):Readonly<BeatAlignment>|null;
 export function validateBeatTimeline(input?:BeatTimeline|null,options?:{requireSourceUrl?:boolean}):Readonly<BeatTimeline>|null;
 export function phasePipsAtSeconds(map:BeatTimeline,sourceSeconds:number):number;
@@ -144,7 +145,18 @@ export function fromWordPressMeta(meta:Record<string,unknown>,resolveAttachment?
 export interface Revision {revision:number;config:PageConfig;savedAt:string}
 export interface PageStore {read(id:string):Revision|null;revisions(id:string):Revision[];save(id:string,input:PageConfig,options?:{expectedRevision?:number}):Revision;restore(id:string,revision:number,options?:{expectedRevision?:number}):Revision;delete(id:string):boolean}
 export function createMemoryPageStore(options?:{maxPages?:number;maxRevisions?:number}):PageStore;
-export interface AudioRecording {format:'dancerudiments.recording';schema_version:1;pips_per_beat:64;sample_dtype:'float64';name:string;dimensions:string[];samples:number[][];clock:{bpm:number;bpm_source:string;bpm_status:'confirmed'|'estimated';beat_zero_seconds:number;phase_status:'unverified'|'estimated'|'supplied';start_pip:number};provenance?:Record<string,unknown>}
+export interface AudioRecording {format:'dancerudiments.recording';schema_version:1;pips_per_beat:64;sample_dtype:'float64';sample_decimals?:12;name:string;dimensions:string[];samples:number[][];clock:{bpm:number;bpm_source:string;bpm_status:'confirmed'|'estimated';beat_zero_seconds:number;phase_status:'unverified'|'estimated'|'supplied';start_pip:number};provenance?:Record<string,unknown>|string}
 export interface RecordingFrame {recording:string;dimensions:readonly string[];values:number[];position:{x:number;y:number;z:number};pip:number;positionPips:number;sourceBeats:number;loopProgress:null;reason:string}
 export interface RecordingController {id:string;ready:Promise<RecordingController>;setEnabled(value:boolean):void;pause():void;resume():void;refresh():void;destroy():void;teardown():void;snapshot():Record<string,unknown>}
-export interface RecordingService {load(url:string):Promise<AudioRecording>;animate(options:{id:string;root:HTMLElement;target:HTMLElement;audio:PlaybackMedia;recording:AudioRecording;offscreen?:boolean;enabled?:boolean;render:(frame:RecordingFrame)=>void}):RecordingController;get(id:string):RecordingController|null;destroyAll():void;snapshot():Record<string,unknown>}
+export interface RecordingService {load(url:string,options?:{signal?:AbortSignal}):Promise<AudioRecording>;animate(options:{id:string;root:HTMLElement;target:HTMLElement;audio:PlaybackMedia;recording:AudioRecording;offscreen?:boolean;enabled?:boolean;render:(frame:RecordingFrame)=>void}):RecordingController;get(id:string):RecordingController|null;destroyAll():void;snapshot():Record<string,unknown>}
+
+export type SpectrumRenderer = 'spectrum'|'spectrum-line'|'spectrum-area'|'spectrum-dots'|'spectrum-stems'|'spectrum-steps'|'spectrum-mirror'|'spectrum-radial'|'spectrum-ring'|'spectrum-spiral';
+export const SPECTRUM_RENDERERS:readonly SpectrumRenderer[];
+export interface SpectrumStyle {floor_db?:number;ceiling_db?:number;hold_seconds?:number;decay_db_per_second?:number;peak_count?:number;min_peak_db?:number;min_peak_contrast_db?:number;min_peak_distance?:number;labels?:boolean;gap?:number;colours?:readonly string[];padding?:number;background?:string;line_width?:number;point_radius?:number;peak_colour?:string;label_colour?:string}
+export interface SpectrumBandReport {readonly axis:string;readonly index:number;readonly low_hz:number;readonly high_hz:number;readonly rms:number;readonly dbfs:number|null;readonly display_dbfs:number;readonly held_dbfs:number}
+export interface SpectrumReport {readonly kind:string;readonly units:string;readonly source_sha256:string;readonly fft_size:number;readonly fft_bin_resolution_hz:number;readonly bands:readonly SpectrumBandReport[];readonly peaks:ReadonlyArray<SpectrumBandReport & {readonly plateau_low_hz:number;readonly plateau_high_hz:number;readonly adjacent_contrast_db:number}>;readonly dominant:SpectrumBandReport|null;readonly peak_method:string;readonly hold_clock:string}
+export interface SpectrumFrame {id:string;renderer:SpectrumRenderer;pip:number|null;sourceSeconds:number|null;reason:string;report:SpectrumReport|null}
+export interface SpectrumSnapshot {id:string;type:'spectrum';renderer:SpectrumRenderer;recordingUrl:string|null;status:string;error:string|null;destroyed:boolean;enabled:boolean;paused:boolean;pip:number|null;sourceSeconds:number|null;report:SpectrumReport|null;historyPips:number;historyStride:number;canvasWidth:number;canvasHeight:number}
+export type SpectrumOptions = {id:string;target:HTMLCanvasElement|string;audio:PlaybackMedia|string;renderer?:SpectrumRenderer;axes?:readonly (string|number)[];style?:SpectrumStyle;historyPips?:number;historyStride?:number;pixelRatio?:number;enabled?:boolean;offscreen?:boolean;onFrame?:(frame:SpectrumFrame)=>void} & ({recordingUrl:string;recording?:never}|{recording:AudioRecording;recordingUrl?:never});
+export interface SpectrumController {readonly id:string;readonly ready:Promise<SpectrumController>;setEnabled(value:boolean):void;pause():void;resume():void;refresh():void;destroy():void;teardown():void;snapshot():SpectrumSnapshot}
+export interface SpectrumService {animate(options:SpectrumOptions):SpectrumController;get(id:string):SpectrumController|null;destroyAll():void;snapshot():{renderers:readonly SpectrumRenderer[];sources:number;instances:SpectrumSnapshot[]}}

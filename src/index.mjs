@@ -6,6 +6,8 @@ import {connectPhoneMotion} from './phone-motion.mjs';
 import {createMotionRecorder} from './recorder.mjs';
 import {installPlayback} from './playback.mjs';
 import {createRecordingService} from './recordings.mjs';
+import {createSpectrumService} from './spectrum.mjs';
+export {SPECTRUM_RENDERERS} from './spectrum-analysis.mjs';
 
 import {installChildPlayback} from './child-playback.mjs';
 export {createPlaybackPublisher, createPlaybackReceiver} from './child-playback.mjs';
@@ -71,8 +73,10 @@ export function createDanceMoves(options = {}) {
       on(type, callback) {scope.listen(scope.document,type,callback); return () => scope.unlisten(scope.document,type,callback);}
     });
     Object.defineProperty(api,'destroyed',{get:() => scope.disposed});
+    api.spectrum = createSpectrumService(scope, api, config);
+    const spectra = api.spectrum.mountPage();
     installChildPlayback(scope, api, ownerDocument.defaultView);
-    api.ready = Promise.resolve(api.ready).then(() => {
+    api.ready = Promise.all([api.ready, ...spectra.map(view => view.ready)]).then(() => {
       if (!scope.disposed) scope.document.dispatchEvent(new w.CustomEvent('dance-moves-ready', {
         bubbles: true, detail: {runtime: api, version: VERSION}
       }));

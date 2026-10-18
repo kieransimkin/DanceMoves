@@ -1,11 +1,13 @@
 import {validateBeatAlignment} from './beat-alignment.mjs';
 import {validateBeatTimeline, tempoAtSeconds} from './beat-timeline.mjs';
+import {SPECTRUM_RENDERERS} from './spectrum-analysis.mjs';
 /** Host-neutral page properties. WordPress attachment IDs remain a host concern. */
 export const PAGE_META_KEYS = Object.freeze({
   bpm: '_dance_moves_bpm', lyric: '_dance_moves_lyric_timing_id', word: '_dance_moves_word_timing_id', cue: '_dance_moves_cue_timing_id',
   popups: '_dance_moves_lyric_popups_enabled', duration: '_dance_moves_master_duration_ms', effect: '_dance_moves_effect',
   alignment: '_dance_moves_beat_alignment', alignmentAudio: '_dance_moves_beat_alignment_audio_id',
-  beatTimeline: '_dance_moves_beat_timeline', useBeatTimeline: '_dance_moves_use_beat_timeline'
+  beatTimeline: '_dance_moves_beat_timeline', useBeatTimeline: '_dance_moves_use_beat_timeline',
+  spectrumRecording: '_dance_moves_spectrum_recording_id', spectrumRenderer: '_dance_moves_spectrum_renderer'
 });
 const object = value => value && typeof value === 'object' && !Array.isArray(value);
 function finite(value, name, min, max) {
@@ -35,6 +37,8 @@ export function validatePageConfig(input = {}) {
   if (explicit) finite(input.bpm, 'bpm', 20, 400);
   const effect = input.effect ?? '';
   if (!['', 'paper-planes'].includes(effect)) throw new RangeError('effect must be empty or paper-planes');
+  const spectrumRenderer = input.spectrumRenderer ?? 'spectrum';
+  if (!SPECTRUM_RENDERERS.includes(spectrumRenderer)) throw new RangeError('Unknown spectrum renderer');
   if (input.lyricPopupsEnabled !== undefined && typeof input.lyricPopupsEnabled !== 'boolean') throw new TypeError('lyricPopupsEnabled must be boolean');
   const duration = finite(input.masterDurationMilliseconds ?? 0, 'masterDurationMilliseconds', 0, 86400000);
   const ticks = finite(input.sharedControlTicks ?? 0, 'sharedControlTicks', 0, 65536);
@@ -47,6 +51,7 @@ export function validatePageConfig(input = {}) {
     ticksPerBeat: 16, tickDefinition: 'sixteenth-of-beat', longDurationQuantumTicks: 16,
     cueTimingUrl: url(input.cueTimingUrl, 'cueTimingUrl'), lyricTimingUrl: url(input.lyricTimingUrl, 'lyricTimingUrl'),
     wordTimingUrl: url(input.wordTimingUrl,'wordTimingUrl'),
+    spectrumRecordingUrl: url(input.spectrumRecordingUrl,'spectrumRecordingUrl'), spectrumRenderer,
     lyricPopupsEnabled: input.lyricPopupsEnabled === true, masterDurationMilliseconds: Math.round(duration * 1000) / 1000,
     sharedControlTicks: ticks, lyricDisclosureTicks: disclosure, effect, diagnostics: input.diagnostics === true});
 }
@@ -78,6 +83,8 @@ export async function fromWordPressMeta(meta, resolveAttachment) {
   }
   if (beatTimeline) beatTimeline={...beatTimeline,source_url:await resolve(PAGE_META_KEYS.alignmentAudio)};
   return validatePageConfig({bpm, beatAlignment, beatTimeline, lyricTimingUrl: await resolve(PAGE_META_KEYS.lyric), wordTimingUrl: await resolve(PAGE_META_KEYS.word), cueTimingUrl: await resolve(PAGE_META_KEYS.cue),
+    spectrumRecordingUrl: await resolve(PAGE_META_KEYS.spectrumRecording),
+    spectrumRenderer: SPECTRUM_RENDERERS.includes(meta[PAGE_META_KEYS.spectrumRenderer]) ? meta[PAGE_META_KEYS.spectrumRenderer] : 'spectrum',
     lyricPopupsEnabled: meta[PAGE_META_KEYS.popups] === true || String(meta[PAGE_META_KEYS.popups]) === '1',
     masterDurationMilliseconds: Number.isFinite(duration) && duration > 0 && duration <= 86400000 ? duration : 0,
     effect: meta[PAGE_META_KEYS.effect] === 'paper-planes' ? 'paper-planes' : ''});

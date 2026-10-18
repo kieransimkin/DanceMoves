@@ -41,6 +41,13 @@ reorder and remove songs. Maximum: 24 songs, 8 MiB metadata JSON total, 4 MiB
 per optional corrected beat map. The WordPress field uses the existing edit
 capability, nonce checks, revisions and REST validation.
 
+Each song may also select a **Spectrum recording (.json)** and **Spectrum style**.
+The selected song mounts its own Canvas visualisation from the shared
+FrameRudiments spectrum views. Its saved Fourier data is fetched only by that
+song's mount, shared by its views, and released on selection changes. Recording
+files stay in the Media Library rather than the reusable rudiment package.
+See [spectrum visualisations](spectrum-visualisations.md) for formats and options.
+
 A song collection automatically appends its interface to the Page. Alternatively,
 insert `[dance_moves_song_collection]` to place the interface deliberately. The
 selected song shows native audio controls, its beat/line/word/cue timing lanes, live

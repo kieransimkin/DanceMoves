@@ -22,7 +22,7 @@ for (const [entry,out,globalName] of [['index','dancemoves.min.js','DanceMovesLi
   await esbuild.build({...options,entryPoints:[path.join(modules,`${entry}.mjs`)],outfile:path.join(lib,out),format:'iife',platform:'browser',minify:true,globalName});
 }
 await esbuild.build({...options,entryPoints:['assets/dance-moves-admin.js'],outfile:path.join(lib,'admin.min.js'),format:'iife',platform:'browser',minify:true});
-const cssFiles=['dance-moves-core.css','ks-epk-device-orientation.css','clay-stars-effects.css','paper-dreams-flight.css'];
+const cssFiles=['dance-moves-core.css','ks-epk-device-orientation.css','clay-stars-effects.css','paper-dreams-flight.css','spectrum.css'];
 fs.mkdirSync(path.join(lib,'styles'),{recursive:true});
 for(const file of cssFiles) await esbuild.build({entryPoints:['assets/'+file],outfile:path.join(lib,'styles',file),minify:true,logLevel:'warning'});
 fs.writeFileSync(path.join(lib,'dancemoves.css'),cssFiles.map(file=>fs.readFileSync(path.join(lib,'styles',file),'utf8')).join('\n'));
@@ -42,7 +42,7 @@ fs.writeFileSync(path.join(lib,'build-manifest.json'),JSON.stringify({schema:'da
 if (target!=='library') {
   const wp=path.join(ROOT,'.build/wordpress');fs.rmSync(wp,{recursive:true,force:true});fs.mkdirSync(path.join(wp,'lib/assets'),{recursive:true});
   fs.mkdirSync(path.join(wp,'lib/styles'),{recursive:true});
-  for(const file of ['kieran-epk-device-orientation.php','dance-moves-rudiments.php','dance-moves-beat-alignment.php','dance-moves-beat-timeline.php','dance-moves-song-collection.php','LICENSE','AGENTS.md','CONTRIBUTING.md']) fs.copyFileSync(file,path.join(wp,file));
+  for(const file of ['kieran-epk-device-orientation.php','dance-moves-rudiments.php','dance-moves-beat-alignment.php','dance-moves-beat-timeline.php','dance-moves-spectrum.php','dance-moves-song-collection.php','LICENSE','AGENTS.md','CONTRIBUTING.md']) fs.copyFileSync(file,path.join(wp,file));
   // Exactly the library build: no raw assets/ sources or second engine in WordPress.
   for (const file of ['wordpress.js','admin.min.js']) fs.copyFileSync(path.join(lib,file),path.join(wp,'lib',file));
   for(const file of cssFiles) fs.copyFileSync(path.join(lib,'styles',file),path.join(wp,'lib/styles',file));

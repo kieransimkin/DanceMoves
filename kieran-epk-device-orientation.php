@@ -31,6 +31,7 @@ define('DANCE_MOVES_CLAY_STARS_PAGE_ID', 252);
 require_once __DIR__ . '/dance-moves-rudiments.php';
 require_once __DIR__ . '/dance-moves-beat-alignment.php';
 require_once __DIR__ . '/dance-moves-beat-timeline.php';
+require_once __DIR__ . '/dance-moves-spectrum.php';
 require_once __DIR__ . '/dance-moves-song-collection.php';
 
 define('DANCE_MOVES_DOWNLOAD_QUERY_VAR', 'dance_moves_download');
@@ -312,6 +313,7 @@ function dance_moves_get_page_config($page_id) {
 
     $master_duration = get_post_meta($page_id, DANCE_MOVES_META_MASTER_DURATION, true);
     $master_duration = is_numeric($master_duration) && (float) $master_duration > 0 ? (float) $master_duration : 0.0;
+    $spectrum = dance_moves_spectrum_page_config($page_id);
 
     return array(
         'pageId' => absint($page_id),
@@ -325,6 +327,8 @@ function dance_moves_get_page_config($page_id) {
         'fallbackBpm' => 120,
         'lyricTimingUrl' => dance_moves_attachment_url(get_post_meta($page_id, DANCE_MOVES_META_LYRIC_TIMING, true)),
         'wordTimingUrl' => dance_moves_attachment_url(get_post_meta($page_id, DANCE_MOVES_META_WORD_TIMING, true)),
+        'spectrumRecordingUrl' => $spectrum['spectrumRecordingUrl'],
+        'spectrumRenderer' => $spectrum['spectrumRenderer'],
         'lyricPopupsEnabled' => '1' === (string) get_post_meta($page_id, DANCE_MOVES_META_LYRIC_POPUPS, true),
         'cueTimingUrl' => dance_moves_attachment_url(get_post_meta($page_id, DANCE_MOVES_META_CUE_TIMING, true)),
         'songCollectionEnabled' => get_post_meta($page_id,DANCE_MOVES_META_SONG_PAGE_TYPE,true)==='collection',
@@ -360,6 +364,13 @@ function ks_epk_orientation_enqueue_runtime() {
         array(),
         DANCE_MOVES_VERSION
     );
+    $has_spectrum = !empty($config['spectrumRecordingUrl']);
+    foreach ($config['songs'] as $song) {
+        if (!empty($song['spectrumRecordingUrl'])) { $has_spectrum = true; break; }
+    }
+    if ($has_spectrum) {
+        wp_enqueue_style('dance-moves-spectrum', $base_url . 'styles/spectrum.css', array('dance-moves-core'), DANCE_MOVES_VERSION);
+    }
 
     wp_enqueue_script(
         'dance-moves-core',

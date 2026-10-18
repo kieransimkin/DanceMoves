@@ -27,14 +27,16 @@ async function samplerFromData(data) {
 /** Compose native recording samples with the existing native scheduler/media lifecycle. */
 export function createRecordingService(scope,rudiments,config) {
  const handles=new Map();
- async function load(url){
+ async function load(url,options={}){
   if(scope.disposed)throw new Error('DanceMoves mount is destroyed');
-  const response=await scope.window.fetch(url);if(!response.ok)throw new Error('Recording request failed: '+response.status);
+  const response=await scope.window.fetch(url,{signal:options.signal});if(!response.ok)throw new Error('Recording request failed: '+response.status);
   if(Number(response.headers?.get('content-length'))>MAX_BYTES)throw new RangeError('Recording exceeds 64 MiB');
   // Stream the byte limit, including responses with no Content-Length.
   let text;
   if(response.body?.getReader){const reader=response.body.getReader(),chunks=[];let size=0;for(;;){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>MAX_BYTES){await reader.cancel();throw new RangeError('Recording exceeds 64 MiB');}chunks.push(value);}const bytes=new Uint8Array(size);let offset=0;for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.length;}text=new TextDecoder('utf-8',{fatal:true}).decode(bytes);}
   else {text=await response.text();if(new TextEncoder().encode(text).length>MAX_BYTES)throw new RangeError('Recording exceeds 64 MiB');}
+  if(scope.disposed)throw new Error('DanceMoves mount is destroyed');
+  options.signal?.throwIfAborted();
   const input=JSON.parse(text);validateRecording(input);return input;
  }
  function animate(options={}){

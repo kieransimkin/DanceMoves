@@ -1,5 +1,44 @@
 # DanceMoves
 
+## Spectrum visualisations for individual pages
+
+DanceMoves now renders ten basic FrameRudiments spectrum views from a saved
+StemLab Fourier `dancerudiments.recording`: **bars with peak holds, line, area,
+dots, stems, steps, mirror, radial, ring and spiral**. They use the existing
+native DanceRudiments sampler and shared playback lifecycle, with calibrated
+RMS dBFS, real frequency ranges and deterministic seeking. No browser FFT,
+audio separation or new models are needed.
+
+**Song recordings belong to the page that uses them.** The npm package,
+browser bundle and WordPress plugin contain reusable renderer code and generic
+rudiments only. A page supplies `spectrumRecordingUrl`; the JSON is fetched only
+when that page has a spectrum canvas. Multiple views in one mount share the
+request and native sample table. In a song collection, only the selected song's
+mount loads its recording, and switching destroys the previous views and aborts
+their pending requests. npm prepack also checks the complete `lib/` inventory,
+rejecting stray files copied in after the build.
+
+In WordPress, choose the recording and style in the Page editor's
+**Dance-rudiment spectrum** box, then insert `[dance_moves_spectrum]` beside the
+audio inside the same content root. Multiple-song pages have a separate recording
+and style in each song row and add their canvases automatically.
+
+```js
+// root contains this song's audio and a <canvas data-dance-moves-spectrum>.
+const runtime = createDanceMoves({
+  root,
+  bpm: 120,
+  spectrumRecordingUrl: '/uploads/this-song-fourier.json',
+  spectrumRenderer: 'spectrum-ring'
+});
+await runtime.ready;
+// Route or component cleanup:
+runtime.destroy();
+```
+
+See [spectrum setup, all renderers and loading rules](docs/spectrum-visualisations.md)
+and the [self-contained synthetic gallery](examples/spectrum/README.md).
+
 **3.3.0** adds source-bound beat alignment, connecting saved StemLab BPM/first-beat readings
 to the shared audio clock. WordPress's **EPK Timing** panel stores the reading
 and verifies its selected master attachment by SHA-256. Procedural rudiments,
@@ -136,6 +175,7 @@ from `@kieransimkin/dancemoves/server` (Node only; never bundle server secrets).
 | Guide | Contents |
 | --- | --- |
 | [JavaScript API](docs/javascript-api.md) | Existing timing/effects/native APIs, scoped mounts, lifecycle, metadata and phone input |
+| [Spectrum visualisations](docs/spectrum-visualisations.md) | Ten FrameRudiments views, page-specific recording URLs, calibration and native playback |
 | [React and Next.js](docs/react-next.md) | Hooks, components, SSR, Strict Mode, Arcadians demos and App Router routes |
 | [Node server API](docs/javascript-server.md) | Timing validation, signed MP3 delivery, authenticated private capture and storage adapters |
 | [WordPress usage](docs/wordpress-shared-runtime.md) | All six Page metadata keys, separate build, compatibility handles and installation |
