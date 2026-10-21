@@ -87,6 +87,7 @@ jobs:
       - run: php tests/shared/spectrum-wordpress.php
       - run: php tests/shared/visualiser-wordpress.php
       - run: python tests/shared/test_package_outputs.py
+      - run: python -m unittest tests.test_verify_existing_wordpress_release -v
       - run: npm run test:legacy
       - run: python tools/package-wordpress.py
       - run: python tools/package-web.py

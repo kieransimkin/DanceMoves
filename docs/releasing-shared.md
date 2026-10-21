@@ -139,6 +139,16 @@ network/server error is not treated as proof that a version is absent. There
 is intentionally no operation that moves an existing tag or overwrites a
 published package version.
 
+After WordPress.org approves a version that is already an immutable GitHub
+release, dispatch the workflow from `main` with that exact stable `tag` and
+`publish_existing_wordpress_release=true`. This route downloads only the
+released WordPress ZIP, its manifest and the release checksum file. It verifies
+the archive hash, manifest identity, complete per-file allowlist and every
+payload hash before staging the approved bytes for SVN. It deliberately does
+not rebuild the historical tag with test commands added after that tag. The
+normal tag route remains the owner for new npm, GitHub and automatic
+WordPress.org releases.
+
 ## Updating the next version
 
 ```sh
