@@ -37,9 +37,10 @@ check(()=>assert.equal(media.sourceCommit,'a44045dd267b539f5d25445e2153f4cf2d8f4
 for(const asset of media.assets)check(()=>assert(asset.url.startsWith(`https://raw.githubusercontent.com/kieransimkin/stemlab/${media.sourceCommit}/`),'asset URL must use the declared immutable source'));
 const lyric=fs.readFileSync(path.join(dir,'media/canonical-lyric-timing.lrc'));
 check(()=>assert.equal(crypto.createHash('sha256').update(lyric).digest('hex'),media.canonicalLrc.sha256));
-check(()=>assert.equal(lyric.length,2542));
+check(()=>assert.equal(lyric.length,2441));
 check(()=>assert.equal((lyric.toString().match(/\[\d{2}:\d{2}\.\d{2}\]/g)||[]).length,96));
-check(()=>assert.equal(lyric.toString().split(/\r\n/).filter(s=>/^\[\d[^\]]*\]$/.test(s)).length,48));
+check(()=>assert.equal((lyric.toString().match(/\r\n/g)||[]).length,0));
+check(()=>assert.equal(lyric.toString().split(/\n/).filter(s=>/^\[\d[^\]]*\]$/.test(s)).length,48));
 const sections=JSON.parse(read('media/sections.json'));
 check(()=>assert.equal(sections.length,10));
 check(()=>assert.equal(sections[4].time,104.01));check(()=>assert.equal(sections.at(-1).end,273.604558));
@@ -54,7 +55,7 @@ check(()=>assert(boot.includes("import('/lib/index.mjs')") && boot.includes('cre
 check(()=>assert(!boot.includes('autoplay=')));
 check(()=>assert(!sources.get('capture').includes('/wp-json/')));
 check(()=>assert(!/token\s*[:=]\s*['"][a-f0-9]{32,}/i.test([...sources.values()].join('\n')+boot)));
-check(()=>assert(read('.gitattributes').includes('canonical-lyric-timing.lrc binary')));
+check(()=>assert(read('.gitattributes').includes('*.lrc text eol=lf')));
 for(const file of ['shared/boot.mjs','shared/model.cjs','wordpress/arcadians-example.js'])check(()=>assert.equal(cp.spawnSync(process.execPath,['--check',path.join(dir,file)],{encoding:'utf8'}).status,0));
 const readme=fs.readFileSync(path.join(root,'README.md'),'utf8');
 for(const f of manifest.features)check(()=>assert(readme.includes(`examples/wordpress/${f.page}`),f.id+' missing README recipe link'));

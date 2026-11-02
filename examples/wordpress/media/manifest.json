@@ -26,9 +26,9 @@
   ],
   "canonicalLrc": {
     "sourcePath": "examples/arcadians/canonical-lyric-timing.lrc",
-    "sha256": "92b46abc4caf1caa8eddf7c306a9e767f8d0bbefed3b39d38e4b4f96981e9de7",
-    "bytes": 2542,
-    "note": "Exact StemLab bytes including BOM and CRLF. Placeholder title/author/language headers are present upstream; cue text/timestamps remain untouched."
+    "sha256": "8242b9a9307a934f15bb78593382536dd74c67b34b83c2fe0ef739c58e846e19",
+    "bytes": 2441,
+    "note": "Canonical Git-normalised bytes with the original UTF-8 BOM and LF endings. Placeholder title/author/language headers are present upstream; cue text/timestamps remain untouched."
   },
   "sections": {
     "sourcePath": "examples/arcadians/reference.json",
