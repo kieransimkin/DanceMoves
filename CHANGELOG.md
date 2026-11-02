@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.4.1 - 2026-11-02
+
+- Normalize repository text and canonical lyric timing to LF while retaining CRLF for Windows command scripts.
+- Update the exact Arcadians lyric byte, hash and line-ending contracts for identical Windows/Linux packages.
+
 ## 3.1.17 - 2026-10-09
 
 - Add a tag-driven WordPress.org update job using the exact tested release ZIP, gated on initial directory approval and its assigned slug.
