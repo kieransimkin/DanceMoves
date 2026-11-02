@@ -55,7 +55,7 @@ check(()=>assert(boot.includes("import('/lib/index.mjs')") && boot.includes('cre
 check(()=>assert(!boot.includes('autoplay=')));
 check(()=>assert(!sources.get('capture').includes('/wp-json/')));
 check(()=>assert(!/token\s*[:=]\s*['"][a-f0-9]{32,}/i.test([...sources.values()].join('\n')+boot)));
-check(()=>assert(read('.gitattributes').includes('*.lrc text eol=lf')));
+check(()=>assert(read('.gitattributes').includes('media/canonical-lyric-timing.lrc text eol=lf')));
 for(const file of ['shared/boot.mjs','shared/model.cjs','wordpress/arcadians-example.js'])check(()=>assert.equal(cp.spawnSync(process.execPath,['--check',path.join(dir,file)],{encoding:'utf8'}).status,0));
 const readme=fs.readFileSync(path.join(root,'README.md'),'utf8');
 for(const f of manifest.features)check(()=>assert(readme.includes(`examples/wordpress/${f.page}`),f.id+' missing README recipe link'));
