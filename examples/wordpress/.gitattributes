@@ -1,2 +1,2 @@
-# Canonical artist-authored timing is hash-pinned; preserve BOM and CRLF exactly.
-media/canonical-lyric-timing.lrc binary
+# Canonical artist-authored timing is hash-pinned after LF normalisation.
+media/canonical-lyric-timing.lrc text eol=lf

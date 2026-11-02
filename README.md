@@ -508,7 +508,7 @@ python tools/serve-wordpress-examples.py
 Open `http://127.0.0.1:8765/examples/wordpress/`. For an existing StemLab checkout,
 use `python tools/prepare-wordpress-examples.py --stemlab-root ../stemlab` instead
 of downloading. Both paths verify the exact MP3 and cover SHA-256 hashes. The
-96-tag canonical LRC is included byte-for-byte, including its BOM/CRLF; the
+96-tag canonical LRC retains its BOM and cue content with repository-standard LF; the
 section JSON and CUE are derived from the artist-authored reference sections.
 No replacement tone, song or fabricated model analysis is used if assets are missing.
 
@@ -1173,5 +1173,15 @@ The examples below remain useful. Their historical provenance/version notes
 refer to their original 2.9.0 authoring baseline. Current build/initialisation
 instructions are in the shared-library guides above. The 23-page WordPress
 simulator now imports the same library as the new React/Next frontends.
+
+## Cross-platform repository bytes
+
+The root `.gitattributes` stores and checks out text as LF on every platform;
+declared binary media, archives, fonts, native libraries and model formats remain
+byte-exact. Hashes must consume canonical checkout bytes, including LF-normalised
+LRC timing files, rather than depend on `core.autocrlf`.
+
+This repository-byte policy has no interface whose screenshot or video would add
+verification value. `git ls-files --eol`, package/hash checks and CI are the evidence.
 
 <!-- BEGIN WORDPRESS EXAMPLES -->
