@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DanceMoves layout reveal</title>
+<style>
+  body { margin: 0; background: #101520; color: #f5f6fa; font: 16px system-ui, sans-serif; }
+  main { max-width: 42rem; margin: 2rem auto; padding: 0 1rem; }
+  #panel {
+    display: grid;
+    place-items: center;
+    width: min(100%, 17rem);
+    aspect-ratio: 1;
+    background: linear-gradient(125deg, #233668, #63305e);
+    border-radius: 1rem;
+  }
+  #panel[data-dance-moves-layout-reveal="expanded"] {
+    width: min(100%, 34rem);
+    aspect-ratio: 16 / 9;
+  }
+  button { padding: .6rem 1rem; border: 0; border-radius: .4rem; font: inherit; }
+</style>
+<main id="example">
+  <h1>Layout reveal</h1>
+  <p>A square panel opens into a widescreen stage.</p>
+  <div id="panel">
+    <button aria-expanded="false" aria-controls="panel">Expand panel</button>
+  </div>
+</main>
+<script src="../lib/dancemoves.min.js"></script>
+<script>
+  const root = document.getElementById("example");
+  const panel = document.getElementById("panel");
+  const button = panel.querySelector("button");
+  const runtime = DanceMovesLibrary.createDanceMoves({ root, config: { bpm: 120 } });
+  const layout = runtime.effects.layoutReveal({
+    root: panel, openEvent: "open-panel", closeEvent: "close-panel"
+  });
+  button.addEventListener("click", () => {
+    const expanded = !layout.snapshot().expanded;
+    panel.dispatchEvent(new Event(expanded ? "open-panel" : "close-panel"));
+    button.setAttribute("aria-expanded", String(expanded));
+    button.textContent = expanded ? "Return to square" : "Expand panel";
+  });
+</script>
+</html>

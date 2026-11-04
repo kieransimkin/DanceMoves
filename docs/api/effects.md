@@ -264,6 +264,54 @@ Other reason markers: `restart`, `complete`, `inactive`, `reduced-motion`,
 `forced-colours`. `restart` is transient before `active`. Initial creation does
 not write an idle marker or remove a pre-existing class.
 
+## layoutReveal(options)
+
+`layoutReveal` animates a box when its content opens. The application owns
+the content and sends explicit events on the box. DanceMoves changes
+`data-dance-moves-layout-reveal` from `collapsed` to `expanded`, measures the
+box in both states, and animates its width, height and position when applicable.
+The expanded layout remains in CSS after the animation ends.
+
+| Option | Meaning |
+| --- | --- |
+| `root` | Required element or selector. |
+| `openEvent`, `closeEvent` | Required distinct event names dispatched on the root. |
+| `initiallyExpanded` | Starting state. Defaults to `false`. |
+| `durationMilliseconds`, `easing` | Opening motion. Defaults to 480 ms and `cubic-bezier(.2,.8,.2,1)`. |
+| `shouldAnimate(root)` | Optional check of the host's own motion preference when opening. Returning false applies the layout immediately. |
+
+```css
+#panel { width: min(18rem, 100%); aspect-ratio: 1; }
+#panel[data-dance-moves-layout-reveal="expanded"] {
+  width: min(36rem, 100%);
+  aspect-ratio: 16 / 9;
+}
+```
+
+```js
+const panel = document.querySelector("#panel");
+const reveal = DanceMovesEffects.layoutReveal({
+  root: panel, openEvent: "open-panel", closeEvent: "close-panel"
+});
+panel.dispatchEvent(new Event("open-panel"));
+// When the surrounding UI closes the content:
+panel.dispatchEvent(new Event("close-panel"));
+```
+
+Use measurable CSS sizes and normal-priority width and height declarations so
+the browser can interpolate them. The close event restores the collapsed
+layout immediately. Reduced motion, forced colours, hidden pages and browsers
+without Web Animations get the expanded layout directly. Preference changes,
+viewport resize and page hide settle an in-progress opening animation.
+`snapshot()` reports `expanded` and `animating`. `teardown()` cancels motion,
+removes listeners and releases the layout attribute.
+
+![Expanded 544 by 306 pixel panel in the DanceMoves layout reveal example](../screenshots/layout-reveal.jpg)
+
+Actual browser capture of the [example](../../examples/layout-reveal.html).
+Run `npm run build` and open the example in a browser to try the opening
+animation and the keyboard-accessible return action.
+
 ## cueTimeline(options)
 
 Returns `{ id, type: "cue-timeline", restore, start, stop, snapshot, teardown }`.
