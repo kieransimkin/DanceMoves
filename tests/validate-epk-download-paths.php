@@ -25,6 +25,9 @@ $valid = '2026/08/Track Name.mp3';
 $download_url = dance_moves_epk_download_url($valid);
 $query = array();
 parse_str((string) parse_url($download_url, PHP_URL_QUERY), $query);
+$video = '2026/11/Full Visualiser.MP4';
+$video_query = array();
+parse_str((string) parse_url(dance_moves_epk_download_url($video), PHP_URL_QUERY), $video_query);
 
 $checks = array(
     'normal_relative_path' => $valid === dance_moves_epk_download_normalize_relative_path($valid),
@@ -32,7 +35,15 @@ $checks = array(
     'uppercase_extension' => '2026/08/Track.MP3' === dance_moves_epk_download_normalize_relative_path('2026/08/Track.MP3'),
     'traversal_rejected' => '' === dance_moves_epk_download_normalize_relative_path('2026/08/../secret.mp3'),
     'encoded_traversal_rejected' => '' === dance_moves_epk_download_normalize_relative_path('2026/08/%2e%2e/secret.mp3'),
-    'non_mp3_rejected' => '' === dance_moves_epk_download_normalize_relative_path('2026/08/cover.jpg'),
+    'unsupported_type_rejected' => '' === dance_moves_epk_download_normalize_relative_path('2026/08/cover.jpg'),
+    'mp3_mime' => 'audio/mpeg' === dance_moves_epk_download_mime_type($valid),
+    'mp4_mime' => 'video/mp4' === dance_moves_epk_download_mime_type($video),
+    'mp4_upload_url_accepted' => $video === dance_moves_epk_download_relative_path_from_url('/wp-content/uploads/2026/11/Full%20Visualiser.MP4'),
+    'mp4_external_url_rejected' => '' === dance_moves_epk_download_relative_path_from_url('https://example.com/wp-content/uploads/2026/11/Full.mp4'),
+    'mp4_encoded_traversal_rejected' => '' === dance_moves_epk_download_url('2026/11/%2e%2e/private.mp4'),
+    'mp4_disguised_extension_rejected' => '' === dance_moves_epk_download_url('2026/11/Full.mp4.php'),
+    'mp4_signed_url_contains_path' => ($video_query[DANCE_MOVES_DOWNLOAD_QUERY_VAR] ?? '') === $video,
+    'mp4_signed_url_signature_valid' => ($video_query[DANCE_MOVES_DOWNLOAD_SIGNATURE_QUERY_VAR] ?? '') === dance_moves_epk_download_signature($video),
     'external_url_rejected' => '' === dance_moves_epk_download_relative_path_from_url('https://example.com/wp-content/uploads/2026/08/Track.mp3'),
     'sibling_path_rejected' => '' === dance_moves_epk_download_relative_path_from_url('https://kieransimkin.co.uk/wp-content/plugins/Track.mp3'),
     'same_upload_url_accepted' => $valid === dance_moves_epk_download_relative_path_from_url('https://kieransimkin.co.uk/wp-content/uploads/2026/08/Track%20Name.mp3'),
