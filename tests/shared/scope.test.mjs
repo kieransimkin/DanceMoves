@@ -2,6 +2,48 @@ import test from 'node:test';import assert from 'node:assert/strict';import vm f
 import {environment,Element} from './fake-dom.mjs';import {createScope} from '../../src/scope.mjs';import {transformOwnedOperations} from '../../tools/build-modules.mjs';
 function install(file,scope){let source=fs.readFileSync(new URL('../../'+file,import.meta.url),'utf8');if(file.endsWith('dance-moves-rudiments.js'))source=source.replace('const token = String(++serial);','const token = __dmScope.id + "-" + String(++serial);');const code=transformOwnedOperations(source,file);const factory=vm.runInNewContext('(function(__dmScope){const window=__dmScope.window,document=__dmScope.document;const module=undefined;const {CustomEvent,MutationObserver,ResizeObserver,IntersectionObserver,setTimeout,clearTimeout,requestAnimationFrame,cancelAnimationFrame}=window;'+code+'\n})',{console});factory(scope);}
 function core(scope){scope.window.DanceMoves={version:'3.0.0',bpm:145,currentTick:()=>scope.window.performance.now()*145*16/60000,durationMilliseconds:t=>t*3750/145,onCue:()=>()=>{}};}
+
+test('layout reveal animates real box dimensions and cancels when preferences change',()=>{
+ const e=environment(),scope=createScope(e.root,{});core(scope);
+ const root=e.root, frames=[];
+ e.host.getComputedStyle=()=>root.dataset.danceMovesLayoutReveal==='expanded'
+  ? {width:'800px',height:'450px',translate:'none'}
+  : {width:'400px',height:'400px',translate:'none'};
+ root.getBoundingClientRect=()=>({left:20,top:100});
+ root.animate=(keyframes,options)=>{
+  const animation={keyframes,options,cancelled:false,cancel(){this.cancelled=true;}};
+  frames.push(animation);
+  return animation;
+ };
+ install('assets/dance-moves-effects.js',scope);
+ const effects=scope.window.DanceMovesEffects;
+ const owner=effects.layoutReveal({id:'panel',root,openEvent:'open-panel',closeEvent:'close-panel'});
+ assert.equal(root.dataset.danceMovesLayoutReveal,'collapsed');
+ root.dispatchEvent(new Event('open-panel'));
+ assert.equal(owner.snapshot().animating,true);
+ assert.equal(root.dataset.danceMovesLayoutReveal,'expanded');
+ assert.equal(frames[0].keyframes[0].width,'400px');
+ assert.equal(frames[0].keyframes[1].width,'800px');
+ assert.equal(frames[0].keyframes[1].height,'450px');
+ assert.equal(frames[0].options.duration,480);
+ root.dispatchEvent(new Event('open-panel'));
+ assert.equal(frames.length,1);
+ const reduced=e.host.matchMedia('(prefers-reduced-motion: reduce)');
+ reduced.matches=true;
+ reduced.dispatchEvent(new Event('change'));
+ assert.equal(frames[0].cancelled,true);
+ assert.equal(owner.snapshot().expanded,true);
+ root.dispatchEvent(new Event('close-panel'));
+ root.dispatchEvent(new Event('open-panel'));
+ assert.equal(root.dataset.danceMovesLayoutReveal,'expanded');
+ assert.equal(frames.length,1);
+ owner.teardown();
+ assert.equal(root.dataset.danceMovesLayoutReveal,undefined);
+ assert.equal(effects.get('panel'),null);
+ root.dispatchEvent(new Event('open-panel'));
+ assert.equal(root.dataset.danceMovesLayoutReveal,undefined);
+ scope.dispose();
+});
 test('quality recovers from preferences before its performance cooldown when media notifications are coalesced',()=>{
  const e=environment(),s=createScope(e.root,{});core(s);install('assets/dance-moves-effects.js',s);
  const q=s.window.DanceMovesEffects.quality({id:'preference-frame-recovery',root:e.root,recoveryCooldownMilliseconds:30000});

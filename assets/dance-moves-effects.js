@@ -159,6 +159,88 @@
     }));
   }
 
+  function layoutReveal(options) {
+    options = options || {};
+    var root = element(options.root);
+    if (!root || !options.openEvent || !options.closeEvent || options.openEvent === options.closeEvent) {
+      throw new TypeError("DanceMovesEffects layoutReveal requires a root and distinct open and close events");
+    }
+    var state = commonState(options, "layout-reveal");
+    if (instances.has(state.id)) instances.get(state.id).teardown();
+    var duration = clamp(finite(options.durationMilliseconds, 480), 0, 2000);
+    var easing = options.easing || "cubic-bezier(.2,.8,.2,1)";
+    var expanded = Boolean(options.initiallyExpanded), animation = null;
+
+    function setLayout(value) {
+      expanded = value;
+      root.dataset.danceMovesLayoutReveal = value ? "expanded" : "collapsed";
+    }
+    function size() {
+      var style = window.getComputedStyle(root);
+      var rect = root.getBoundingClientRect();
+      return { width: style.width, height: style.height, left: rect.left, top: rect.top, translate: style.translate };
+    }
+    function stop() {
+      if (!animation) return;
+      var active = animation;
+      animation = null;
+      active.cancel();
+    }
+    function open(event) {
+      if (event.target !== root || expanded) return;
+      if (document.hidden || state.reduced.matches || state.forced.matches ||
+          !duration || typeof root.animate !== "function") {
+        setLayout(true);
+        return;
+      }
+      var before = size();
+      setLayout(true);
+      var after = size();
+      var start = { width: before.width, height: before.height };
+      var end = { width: after.width, height: after.height };
+      if (before.translate === "none" && after.translate === "none") {
+        var x = before.left - after.left, y = before.top - after.top;
+        if (x || y) {
+          start.translate = x + "px " + y + "px";
+          end.translate = "0px 0px";
+        }
+      }
+      if (start.width === end.width && start.height === end.height && !start.translate) return;
+      var active;
+      try {
+        active = root.animate([start, end], { duration: duration, easing: easing });
+      } catch (error) {
+        return;
+      }
+      animation = active;
+      active.onfinish = function () { if (animation === active) animation = null; };
+    }
+    function close(event) {
+      if (event.target !== root) return;
+      stop();
+      setLayout(false);
+    }
+    setLayout(expanded);
+    listen(root, options.openEvent, open, undefined, state.removers);
+    listen(root, options.closeEvent, close, undefined, state.removers);
+    listen(window, "resize", stop, { passive: true }, state.removers);
+    listen(window, "pagehide", stop, { passive: true }, state.removers);
+    listen(document, "visibilitychange", function () { if (document.hidden) stop(); }, { passive: true }, state.removers);
+    listen(state.reduced, "change", function () { if (state.reduced.matches) stop(); }, undefined, state.removers);
+    listen(state.forced, "change", function () { if (state.forced.matches) stop(); }, undefined, state.removers);
+    var api = Object.freeze({
+      id: state.id, type: "layout-reveal",
+      snapshot: function () { return { id: state.id, type: "layout-reveal", expanded: expanded, animating: !!animation }; },
+      teardown: function () {
+        stop();
+        state.removers.splice(0).forEach(function (remove) { remove(); });
+        delete root.dataset.danceMovesLayoutReveal;
+        if (instances.get(state.id) === api) instances.delete(state.id);
+      }
+    });
+    return register(state.id, api);
+  }
+
   function cueTimeline(options) {
     options = options || {};
     var state = commonState(options, "cue-timeline");
@@ -789,7 +871,7 @@
   }
 
   window.DanceMovesEffects = Object.freeze({
-    version: String(motion.version || ""), pointer: pointer, playbackPulse: playbackPulse, cueClass: cueClass, cueTimeline: cueTimeline, spritePlayback: spritePlayback, lyricStage: lyricStage, cooperativeArena: cooperativeArena, quality: quality,
+    version: String(motion.version || ""), pointer: pointer, playbackPulse: playbackPulse, cueClass: cueClass, cueTimeline: cueTimeline, spritePlayback: spritePlayback, lyricStage: lyricStage, cooperativeArena: cooperativeArena, quality: quality, layoutReveal: layoutReveal,
     get: function (id) { return instances.get(String(id)) || null; },
     snapshot: function () { return Array.from(instances.values()).map(function (instance) { return instance.snapshot(); }); },
     teardown: function (id) { var instance = instances.get(String(id)); if (instance) instance.teardown(); },
