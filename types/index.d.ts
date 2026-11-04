@@ -84,7 +84,7 @@ export interface LyricStageState {root:Element;popover:HTMLElement;audio:Playbac
 export type LyricStageCleanup = void | (()=>void) | {durationTicks?:number;cleanup?:()=>void};
 export interface Effects {
  version:string;
- layoutReveal(options:EffectOptions & {root:HTMLElement|string;openEvent:string;closeEvent:string;initiallyExpanded?:boolean;durationMilliseconds?:number;easing?:string}):Controller;
+ layoutReveal(options:EffectOptions & {root:HTMLElement|string;openEvent:string;closeEvent:string;initiallyExpanded?:boolean;durationMilliseconds?:number;easing?:string;shouldAnimate?:(root:HTMLElement)=>boolean}):Controller;
  pointer(options:EffectOptions & {target?:Element|string;bounds?:Element|string;render?:(point:{x:number;y:number;reason?:string})=>void}):PointerController;
  playbackPulse(options:EffectOptions & {audio?:PlaybackMedia|string;ticks?:number;className?:string;propertyPrefix?:string;render?:(state:Record<string,unknown> & {audio:PlaybackMedia})=>void}):Controller & {sync():void};
  cueClass(options:EffectOptions & {cue?:string;className?:string;durationTicks?:number;render?:(state:Record<string,unknown>)=>void}):Controller & {fire(cue?:Cue):void;clear(reason?:string):void};

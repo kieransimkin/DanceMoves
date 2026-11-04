@@ -278,6 +278,7 @@ The expanded layout remains in CSS after the animation ends.
 | `openEvent`, `closeEvent` | Required distinct event names dispatched on the root. |
 | `initiallyExpanded` | Starting state. Defaults to `false`. |
 | `durationMilliseconds`, `easing` | Opening motion. Defaults to 480 ms and `cubic-bezier(.2,.8,.2,1)`. |
+| `shouldAnimate(root)` | Optional check of the host's own motion preference when opening. Returning false applies the layout immediately. |
 
 ```css
 #panel { width: min(18rem, 100%); aspect-ratio: 1; }

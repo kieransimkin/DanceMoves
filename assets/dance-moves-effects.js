@@ -189,6 +189,7 @@
     function open(event) {
       if (event.target !== root || expanded) return;
       if (document.hidden || state.reduced.matches || state.forced.matches ||
+          (typeof options.shouldAnimate === "function" && !options.shouldAnimate(root)) ||
           !duration || typeof root.animate !== "function") {
         setLayout(true);
         return;

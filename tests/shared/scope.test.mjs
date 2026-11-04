@@ -17,7 +17,9 @@ test('layout reveal animates real box dimensions and cancels when preferences ch
  };
  install('assets/dance-moves-effects.js',scope);
  const effects=scope.window.DanceMovesEffects;
- const owner=effects.layoutReveal({id:'panel',root,openEvent:'open-panel',closeEvent:'close-panel'});
+ let siteMotion=true;
+ const owner=effects.layoutReveal({id:'panel',root,openEvent:'open-panel',closeEvent:'close-panel',
+  shouldAnimate:()=>siteMotion});
  assert.equal(root.dataset.danceMovesLayoutReveal,'collapsed');
  root.dispatchEvent(new Event('open-panel'));
  assert.equal(owner.snapshot().animating,true);
@@ -33,6 +35,12 @@ test('layout reveal animates real box dimensions and cancels when preferences ch
  reduced.dispatchEvent(new Event('change'));
  assert.equal(frames[0].cancelled,true);
  assert.equal(owner.snapshot().expanded,true);
+ root.dispatchEvent(new Event('close-panel'));
+ root.dispatchEvent(new Event('open-panel'));
+ assert.equal(root.dataset.danceMovesLayoutReveal,'expanded');
+ assert.equal(frames.length,1);
+ reduced.matches=false;
+ siteMotion=false;
  root.dispatchEvent(new Event('close-panel'));
  root.dispatchEvent(new Event('open-panel'));
  assert.equal(root.dataset.danceMovesLayoutReveal,'expanded');
