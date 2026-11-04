@@ -91,6 +91,50 @@ html[data-dance-moves-shared-controls="true"] .ks-epk .epk-download {
   animation: dance-moves-lyric-arrive var(--dance-moves-6t) ease both;
 }
 
+/* Inline three-row window onto a single, full lyric track. */
+.dance-moves-lyric-scroll__frame {
+  height: 0;
+  min-width: 0;
+  overflow: hidden;
+  overflow: clip;
+  text-align: center;
+}
+
+.dance-moves-lyric-scroll__track {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-auto-rows: 1fr;
+}
+
+.dance-moves-lyric-scroll__frame[data-dance-moves-lyric-index="-1"] .dance-moves-lyric-scroll__track {
+  visibility: hidden;
+}
+
+.dance-moves-lyric-scroll__line {
+  display: grid;
+  align-content: center;
+  box-sizing: border-box;
+  min-height: 2.75em;
+  padding: .35em .75em;
+  font-weight: 600;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  opacity: .7;
+}
+
+.dance-moves-lyric-scroll__line[data-dance-moves-lyric-current] {
+  opacity: 1;
+}
+
+@media (forced-colors: active) {
+  .dance-moves-lyric-scroll__line {
+    opacity: 1;
+  }
+  .dance-moves-lyric-scroll__line[data-dance-moves-lyric-current] {
+    color: LinkText;
+  }
+}
+
 /* Opt-in shared three-line lyric stage. DanceMoves owns the scrolling state;
    each release still supplies its own bounded visual treatment. */
 .dance-moves-lyric-popover[data-dance-moves-lyric-stage="ready"] {

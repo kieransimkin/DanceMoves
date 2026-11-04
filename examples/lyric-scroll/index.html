@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DanceMoves scrolling lyrics</title>
+<link rel="stylesheet" href="../../lib/dancemoves.css">
+<style>
+  body { margin: 0; background: #14232d; color: #f2f7f5; font: 1rem/1.5 system-ui, sans-serif; }
+  main { box-sizing: border-box; width: min(100%, 44rem); margin: auto; padding: 1.5rem; }
+  h1 { margin: 0 0 .5rem; font-size: clamp(1.5rem, 5vw, 2.25rem); }
+  audio { display: block; width: 100%; margin: 1.25rem 0; }
+  [data-dance-moves-lyric-scroll] { border: 1px solid #738f96; border-radius: .75rem; background: #1b303c; }
+  .dance-moves-lyric-scroll__line[data-dance-moves-lyric-current] { color: #abf3d8; }
+  @media (forced-colors: active) {
+    .dance-moves-lyric-scroll__line[data-dance-moves-lyric-current] { color: LinkText; }
+  }
+  details { margin-top: 1.25rem; }
+</style>
+<main data-dancemoves-root>
+  <h1>Scrolling lyrics</h1>
+  <p>Play the synthetic tone to see the timed lines move through the frame. Scrub to jump to a different line.</p>
+  <audio data-dance-moves-master controls preload="metadata" aria-label="Synthetic demo audio"></audio>
+  <div data-dance-moves-lyric-scroll></div>
+  <details>
+    <summary>Read the complete demo lyrics</summary>
+    <p>The room goes quiet<br>
+      A signal flickers<br>
+      One small light crosses the room and settles on the windowsill<br>
+      Keep the window open<br>
+      The last light stays</p>
+  </details>
+</main>
+<script type="module">
+  const root = document.querySelector('main');
+  const audio = root.querySelector('audio');
+  const duration = 11;
+  const sampleRate = 8000;
+  const dataSize = duration * sampleRate * 2;
+  const wav = new DataView(new ArrayBuffer(44 + dataSize));
+  for (const [offset, label] of [[0, 'RIFF'], [8, 'WAVEfmt '], [36, 'data']]) {
+    for (let i = 0; i < label.length; i++) wav.setUint8(offset + i, label.charCodeAt(i));
+  }
+  wav.setUint32(4, 36 + dataSize, true);
+  wav.setUint32(16, 16, true);
+  wav.setUint16(20, 1, true);
+  wav.setUint16(22, 1, true);
+  wav.setUint32(24, sampleRate, true);
+  wav.setUint32(28, sampleRate * 2, true);
+  wav.setUint16(32, 2, true);
+  wav.setUint16(34, 16, true);
+  wav.setUint32(40, dataSize, true);
+  for (let i = 0; i < duration * sampleRate; i++) {
+    const time = i / sampleRate;
+    wav.setInt16(44 + 2 * i, 1200 * Math.sin(2 * Math.PI * 220 * time) * Math.exp(-8 * (time % .5)), true);
+  }
+  audio.src = URL.createObjectURL(new Blob([wav.buffer], {type: 'audio/wav'}));
+  const config = {bpm: 120, masterDurationMilliseconds: duration * 1000, lyricTimingUrl: './lyrics.lrc'};
+  if (new URLSearchParams(location.search).has('wordpress')) {
+    window.danceMovesConfig = config;
+    const script = document.createElement('script');
+    script.src = '../../lib/wordpress.js';
+    document.head.appendChild(script);
+  } else {
+    const {createDanceMoves} = await import('../../lib/index.mjs');
+    window.runtime = createDanceMoves({...config, root});
+  }
+</script>
+</html>

@@ -70,6 +70,7 @@ jobs:
       - run: npm run demo:prepare
       - run: npx playwright-core install --with-deps chromium
       - run: npm run test:browser
+      - run: node tests/shared/lyric-scroll-browser.mjs
       - run: npm run test:spectrum:browser
       - run: npm run test:visualisers:browser
       - run: node tests/shared/orientation-navigation-browser.mjs

@@ -1,4 +1,4 @@
-(function (window, document) {
+(function (window, document, onDispose) {
   "use strict";
 
   var rawConfig = window.danceMovesConfig || {};
@@ -14,6 +14,8 @@
   var lyricList = [];
   var wordList = [];
   var lyricRenderer = null;
+  var lyricScroll = null;
+  var lyricScrollMaster = null;
   var boundAudio = new WeakSet();
   var playbackBindings = new Map();
   var activeAudio = null;
@@ -703,6 +705,81 @@
     return lyricRenderer;
   }
 
+  function createLyricScroll() {
+    var selector = "[data-dance-moves-lyric-scroll]";
+    var root = api.root || document;
+    var target = root.matches && root.matches(selector) ? root : root.querySelector(selector);
+    if (!target || !lyricList.some(function (entry) { return entry.text; })) return null;
+
+    var frame = document.createElement("div");
+    var track = document.createElement("div");
+    frame.className = "dance-moves-lyric-scroll__frame";
+    track.className = "dance-moves-lyric-scroll__track";
+    frame.setAttribute("aria-hidden", "true");
+    frame.dataset.danceMovesLyricIndex = "-1";
+
+    var rows = [];
+    var positions = new Map();
+    function addRow(text) {
+      var line = document.createElement("div");
+      line.className = "dance-moves-lyric-scroll__line";
+      line.textContent = text;
+      rows.push(line);
+      track.appendChild(line);
+    }
+    // Padding rows keep the first and last sung lines in the middle slot.
+    addRow("");
+    lyricList.forEach(function (entry, index) {
+      if (!entry.text) return;
+      positions.set(index, rows.length);
+      addRow(entry.text);
+    });
+    addRow("");
+    frame.appendChild(track);
+    target.appendChild(frame);
+
+    // Equal-height grid rows expand to fit the longest wrapped line. A
+    // percentage transform keeps the same row aligned after a font/width change.
+    var resize = new window.ResizeObserver(function (entries) {
+      frame.style.height = (entries[0].contentRect.height * 3 / rows.length) + "px";
+    });
+    resize.observe(track);
+    var reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+    var forced = window.matchMedia("(forced-colors: active)");
+    var animation = null;
+    var position = 0;
+    function settle() {
+      if (animation) animation.cancel();
+      animation = null;
+    }
+    reduced.addEventListener("change", settle);
+    forced.addEventListener("change", settle);
+    if (onDispose) onDispose(settle);
+
+    return {
+      settle: settle,
+      update: function (index, duration) {
+        var next = positions.get(index) || 0;
+        if (!duration) settle();
+        if (next === position) return;
+        var transform = "translateY(" + (-100 * (next - 1) / rows.length) + "%)";
+        var slide = duration > 0 && position > 0 && next === position + 1 &&
+          !document.hidden && !reduced.matches && !forced.matches && typeof track.animate === "function";
+        var from = slide && animation && animation.playState === "running"
+          ? window.getComputedStyle(track).transform : track.style.transform;
+        settle();
+        if (position) delete rows[position].dataset.danceMovesLyricCurrent;
+        position = next;
+        frame.dataset.danceMovesLyricIndex = next ? String(index) : "-1";
+        if (!next) return;
+        rows[next].dataset.danceMovesLyricCurrent = "true";
+        track.style.transform = transform;
+        if (slide) animation = track.animate([{ transform: from }, { transform: transform }],
+          { duration: duration, easing: "ease-in-out" });
+      }
+    };
+  }
+
   function callHandlers(key, detail) {
     var group = handlers.get(key);
     if (!group) return;
@@ -832,6 +909,15 @@
       state.frame = 0;
     }
 
+    function ownsLyricScroll() {
+      return lyricScroll && lyricScrollMaster &&
+        audio === (api.playbackSource ? api.playbackSource(lyricScrollMaster) : lyricScrollMaster);
+    }
+
+    function restoreLyricScroll() {
+      if (ownsLyricScroll()) lyricScroll.update(audio.ended ? -1 : lyricAtOrBefore(positiveNumber(audio.currentTime)), 0);
+    }
+
     function tick() {
       state.frame = 0;
       if (audio.paused || audio.ended || state.seeking || document.hidden) return;
@@ -849,6 +935,12 @@
           var lyricDetail = dispatchLyric(lyricIndex >= 0 ? lyricList[lyricIndex] : null, audio, lyricIndex);
           var renderer = createLyricRenderer();
           if (renderer) renderer.update(lyricDetail, true);
+          if (ownsLyricScroll()) {
+            var nextEntry = lyricList[lyricIndex + 1];
+            var rate = positiveNumber(audio.playbackRate) || 1;
+            var available = nextEntry ? Math.max(0, nextEntry.time - now) * 1000 : Infinity;
+            lyricScroll.update(lyricIndex, Math.min(320, durationMillisecondsAt(audio, 8) / rate, available / rate));
+          }
         }
         while (state.next < cueList.length && cueList[state.next].time <= now + 0.001) {
           var cue = cueList[state.next];
@@ -878,6 +970,7 @@
       state.next = firstCueAfter(state.last);
       state.lyric = -2;
       state.word = -2;
+      restoreLyricScroll();
       syncCurrentWord(state.last,audio,state);
       if (state.pendingCue) {
         dispatchCue(state.pendingCue, audio);
@@ -890,9 +983,9 @@
 
     listen(audio, "play", start);
     listen(audio, "playing", start);
-    listen(audio, "pause", function () { stopFrame(); if (activeAudio === audio) activeAudio = null; if (lyricRenderer) lyricRenderer.hide(); });
-    listen(audio, "ended", function () { stopFrame(); if (activeAudio === audio) activeAudio = null; state.last = 0; state.next = 0; state.lyric = -2; state.word = -2; state.pendingCue = null; state.endedPending = true; if (lyricRenderer) lyricRenderer.hide(); });
-    listen(audio, "seeking", function () { state.seeking = true; state.pendingCue = null; stopFrame(); });
+    listen(audio, "pause", function () { stopFrame(); if (activeAudio === audio) activeAudio = null; if (lyricRenderer) lyricRenderer.hide(); restoreLyricScroll(); });
+    listen(audio, "ended", function () { stopFrame(); if (activeAudio === audio) activeAudio = null; state.last = 0; state.next = 0; state.lyric = -2; state.word = -2; state.pendingCue = null; state.endedPending = true; if (lyricRenderer) lyricRenderer.hide(); restoreLyricScroll(); });
+    listen(audio, "seeking", function () { state.seeking = true; state.pendingCue = null; stopFrame(); if (ownsLyricScroll()) lyricScroll.settle(); });
     listen(audio, "seeked", function () {
       state.seeking = false;
       state.last = positiveNumber(audio.currentTime);
@@ -902,17 +995,39 @@
       state.pendingCue = cueAtLanding(state.last);
       syncVariableTempo(audio);
       syncCurrentWord(state.last,audio,state);
-      playbackBindings.set(audio, function () { stopFrame(); removers.splice(0).forEach(function (remove) { remove(); }); boundAudio.delete(audio); if (activeAudio === audio) activeAudio = null; playbackBindings.delete(audio); });
-    if (!audio.paused && !audio.ended) start();
+      restoreLyricScroll();
+      if (!audio.paused && !audio.ended) start();
     });
-    listen(audio, "ratechange", function () { setOwnedPlaybackRate(audio.playbackRate); });
+    listen(audio, "ratechange", function () { setOwnedPlaybackRate(audio.playbackRate); if (ownsLyricScroll()) lyricScroll.settle(); });
     listen(audio, "timeupdate", function () { if (!audio.paused && !state.frame && !state.seeking) tick(); });
-    listen(document, "visibilitychange", function () { if (document.hidden) { stopFrame(); if (lyricRenderer) lyricRenderer.hide(); } else if (!audio.paused && !audio.ended && !state.seeking) { state.pendingCue = null; start(); } });
+    listen(document, "visibilitychange", function () {
+      if (document.hidden) {
+        stopFrame();
+        if (lyricRenderer) lyricRenderer.hide();
+        if (ownsLyricScroll()) lyricScroll.settle();
+      } else if (!audio.paused && !audio.ended && !state.seeking) {
+        state.pendingCue = null;
+        start();
+      }
+    });
+    playbackBindings.set(audio, function () {
+      stopFrame();
+      removers.splice(0).forEach(function (remove) { remove(); });
+      boundAudio.delete(audio);
+      if (activeAudio === audio) activeAudio = null;
+      if (ownsLyricScroll()) lyricScroll.update(-1, 0);
+      playbackBindings.delete(audio);
+    });
+    restoreLyricScroll();
     if (!audio.paused && !audio.ended) start();
   }
 
   function discoverAudio() {
     var audioElements = Array.from(document.querySelectorAll("audio"));
+    if (lyricScroll && !lyricScrollMaster) {
+      var root = api.root || document;
+      lyricScrollMaster = root.querySelector("audio[data-dance-moves-master]") || root.querySelector("audio");
+    }
     if (!referenceDurationSeconds) {
       var canonical = document.querySelector("audio[data-dance-moves-master], #ks-clay-stars-audio") || audioElements[0];
       if (canonical && positiveNumber(canonical.duration)) referenceDurationSeconds = canonical.duration;
@@ -1015,6 +1130,7 @@
       document.documentElement.dataset.danceMovesLyricCount = String(lyricList.length);
       document.documentElement.dataset.danceMovesLyricStatus = lyricList.length ? "ready" : "none";
       if (rawConfig.lyricPopupsEnabled && lyricList.length) createLyricRenderer();
+      if (lyricList.length) lyricScroll = createLyricScroll();
       discoverAudio();
     });
   }
