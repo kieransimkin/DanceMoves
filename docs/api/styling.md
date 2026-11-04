@@ -122,9 +122,9 @@ space for the missing neighbour. Blank LRC cues clear the frame until the
 next sung line. Keep a separate readable transcript because the timed visual
 track is hidden from assistive technology.
 
-![The scrolling lyric frame at 360 pixels wide, with a two-line wrap in the centre row](../media/lyric-scroll-mobile.png)
+![The scrolling lyric frame at 360 pixels wide, with a two-line wrap in the centre row](https://raw.githubusercontent.com/kieransimkin/DanceMoves/v3.5.0/examples/lyric-scroll/mobile.png)
 
-[Watch a short capture of the scrolling frame](../media/lyric-scroll-demo.webm).
+[Watch a short capture of the scrolling frame](https://github.com/kieransimkin/DanceMoves/blob/v3.5.0/examples/lyric-scroll/demonstration.webm).
 In the silent capture, “The room goes quiet” first appears in the middle.
 The track moves up to centre “A signal flickers”, then moves again to centre
 “One small light crosses the room and settles on the windowsill”.
