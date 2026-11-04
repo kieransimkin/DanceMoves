@@ -188,6 +188,24 @@ const unsubscribe = window.DanceMoves.onCue("CHORUS 1", detail => {
 
 `"*"` subscribes to all cues. The runtime also dispatches bubbling `dance-moves-cue` and backwards-compatible `kieran-epk-cue` custom events. Local harnesses can route a data-only cue through the same production path with `DanceMoves.fireCue({ name, type, time })`.
 
+## Scrolling lyrics
+
+Place `<div data-dance-moves-lyric-scroll></div>` inside the DanceMoves root to
+show the full timed lyric track through a three-line frame. The current line
+sits in the centre, with the previous and upcoming sung lines on either side.
+The track glides one row as playback advances. Seeking jumps directly to the
+correct line, and paused playback keeps that line readable.
+
+Use the normal `lyricTimingUrl` and shared stylesheet in JavaScript or React.
+In WordPress, select the LRC attachment in EPK Timing and put the markup inside
+the page's DanceMoves root. Mark the canonical audio with
+`data-dance-moves-master` when the page has more than one player. This inline
+mode is independent of the timed pop-up checkbox. Keep the complete readable
+lyrics on the page for assistive technology.
+
+[Styling and playback behaviour](docs/api/styling.md#scrolling-lyric-frame) ·
+[Runnable example](examples/lyric-scroll/index.html)
+
 ## Timed lyric pop-ups and visual-language workflow
 
 When enabled, DanceMoves creates one non-interactive, `aria-hidden` lyric layer and writes lyric text with `textContent`; timing-file text is never interpreted as markup. The full readable lyric section remains the accessible source, so rapid sung lines are not repeatedly announced by assistive technology. Blank LRC cues clear the layer. Reduced-motion mode keeps the words but removes entrance and exit motion; forced-colours mode supplies a high-contrast fallback.

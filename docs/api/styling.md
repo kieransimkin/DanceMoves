@@ -96,6 +96,45 @@ control transitions and this disclosure transition are removed under reduced
 motion. These rules affect existing markup; the plugin does not create the
 player, downloads or complete lyric section.
 
+## Scrolling lyric frame
+
+Add one empty host inside the DanceMoves root:
+
+```html
+<div data-dance-moves-lyric-scroll></div>
+```
+
+Mount the runtime with `lyricTimingUrl` and load `@kieransimkin/dancemoves/styles.css`.
+The WordPress adapter takes the LRC from the page's EPK Timing attachment and
+loads the shared stylesheet. The frame uses the canonical audio marked
+`data-dance-moves-master`, or the first audio when none is marked. It follows
+that master's shared source time, including an explicitly linked player.
+
+The generated `.dance-moves-lyric-scroll__frame` clips
+`.dance-moves-lyric-scroll__track` to three equal rows sized to fit wrapped text.
+Style the host and `.dance-moves-lyric-scroll__line` for the page's typography
+and colour. The current row has `data-dance-moves-lyric-current`; the frame's
+`data-dance-moves-lyric-index` reports its LRC entry index, or `-1` when cleared.
+
+The frame holds the current line on pause and snaps after seeks, skipped
+entries, reduced motion and forced colours. The first and last lines use empty
+space for the missing neighbour. Blank LRC cues clear the frame until the
+next sung line. Keep a separate readable transcript because the timed visual
+track is hidden from assistive technology.
+
+![The scrolling lyric frame at 360 pixels wide, with a two-line wrap in the centre row](../media/lyric-scroll-mobile.png)
+
+[Watch a short capture of the scrolling frame](../media/lyric-scroll-demo.webm).
+In the silent capture, “The room goes quiet” first appears in the middle.
+The track moves up to centre “A signal flickers”, then moves again to centre
+“One small light crosses the room and settles on the windowsill”.
+
+To run the synthetic demo locally, run `npm run build` and
+`node examples/playback-sources/serve.mjs`, then open
+[the lyric demo](http://127.0.0.1:8768/examples/lyric-scroll/index.html).
+Play to see the scroll and use the audio scrubber to seek. Append `?wordpress`
+to exercise the built WordPress frontend adapter.
+
 ## Timed lyric component
 
 The core supplies one visual-only layer, appended directly to `document.body`:

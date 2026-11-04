@@ -169,6 +169,18 @@ are released when their last owner is removed. Page HTML and localized
 configuration carry source references and settings; no song sample arrays enter
 the shared DanceMoves bundle or the DanceRudiments package.
 
+## Inline scrolling lyrics
+
+Choose the canonical LRC attachment in EPK Timing and place
+`<div data-dance-moves-lyric-scroll></div>` inside the DanceMoves page root.
+Mark the canonical audio element with `data-dance-moves-master` on pages
+with multiple players. The inline frame displays the previous, current and
+upcoming lines from that player's source clock. Keep the complete readable
+lyrics elsewhere on the page. The inline frame has its own markup opt-in, so
+it can be used with the timed pop-up checkbox off.
+
+[See the demo and styling reference](api/styling.md#scrolling-lyric-frame).
+
 ## Existing EPK JavaScript
 
 Existing `window.DanceMoves`, `window.DanceMovesEffects`, native and orientation

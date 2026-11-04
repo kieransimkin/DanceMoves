@@ -64,6 +64,7 @@ export function buildModules({root=ROOT, out=path.join(root,'.build/modules')}={
     // Only mounting/lifetime integration changes; musical definitions remain in their canonical sources.
     if (name === 'core') {
       source = once(source,'Promise.all([loadCueFile(), loadLyricFile(), loadWordFile()]).then(function () {','api.ready = Promise.all([loadCueFile(), loadLyricFile(), loadWordFile()]).then(function () {',relative);
+      source = once(source,'}(window, document));','}(window, document, __dmScope.onDispose));',relative);
     }
     if (name === 'rudiments') source = once(source,'const token = String(++serial);', 'const token = __dmScope.id + "-" + String(++serial);',relative);
     if (name === 'catalogue') {

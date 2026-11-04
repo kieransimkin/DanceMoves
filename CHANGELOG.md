@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.5.0 - 2026-11-04
+
+- Add an inline scrolling lyric mode with a three-line mask, a centred current line and reduced-motion support.
+
 ## 3.4.1 - 2026-11-02
 
 - Normalize repository text and canonical lyric timing to LF while retaining CRLF for Windows command scripts.
