@@ -387,11 +387,11 @@ or `do_action('dance_moves_...')` extension contract is exposed in this baseline
 | `admin_notices` | `dance_moves_admin_notice()` | Reads/deletes the current user's queued transient and prints escaped error HTML, or returns without output. |
 | `save_post_page` | `dance_moves_save_page_meta($post_id)` | Nonce/capability/autosave checks, per-field preservation/clear/update, popup checkbox and ambient-effect persistence; no value. Blank/invalid/missing effect clears its metadata. |
 | `query_vars` | `dance_moves_epk_download_query_vars($query_vars)` | Adds the two signed-download query vars; unique array returned. |
-| `the_content` (30) | `dance_moves_epk_download_filter_content($content)` | Rewrites eligible MP3 download anchors on main Page content; see [downloads](downloads.md). |
-| `template_redirect` (0) | `dance_moves_epk_download_serve()` | Validates/serves signed MP3 GET/HEAD requests; terminates handled requests. |
+| `the_content` (30) | `dance_moves_epk_download_filter_content($content)` | Rewrites eligible MP3 and MP4 download anchors on main Page content. See [downloads](downloads.md). |
+| `template_redirect` (0) | `dance_moves_epk_download_serve()` | Validates and serves signed MP3 and MP4 GET/HEAD requests. |
 | `the_content` (20) | `dance_moves_clay_stars_filter_content($content)` | Conditionally returns transformed Clay markup. |
 
-The eight `dance_moves_epk_download_*` functions have complete signatures and
+The `dance_moves_epk_download_*` functions have complete signatures and
 contracts in the [download API](downloads.md#php-functions). Together with that
 reference and `dance_moves_sanitize_effect()`, the tables cover all **38** global
 PHP functions in 2.8.0.

@@ -4,7 +4,7 @@ Tags: animation, music, accessibility
 Requires at least: 6.7
 Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 3.4.1
+Stable tag: 3.4.2
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 
@@ -14,9 +14,11 @@ BPM-synchronised web motion with media clocks, cue timing and accessible fallbac
 
 A shared runtime for BPM-, cue- and lyric-timed creative effects, orientation inputs, playback lifecycle and adaptive quality. Pages explicitly connect the required effects; installing the plugin alone does not choreograph a page. Reduced-motion and forced-colour fallbacks are supported.
 
+Explicit MP3 and MP4 download links in Page content can use signed attachment responses. Audio and video players keep their original playback URLs.
+
 No external service is required and no external executable code is downloaded. Device orientation is used locally when explicitly connected. The optional motion-lab capture feature stores submitted samples only after a participant actively chooses to record and upload; it is not analytics and does not run automatically on ordinary pages. Uploads and the private capture administration UI require an authenticated WordPress administrator with manage_options. Browser uploads use a fresh WordPress REST nonce and same-origin credentials; no published token authorizes uploads. Site owners must review capture consent and retention before enabling a lab. Local recording/download does not require an upload.
 
-Human-readable JavaScript source and reproducible build instructions for bundled scripts and WebAssembly: https://github.com/kieransimkin/DanceMoves/tree/v3.4.1/src and https://github.com/kieransimkin/DanceMoves/tree/v3.4.1/tools . Run npm ci and npm run build. Rhythmic function source: https://github.com/kieransimkin/DanceRudiments .
+Human-readable JavaScript source and reproducible build instructions for bundled scripts and WebAssembly: https://github.com/kieransimkin/DanceMoves/tree/v3.4.2/src and https://github.com/kieransimkin/DanceMoves/tree/v3.4.2/tools . Run npm ci and npm run build. Rhythmic function source: https://github.com/kieransimkin/DanceRudiments .
 
 Author and ecosystem: https://kieransimkin.co.uk/ and https://kieransimkin.co.uk/danceflow/
 
@@ -41,6 +43,9 @@ No. The plugin is independent and does not require an external account.
 No. Search engines and sharing services decide how to present a page.
 
 == Changelog ==
+
+= 3.4.2 =
+* Serve WordPress-hosted MP4 files through explicit signed download links while keeping direct video URLs available for playback.
 
 = 3.4.1 =
 * Normalize Git text and canonical lyric timing to LF so package hashes are platform-independent.

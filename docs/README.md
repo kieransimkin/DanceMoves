@@ -65,7 +65,7 @@ not a hypothetical 2.9. See [source provenance](source-audit.md).
 | Cue timing | LRC-style timed labels, named/wildcard handlers, scoped animation resets, legacy event alias | `.cue` means the plugin's timestamped text format, not a CD cuesheet. |
 | Timed lyrics | Neutral popover or shared three-slot stage, blank clears, playback/seek following, previous/next visible neighbours, callbacks and DOM events | Off by default; a release-specific design review is required before adoption. |
 | Shared effects | `pointer`, `playbackPulse`, `cueClass`, `cueTimeline`, `spritePlayback`, `lyricStage`, `quality`; stable-ID instance management | Page code owns appearance; callback, transport and accessibility contracts differ between primitives. |
-| Signed MP3 downloads | Attachment-only GET/HEAD endpoint and rewriting of explicit upload download links | HMAC is not user authorisation or an expiring URL; players keep their original URLs. |
+| Signed WordPress MP3 and MP4 downloads | Attachment GET/HEAD endpoint for explicit upload download links | HMAC signs a reusable path. Players keep their original URLs. |
 | Paper planes | Page-configured hero effect, atlas sprites, compact mode, offscreen/hidden pause | DOM structure, CSS containment and count limits must be preserved; no user-facing tuning panel. |
 | Catalogue timing | EPK-owned stylesheet, inline, computed and pseudo-element timing conversion | It cannot rewrite canvas/WebGL phase logic or supply an arbitrary new root registration API. |
 | Orientation | Nine release adapters, permission UI, rolling mapping, latest-sample frame coalescing and two-tick target writes | Mobile/capability detection and reduced motion gate the production input runtime. |

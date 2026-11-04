@@ -3,7 +3,7 @@
  * Plugin Name: DanceMoves
  * Plugin URI: https://kieransimkin.co.uk/my-songs/
  * Description: BPM-synchronised web motion, effects and media clocks for JavaScript, React, Next.js and WordPress. https://kieransimkin.co.uk/
- * Version: 3.4.1
+ * Version: 3.4.2
  * Author: Kieran Simkin
  * Author URI: https://kieransimkin.co.uk/
  * Requires at least: 6.7
@@ -17,7 +17,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('DANCE_MOVES_VERSION', '3.4.1');
+define('DANCE_MOVES_VERSION', '3.4.2');
 define('KS_EPK_ORIENTATION_VERSION', DANCE_MOVES_VERSION);
 
 define('DANCE_MOVES_META_BPM', '_dance_moves_bpm');
@@ -38,6 +38,14 @@ require_once __DIR__ . '/dance-moves-song-collection.php';
 define('DANCE_MOVES_DOWNLOAD_QUERY_VAR', 'dance_moves_download');
 define('DANCE_MOVES_DOWNLOAD_SIGNATURE_QUERY_VAR', 'dance_moves_download_signature');
 
+function dance_moves_epk_download_mime_type($path) {
+    return match (strtolower(pathinfo($path, PATHINFO_EXTENSION))) {
+        'mp3' => 'audio/mpeg',
+        'mp4' => 'video/mp4',
+        default => '',
+    };
+}
+
 function dance_moves_epk_download_normalize_relative_path($relative_path) {
     if (!is_string($relative_path)) {
         return '';
@@ -49,7 +57,7 @@ function dance_moves_epk_download_normalize_relative_path($relative_path) {
         str_starts_with($relative_path, '/') ||
         str_contains($relative_path, ':') ||
         preg_match('/[\x00-\x1F\x7F]/', $relative_path) ||
-        !preg_match('/\.mp3$/i', $relative_path)
+        '' === dance_moves_epk_download_mime_type($relative_path)
     ) {
         return '';
     }
@@ -185,6 +193,7 @@ function dance_moves_epk_download_serve() {
         ? realpath($base_directory . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $relative_path))
         : false;
     $base_prefix = false !== $base_directory ? rtrim($base_directory, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR : '';
+    $mime_type = dance_moves_epk_download_mime_type($relative_path);
 
     if (
         false === $file_path ||
@@ -192,7 +201,7 @@ function dance_moves_epk_download_serve() {
         !str_starts_with($file_path, $base_prefix) ||
         !is_file($file_path) ||
         !is_readable($file_path) ||
-        'mp3' !== strtolower(pathinfo($file_path, PATHINFO_EXTENSION))
+        $mime_type !== dance_moves_epk_download_mime_type($file_path)
     ) {
         dance_moves_epk_download_not_found();
     }
@@ -208,9 +217,13 @@ function dance_moves_epk_download_serve() {
     $filename = wp_basename($file_path);
     $fallback_filename = sanitize_file_name(remove_accents($filename));
     if ('' === $fallback_filename) {
-        $fallback_filename = 'epk-audio.mp3';
+        $fallback_filename = 'video/mp4' === $mime_type ? 'epk-video.mp4' : 'epk-audio.mp3';
     }
     $fallback_filename = addcslashes($fallback_filename, "\\\"");
+    $size = filesize($file_path);
+    if (false === $size || $size < 0) {
+        dance_moves_epk_download_not_found();
+    }
 
     while (ob_get_level() > 0) {
         ob_end_clean();
@@ -218,15 +231,19 @@ function dance_moves_epk_download_serve() {
 
     status_header(200);
     header('Content-Description: File Transfer');
-    header('Content-Type: audio/mpeg');
+    header('Content-Type: ' . $mime_type);
     header('Content-Disposition: attachment; filename="' . $fallback_filename . '"; filename*=UTF-8\'\'' . rawurlencode($filename));
-    header('Content-Length: ' . (string) filesize($file_path));
+    header('Content-Length: ' . (string) $size);
     header('Cache-Control: private, no-store, max-age=0');
     header('X-Content-Type-Options: nosniff');
     header('X-Robots-Tag: noindex, nofollow');
+    if ('video/mp4' === $mime_type) {
+        // Avoid spooling large videos into nginx FastCGI temporary files.
+        header('X-Accel-Buffering: no');
+    }
 
     if ('HEAD' !== $method) {
-        // Stream the already validated, canonical local MP3 without loading it into memory.
+        // Stream the already validated local media without loading it into memory.
         // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile -- WP_Filesystem has no equivalent bounded binary download stream.
         readfile($file_path);
     }

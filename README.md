@@ -935,6 +935,16 @@ Signed GET/HEAD download simulation and normal byte-range audio playback. Local-
 <!-- Do not reuse the signed download URL as the player source. -->
 ```
 
+WordPress also supports MP4 downloads. Use the original upload URL in both the
+player and the explicit download link. DanceMoves signs the link at render time.
+
+```html
+<video controls preload="metadata">
+  <source src="/wp-content/uploads/2026/11/visualiser.mp4" type="video/mp4">
+</video>
+<a href="/wp-content/uploads/2026/11/visualiser.mp4" download>Download the visualiser</a>
+```
+
 [Run the example](examples/wordpress/downloads.html) · [Read its complete source](examples/wordpress/demos/downloads.mjs).
 
 #### 23. Motion capture REST contract
@@ -996,7 +1006,7 @@ than treating historical release notes as the current API contract.
 | [Core JavaScript](docs/api/javascript.md) | All clock, interval, parser, cue, lyric, animation-scope and diagnostic methods; exact cue landings; immediate-next and next-visible lyric payloads. |
 | [Shared effects](docs/api/effects.md) | `pointer`, `playbackPulse`, `cueClass`, `cueTimeline`, `spritePlayback`, `lyricStage`, `cooperativeArena`, `quality`; all options, callbacks, returned handles and registry methods. |
 | [WordPress, PHP and REST](docs/api/wordpress.md) | Page metadata, helpers, editor validation, asset dependencies, hooks and full motion-capture request/response contract. |
-| [Signed MP3 downloads](docs/api/downloads.md) | All eight download helpers, anchor rewriting, signed GET/HEAD endpoint, response headers, errors and security limits. |
+| [Signed WordPress MP3 and MP4 downloads](docs/api/downloads.md) | Anchor rewriting, signed GET/HEAD endpoint, response headers, errors and security limits. |
 | [Paper planes](docs/api/paper-planes.md) | Ambient-effect selection, hero markup, configuration, snapshot/teardown, compact mode and accessibility behaviour. |
 | [Orientation and release adapters](docs/api/adapters.md) | All nine orientation mappings, helper/scheduler APIs, catalogue additions and Clay/Stars settings/lifecycle/performance. |
 | [CSS and HTML](docs/api/styling.md) | Tick properties, declarative starts, lyric styling, generated classes, attributes and output state. |
@@ -1038,7 +1048,7 @@ The painted bounds are the existing hero only. The renderer writes transforms on
 - Bounds: `.epk-hero`, never the page or viewport; all controls and copy remain above the decorative layer.
 - Required checks: full/compact/static state, hidden and offscreen pause, reduced motion, forced colours, overflow, hero readability, stall-to-drop continuity and the shared performance acceptance target below.
 
-Version 2.5.0 gives every explicit WordPress-hosted MP3 download link on an EPK a signed download-only URL. That endpoint returns `Content-Disposition: attachment` while retaining the correct `audio/mpeg` media type. Player and source URLs are not rewritten, so the same MP3 remains seekable and playable in the page. Direct media URLs also remain inline. The content transformation uses WordPress's HTML Tag Processor and changes only same-site upload links whose anchor already has a `download` attribute.
+DanceMoves gives explicit WordPress-hosted MP3 and MP4 download links a signed download URL. The endpoint returns `Content-Disposition: attachment` with `audio/mpeg` or `video/mp4`. The content filter uses WordPress's HTML Tag Processor to rewrite same-site upload anchors with a `download` attribute. Audio and video players keep their original media URLs and can use normal range playback and seeking.
 
 Version 2.4.2 preserves exact cue landings: seeking to within 50 milliseconds of a cue arms that one cue and dispatches it once when playback starts (or immediately when seeking during playback), while ordinary scrubbing still suppresses skipped cues. Version 2.4.1 extended each playback-synchronised lyric event with the immediate next LRC entry and its exact timestamp, allowing release adapters to choreograph a preview against the existing audio clock without reparsing the LRC or creating a second timer. Version 2.4.0 added opt-in lyric pop-ups. DanceMoves parses the selected canonical LRC as inert text, follows the same master-length audio and animation-frame clock as cue timing, clears on blank cues, re-indexes after seeks, hides on pause/end, and exposes `onLyric()` plus a bubbling `dance-moves-lyric` event. The shared component is intentionally visually neutral. Every adopting EPK must add a distinct treatment derived from that song's documented visual language; enabling the checkbox without that release-specific design review is not an approved EPK workflow.
 
@@ -1109,7 +1119,7 @@ After every authorised upload, arm browser exception capture before loading the 
 
 No WordPress upload, timing-media upload, page-meta save or legacy-plugin deactivation should occur until the exact ZIP and migration manifest have action-time approval. Public verification must cover signed-out desktop, tablet and mobile rendering, Unicode, reduced motion, audio/chapter controls, cue resets, named handlers and all ten registered orientation adapters.
 
-For the EPK download route, verify one rendered MP3 download anchor from each materially different markup pattern, require a signed DanceMoves URL, and capture its response headers. The download response must be HTTP 200 with `Content-Type: audio/mpeg`, `Content-Disposition: attachment` and the expected byte count. Independently reload at least one on-page player and require its direct media request to remain HTTP 206/200 `audio/mpeg` with no forced-attachment header. A successful WordPress plugin notice does not prove either behaviour.
+Verify signed-out MP3 and MP4 download links. Require a signed DanceMoves URL and HTTP 200 with the media type, `Content-Disposition: attachment`, the expected filename and the full byte count. Independently exercise player start and seek with the direct media URL and check its range response. For large MP4s, also verify a complete streamed transfer on the production host.
 
 ## Rollback
 
@@ -1134,7 +1144,7 @@ shell errors or resolved development incidents.
 | Paper planes are absent or obscure the hero | Save Ambient effect = Paper planes, provide `.ks-epk .epk-hero`, verify the atlas request and hero containment/stacking. Reduced-motion and forced-colour CSS intentionally hide decoration; offscreen/hidden state pauses flight. | [Paper-plane requirements](docs/api/paper-planes.md) |
 | A cooperative arena is absent, stops, or overlaps readable content | Verify non-empty sprite arrays, a measured bounded stage, the controller snapshot, intersection/visibility state and quality tier. Reduced-motion and forced-colour preferences intentionally pause it. Stacking, opacity and sprite sizing belong to the release page, which must keep the arena behind content. | [Cooperative arena](docs/api/effects.md#cooperativearenaoptions) |
 | Animation slows down or quality appears stuck | Measure the full visible page after load, inspect the active controller's snapshot and remove duplicate effect owners. Shared `quality()` and Clay/Stars use different thresholds and recovery rules; neither is a physical refresh-rate detector. | [Shared quality](docs/api/effects.md#qualityoptions), [Clay/Stars](docs/api/adapters.md) |
-| An MP3 opens inline or its download returns 404 | Rewriting requires an explicit `<a download>` processed through main Page content and a supported local uploads URL. Check the signature and readable local MP3. Keep direct `<audio>`/`<source>` responses inline; do not force attachment headers site-wide. | [Download endpoint](docs/api/downloads.md) |
+| An MP3 or MP4 opens inline or its download returns 404 | Check the explicit `<a download>` in main Page content, the signature and the readable local upload. Keep the original upload URL in the player. | [Download endpoint](docs/api/downloads.md) |
 | Validation fails in a fresh checkout | Use the documented Unit coordinator and check the named missing fixture or hash mismatch. Build required previews from approved canonical inputs; do not weaken a failing assertion or treat a missing browser/device run as a pass. | [Development prerequisites and gates](docs/development.md) |
 | Browser validation says the Playwright executable does not exist | Each Playwright version requires matching browser binaries. Install its pinned Chromium, or set `DANCEMOVES_BROWSER_CHANNEL=msedge` when stable Edge is already installed; record the channel in browser evidence. Do not report a browser pass from static checks. | [Playwright browser requirements](https://playwright.dev/docs/browsers) |
 | A local HTTP fixture test aborts once with `ConnectionAbortedError [WinError 10053]` on Windows | Record the exact failing fixture, keep the assertion unchanged, then rerun that focused test once. CPython defines 10053 as a locally aborted connection; if the focused test passes unchanged, record the original as a transient host/network-stack interruption and continue the remaining suite. Repeated failures are not transient and require diagnosis. Verified 2026-10-07 with the 16-case WordPress example test passing unchanged after the one abort. | [CPython Windows socket errors](https://docs.python.org/3/library/errno.html), [CPython `ConnectionAbortedError`](https://docs.python.org/3/library/exceptions.html#ConnectionAbortedError) |
