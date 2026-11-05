@@ -179,6 +179,10 @@ upcoming lines from that player's source clock. Keep the complete readable
 lyrics elsewhere on the page. The inline frame has its own markup opt-in, so
 it can be used with the timed pop-up checkbox off.
 
+Add `data-dance-moves-lyric-gap="countdown"` to show a beat countdown and the
+upcoming lyric during gaps. The `previous`, `message`, and `none` modes
+choose a different centre row while keeping the upcoming line visible.
+
 [See the demo and styling reference](api/styling.md#scrolling-lyric-frame).
 
 ## Existing EPK JavaScript

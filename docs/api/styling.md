@@ -122,6 +122,31 @@ space for the missing neighbour. Blank LRC cues clear the frame until the
 next sung line. Keep a separate readable transcript because the timed visual
 track is hidden from assistive technology.
 
+### What appears between lyrics
+
+Set `data-dance-moves-lyric-gap` on the scroll host to keep the upcoming
+sung line in the bottom row before the first lyric and during blank cues.
+Choose what appears in the centre:
+
+| Value | Centre row |
+| --- | --- |
+| `countdown` | Whole beats until the upcoming lyric, rounded up. |
+| `previous` | The previous sung line, when there is one. |
+| `message` | A static message. Set `data-dance-moves-lyric-gap-message` to change the default, “Waiting for a lyric”. |
+| `none` | Empty. |
+
+The countdown follows the canonical player's position and uses DanceMoves'
+tempo map when it matches that master, or the runtime BPM for constant tempo.
+It holds on pause and updates immediately after a seek. The countdown and
+upcoming row are empty after the last lyric. The previous and static message
+modes can still fill the centre until playback ends. Omit the attribute for
+the original blank frame during gaps.
+
+For example, use
+`<div data-dance-moves-lyric-scroll data-dance-moves-lyric-gap="countdown"></div>`.
+Style `.dance-moves-lyric-scroll__gap-message` and
+`.dance-moves-lyric-scroll__gap-next` to match the page.
+
 ![The scrolling lyric frame at 360 pixels wide, with a two-line wrap in the centre row](https://raw.githubusercontent.com/kieransimkin/DanceMoves/v3.5.0/examples/lyric-scroll/mobile.png)
 
 [Watch a short capture of the scrolling frame](https://github.com/kieransimkin/DanceMoves/blob/v3.5.0/examples/lyric-scroll/demonstration.webm).

@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.6.0 - 2026-11-05
+
+- Add optional scrolling lyric gap modes with the upcoming line, plus a beat countdown, held lyric, static message or empty centre row.
+
 ## 3.5.0 - 2026-11-04
 
 - Add an inline scrolling lyric mode with a three-line mask, a centred current line and reduced-motion support.
