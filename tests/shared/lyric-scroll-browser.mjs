@@ -72,7 +72,7 @@ try {
   await page.goto(url);
   await line(-1);
   await gap.waitFor({state:'visible'});
-  assert.equal(await gapMessage.textContent(), '2 beats');
+  assert.equal(await gapMessage.textContent(), '', 'a pause shorter than two beats shows only the upcoming lyric');
   assert.equal(await upcoming.textContent(), 'The room goes quiet');
   const gapCentres = await gap.evaluate(element => {
     const {top, height} = element.getBoundingClientRect();
@@ -121,16 +121,17 @@ try {
   assert.equal((await layout()).animations, 0);
   await seek(7.4, -1);
   assert.equal(await track.evaluate(node => getComputedStyle(node).visibility), 'hidden');
-  assert.equal(await gapMessage.textContent(), '3 beats');
+  assert.equal(await gapMessage.textContent(), '(3 beats)');
   assert.equal(await upcoming.textContent(), 'The last light stays');
   await play();
-  await page.waitForFunction(() => document.querySelector('.dance-moves-lyric-scroll__gap-message').textContent === '2 beats');
+  await page.waitForFunction(() => document.querySelector('.dance-moves-lyric-scroll__gap-message').textContent === '(2 beats)');
   await audio.evaluate(element => element.pause());
   const pausedMessage = await gapMessage.textContent();
   await page.waitForTimeout(300);
   assert.equal(await gapMessage.textContent(),pausedMessage);
   await seek(8.19, -1);
-  assert.equal(await gapMessage.textContent(), '1 beat');
+  assert.equal(await gapMessage.textContent(), '(1 beat)');
+  assert.equal(await upcoming.textContent(), 'The last light stays');
   await seek(10.3, -1);
   assert.equal(await gap.isVisible(), false);
   await seek(1, 0);
@@ -215,6 +216,32 @@ try {
     }
     await variant.close();
   }
+  const boundary = await browser.newPage();
+  boundary.on('pageerror', error => errors.push(String(error)));
+  // At 120 BPM, this intro is exactly two beats. Two consecutive blank
+  // cues during a later pause must not restart its countdown eligibility.
+  await boundary.route('**/examples/lyric-scroll/lyrics.lrc', async route => {
+    const source = await route.fetch();
+    const text = (await source.text()).replace('[00:00.70]', '[00:01.00]')
+      .replace('[00:08.50]', '[00:08.05]\n[00:08.50]');
+    await route.fulfill({response:source,body:text});
+  });
+  await boundary.goto(url);
+  const edgeGap = boundary.locator('.dance-moves-lyric-scroll__gap');
+  await edgeGap.waitFor({state:'visible'});
+  const edgeMessage = edgeGap.locator('.dance-moves-lyric-scroll__gap-message');
+  const edgeUpcoming = edgeGap.locator('.dance-moves-lyric-scroll__gap-next');
+  assert.equal(await edgeMessage.textContent(), '');
+  assert.equal(await edgeUpcoming.textContent(), 'The room goes quiet');
+  await boundary.locator('audio').evaluate(async el => {
+    const seeked = new Promise(resolve => el.addEventListener('seeked', resolve, {once:true}));
+    el.currentTime = 8.20;
+    await seeked;
+  });
+  assert.equal(await edgeMessage.textContent(), '(1 beat)');
+  assert.equal(await edgeUpcoming.textContent(), 'The last light stays');
+  await boundary.close();
+
   assert.deepEqual(errors, []);
   console.log('Lyric scroll passed: all gap modes, native beat countdown, in-flight motion, clipping, wrapping, seek, source ownership, preferences, teardown and WordPress bundle.');
 } finally {
