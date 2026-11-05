@@ -130,12 +130,13 @@ Choose what appears in the centre:
 
 | Value | Centre row |
 | --- | --- |
-| `countdown` | Whole beats until the upcoming lyric, rounded up. |
+| `countdown` | Parenthesised whole beats until the upcoming lyric, rounded up. In 3.6.1 and later, only pauses longer than two beats show a count, and eligible counts continue down to one. |
 | `previous` | The previous sung line, when there is one. |
 | `message` | A static message. Set `data-dance-moves-lyric-gap-message` to change the default, “Waiting for a lyric”. |
 | `none` | Empty. |
 
-The countdown follows the canonical player's position and uses DanceMoves'
+A pause of two beats or less leaves the centre empty and keeps the upcoming
+line below. The countdown follows the canonical player's position and uses DanceMoves'
 tempo map when it matches that master, or the runtime BPM for constant tempo.
 It holds on pause and updates immediately after a seek. The countdown and
 upcoming row are empty after the last lyric. The previous and static message

@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.6.1 - 2026-11-05
+
+- Show a parenthesised lyric countdown only for pauses longer than two beats. Eligible countdowns run through the final beat, and shorter pauses still show the upcoming lyric.
+
 ## 3.6.0 - 2026-11-05
 
 - Add optional scrolling lyric gap modes with the upcoming line, plus a beat countdown, held lyric, static message or empty centre row.

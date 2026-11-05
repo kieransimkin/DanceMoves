@@ -739,6 +739,7 @@
     var gapMode = target.getAttribute("data-dance-moves-lyric-gap");
     var gap, gapMessage, gapNext, upcomingEntry;
     var gapIndex = -2;
+    var gapStart = 0;
     if (["countdown", "previous", "message", "none"].indexOf(gapMode) >= 0) {
       gap = document.createElement("div");
       gapMessage = document.createElement("div");
@@ -785,6 +786,12 @@
           break;
         }
       }
+      if (gapMode === "countdown" && upcomingEntry) {
+        // Consecutive empty cues belong to the same pause, including after a seek.
+        var before = index;
+        while (before >= 0 && !lyricList[before].text) before -= 1;
+        gapStart = before < 0 ? 0 : lyricList[before + 1].time;
+      }
       var message = "";
       if (gapMode === "previous") {
         for (var previous = index - 1; previous >= 0; previous -= 1) {
@@ -804,11 +811,21 @@
     function countdown(audio, now) {
       if (!upcomingEntry) return;
       var map = rawConfig.beatTimeline;
-      var remaining = map && matchesBeatMaster(audio, map)
-        ? (timelinePips(map, upcomingEntry.time) - timelinePips(map, now)) / 64
-        : (upcomingEntry.time - now) * effectiveBpm(bpm) / 60;
-      var beats = Math.max(1, Math.ceil(remaining - 1e-8));
-      var text = beats + (beats === 1 ? " beat" : " beats");
+      var pauseBeats, remaining;
+      if (map && matchesBeatMaster(audio, map)) {
+        var nextPips = timelinePips(map, upcomingEntry.time);
+        pauseBeats = (nextPips - timelinePips(map, gapStart)) / 64;
+        remaining = (nextPips - timelinePips(map, now)) / 64;
+      } else {
+        var beatsPerSecond = effectiveBpm(bpm) / 60;
+        pauseBeats = (upcomingEntry.time - gapStart) * beatsPerSecond;
+        remaining = (upcomingEntry.time - now) * beatsPerSecond;
+      }
+      var text = "";
+      if (pauseBeats > 2 + 1e-8) {
+        var beats = Math.max(1, Math.ceil(remaining - 1e-8));
+        text = "(" + beats + (beats === 1 ? " beat)" : " beats)");
+      }
       if (gapMessage.textContent !== text) gapMessage.textContent = text;
     }
 
