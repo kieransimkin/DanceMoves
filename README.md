@@ -196,6 +196,11 @@ sits in the centre, with the previous and upcoming sung lines on either side.
 The track glides one row as playback advances. Seeking jumps directly to the
 correct line, and paused playback keeps that line readable.
 
+Set `data-dance-moves-lyric-gap="countdown"` to show the beats remaining
+and the upcoming lyric during the intro and gaps. Choose `previous`,
+`message` or `none` for a different centre row while keeping the upcoming
+lyric below it.
+
 Use the normal `lyricTimingUrl` and shared stylesheet in JavaScript or React.
 In WordPress, select the LRC attachment in EPK Timing and put the markup inside
 the page's DanceMoves root. Mark the canonical audio with

@@ -20,7 +20,7 @@
   <h1>Scrolling lyrics</h1>
   <p>Play the synthetic tone to see the timed lines move through the frame. Scrub to jump to a different line.</p>
   <audio data-dance-moves-master controls preload="metadata" aria-label="Synthetic demo audio"></audio>
-  <div data-dance-moves-lyric-scroll></div>
+  <div data-dance-moves-lyric-scroll data-dance-moves-lyric-gap="countdown"></div>
   <details>
     <summary>Read the complete demo lyrics</summary>
     <p>The room goes quiet<br>
@@ -32,6 +32,12 @@
 </main>
 <script type="module">
   const root = document.querySelector('main');
+  const parameters = new URLSearchParams(location.search);
+  if (parameters.has('gap')) {
+    const lyrics = root.querySelector('[data-dance-moves-lyric-scroll]');
+    lyrics.dataset.danceMovesLyricGap = parameters.get('gap');
+    lyrics.dataset.danceMovesLyricGapMessage = 'Listen for the next line';
+  }
   const audio = root.querySelector('audio');
   const duration = 11;
   const sampleRate = 8000;
@@ -55,7 +61,7 @@
   }
   audio.src = URL.createObjectURL(new Blob([wav.buffer], {type: 'audio/wav'}));
   const config = {bpm: 120, masterDurationMilliseconds: duration * 1000, lyricTimingUrl: './lyrics.lrc'};
-  if (new URLSearchParams(location.search).has('wordpress')) {
+  if (parameters.has('wordpress')) {
     window.danceMovesConfig = config;
     const script = document.createElement('script');
     script.src = '../../lib/wordpress.js';

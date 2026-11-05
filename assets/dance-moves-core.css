@@ -93,6 +93,7 @@ html[data-dance-moves-shared-controls="true"] .ks-epk .epk-download {
 
 /* Inline three-row window onto a single, full lyric track. */
 .dance-moves-lyric-scroll__frame {
+  position: relative;
   height: 0;
   min-width: 0;
   overflow: hidden;
@@ -124,6 +125,26 @@ html[data-dance-moves-shared-controls="true"] .ks-epk .epk-download {
 
 .dance-moves-lyric-scroll__line[data-dance-moves-lyric-current] {
   opacity: 1;
+}
+
+.dance-moves-lyric-scroll__gap {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+}
+
+.dance-moves-lyric-scroll__gap[hidden] {
+  display: none;
+}
+
+.dance-moves-lyric-scroll__gap-message {
+  grid-row: 2;
+  font-variant-numeric: tabular-nums;
+}
+
+.dance-moves-lyric-scroll__gap-next {
+  grid-row: 3;
 }
 
 @media (forced-colors: active) {

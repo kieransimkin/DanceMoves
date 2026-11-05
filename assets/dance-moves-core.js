@@ -736,6 +736,21 @@
     });
     addRow("");
     frame.appendChild(track);
+    var gapMode = target.getAttribute("data-dance-moves-lyric-gap");
+    var gap, gapMessage, gapNext, upcomingEntry;
+    var gapIndex = -2;
+    if (["countdown", "previous", "message", "none"].indexOf(gapMode) >= 0) {
+      gap = document.createElement("div");
+      gapMessage = document.createElement("div");
+      gapNext = document.createElement("div");
+      gap.className = "dance-moves-lyric-scroll__gap";
+      gapMessage.className = "dance-moves-lyric-scroll__line dance-moves-lyric-scroll__gap-message";
+      gapNext.className = "dance-moves-lyric-scroll__line dance-moves-lyric-scroll__gap-next";
+      gap.hidden = true;
+      gap.appendChild(gapMessage);
+      gap.appendChild(gapNext);
+      frame.appendChild(gap);
+    }
     target.appendChild(frame);
 
     // Equal-height grid rows expand to fit the longest wrapped line. A
@@ -756,11 +771,54 @@
     forced.addEventListener("change", settle);
     if (onDispose) onDispose(settle);
 
+    function updateGap(index, current) {
+      if (!gap || gapIndex === index) return;
+      gapIndex = index;
+      upcomingEntry = null;
+      if (current || index >= lyricList.length) {
+        gap.hidden = true;
+        return;
+      }
+      for (var next = index + 1; next < lyricList.length; next += 1) {
+        if (lyricList[next].text) {
+          upcomingEntry = lyricList[next];
+          break;
+        }
+      }
+      var message = "";
+      if (gapMode === "previous") {
+        for (var previous = index - 1; previous >= 0; previous -= 1) {
+          if (lyricList[previous].text) {
+            message = lyricList[previous].text;
+            break;
+          }
+        }
+      } else if (gapMode === "message") {
+        message = target.getAttribute("data-dance-moves-lyric-gap-message") || "Waiting for a lyric";
+      }
+      gapMessage.textContent = message;
+      gapNext.textContent = upcomingEntry ? upcomingEntry.text : "";
+      gap.hidden = !message && !upcomingEntry;
+    }
+
+    function countdown(audio, now) {
+      if (!upcomingEntry) return;
+      var map = rawConfig.beatTimeline;
+      var remaining = map && matchesBeatMaster(audio, map)
+        ? (timelinePips(map, upcomingEntry.time) - timelinePips(map, now)) / 64
+        : (upcomingEntry.time - now) * effectiveBpm(bpm) / 60;
+      var beats = Math.max(1, Math.ceil(remaining - 1e-8));
+      var text = beats + (beats === 1 ? " beat" : " beats");
+      if (gapMessage.textContent !== text) gapMessage.textContent = text;
+    }
+
     return {
       settle: settle,
+      countdown: gapMode === "countdown" ? countdown : null,
       update: function (index, duration) {
         var next = positions.get(index) || 0;
         if (!duration) settle();
+        updateGap(index, next);
         if (next === position) return;
         var transform = "translateY(" + (-100 * (next - 1) / rows.length) + "%)";
         var slide = duration > 0 && position > 0 && next === position + 1 &&
@@ -915,7 +973,10 @@
     }
 
     function restoreLyricScroll() {
-      if (ownsLyricScroll()) lyricScroll.update(audio.ended ? -1 : lyricAtOrBefore(positiveNumber(audio.currentTime)), 0);
+      if (!ownsLyricScroll()) return;
+      var now = positiveNumber(audio.currentTime);
+      lyricScroll.update(audio.ended ? lyricList.length : lyricAtOrBefore(now), 0);
+      if (lyricScroll.countdown) lyricScroll.countdown(audio, now);
     }
 
     function tick() {
@@ -942,6 +1003,7 @@
             lyricScroll.update(lyricIndex, Math.min(320, durationMillisecondsAt(audio, 8) / rate, available / rate));
           }
         }
+        if (lyricScroll && lyricScroll.countdown && ownsLyricScroll()) lyricScroll.countdown(audio, now);
         while (state.next < cueList.length && cueList[state.next].time <= now + 0.001) {
           var cue = cueList[state.next];
           if (cue.time > state.last + 0.001) {
@@ -1015,7 +1077,7 @@
       removers.splice(0).forEach(function (remove) { remove(); });
       boundAudio.delete(audio);
       if (activeAudio === audio) activeAudio = null;
-      if (ownsLyricScroll()) lyricScroll.update(-1, 0);
+      if (ownsLyricScroll()) lyricScroll.update(lyricList.length, 0);
       playbackBindings.delete(audio);
     });
     restoreLyricScroll();

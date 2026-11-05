@@ -34,6 +34,9 @@ try {
   const frame = page.locator('.dance-moves-lyric-scroll__frame');
   const track = frame.locator('.dance-moves-lyric-scroll__track');
   const audio = page.locator('[data-dance-moves-master]');
+  const gap = frame.locator('.dance-moves-lyric-scroll__gap');
+  const gapMessage = gap.locator('.dance-moves-lyric-scroll__gap-message');
+  const upcoming = gap.locator('.dance-moves-lyric-scroll__gap-next');
   async function line(index) {
     await page.waitForFunction(expected =>
       document.querySelector('.dance-moves-lyric-scroll__frame')?.dataset.danceMovesLyricIndex === String(expected), index);
@@ -68,12 +71,24 @@ try {
   }
   await page.goto(url);
   await line(-1);
+  await gap.waitFor({state:'visible'});
+  assert.equal(await gapMessage.textContent(), '2 beats');
+  assert.equal(await upcoming.textContent(), 'The room goes quiet');
+  const gapCentres = await gap.evaluate(element => {
+    const {top, height} = element.getBoundingClientRect();
+    return [...element.children].map(row => {
+      const box = row.getBoundingClientRect();
+      return (box.top + box.height / 2 - top) / height;
+    });
+  });
+  assert.ok(Math.abs(gapCentres[0] - .5) < .01 && Math.abs(gapCentres[1] - 5/6) < .01, gapCentres);
   assert.equal(await frame.getAttribute('aria-hidden'), 'true');
   assert.equal(await track.locator(':scope > div').count(), 7, 'five persistent sung rows plus two boundary spacers');
   assert.equal(await page.locator('.dance-moves-lyric-popover').count(), 0);
 
   await play();
   await line(0);
+  assert.equal(await gap.isVisible(), false);
   assert.deepEqual((await layout()).visible, ['', 'The room goes quiet', 'A signal flickers']);
   await page.waitForFunction(() => {
     const track = document.querySelector('.dance-moves-lyric-scroll__track');
@@ -106,6 +121,18 @@ try {
   assert.equal((await layout()).animations, 0);
   await seek(7.4, -1);
   assert.equal(await track.evaluate(node => getComputedStyle(node).visibility), 'hidden');
+  assert.equal(await gapMessage.textContent(), '3 beats');
+  assert.equal(await upcoming.textContent(), 'The last light stays');
+  await play();
+  await page.waitForFunction(() => document.querySelector('.dance-moves-lyric-scroll__gap-message').textContent === '2 beats');
+  await audio.evaluate(element => element.pause());
+  const pausedMessage = await gapMessage.textContent();
+  await page.waitForTimeout(300);
+  assert.equal(await gapMessage.textContent(),pausedMessage);
+  await seek(8.19, -1);
+  assert.equal(await gapMessage.textContent(), '1 beat');
+  await seek(10.3, -1);
+  assert.equal(await gap.isVisible(), false);
   await seek(1, 0);
   const otherIndex = await page.evaluate(async () => {
     const other = document.createElement('audio');
@@ -168,8 +195,28 @@ try {
   });
   await wordpress.waitForFunction(() => document.querySelector('audio').ended &&
     document.querySelector('.dance-moves-lyric-scroll__frame').dataset.danceMovesLyricIndex === '-1');
+  for (const [mode,expected] of [['previous','Keep the window open'],['message','Listen for the next line'],['none',''],['legacy',null]]) {
+    const variant=await browser.newPage();
+    variant.on('pageerror',error=>errors.push(String(error)));
+    await variant.goto(url+'?gap='+mode);
+    await variant.waitForFunction(()=>window.runtime && document.querySelector('.dance-moves-lyric-scroll__frame') &&
+      Number.isFinite(document.querySelector('audio').duration));
+    await variant.locator('audio').evaluate(async el=>{
+      const seeked = new Promise(resolve=>el.addEventListener('seeked',resolve,{once:true}));
+      el.currentTime=7.4;
+      await seeked;
+    });
+    const slot=variant.locator('.dance-moves-lyric-scroll__gap');
+    if(expected===null) assert.equal(await slot.count(),0);
+    else {
+      assert.ok(await slot.isVisible());
+      assert.equal(await slot.locator('.dance-moves-lyric-scroll__gap-message').textContent(),expected);
+      assert.equal(await slot.locator('.dance-moves-lyric-scroll__gap-next').textContent(),'The last light stays');
+    }
+    await variant.close();
+  }
   assert.deepEqual(errors, []);
-  console.log('Lyric scroll passed: native playback, in-flight motion, clipping, wrapping, seek, source ownership, preferences, teardown and WordPress bundle.');
+  console.log('Lyric scroll passed: all gap modes, native beat countdown, in-flight motion, clipping, wrapping, seek, source ownership, preferences, teardown and WordPress bundle.');
 } finally {
   await browser?.close();
   if (server.exitCode === null && server.signalCode === null) {
