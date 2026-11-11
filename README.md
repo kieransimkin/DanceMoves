@@ -203,7 +203,8 @@ correct line, and paused playback keeps that line readable.
 Set `data-dance-moves-lyric-gap="countdown"` to show the beats remaining
 and the upcoming lyric during the intro and gaps. Choose `previous`,
 `message` or `none` for a different centre row while keeping the upcoming
-lyric below it.
+lyric below it. In `previous` mode, the latest sung lyric stays in the
+centre and the preceding sung lyric remains in the top row during a gap.
 
 Use the normal `lyricTimingUrl` and shared stylesheet in JavaScript or React.
 In WordPress, select the LRC attachment in EPK Timing and put the markup inside

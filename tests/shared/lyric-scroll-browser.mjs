@@ -199,20 +199,48 @@ try {
   for (const [mode,expected] of [['previous','Keep the window open'],['message','Listen for the next line'],['none',''],['legacy',null]]) {
     const variant=await browser.newPage();
     variant.on('pageerror',error=>errors.push(String(error)));
+    if (mode === 'previous') {
+      await variant.route('**/examples/lyric-scroll/lyrics.lrc', async route => {
+        const source = await route.fetch();
+        const text = (await source.text()).replace('[00:07.20]', '[00:08.05]\n[00:08.15]');
+        await route.fulfill({response:source,body:text});
+      });
+    }
     await variant.goto(url+'?gap='+mode);
     await variant.waitForFunction(()=>window.runtime && document.querySelector('.dance-moves-lyric-scroll__frame') &&
       Number.isFinite(document.querySelector('audio').duration));
-    await variant.locator('audio').evaluate(async el=>{
+    const seekVariant = time => variant.locator('audio').evaluate(async (el,time)=>{
       const seeked = new Promise(resolve=>el.addEventListener('seeked',resolve,{once:true}));
-      el.currentTime=7.4;
+      el.currentTime=time;
       await seeked;
-    });
+    },time);
+    await seekVariant(mode === 'previous' ? 8.2 : 7.4);
     const slot=variant.locator('.dance-moves-lyric-scroll__gap');
     if(expected===null) assert.equal(await slot.count(),0);
     else {
       assert.ok(await slot.isVisible());
       assert.equal(await slot.locator('.dance-moves-lyric-scroll__gap-message').textContent(),expected);
       assert.equal(await slot.locator('.dance-moves-lyric-scroll__gap-next').textContent(),'The last light stays');
+    }
+    const earlier = slot.locator('.dance-moves-lyric-scroll__gap-previous');
+    if (mode === 'previous') {
+      assert.equal(await earlier.count(), 1, 'previous mode needs an earlier lyric row during a gap');
+      assert.equal(await earlier.textContent(), 'One small light crosses the room and settles on the windowsill');
+      const positions = await slot.evaluate(element => {
+        const {top,height} = element.getBoundingClientRect();
+        return Array.from(element.children, row => {
+          const rect = row.getBoundingClientRect();
+          return (rect.top + rect.height / 2 - top) / height;
+        });
+      });
+      assert.ok(positions.every((centre,i)=>Math.abs(centre - (2*i+1)/6) < .01));
+      await slot.screenshot({path: `${evidence}/previous-gap.png`});
+      await seekVariant(.3);
+      assert.equal(await earlier.textContent(), '', 'seeking to the intro clears earlier context');
+      await seekVariant(8.7);
+      assert.equal(await slot.isVisible(), false, 'the regular track returns at the next sung line');
+    } else {
+      assert.equal(await earlier.count(), 0);
     }
     await variant.close();
   }

@@ -182,6 +182,8 @@ it can be used with the timed pop-up checkbox off.
 Add `data-dance-moves-lyric-gap="countdown"` to show a beat countdown and the
 upcoming lyric during gaps. The `previous`, `message`, and `none` modes
 choose a different centre row while keeping the upcoming line visible.
+In `previous` mode the latest sung line stays in the centre, with the
+preceding sung line above it when available.
 
 [See the demo and styling reference](api/styling.md#scrolling-lyric-frame).
 
