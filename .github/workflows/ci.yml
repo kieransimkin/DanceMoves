@@ -122,6 +122,7 @@ jobs:
       - run: npm run test:butterchurn:browser -- --wordpress
       - run: node tests/shared/orientation-navigation-browser.mjs
       - run: node tests/shared/phone-motion-browser.mjs
+      - run: node tests/shared/chromatic-offset-browser.mjs
       - run: node tests/shared/control-feedback-browser.mjs
       - run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - run: python examples/playback-sources/generate-fixture.py

@@ -74,6 +74,8 @@ export interface Clock {clock?:'page'|'audio';audio?:PlaybackMedia;bpm?:number;s
 export interface IntervalDetail {intervalTicks:number;boundaryTick:number;audio:PlaybackMedia|null;clock:'page'|'audio'}
 export interface Controller {id?:string;teardown():void;snapshot():Record<string,unknown>}
 export interface PointerController extends Controller {set(x:number,y:number,reason?:string):void;reset(reason?:string):void}
+export type ChromaticOffsets = Partial<Record<'red'|'green'|'blue', readonly [number,number]>>;
+export interface ChromaticOffsetController extends Controller {set(offsets:ChromaticOffsets):void;reset():void}
 export interface QualityController extends Controller {setTier(index:number,reason?:string):void}
 export interface CueTimelineController extends Controller {restore(reason?:string):void;start(reason?:string):void;stop(reason?:string):void}
 export interface SpritePlaybackController extends Controller {restore(reason?:string):void;start(reason?:string):void;stop(reason?:string):void;setQuality(indexOrTier:number|string,reason?:string):void}
@@ -86,6 +88,7 @@ export interface Effects {
  version:string;
  layoutReveal(options:EffectOptions & {root:HTMLElement|string;openEvent:string;closeEvent:string;initiallyExpanded?:boolean;durationMilliseconds?:number;easing?:string;shouldAnimate?:(root:HTMLElement)=>boolean}):Controller;
  pointer(options:EffectOptions & {target?:Element|string;bounds?:Element|string;render?:(point:{x:number;y:number;reason?:string})=>void}):PointerController;
+ chromaticOffset(options:EffectOptions & {property?:string}):ChromaticOffsetController;
  playbackPulse(options:EffectOptions & {audio?:PlaybackMedia|string;ticks?:number;className?:string;propertyPrefix?:string;render?:(state:Record<string,unknown> & {audio:PlaybackMedia})=>void}):Controller & {sync():void};
  cueClass(options:EffectOptions & {cue?:string;className?:string;durationTicks?:number;render?:(state:Record<string,unknown>)=>void}):Controller & {fire(cue?:Cue):void;clear(reason?:string):void};
  cueTimeline(options:EffectOptions & {audio?:PlaybackMedia|string;cues:Array<{id?:string;time:number;end?:number;[key:string]:unknown}>;onCue?:(event:Record<string,unknown>)=>void;render?:(state:Record<string,unknown>)=>void}):CueTimelineController;

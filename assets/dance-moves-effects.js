@@ -94,6 +94,107 @@
     }));
   }
 
+  function chromaticOffset(options) {
+    options = options || {};
+    const state = commonState(options, "chromatic-offset");
+    const property = options.property || "--dance-moves-chromatic-filter";
+    if (!/^--[a-zA-Z_][\w-]*$/.test(property)) throw new TypeError("Chromatic offset requires a CSS custom property");
+    instances.get(state.id)?.teardown();
+    const style = state.root.style;
+    const channels = ["red", "green", "blue"];
+    const previous = style.getPropertyValue(property);
+    const priority = style.getPropertyPriority(property);
+    const offsets = {};
+    let svg, reference, applied = false, disposed = false;
+    let values = channels.map(() => [0, 0]);
+
+    function primitive(parent, name, attributes) {
+      const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+      for (const [key, value] of Object.entries(attributes)) node.setAttribute(key, value);
+      parent.append(node);
+      return node;
+    }
+
+    function createFilter() {
+      let id;
+      do { id = "dance-moves-chromatic-" + (++serial); }
+      while (state.root.ownerDocument.getElementById(id));
+      svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("width", "0");
+      svg.setAttribute("height", "0");
+      svg.setAttribute("aria-hidden", "true");
+      svg.setAttribute("focusable", "false");
+      svg.style.position = "absolute";
+      svg.style.pointerEvents = "none";
+      const defs = primitive(svg, "defs", {});
+      const filter = primitive(defs, "filter", {
+        id, x: "-10%", y: "-10%", width: "120%", height: "120%", "color-interpolation-filters": "sRGB",
+      });
+      channels.forEach((channel, index) => {
+        const matrix = Array(20).fill(0);
+        matrix[index * 5 + index] = 1;
+        matrix[19] = 1;
+        primitive(filter, "feColorMatrix", { in: "SourceGraphic", type: "matrix", values: matrix.join(" "), result: channel + "-only" });
+        offsets[channel] = primitive(filter, "feOffset", { in: channel + "-only", dx: "0", dy: "0", result: channel });
+      });
+      primitive(filter, "feBlend", { in: "red", in2: "green", mode: "screen", result: "red-green" });
+      primitive(filter, "feBlend", { in: "red-green", in2: "blue", mode: "screen", result: "rgb" });
+      // Channel surfaces are opaque so the final mask restores source coverage exactly.
+      primitive(filter, "feColorMatrix", { in: "rgb", type: "matrix", values: "1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0 1", result: "opaque-rgb" });
+      primitive(filter, "feComposite", { in: "opaque-rgb", in2: "SourceAlpha", operator: "in" });
+      state.root.append(svg);
+      reference = 'url("#' + id + '")';
+    }
+
+    function reset() {
+      if (applied && style.getPropertyValue(property) === reference) {
+        if (previous) style.setProperty(property, previous, priority);
+        else style.removeProperty(property);
+      }
+      applied = false;
+      values = channels.map(() => [0, 0]);
+    }
+
+    function set(input) {
+      if (disposed) return;
+      if (state.reduced.matches || state.forced.matches || document.hidden) return reset();
+      const pixels = value => Number.isFinite(value) ? Math.round(clamp(value, -12, 12) * 100) / 100 : 0;
+      const next = channels.map(channel => [pixels(input?.[channel]?.[0]), pixels(input?.[channel]?.[1])]);
+      if (!next.some(pair => pair.some(Boolean))) return reset();
+      if (!svg) createFilter();
+      channels.forEach((channel, index) => {
+        const [x, y] = next[index];
+        const node = offsets[channel];
+        if (!applied || values[index][0] !== x) node.setAttribute("dx", x);
+        if (!applied || values[index][1] !== y) node.setAttribute("dy", y);
+      });
+      if (!applied) style.setProperty(property, reference);
+      applied = true;
+      values = next;
+    }
+
+    listen(state.reduced, "change", reset, undefined, state.removers);
+    listen(state.forced, "change", reset, undefined, state.removers);
+    listen(document, "visibilitychange", reset, undefined, state.removers);
+    return register(state.id, Object.freeze({
+      id: state.id, type: "chromatic-offset", set, reset,
+      snapshot: () => ({
+        id: state.id, type: "chromatic-offset", active: applied,
+        offsets: Object.fromEntries(channels.map((channel, index) => [channel, [...values[index]]])),
+      }),
+      teardown() {
+        if (disposed) return;
+        disposed = true;
+        reset();
+        svg?.remove();
+        state.removers.splice(0).forEach(remove => remove());
+        instances.delete(state.id);
+      },
+    }));
+  }
+
+
+
   function playbackPulse(options) {
     options = options || {};
     var state = commonState(options, "pulse");
@@ -872,7 +973,7 @@
   }
 
   window.DanceMovesEffects = Object.freeze({
-    version: String(motion.version || ""), pointer: pointer, playbackPulse: playbackPulse, cueClass: cueClass, cueTimeline: cueTimeline, spritePlayback: spritePlayback, lyricStage: lyricStage, cooperativeArena: cooperativeArena, quality: quality, layoutReveal: layoutReveal,
+    version: String(motion.version || ""), pointer: pointer, chromaticOffset: chromaticOffset, playbackPulse: playbackPulse, cueClass: cueClass, cueTimeline: cueTimeline, spritePlayback: spritePlayback, lyricStage: lyricStage, cooperativeArena: cooperativeArena, quality: quality, layoutReveal: layoutReveal,
     get: function (id) { return instances.get(String(id)) || null; },
     snapshot: function () { return Array.from(instances.values()).map(function (instance) { return instance.snapshot(); }); },
     teardown: function (id) { var instance = instances.get(String(id)); if (instance) instance.teardown(); },

@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.8.0 - 2026-11-11
+
+- Add an opt-in RGB channel offset effect for artwork and sprites. It preserves source coverage and follows existing motion inputs.
+
 ## 3.6.1 - 2026-11-05
 
 - Show a parenthesised lyric countdown only for pauses longer than two beats. Eligible countdowns run through the final beat, and shorter pauses still show the upcoming lyric.
