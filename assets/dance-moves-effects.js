@@ -127,21 +127,21 @@
       svg.style.position = "absolute";
       svg.style.pointerEvents = "none";
       const defs = primitive(svg, "defs", {});
-      const filter = primitive(defs, "filter", {
+      const filterDefinition = primitive(defs, "filter", {
         id, x: "-10%", y: "-10%", width: "120%", height: "120%", "color-interpolation-filters": "sRGB",
       });
       channels.forEach((channel, index) => {
         const matrix = Array(20).fill(0);
         matrix[index * 5 + index] = 1;
         matrix[19] = 1;
-        primitive(filter, "feColorMatrix", { in: "SourceGraphic", type: "matrix", values: matrix.join(" "), result: channel + "-only" });
-        offsets[channel] = primitive(filter, "feOffset", { in: channel + "-only", dx: "0", dy: "0", result: channel });
+        primitive(filterDefinition, "feColorMatrix", { in: "SourceGraphic", type: "matrix", values: matrix.join(" "), result: channel + "-only" });
+        offsets[channel] = primitive(filterDefinition, "feOffset", { in: channel + "-only", dx: "0", dy: "0", result: channel });
       });
-      primitive(filter, "feBlend", { in: "red", in2: "green", mode: "screen", result: "red-green" });
-      primitive(filter, "feBlend", { in: "red-green", in2: "blue", mode: "screen", result: "rgb" });
+      primitive(filterDefinition, "feBlend", { in: "red", in2: "green", mode: "screen", result: "red-green" });
+      primitive(filterDefinition, "feBlend", { in: "red-green", in2: "blue", mode: "screen", result: "rgb" });
       // Channel surfaces are opaque so the final mask restores source coverage exactly.
-      primitive(filter, "feColorMatrix", { in: "rgb", type: "matrix", values: "1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0 1", result: "opaque-rgb" });
-      primitive(filter, "feComposite", { in: "opaque-rgb", in2: "SourceAlpha", operator: "in" });
+      primitive(filterDefinition, "feColorMatrix", { in: "rgb", type: "matrix", values: "1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0 1", result: "opaque-rgb" });
+      primitive(filterDefinition, "feComposite", { in: "opaque-rgb", in2: "SourceAlpha", operator: "in" });
       state.root.append(svg);
       reference = 'url("#' + id + '")';
     }
@@ -158,7 +158,7 @@
     function set(input) {
       if (disposed) return;
       if (state.reduced.matches || state.forced.matches || document.hidden) return reset();
-      const pixels = value => Number.isFinite(value) ? Math.round(clamp(value, -12, 12) * 100) / 100 : 0;
+      const pixels = value => Number.isFinite(value) ? Number(clamp(value, -12, 12).toFixed(2)) : 0;
       const next = channels.map(channel => [pixels(input?.[channel]?.[0]), pixels(input?.[channel]?.[1])]);
       if (!next.some(pair => pair.some(Boolean))) return reset();
       if (!svg) createFilter();
