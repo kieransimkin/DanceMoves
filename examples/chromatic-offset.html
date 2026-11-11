@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DanceMoves chromatic offsets</title>
+<style>
+  body { margin: 24px; background: #17212e; color: #f3f4f9; font: 1rem system-ui, sans-serif; }
+  .pattern { position: relative; width: 160px; height: 96px; filter: var(--dance-moves-chromatic-filter, none); }
+  .stripe { position: absolute; inset: 16px 24px; background: linear-gradient(90deg, #101010 50%, #fff 50%); }
+  .chip { position: absolute; width: 14px; height: 10px; background: rgb(255 255 255 / 50%); left: 40px; top: 3px; }
+  label { display: block; }
+</style>
+<main class="entry-content">
+  <h1>Chromatic offsets</h1>
+  <div class="pattern" role="img" aria-label="A high-contrast test image with transparent edges">
+    <div class="stripe"></div>
+    <div class="chip"></div>
+  </div>
+  <label>Colour separation <input type="range" min="-12" max="12" step=".25" value="8"></label>
+</main>
+<script src="../lib/dancemoves.min.js"></script>
+<script>
+  (async () => {
+    const root = document.querySelector("main");
+    if (!window.DanceMoves && !window.DanceMovesLibrary) {
+      await new Promise(resolve => document.addEventListener("dance-moves-ready", resolve, {once: true}));
+    }
+    const runtime = window.DanceMoves || DanceMovesLibrary.createDanceMoves({root, bpm: 120});
+    await runtime.ready;
+    const effect = runtime.effects.chromaticOffset({id: "demo:rgb", root});
+    const slider = root.querySelector("input");
+    function update() {
+      const width = slider.valueAsNumber;
+      effect.set({red: [width, width / 2], blue: [-width, -width / 2]});
+    }
+    slider.addEventListener("input", update);
+    window.chromaticDemo = {runtime, effect};
+    update();
+  })();
+</script>
+</html>
+

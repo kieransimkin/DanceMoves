@@ -1,5 +1,7 @@
 # DanceMoves
 
+The opt-in [chromatic channel offset](docs/chromatic-offset.md) applies independent red, green and blue offsets to artwork or sprites. It can follow the shared phone-motion or pointer connection and preserves the original artwork alpha.
+
 The opt-in [Butterchurn view](docs/butterchurn.md) accepts sprite or canvas input before the feedback warp and follows the existing playback callback at display cadence. The pinned engine loads on demand.
 
 ## Before every new workflow

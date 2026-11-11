@@ -115,6 +115,10 @@ The factory never supplies release names, colours or artwork. Consumers style
 `--dance-moves-arena-angle`. Keep the stage behind readable content and avoid
 whole-frame flashing or colour modulation.
 
+## chromaticOffset(options)
+
+[RGB offset and lifecycle contract](../chromatic-offset.md).
+
 ## pointer(options)
 
 Returns `{ id, type: "pointer", set, reset, snapshot, teardown }`.
