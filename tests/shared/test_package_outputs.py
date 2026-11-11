@@ -14,7 +14,7 @@ class PackageTests(unittest.TestCase):
    (self.root/name).write_text(content);(self.stage/name).write_text(content)
   (self.root/'LICENSE').write_text('Test fixture, not a distributed library')
   self.front=[]
-  for name in ['wordpress.js','admin.min.js','styles/dance-moves-core.css','styles/visualisers.css','assets/paper-dreams-plane-atlas.png','assets/visualiser-catalogue.json']:
+  for name in ['wordpress.js','admin.min.js','styles/dance-moves-core.css','styles/visualisers.css','assets/paper-dreams-plane-atlas.png','assets/visualiser-catalogue.json','assets/butterchurn-2.6.7.js','assets/Butterchurn-LICENSE']:
    data=b'[]\n' if name=='assets/visualiser-catalogue.json' else ('synthetic '+name).encode()
    for parent in [self.root/'lib',self.stage/'lib']:
     p=parent/name;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(data)

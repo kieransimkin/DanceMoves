@@ -13,14 +13,22 @@ if (native.status!==0) throw new Error('Pinned DanceRudiments verification faile
 const modules=buildModules();
 const lib=path.join(ROOT,'lib');fs.rmSync(lib,{recursive:true,force:true});fs.mkdirSync(path.join(lib,'assets'),{recursive:true});
 const options={bundle:true,target:'es2022',logLevel:'warning',legalComments:'eof',absWorkingDir:ROOT};
+const butterchurnModule='butterchurn/lib/butterchurn.min.js';
+const butterchurnAsset='butterchurn-2.6.7.js';
+const optionalButterchurn={name:'optional-butterchurn',setup(build) {
+  build.onResolve({filter:/^butterchurn\/lib\/butterchurn\.min\.js$/}, () => ({path:'./assets/'+butterchurnAsset,external:true}));
+}};
+await esbuild.build({...options,entryPoints:[butterchurnModule],outfile:path.join(lib,'assets',butterchurnAsset),
+  format:'esm',platform:'browser',minify:true});
+fs.copyFileSync('node_modules/butterchurn/LICENSE',path.join(lib,'assets','Butterchurn-LICENSE'));
 for (const name of ['index','react','server']) for (const format of ['esm','cjs']) {
   await esbuild.build({...options,entryPoints:[path.join(modules,`${name}.mjs`)],outfile:path.join(lib,`${name}.${format==='esm'?'mjs':'cjs'}`),
-    format,platform:name==='server'?'node':'browser',external:['react'],
+    format,platform:name==='server'?'node':'browser',external:['react',butterchurnModule],
     banner:name==='react'?{js:'"use client";'}:undefined,
     plugins:name==='react'?[{name:'shared-runtime',setup(build){build.onResolve({filter:/^\.\/index\.mjs$/},()=>({path:format==='esm'?'./index.mjs':'./index.cjs',external:true}));}}]:[]});
 }
 for (const [entry,out,globalName] of [['index','dancemoves.min.js','DanceMovesLibrary'],['wordpress','wordpress.js',undefined]]) {
-  await esbuild.build({...options,entryPoints:[path.join(modules,`${entry}.mjs`)],outfile:path.join(lib,out),format:'iife',platform:'browser',minify:true,globalName});
+  await esbuild.build({...options,entryPoints:[path.join(modules,`${entry}.mjs`)],outfile:path.join(lib,out),format:'iife',platform:'browser',minify:true,globalName,plugins:[optionalButterchurn]});
 }
 await esbuild.build({...options,entryPoints:['assets/dance-moves-admin.js'],outfile:path.join(lib,'admin.min.js'),format:'iife',platform:'browser',minify:true});
 const cssFiles=['dance-moves-core.css','ks-epk-device-orientation.css','clay-stars-effects.css','paper-dreams-flight.css','spectrum.css','visualisers.css'];
@@ -60,7 +68,7 @@ if (target!=='library') {
   // Exactly the library build: no raw assets/ sources or second engine in WordPress.
   for (const file of ['wordpress.js','admin.min.js']) fs.copyFileSync(path.join(lib,file),path.join(wp,'lib',file));
   for(const file of cssFiles) fs.copyFileSync(path.join(lib,'styles',file),path.join(wp,'lib/styles',file));
-  for(const file of ['paper-dreams-plane-atlas.png','DanceRudiments-LICENSE','DanceRudiments-build-manifest.json','visualiser-catalogue.json']) fs.copyFileSync(path.join(lib,'assets',file),path.join(wp,'lib/assets',file));
+  for(const file of ['paper-dreams-plane-atlas.png','DanceRudiments-LICENSE','DanceRudiments-build-manifest.json','visualiser-catalogue.json',butterchurnAsset,'Butterchurn-LICENSE']) fs.copyFileSync(path.join(lib,'assets',file),path.join(wp,'lib/assets',file));
   fs.cpSync(path.join(lib,'assets/visualiser-sprites'),path.join(wp,'lib/assets/visualiser-sprites'),{recursive:true});
   fs.mkdirSync(path.join(wp,'docs'),{recursive:true});
   for(const file of fs.readdirSync('docs').filter(name=>name.endsWith('.md'))) fs.copyFileSync(path.join('docs',file),path.join(wp,'docs',file));

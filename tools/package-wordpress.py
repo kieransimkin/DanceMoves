@@ -29,12 +29,12 @@ def main():
         if (source/'lib/assets/visualiser-sprites'/name).read_bytes()!=(sprite_root/name).read_bytes():raise SystemExit('Sprite assets changed after build: '+name)
     if any(p.is_symlink() for p in source.rglob('*')):raise SystemExit('Symlinks are not accepted in package staging')
     files=sorted(p for p in source.rglob('*') if p.is_file())
-    expected=['lib/wordpress.js','lib/admin.min.js','dance-moves-rudiments.php','dance-moves-spectrum.php','dance-moves-visualisers.php','lib/assets/visualiser-catalogue.json','lib/styles/visualisers.css','library-manifest.json',
+    expected=['lib/wordpress.js','lib/admin.min.js','dance-moves-rudiments.php','dance-moves-spectrum.php','dance-moves-visualisers.php','lib/assets/visualiser-catalogue.json','lib/assets/butterchurn-2.6.7.js','lib/assets/Butterchurn-LICENSE','lib/styles/visualisers.css','library-manifest.json',
       *['lib/assets/visualiser-sprites/'+name for name in sprite_files]]
     if any(not (source/p).is_file() for p in expected):raise SystemExit('WordPress build is incomplete')
     names=[p.relative_to(source).as_posix() for p in files]
     if any(any(part in {'node_modules','tests','examples','qa','tools','src','migration'} for part in Path(n).parts) for n in names):raise SystemExit('Development files entered the WordPress build')
-    if sorted(n for n in names if n.endswith('.js'))!=['lib/admin.min.js','lib/wordpress.js']:raise SystemExit('Unexpected frontend copy in the WordPress build')
+    if sorted(n for n in names if n.endswith('.js'))!=['lib/admin.min.js','lib/assets/butterchurn-2.6.7.js','lib/wordpress.js']:raise SystemExit('Unexpected frontend copy in the WordPress build')
     library=json.loads((source/'library-manifest.json').read_text('utf-8'))
     if library.get('version')!=version or library.get('name')!=pkg['name']:raise SystemExit('WordPress library identity mismatch')
     actual_frontend={n.removeprefix('lib/') for n in names if n.startswith('lib/')}

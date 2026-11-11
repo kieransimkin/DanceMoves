@@ -92,7 +92,7 @@ test('prepack rejects a song recording added after build without changing it',()
  fs.mkdirSync(path.join(directory,'lib/assets'),{recursive:true});
  fs.copyFileSync(path.join(ROOT,'tools/check-shared-build.mjs'),path.join(directory,'tools/check-shared-build.mjs'));
  fs.writeFileSync(path.join(directory,'package.json'),JSON.stringify({name:'synthetic-package',version:'1.0.0'}));
- const files=exports.map(name=>{
+ const files=[...exports,'assets/butterchurn-2.6.7.js','assets/Butterchurn-LICENSE'].map(name=>{
   const data=Buffer.from('// Synthetic build fixture\n');
   fs.writeFileSync(path.join(directory,'lib',name),data);
   return {path:name,bytes:data.length,sha256:digest(data)};

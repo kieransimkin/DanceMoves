@@ -1,6 +1,6 @@
 {
   "name": "@kieransimkin/dancemoves",
-  "version": "3.6.1",
+  "version": "3.7.0",
   "description": "BPM-synchronised web motion, effects and media clocks for JavaScript, React, Next.js and WordPress. https://kieransimkin.co.uk/",
   "license": "GPL-2.0-or-later",
   "author": {
@@ -91,7 +91,8 @@
     "test:next:smoke": "node tests/shared/next-smoke.mjs",
     "test:react:ssr": "node --test tests/shared/exports.test.mjs",
     "demo:visualisers": "node examples/visualisers/serve.mjs",
-    "test:visualisers:browser": "node tests/shared/visualiser-browser.mjs"
+    "test:visualisers:browser": "node tests/shared/visualiser-browser.mjs",
+    "test:butterchurn:browser": "node tests/shared/butterchurn-browser.mjs"
   },
   "devDependencies": {
     "@kieransimkin/dance-rudiments": "0.2.0",
@@ -106,5 +107,8 @@
   },
   "overrides": {
     "scheduler": "0.27.0"
+  },
+  "dependencies": {
+    "butterchurn": "2.6.7"
   }
 }

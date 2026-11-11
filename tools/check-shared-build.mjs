@@ -24,5 +24,5 @@ const actual=new Set(inventory(path.join(root,'lib')).filter(name=>name!=='build
 for(const name of actual)if(!expected.has(name))throw new Error('Unlisted generated artifact: '+name+'; song data belongs to its page, not lib/');
 for(const name of expected)if(!actual.has(name))throw new Error('Missing generated artifact: '+name);
 for(const item of manifest.files){const data=fs.readFileSync(path.join(root,'lib',item.path));if(data.length!==item.bytes || createHash('sha256').update(data).digest('hex')!==item.sha256)throw new Error('Changed generated artifact: '+item.path);}
-for(const entry of ['index.mjs','index.cjs','react.mjs','react.cjs','server.mjs','server.cjs','dancemoves.min.js','wordpress.js','index.d.ts','react.d.ts','server.d.ts'])if(!fs.existsSync(path.join(root,'lib',entry)))throw new Error('Missing library export '+entry);
+for(const entry of ['index.mjs','index.cjs','react.mjs','react.cjs','server.mjs','server.cjs','dancemoves.min.js','wordpress.js','assets/butterchurn-2.6.7.js','assets/Butterchurn-LICENSE','index.d.ts','react.d.ts','server.d.ts'])if(!fs.existsSync(path.join(root,'lib',entry)))throw new Error('Missing library export '+entry);
 console.log('Shared-library build identity verified');

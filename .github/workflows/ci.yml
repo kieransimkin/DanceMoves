@@ -101,7 +101,7 @@ jobs:
             dist/DanceMoves-browser-*-manifest.json
             package-lock.json
   browsers:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -118,6 +118,8 @@ jobs:
       - run: node tests/shared/lyric-scroll-browser.mjs
       - run: npm run test:spectrum:browser
       - run: npm run test:visualisers:browser
+      - run: npm run test:butterchurn:browser
+      - run: npm run test:butterchurn:browser -- --wordpress
       - run: node tests/shared/orientation-navigation-browser.mjs
       - run: node tests/shared/phone-motion-browser.mjs
       - run: node tests/shared/control-feedback-browser.mjs

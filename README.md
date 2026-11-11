@@ -1,5 +1,7 @@
 # DanceMoves
 
+The opt-in [Butterchurn view](docs/butterchurn.md) accepts sprite or canvas input before the feedback warp and follows the existing playback callback at display cadence. The pinned engine loads on demand.
+
 ## Before every new workflow
 
 Check the latest stable official release and the actual installed/imported version before starting; do not infer currency from a directory name or a development checkout. Read the current release notes, tagged capability documentation and relevant Potential problems. Use the [DanceFlow release preflight](https://github.com/kieransimkin/DanceFlow/blob/main/docs/workflows/release-preflight.md) and [complete capability references](https://github.com/kieransimkin/DanceFlow/blob/main/docs/capabilities/index.md).
