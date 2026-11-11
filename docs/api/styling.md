@@ -131,7 +131,7 @@ Choose what appears in the centre:
 | Value | Centre row |
 | --- | --- |
 | `countdown` | Parenthesised whole beats until the upcoming lyric, rounded up. In 3.6.1 and later, only pauses longer than two beats show a count, and eligible counts continue down to one. |
-| `previous` | The previous sung line, when there is one. |
+| `previous` | The most recently sung line, with the line before it in the top row when available. |
 | `message` | A static message. Set `data-dance-moves-lyric-gap-message` to change the default, “Waiting for a lyric”. |
 | `none` | Empty. |
 
@@ -145,8 +145,10 @@ the original blank frame during gaps.
 
 For example, use
 `<div data-dance-moves-lyric-scroll data-dance-moves-lyric-gap="countdown"></div>`.
-Style `.dance-moves-lyric-scroll__gap-message` and
-`.dance-moves-lyric-scroll__gap-next` to match the page.
+Style `.dance-moves-lyric-scroll__gap-previous`,
+`.dance-moves-lyric-scroll__gap-message` and `.dance-moves-lyric-scroll__gap-next`
+to match the page. The [synthetic demo in previous mode](../../examples/lyric-scroll/index.html?gap=previous)
+shows the three lines during a gap after 0:07.
 
 ![The scrolling lyric frame at 360 pixels wide, with a two-line wrap in the centre row](https://raw.githubusercontent.com/kieransimkin/DanceMoves/v3.5.0/examples/lyric-scroll/mobile.png)
 

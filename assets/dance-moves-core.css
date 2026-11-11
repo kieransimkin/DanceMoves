@@ -138,6 +138,10 @@ html[data-dance-moves-shared-controls="true"] .ks-epk .epk-download {
   display: none;
 }
 
+.dance-moves-lyric-scroll__gap-previous {
+  grid-row: 1;
+}
+
 .dance-moves-lyric-scroll__gap-message {
   grid-row: 2;
   font-variant-numeric: tabular-nums;

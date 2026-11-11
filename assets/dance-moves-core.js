@@ -737,7 +737,7 @@
     addRow("");
     frame.appendChild(track);
     var gapMode = target.getAttribute("data-dance-moves-lyric-gap");
-    var gap, gapMessage, gapNext, upcomingEntry;
+    var gap, gapPrevious, gapMessage, gapNext, upcomingEntry;
     var gapIndex = -2;
     var gapStart = 0;
     if (["countdown", "previous", "message", "none"].indexOf(gapMode) >= 0) {
@@ -748,6 +748,11 @@
       gapMessage.className = "dance-moves-lyric-scroll__line dance-moves-lyric-scroll__gap-message";
       gapNext.className = "dance-moves-lyric-scroll__line dance-moves-lyric-scroll__gap-next";
       gap.hidden = true;
+      if (gapMode === "previous") {
+        gapPrevious = document.createElement("div");
+        gapPrevious.className = "dance-moves-lyric-scroll__line dance-moves-lyric-scroll__gap-previous";
+        gap.appendChild(gapPrevious);
+      }
       gap.appendChild(gapMessage);
       gap.appendChild(gapNext);
       frame.appendChild(gap);
@@ -793,13 +798,17 @@
         gapStart = before < 0 ? 0 : lyricList[before + 1].time;
       }
       var message = "";
-      if (gapMode === "previous") {
+      if (gapPrevious) {
+        var earlier = "";
         for (var previous = index - 1; previous >= 0; previous -= 1) {
-          if (lyricList[previous].text) {
-            message = lyricList[previous].text;
+          var previousRow = positions.get(previous);
+          if (previousRow) {
+            message = rows[previousRow].textContent;
+            earlier = rows[previousRow - 1].textContent;
             break;
           }
         }
+        gapPrevious.textContent = earlier;
       } else if (gapMode === "message") {
         message = target.getAttribute("data-dance-moves-lyric-gap-message") || "Waiting for a lyric";
       }
