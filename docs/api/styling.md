@@ -150,6 +150,8 @@ Style `.dance-moves-lyric-scroll__gap-previous`,
 to match the page. The [synthetic demo in previous mode](../../examples/lyric-scroll/index.html?gap=previous)
 shows the three lines during a gap after 0:07.
 
+![The synthetic lyric scroller shows the earlier, held and upcoming lines during a short gap](../screenshots/lyric-previous-gap.png)
+
 ![The scrolling lyric frame at 360 pixels wide, with a two-line wrap in the centre row](https://raw.githubusercontent.com/kieransimkin/DanceMoves/v3.5.0/examples/lyric-scroll/mobile.png)
 
 [Watch a short capture of the scrolling frame](https://github.com/kieransimkin/DanceMoves/blob/v3.5.0/examples/lyric-scroll/demonstration.webm).
