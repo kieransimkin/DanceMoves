@@ -30,7 +30,7 @@ through Plugins → Add New → Upload Plugin, preserving a backup and the prior
 working archive. Do not upload the npm tarball, web ZIP, repository source ZIP
 or a downloaded patch bundle.
 
-The ZIP contains the PHP adapter, `lib/wordpress.js`, `lib/admin.min.js`, shared
+The ZIP contains the PHP adapter, `lib/wordpress.js`, `lib/admin.min.js`, the opt-in [Butterchurn engine asset](butterchurn.md), shared
 styles, the plane atlas, the 17 pinned visualiser sprite atlases, native
 licence/build information and documentation. The packager checks that its runtime
 is byte-identical to the shared library output and that no tests, examples,

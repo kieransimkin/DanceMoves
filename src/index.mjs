@@ -7,6 +7,7 @@ import {createMotionRecorder} from './recorder.mjs';
 import {installPlayback} from './playback.mjs';
 import {createRecordingService} from './recordings.mjs';
 import {createSpectrumService} from './spectrum.mjs';
+import {createButterchurnService} from './butterchurn.mjs';
 import {createVisualiserResources} from './visualiser-resources.mjs';
 import {createVisualiserService} from './visualisers.mjs';
 export {SPECTRUM_RENDERERS} from './spectrum-analysis.mjs';
@@ -80,6 +81,7 @@ export function createDanceMoves(options = {}) {
     Object.defineProperty(api,'destroyed',{get:() => scope.disposed});
     const visualiserResources = createVisualiserResources(scope, api);
     api.spectrum = createSpectrumService(scope, api, config, visualiserResources);
+    api.butterchurn = createButterchurnService(scope, visualiserResources);
     api.visualisers = createVisualiserService(scope, api, config, visualiserResources);
     const spectra = [...api.spectrum.mountPage(), ...api.visualisers.mountPage()];
     installChildPlayback(scope, api, ownerDocument.defaultView);

@@ -129,7 +129,7 @@ export interface DanceMoves {
  resetRunningAnimations(audio?:PlaybackMedia):number;discoverAudio():void;registerPlaybackSource(source:PlaybackSource):void;unregisterPlaybackSource(source:PlaybackSource):void;
  setDiagnosticsSink(callback:((record:Record<string,unknown>)=>void)|null):boolean;diagnosticsEnabled():boolean;
  applyCatalogueTiming?():Record<string,unknown>;catalogueTimingSnapshot?():Record<string,unknown>;removeCatalogueAnimationScope?():void;
- effects:Effects;rudiments:import('./rudiments').RudimentApi;recordings:RecordingService;spectrum:SpectrumService;visualisers:VisualiserService;
+ effects:Effects;rudiments:import('./rudiments').RudimentApi;recordings:RecordingService;spectrum:SpectrumService;butterchurn:ButterchurnService;visualisers:VisualiserService;
  orientationCore:Record<string,(...args:any[])=>any>;
  getOrientation():(Controller & {reset():void})|null;getClay():(Controller & Record<string,any>)|null;getPaperPlanes():Controller|null;
  createOrientation(options:{render:(point:Offset & Record<string,unknown>)=>void;windowMilliseconds?:number;minimumSpanDegrees?:number;smoothingTimeConstantMilliseconds?:number}):OrientationController;
@@ -173,6 +173,28 @@ export interface SpectrumController {readonly id:string;readonly ready:Promise<S
 export interface SpectrumService {animate(options:SpectrumOptions):SpectrumController;get(id:string):SpectrumController|null;destroyAll():void;snapshot():{renderers:readonly SpectrumRenderer[];sources:number;instances:SpectrumSnapshot[]}}
 
 /** Complete 222-view FrameRudiments Canvas catalogue, preserving its renderer IDs. */
+export interface ButterchurnPreset {
+  baseVals: Record<string, number>;
+  init_eqs: (state: Record<string, number>) => Record<string, number>;
+  frame_eqs: (state: Record<string, number>) => Record<string, number>;
+  pixel_eqs?: (state: Record<string, number>) => Record<string, number>;
+  shapes: readonly object[];
+  waves: readonly object[];
+  warp?: string;
+  comp?: string;
+}
+export interface ButterchurnService {
+  create(options: {id: string; target: HTMLCanvasElement | string; preset: ButterchurnPreset; maxDimension?: number}): Promise<ButterchurnHandle>;
+}
+export interface ButterchurnHandle {
+  readonly id: string;
+  render(frame: {time: number; source?: TexImageSource; opacity?: number}): boolean;
+  resize(width: number, height: number): void;
+  reset(): void;
+  destroy(): void;
+  snapshot(): {id: string; status: 'loading' | 'ready' | 'error' | 'destroyed'; frames: number; sourceSeconds: number | null; width?: number; height?: number};
+}
+
 export type VisualiserRenderer =
   'particles'
   | 'bars'
